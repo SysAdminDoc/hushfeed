@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Inbox: filter New followers, Activity and Tako in the notice model before rows are built. The switches work regardless of the interface language.
+
 * **privacy:** require all story, profile and typing hooks. Remove the unsupported online-status claim and describe the Firebase screen hook precisely. Seen history now clears reliably, retains at most 10,000 videos and rejects the video just watched on refreshed pages.
 
 * **build:** reject bundles missing a DEX payload or containing a stale patch list. The build instructions now put the Android task last.

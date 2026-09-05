@@ -3,17 +3,6 @@
 Findings from the 2026-09-05 audit that were not fixed in that pass, plus upstream
 requests worth building. P0 is broken, P3 is nice to have.
 
-- [ ] P1 - Filter the Inbox at the data level
-  Why: rows are hidden as they lay out, so a row can flash for a frame, and the five system
-  rows match on English titles because they share one container id.
-  Where: extensions/tiktok/.../inbox/InboxFilter.java; needs the inbox adapter located in the APK.
-  Note: the stories tray, suggested accounts, Archive and Shop are now stopped at their
-  widget injectors (`InboxFragmentWidgetInjectProtocol.enable()`), so they never lay out.
-  What is left is New followers, Activity and Tako: they are rows inside one shared
-  `InboxEntranceWidgetContainer` with no injector of their own, so they are still matched
-  by English title. Finishing this means finding the per-entrance data inside that
-  container. The full injector map is in classes19.dex; decompile it and grep for
-  `implements InboxFragmentWidgetInjectProtocol`.
 - [ ] P2 - "Not interested" one-tap button beside the block button
   Why: same shape as the block button. Confirmed endpoint /aweme/v1/commit/dislike/item/, but it
   sits behind an obfuscated Kotlin suspend interface (X.0MlK on 46.2.3) taking a Map body and a
