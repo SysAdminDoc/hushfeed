@@ -1,3 +1,10 @@
+## 0.13.0 (2026-09-05)
+
+### Bug Fixes
+
+* **feed:** close the ad delivery gaps upstream found: profile grid videos, the detail page, late insertions, the cache delivery chain, play-lag inserts and reach-bottom cache all run through the filters now
+* **feed:** the cached video switch is now "Filter offline fallback videos" and applies to the videos TikTok falls back on when the feed cannot load enough new items
+
 ## 0.12.0 (2026-09-05)
 
 ### Features

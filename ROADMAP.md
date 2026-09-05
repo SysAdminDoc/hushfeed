@@ -65,20 +65,6 @@ with anchors present first, then adaptations, then new builds.
 
 ### P1
 
-- [ ] P1 - Cherry-pick upstream e58fb96 "close feed filter delivery gaps"
-  Why: ad leaks on profile grids, detail pages, late feed insertions, cache chains and the
-  offline fallback (upstream #122 with 10 comments, #133, #111); authored for 46.2.3.
-  Evidence: `git diff main upstream/dev -- patches/.../feedfilter extensions/.../feedfilter`;
-  all new anchors present (AwemeListFragmentImpl + "onRefreshResult: type=", DetailFragment +
-  IDetailPageAbility, "insertItemList fall to downgrade logic", InsertCacheWhenPlayLagComponent +
-  "middle_insert_when_video_lagging", ReachBottomCacheComponent + "golden_house").
-  Touches: patches/.../feedfilter/FeedFilterPatch.kt, Fingerprints.kt,
-  extensions/.../feedfilter/FeedItemsFilter.java (hand merge, keep SoundFilter and
-  ContentMarkerFilters in CONTENT_FILTERS), FeedFilterPreferenceCategory wording.
-  Acceptance: with Remove ads on, no ad appears when opening a profile grid video or scrolling
-  past a cached insertion; `git cherry-pick e58fb96` conflicts resolved without dropping any
-  fork setting.
-  Complexity: M
 - [ ] P1 - Port the four upstream dev feed toolbar hides
   Why: LIVE (#123), search, follow "+" (#129) and save buttons hidden at the generator or assem
   level, no per-frame view lookup; retires our `jup` hide in VideoOverlayHider.
