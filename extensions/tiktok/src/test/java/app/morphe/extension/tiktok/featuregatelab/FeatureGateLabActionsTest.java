@@ -158,6 +158,16 @@ public class FeatureGateLabActionsTest {
         } finally { Utils.setContext(app); }
     }
 
+    @Test public void nulCannotHideTrailingDataInTheLabUndoFile() throws Exception {
+        save("gate", "true", true);
+        FeatureGateLabUndo.reset(false);
+        try (var output = new java.io.FileOutputStream(new File(Utils.getContext().getFilesDir(), "feature-gate-lab-undo.json"), true)) {
+            output.write(new byte[]{0, 'b', 'a', 'd'});
+        }
+        assertThrows(Exception.class, FeatureGateLabUndo::undo);
+        assertTrue(FeatureGateLabStore.rules().isEmpty());
+    }
+
     @Test public void controlsApplyMasterResetAndUndoWithoutDialogs() throws Exception {
         try (var owner = Robolectric.buildActivity(TestActivity.class).setup().visible()) {
             var activity = owner.get();

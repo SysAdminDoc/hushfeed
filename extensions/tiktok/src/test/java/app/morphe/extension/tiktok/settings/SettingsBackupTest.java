@@ -128,6 +128,21 @@ public class SettingsBackupTest {
         assertThrows(java.io.IOException.class, () -> SettingsBackup.read(new ByteArrayInputStream(new byte[]{(byte) 0xc3, 0x28})));
     }
 
+    @Test public void exactNumericTokensAndTrailingNulAreValidatedBeforeAnyBackupChanges() throws Exception {
+        Settings.MAX_VIDEO_SECONDS.save(42);
+        SettingsBackup.reset(Utils.getContext());
+        String baseline = SettingsBackup.create(false);
+        JSONObject fractional = new JSONObject(baseline);
+        fractional.getJSONObject("settings").put(Settings.MAX_VIDEO_SECONDS.key, "precise-number");
+        for (String invalid : new String[]{fractional.toString().replace("\"precise-number\"", "1.00000000000000001"),
+                baseline + '\0' + "garbage"}) {
+            assertThrows(Exception.class, () -> SettingsBackup.restore(Utils.getContext(), invalid, true));
+            assertEquals(baseline, SettingsBackup.create(false));
+        }
+        SettingsBackup.undo(Utils.getContext());
+        assertEquals(42, (int) Settings.MAX_VIDEO_SECONDS.get());
+    }
+
     @Test public void missingSettingsAreRejectedBeforeWritingUndoOrChangingValues() throws Exception {
         Settings.MAX_VIDEO_SECONDS.save(34);
         String original = SettingsBackup.create(false);

@@ -9,7 +9,6 @@ import androidx.annotation.Nullable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -530,12 +529,9 @@ public abstract class Setting<T> {
     public static boolean importFromJSON(Context alertDialogContext, String settingsJsonString) {
         try {
             if (settingsJsonString == null) throw new JSONException("Settings text is missing");
-            String text = settingsJsonString.trim();
-            if (!text.startsWith("{")) text = '{' + text + '}'; // Legacy exports omit braces.
-            JSONTokener reader = new JSONTokener(text);
-            Object decoded = reader.nextValue();
-            if (!(decoded instanceof JSONObject) || reader.nextClean() != 0) throw new JSONException("Invalid settings JSON");
-            JSONObject json = (JSONObject) decoded;
+            String text = settingsJsonString;
+            if (!text.trim().startsWith("{")) text = '{' + text + '}'; // Legacy exports omit braces.
+            JSONObject json = SettingsJson.parseObject(text);
 
             boolean rebootSettingChanged = false;
             int numberOfSettingsImported = 0;

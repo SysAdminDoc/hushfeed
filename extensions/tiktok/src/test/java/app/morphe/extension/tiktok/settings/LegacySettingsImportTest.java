@@ -63,4 +63,27 @@ public class LegacySettingsImportTest {
         assertEquals("", Settings.BLOCKED_CREATORS.get());
         assertEquals(123456L, (long) BaseSettings.FIRST_TIME_APP_LAUNCHED.get());
     }
+
+    @Test public void fractionsThatRoundToWholeDoublesAreStillRejected() {
+        for (String number : new String[]{"1.00000000000000001", "-1e-1000", "2147483647.000000000001"}) {
+            Settings.MAX_VIDEO_SECONDS.save(29);
+            Settings.BLOCKED_SOUND_NAMES.save("keep");
+            Setting.importFromJSON(null, "{\"region_spoof\":true,\"max_video_seconds\":" + number + "}");
+            assertFalse(Settings.REGION_SPOOF.get());
+            assertEquals(29, (int) Settings.MAX_VIDEO_SECONDS.get());
+            assertEquals("keep", Settings.BLOCKED_SOUND_NAMES.get());
+        }
+    }
+
+    @Test public void literalNulCannotHideTrailingData() {
+        Setting.importFromJSON(null, "{\"region_spoof\":true}" + '\0' + "garbage");
+        assertFalse(Settings.REGION_SPOOF.get());
+    }
+
+    @Test public void validExponentNumbersPreserveWholeLongPrecision() {
+        var setting = new app.morphe.extension.shared.settings.LongSetting("precision_test_long", 0L);
+        Setting.importFromJSON(null, "\"precision_test_long\":9007199254740993e0,\"max_video_seconds\":3.0");
+        assertEquals(9007199254740993L, (long) setting.get());
+        assertEquals(3, (int) Settings.MAX_VIDEO_SECONDS.get());
+    }
 }

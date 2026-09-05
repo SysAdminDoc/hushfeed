@@ -1,4 +1,6 @@
-## Unreleased
+## 0.14.0 (2026-09-05)
+
+* Preserve exact numeric tokens in settings imports and reject hidden trailing data. Backup restore and Lab undo use the same parser.
 
 * Feature Gate Lab applies its master switch, resets and loaded-value imports without confirmations. Reset works while overrides are off, and the menu can undo the last reset or import. Migration and restart guidance use notifications.
 
@@ -61,8 +63,6 @@
 * AMOLED dark theme adds an optional black background palette with a patcher color picker.
 
 * **feed:** add a Not interested button beside the block control. It uses TikTok's own service and reports success only when the response says the feedback was accepted.
-
-* Inbox: filter New followers, Activity and Tako in the notice model before rows are built. The switches work regardless of the interface language.
 
 * **privacy:** require all story, profile and typing hooks. Remove the unsupported online-status claim and describe the Firebase screen hook precisely. Seen history now clears reliably, retains at most 10,000 videos and rejects the video just watched on refreshed pages.
 

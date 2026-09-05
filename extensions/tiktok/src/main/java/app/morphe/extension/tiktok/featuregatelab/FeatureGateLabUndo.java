@@ -2,6 +2,7 @@ package app.morphe.extension.tiktok.featuregatelab;
 
 import android.util.AtomicFile;
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.shared.settings.SettingsJson;
 import app.morphe.extension.tiktok.settings.SettingsBackup;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -11,7 +12,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 /** Worker-thread recovery for resets and imports; unrelated patch settings are untouched. */
 final class FeatureGateLabUndo {
@@ -70,10 +70,7 @@ final class FeatureGateLabUndo {
     static synchronized void undo() throws Exception {
         JSONObject saved;
         try (var input = file().openRead()) {
-            JSONTokener parser = new JSONTokener(SettingsBackup.read(input));
-            Object value = parser.nextValue();
-            if (!(value instanceof JSONObject) || parser.nextClean() != 0) throw new IOException("Invalid Lab undo copy");
-            saved = (JSONObject) value;
+            saved = SettingsJson.parseObject(SettingsBackup.read(input));
             FeatureGateLabStore.parseSettings(saved);
         }
         JSONObject before = FeatureGateLabStore.exportSettings();

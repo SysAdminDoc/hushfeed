@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.AtomicFile;
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.shared.settings.Setting;
+import app.morphe.extension.shared.settings.SettingsJson;
 import app.morphe.extension.tiktok.featuregatelab.FeatureGateLabStore;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -19,7 +20,6 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 /** File-backed settings snapshots. Call file and preference writes on a worker thread. */
 public final class SettingsBackup {
@@ -108,10 +108,7 @@ public final class SettingsBackup {
     private static Snapshot parse(String text) throws JSONException, IOException {
         if (text == null || text.getBytes(StandardCharsets.UTF_8).length > MAX_BYTES) throw new IOException("Invalid backup size");
         Settings.REGION_SPOOF.get();
-        JSONTokener reader = new JSONTokener(text);
-        Object decoded = reader.nextValue();
-        if (!(decoded instanceof JSONObject) || reader.nextClean() != 0) throw new JSONException("Invalid backup JSON");
-        JSONObject root = (JSONObject) decoded;
+        JSONObject root = SettingsJson.parseObject(text);
         if (!"metra-settings".equals(root.optString("format")) || !Integer.valueOf(1).equals(root.get("schema"))
                 || !FeatureGateLabStore.TARGET_VERSION.equals(root.optString("target"))) {
             throw new JSONException("Unsupported settings backup or TikTok version");

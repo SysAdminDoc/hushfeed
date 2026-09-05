@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-GPLv3-blue.svg" /></a>
-  <a href="CHANGELOG.md"><img alt="version" src="https://img.shields.io/badge/version-0.13.0-6f42c1.svg" /></a>
+  <a href="CHANGELOG.md"><img alt="version" src="https://img.shields.io/badge/version-0.14.0-6f42c1.svg" /></a>
   <a href="https://github.com/MorpheApp/morphe-cli"><img alt="source" src="https://img.shields.io/badge/source-Morphe-00b894.svg" /></a>
   <a href="https://www.android.com/"><img alt="platform" src="https://img.shields.io/badge/platform-Android-3ddc84.svg" /></a>
   <a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/"><img alt="TikTok 46.2.3" src="https://img.shields.io/badge/TikTok-46.2.3-ff0050.svg" /></a>
@@ -140,15 +140,9 @@ Feature Gate Lab saves its master switch immediately. Its menu can reset overrid
 
 <img src="assets/feature-gate-lab.png" alt="Feature Gate Lab with immediate master control and settings menu" width="300" />
 
-## Add Source
+## Download
 
-Open this link on the Android device where Morphe is installed:
-
-[Add Metra TikTok Patches](https://morphe.software/add-source?github=icysymmetra/tiktok-patches-for-morphe)
-
-You can also copy this repository URL and paste it into Morphe's add source field:
-
-[https://github.com/icysymmetra/tiktok-patches-for-morphe](https://github.com/icysymmetra/tiktok-patches-for-morphe)
+Download the `.mpp` bundle from [this fork's releases](https://github.com/SysAdminDoc/tiktok-patches-for-morphe/releases). This repository is private, so sign in with an account that has access. Use the bundle with Morphe Manager on the device, targeting global TikTok 46.2.3 and keeping the existing signing key.
 
 <br>
 
@@ -180,6 +174,7 @@ Run these tasks in this order. The Android build finishes with `verifyBundle`, w
 
 Runtime tests cover feed marker and sound filters using both getter and field model shapes. Empty metadata and unrelated ids remain eligible; matching markers and sound phrases are rejected by their enabled filters.
 Legacy settings import tests cover complete JSON and older text fragments, rejecting invalid values before any preference changes.
+Numeric tokens retain their precision until validation, and literal NUL characters cannot hide trailing data in imports or undo files.
 
 The generated bundle is written to:
 
