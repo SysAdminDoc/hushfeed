@@ -23,18 +23,6 @@ with anchors present first, then adaptations, then new builds.
 
 ### P2
 
-- [ ] P2 - Share sheet data-level backend from PR #143
-  Why: filters the panel model before the sheet builds (no flash), can drop the whole Send to row
-  through the builder flag, and adds the Video actions row; keeps our confirm step and label list.
-  Evidence: others/pr143.diff misc/sharesheet/{Fingerprints,ShareSheetPatch}.kt, extension
-  sharesheet/{ShareSheetFilter,ShareChannelOptions,VideoActionOptions}.java; `LX/0oVo;` and
-  `LX/0oVp;` present and co-located; builder fields LIZ, LJFF, LJJIIJZLJL need a jadx check.
-  Re-fingerprint the constructor structurally (the class whose <init> takes the builder that
-  owns two List fields and the IM boolean) instead of the `LX/0oVo;` literal.
-  Touches: new patch, share/ShareSheetTools.java (keep confirm and label hiding as fallback),
-  Settings.java (reuse `share_hidden_items`, `hide_share_contacts`).
-  Acceptance: a hidden channel never renders; Hide the Send to row removes the header too.
-  Complexity: M
 - [ ] P2 - Advanced feed rules our way
   Why: caption keyword blocklist (#140, 5 sources), creator blocklist, max duration (Toki,
   Plugin, FreedomPlus), promotional music, LIVE replays, views-per-like ratio.

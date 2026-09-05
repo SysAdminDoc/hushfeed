@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Share sheet tools can hide sharing apps, video actions and the complete Send to row before the panel is built. Hidden names also accept stable action keys.
+
 * Prevent a rapid feedback tap from racing the completion of the previous request.
 
 * Feed overlay controls now follow the detail page lifecycle and disappear when a grid video is closed.

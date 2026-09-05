@@ -124,7 +124,6 @@ public final class ShareSheetTools {
                 if (armedName != null) {
                     disarm();
                 }
-                return;
             }
 
             List<String> hidden = entries(Settings.SHARE_HIDDEN_ITEMS.get());

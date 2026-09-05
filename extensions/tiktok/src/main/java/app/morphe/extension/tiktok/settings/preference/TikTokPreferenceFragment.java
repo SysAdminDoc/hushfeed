@@ -332,6 +332,8 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             addMenu(screen, Section.SHARE, SettingsMenuPreference.Icon.BEHAVIOR, countEnabled(
                     Settings.SHARE_CONFIRM_SEND.get(),
                     Settings.HIDE_SHARE_CONTACTS.get(),
+                    Settings.HIDE_SHARE_CHANNELS.get(),
+                    Settings.HIDE_SHARE_ACTIONS.get(),
                     !Settings.SHARE_HIDDEN_ITEMS.get().trim().isEmpty()
             ));
         }

@@ -27,6 +27,7 @@ val shareSheetToolsPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
+        hookShareModel()
         SettingsStatusLoadFingerprint.method.addInstruction(
             0,
             "invoke-static {}, " +

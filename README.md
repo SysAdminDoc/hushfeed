@@ -68,7 +68,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Hide CAPTCHA popups` | Hides non-account verification puzzle dialogs, including those shown while browsing LIVE. Account verification remains available, and server checks are not bypassed. |
 | `Hide floating promotions` | Removes floating promotional badges, coin icons, and timer banners from the Home feed. |
 | `Hide video overlays` | Hides the "Search this image" prompt over videos and the Live entrance in the top left corner. |
-| `Share sheet tools` | Asks for a second tap before a video is sent to a friend from the share sheet, and hides chosen people or share options, or the whole Send to row. |
+| `Share sheet tools` | Adds a second tap before sending to a friend. Filters sharing apps and video actions before the panel builds, hides whole rows, and keeps the custom name list. |
 | `Hide feed LIVE button` | Stops the LIVE button at the top left of the feed from being built. Shares its switch with the Live entrance option. |
 | `Hide feed follow button` | Hides the plus button under the creator's avatar on the action rail. |
 | `Hide feed save button` | Hides the save button on the action rail. |

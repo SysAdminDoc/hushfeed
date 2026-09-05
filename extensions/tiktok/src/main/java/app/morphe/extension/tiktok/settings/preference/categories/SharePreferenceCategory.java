@@ -26,6 +26,8 @@ public final class SharePreferenceCategory extends ConditionalPreferenceCategory
 
     @Override
     public void addPreferences(Context context) {
+        addPreference(new TogglePreference(context, "Hide sharing apps", "Remove the Share via row.", Settings.HIDE_SHARE_CHANNELS));
+        addPreference(new TogglePreference(context, "Hide video actions", "Remove the actions row from the share sheet.", Settings.HIDE_SHARE_ACTIONS));
         addPreference(new TogglePreference(
                 context,
                 "Confirm before sending to a friend",
@@ -44,7 +46,7 @@ public final class SharePreferenceCategory extends ConditionalPreferenceCategory
                 "Hide people and options by name",
                 "Comma separated names exactly as the share sheet shows them: friends in the "
                         + "Send to row, share targets such as Facebook, and actions such as "
-                        + "Create group or Repost.",
+                        + "Create group or Repost. Stable keys such as copy, save and dislike also work before the sheet opens.",
                 Settings.SHARE_HIDDEN_ITEMS
         ));
     }

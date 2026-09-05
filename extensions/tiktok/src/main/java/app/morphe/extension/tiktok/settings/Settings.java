@@ -18,6 +18,8 @@ import app.morphe.extension.tiktok.navigation.BottomNavigationTabOptions;
 import app.morphe.extension.tiktok.navigation.NavigationTabOptions;
 
 public class Settings extends BaseSettings {
+    public static final BooleanSetting HIDE_SHARE_CHANNELS = new BooleanSetting("hide_share_channels", FALSE);
+    public static final BooleanSetting HIDE_SHARE_ACTIONS = new BooleanSetting("hide_share_actions", FALSE);
     public static final BooleanSetting REMOVE_ADS = new BooleanSetting("remove_ads", TRUE, true);
     public static final BooleanSetting HIDE_LIVE = new BooleanSetting("hide_live", FALSE, true);
     public static final BooleanSetting HIDE_SHOP = new BooleanSetting("hide_shop", FALSE, true);
