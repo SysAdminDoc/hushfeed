@@ -25,14 +25,6 @@ public final class InboxControls {
         return !Settings.HIDE_INBOX_STORIES.get();
     }
 
-    public static boolean shouldShowArchiveEntrance() {
-        return !Settings.HIDE_INBOX_ARCHIVE.get();
-    }
-
-    public static boolean shouldShowShopEntrance() {
-        return !Settings.HIDE_INBOX_SHOP.get();
-    }
-
     public static boolean shouldCollapseActivityList() {
         return !Settings.EXPAND_ACTIVITY_LIST.get();
     }

@@ -1,33 +1,12 @@
 package app.morphe.extension.tiktok.inbox;
 
-import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.settings.BooleanSetting;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.settings.Settings;
-import java.util.ArrayList;
-import java.util.List;
 
 /** Reads category identity from the verified model fields, independently of visible titles. */
 public final class InboxModelFilter {
     private InboxModelFilter() {}
-
-    public static List<?> filter(List<?> rows) {
-        if (rows == null || rows.isEmpty()) return rows;
-        if (!Settings.HIDE_INBOX_NEW_FOLLOWERS.get() && !Settings.HIDE_INBOX_ACTIVITY.get()
-                && !Settings.HIDE_INBOX_TAKO.get() && !Settings.HIDE_INBOX_SHOP.get()
-                && !Settings.HIDE_INBOX_ARCHIVE.get()) return rows;
-        try {
-            ArrayList<Object> kept = new ArrayList<>(rows.size());
-            for (Object row : rows) {
-                BooleanSetting setting = settingFor(row);
-                if (setting == null || !setting.get()) kept.add(row);
-            }
-            return kept.size() == rows.size() ? rows : kept;
-        } catch (Throwable e) {
-            Logger.printException(() -> "Could not filter inbox models", e);
-            return rows;
-        }
-    }
 
     static BooleanSetting settingFor(Object row) {
         if ("archive_entrance".equals(Reflect.invoke(row, "itemUniqueId"))) return Settings.HIDE_INBOX_ARCHIVE;

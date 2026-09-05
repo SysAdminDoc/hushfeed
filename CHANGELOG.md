@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Keep inbox category models available so disabling a hide switch restores the row and its height on the next layout, including Archive and Shop.
+
 * Reject incomplete settings backups using their saved key inventory. Recovery attempts both preference stores independently when a save fails.
 
 * Fixed the shared text importer rejecting complete JSON and partially applying malformed profiles. Fractional or overflowing whole numbers are rejected before preferences change.

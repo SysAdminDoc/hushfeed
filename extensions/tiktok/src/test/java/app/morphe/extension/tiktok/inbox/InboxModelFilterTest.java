@@ -21,21 +21,29 @@ public class InboxModelFilterTest {
         Settings.HIDE_INBOX_TAKO.save(false);
         Settings.HIDE_INBOX_SHOP.save(false);
     }
-    @Test public void defaultsPreserveTheOriginalList() {
+    @Test public void defaultsKeepRecognizedCategoriesVisible() {
         List<?> rows = List.of(new Pod(Kind.FOLLOWER), new Entrance(9));
-        assertSame(rows, InboxModelFilter.filter(rows));
+        for (Object row : rows) assertFalse(InboxModelFilter.settingFor(row).get());
+        assertNull(InboxModelFilter.settingFor(null));
     }
-    @Test public void hidesModelsWithoutTouchingConversationsOrInputData() {
+    @Test public void categoryIdentityTracksSwitchesWithoutTouchingConversationsOrInputData() {
         Object conversation = new Object();
         List<?> rows = List.of(new Pod(Kind.FOLLOWER), new Entrance(2), new Entrance(1),
                 new Entrance(9), conversation);
         Settings.HIDE_INBOX_NEW_FOLLOWERS.save(true);
         Settings.HIDE_INBOX_ACTIVITY.save(true);
         Settings.HIDE_INBOX_TAKO.save(true);
-        assertEquals(List.of(conversation), InboxModelFilter.filter(rows));
+        assertEquals(List.of(true, true, true, true, false), hidden(rows));
         assertEquals(5, rows.size());
         Settings.HIDE_INBOX_NEW_FOLLOWERS.save(false);
-        assertEquals(3, InboxModelFilter.filter(rows).size());
+        assertEquals(List.of(false, false, true, true, false), hidden(rows));
+        assertNull(InboxModelFilter.settingFor(conversation));
+    }
+    private List<Boolean> hidden(List<?> rows) {
+        return rows.stream().map(row -> {
+            var setting = InboxModelFilter.settingFor(row);
+            return setting != null && setting.get();
+        }).collect(java.util.stream.Collectors.toList());
     }
     private enum Kind { FOLLOWER, ACTIVITY, SHOP }
     private static final class Pod {

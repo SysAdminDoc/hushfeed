@@ -110,6 +110,8 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Stop video looping` | Stops a completed video instead of automatically replaying it. |
 | `Translate comments` | Adds comment translation controls using TikTok's translation system, with selectable language exclusions. |
 
+Inbox category switches identify New followers, Activity, Archive, Tako and Shop from native row data. They work with translated labels. Turning a switch off restores an already loaded row on the next layout.
+
 <br>
 
 Playback has an optional default speed for every new video. A manual choice lasts until you change videos. To add 2.5x, enter it in Speed menu choices and restart TikTok; an empty list restores TikTok's menu.

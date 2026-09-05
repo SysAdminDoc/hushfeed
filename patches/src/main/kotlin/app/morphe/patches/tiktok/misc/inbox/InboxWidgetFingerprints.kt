@@ -82,19 +82,3 @@ internal object FollowerWidgetContainerConstructorFingerprint : Fingerprint(
     returnType = "V",
     parameters = emptyList(),
 )
-
-/** The Archive row; it has its own injector, unlike the other entrance rows. */
-internal object ArchiveEntranceWidgetEnableFingerprint : Fingerprint(
-    definingClass = "/ArchiveEntranceWidgetInjector;",
-    name = "enable",
-    returnType = "Z",
-    parameters = emptyList(),
-)
-
-/** The TikTok Shop row. */
-internal object ShopEntranceWidgetEnableFingerprint : Fingerprint(
-    definingClass = "/ShopEntranceMigrationWidgetInjector;",
-    name = "enable",
-    returnType = "Z",
-    parameters = emptyList(),
-)

@@ -10,7 +10,6 @@ import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.BooleanSetting;
 import app.morphe.extension.tiktok.settings.Settings;
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,9 +18,11 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.GraphicsMode;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class InboxRowLanguageTest {
     private final BooleanSetting[] settings = {Settings.HIDE_INBOX_NEW_FOLLOWERS,
             Settings.HIDE_INBOX_ACTIVITY, Settings.HIDE_INBOX_ARCHIVE,
@@ -44,6 +45,8 @@ public class InboxRowLanguageTest {
         values.put("user_name", 102);
         values.put("tyh", 103);
         values.put("bo5", 104);
+        values.put("o1l", 201);
+        values.put("kmx", 200);
         predicate = InboxFilter.class.getDeclaredMethod("shouldHideRow", Activity.class, View.class);
         predicate.setAccessible(true);
     }
@@ -89,27 +92,63 @@ public class InboxRowLanguageTest {
         }
     }
 
-    @Test public void nextLayoutReadsTheCurrentSwitchWithoutRebinding() throws Exception {
+    @Test public void nextLayoutRestoresAllCategoriesWithoutRebindingOrRebuilding() throws Exception {
         try (var owner = Robolectric.buildActivity(Activity.class).setup()) {
             Activity activity = owner.get();
-            View row = row(activity, "アクティビティ", false);
-            InboxFilter.onRowBound(new Holder(row), 0, new Pod(Kind.ACTIVITY));
-            assertEquals(false, predicate.invoke(null, activity, row));
-            Settings.HIDE_INBOX_ACTIVITY.save(true);
-            assertEquals(true, predicate.invoke(null, activity, row));
-            Settings.HIDE_INBOX_ACTIVITY.save(false);
-            assertEquals(false, predicate.invoke(null, activity, row));
+            LinearLayout root = new LinearLayout(activity);
+            root.setOrientation(LinearLayout.VERTICAL);
+            root.setBackgroundColor(android.graphics.Color.BLACK);
+            TextView tab = new TextView(activity);
+            tab.setText("Inbox");
+            tab.setTextColor(android.graphics.Color.WHITE);
+            tab.setTextSize(24);
+            tab.setId(201);
+            tab.setSelected(true);
+            root.addView(tab);
+            LinearLayout rows = new LinearLayout(activity);
+            rows.setOrientation(LinearLayout.VERTICAL);
+            rows.setId(200);
+            root.addView(rows);
+            activity.setContentView(root);
+            String[] labels = {"Neue Follower", "Aktivität", "Archiv", "TikTok Tako", "TikTok Shop"};
+            for (int i = 0; i < settings.length; i++) {
+                settings[i].save(true);
+                View row = row(activity, labels[i], false);
+                rows.addView(row);
+                InboxFilter.onRowBound(new Holder(row), i, models[i]);
+            }
+            InboxFilter.install(activity);
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+            var observer = activity.findViewById(android.R.id.content).getViewTreeObserver();
+            observer.dispatchOnGlobalLayout();
+            for (int i = 0; i < rows.getChildCount(); i++) {
+                assertEquals(View.GONE, rows.getChildAt(i).getVisibility());
+                assertEquals(0, rows.getChildAt(i).getLayoutParams().height);
+            }
+            app.morphe.extension.tiktok.UiCapture.save(root, "inbox-categories-hidden.png");
+            for (BooleanSetting setting : settings) setting.save(false);
+            observer.dispatchOnGlobalLayout();
+            assertEquals(5, rows.getChildCount());
+            for (int i = 0; i < rows.getChildCount(); i++) {
+                assertEquals(View.VISIBLE, rows.getChildAt(i).getVisibility());
+                assertEquals(72, rows.getChildAt(i).getLayoutParams().height);
+            }
+            app.morphe.extension.tiktok.UiCapture.save(root, "inbox-categories-restored.png");
+            Settings.HIDE_INBOX_ARCHIVE.save(true);
+            observer.dispatchOnGlobalLayout();
+            for (int i = 0; i < rows.getChildCount(); i++) {
+                assertEquals(i == 2 ? View.GONE : View.VISIBLE, rows.getChildAt(i).getVisibility());
+            }
         }
     }
 
-    @Test public void archiveFilterPreservesInputAndUnknownModels() {
+    @Test public void archiveIdentityPreservesUnknownModels() {
         Object archive = new Archive(), conversation = new Object();
-        List<?> rows = List.of(archive, conversation);
-        assertSame(rows, InboxModelFilter.filter(rows));
+        assertSame(Settings.HIDE_INBOX_ARCHIVE, InboxModelFilter.settingFor(archive));
+        assertFalse(InboxModelFilter.settingFor(archive).get());
         Settings.HIDE_INBOX_ARCHIVE.save(true);
-        assertEquals(List.of(conversation), InboxModelFilter.filter(rows));
-        assertEquals(2, rows.size());
-        assertNull(InboxModelFilter.filter(null));
+        assertTrue(InboxModelFilter.settingFor(archive).get());
+        assertNull(InboxModelFilter.settingFor(conversation));
     }
 
     private View row(Activity activity, String title, boolean conversation) {
@@ -119,6 +158,7 @@ public class InboxRowLanguageTest {
         TextView label = new TextView(activity);
         label.setId(conversation ? 102 : 104);
         label.setText(title);
+        label.setTextColor(android.graphics.Color.WHITE);
         row.addView(label);
         if (conversation) {
             View marker = new View(activity);
