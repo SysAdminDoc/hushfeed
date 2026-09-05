@@ -119,8 +119,11 @@ Only the global package is declared in Morphe compatibility metadata. The JP pac
 Build the Morphe patch bundle and metadata:
 
 ```bash
-./gradlew :patches:buildAndroid :patches:generatePatchesList
+./gradlew :patches:generatePatchesList
+./gradlew :patches:buildAndroid
 ```
+
+Run these tasks in this order. The Android build finishes with `verifyBundle`, which checks the patch list and all three DEX payloads. You can also run `./gradlew :patches:verifyBundle` to inspect an existing bundle without rebuilding it.
 
 The generated bundle is written to:
 

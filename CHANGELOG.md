@@ -1,3 +1,7 @@
+## Unreleased
+
+* **build:** reject bundles missing a DEX payload or containing a stale patch list. The build instructions now put the Android task last.
+
 ## 0.13.0 (2026-09-05)
 
 ### Features

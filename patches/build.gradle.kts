@@ -26,6 +26,23 @@ dependencies {
 }
 
 tasks {
+    val verifyBundle by registering(JavaExec::class) {
+        group = "verification"
+        description = "Check the Android bundle and its published patch list without rebuilding it"
+        dependsOn(classes)
+        classpath = sourceSets["main"].runtimeClasspath
+        mainClass.set("app.morphe.util.BundleVerifier")
+        args(
+            providers.gradleProperty("patchBundle").getOrElse(
+                layout.buildDirectory.file("libs/patches-${project.version}.mpp").get().asFile.absolutePath
+            ),
+            rootProject.file("patches-list.json").absolutePath,
+            project.version.toString()
+        )
+    }
+    named("buildAndroid") {
+        finalizedBy(verifyBundle)
+    }
     register<JavaExec>("generatePatchesList") {
         description = "Build patch with patch list"
 

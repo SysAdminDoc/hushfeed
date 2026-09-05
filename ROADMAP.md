@@ -202,15 +202,6 @@ with anchors present first, then adaptations, then new builds.
   Touches: new patch, Settings.java (+2), ExtensionPreferenceCategory.
   Acceptance: on a device wider than the threshold, the comment panel opens beside the video.
   Complexity: S
-- [ ] P2 - Post-build bundle assertion
-  Why: the "0 patches" failure (generatePatchesList strips classes.dex) has no automated guard.
-  Evidence: CLAUDE.md gotcha; scratchpad verification greps done by hand after every build.
-  Touches: a PowerShell or Gradle step after buildAndroid that fails unless classes.dex,
-  extensions/tiktok.mpe and extensions/shared.mpe are present and the patch count matches
-  patches-list.json.
-  Acceptance: deleting classes.dex from a built bundle makes the step fail.
-  Complexity: S
-
 ### P3
 
 - [ ] P3 - Sensitive-content warning and mask disable
