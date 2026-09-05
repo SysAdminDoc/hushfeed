@@ -1,3 +1,5 @@
+import java.security.MessageDigest
+
 group = "app.morphe"
 
 patches {
@@ -37,10 +39,19 @@ tasks {
                 layout.buildDirectory.file("libs/patches-${project.version}.mpp").get().asFile.absolutePath
             ),
             rootProject.file("patches-list.json").absolutePath,
-            project.version.toString()
+            project.version.toString(),
+            layout.buildDirectory.file("bundle.sha256").get().asFile.absolutePath
         )
     }
     named("buildAndroid") {
+        doLast {
+            // Record only at the producer boundary. Standalone verification must not
+            // bless a modified bundle by generating its own expected checksum.
+            val bundle = layout.buildDirectory.file("libs/patches-${project.version}.mpp").get().asFile
+            val digest = MessageDigest.getInstance("SHA-256").digest(bundle.readBytes())
+                .joinToString("") { "%02x".format(it) }
+            layout.buildDirectory.file("bundle.sha256").get().asFile.writeText(digest)
+        }
         finalizedBy(verifyBundle)
     }
     register<JavaExec>("generatePatchesList") {

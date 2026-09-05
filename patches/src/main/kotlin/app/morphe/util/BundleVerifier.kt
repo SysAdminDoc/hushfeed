@@ -4,12 +4,13 @@ import app.morphe.patcher.patch.loadPatchesFromJar
 import com.google.gson.JsonParser
 import java.io.File
 import java.util.jar.JarFile
+import java.security.MessageDigest
 
 /** Verifies the on-disk deliverable without running any task that can repair it. */
 object BundleVerifier {
     @JvmStatic
     fun main(args: Array<String>) {
-        require(args.size == 3) { "Expected bundle, patch list and version" }
+        require(args.size == 4) { "Expected bundle, patch list, version and build checksum" }
         val bundle = File(args[0])
         require(bundle.isFile) { "Bundle not found: $bundle" }
         JarFile(bundle).use { jar ->
@@ -25,6 +26,12 @@ object BundleVerifier {
             require(jar.manifest.mainAttributes.getValue("Version") == args[2]) {
                 "Bundle version does not match ${args[2]}"
             }
+        }
+        val expectedDigest = File(args[3]).readText().trim()
+        val actualDigest = MessageDigest.getInstance("SHA-256").digest(bundle.readBytes())
+            .joinToString("") { "%02x".format(it) }
+        require(actualDigest == expectedDigest) {
+            "Bundle differs from the Android build output; a DEX or JVM payload may be stale"
         }
         val metadata = File(args[1]).reader().use { JsonParser.parseReader(it).asJsonObject }
         require(metadata["version"].asString == "v${args[2]}") { "Patch list version is stale" }
