@@ -39,7 +39,7 @@ public class AdvancedDownloadsTest {
         public final int bitRate;
         public final UrlModel playAddr;
         public String videoExtra;
-        Gear(String name, int rate, String url) { gearName = name; bitRate = rate; playAddr = new Address(url, rate * 10L); }
+        public Gear(String name, int rate, String url) { gearName = name; bitRate = rate; playAddr = new Address(url, rate * 10L); }
     }
     public static final class VideoData {
         public final List<Gear> bitRate;

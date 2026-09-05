@@ -1134,6 +1134,34 @@
       "options": []
     },
     {
+      "name": "Playback quality",
+      "description": "Selects the lowest, highest or target video quality for playback, including adaptive streams.",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Playback speed",
       "description": "Enables playback-speed controls for all videos and remembers the selected speed between videos.",
       "use": true,

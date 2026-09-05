@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Added playback quality choices for regular and adaptive video streams. Playback limits leave the full set of download variants available.
+
 * Selected-quality saves now pair adaptive video with its matching audio track before writing the final MP4.
 
 * Added download quality choices and direct Photo Mode image saving. Separate video and audio tracks are combined without re-encoding. Original photos keep their source bytes and format, with fallback URLs tried when a server fails.

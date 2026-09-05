@@ -1,0 +1,105 @@
+package app.morphe.extension.tiktok.playback;
+
+import static org.junit.Assert.*;
+import android.os.Looper;
+import app.morphe.extension.shared.Utils;
+import app.morphe.extension.tiktok.download.AdvancedDownloadsTest;
+import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.settings.SettingsStatus;
+import app.morphe.extension.tiktok.settings.preference.categories.PlaybackPreferenceCategory;
+import java.util.List;
+import java.util.Map;
+import org.json.JSONObject;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
+import org.robolectric.annotation.Config;
+import org.robolectric.annotation.GraphicsMode;
+
+@RunWith(RobolectricTestRunner.class)
+@Config(sdk = 28)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+public class PlaybackQualityTest {
+    private static Map<String, Object> stream(String name, int width, int height, int rate) {
+        return Map.of("gear_name", name, "vwidth", width, "vheight", height, "bitrate", rate,
+                "main_url", "https://example.com/" + name, "audio_file_id", "sound");
+    }
+    private static Map<String, Object> model() {
+        return Map.of("video_id", "one", "dynamic_video", Map.of(
+                "dynamic_type", "segment_base",
+                "dynamic_video_list", List.of(stream("1080p", 1080, 1920, 400), stream("360p", 360, 640, 100)),
+                "dynamic_audio_list", List.of(Map.of("file_id", "sound", "main_url", "https://example.com/audio"))));
+    }
+
+    @Test public void listSelectionDoesNotMutateDownloadVariantsOrReenterNativeGetter() {
+        Utils.setContext(RuntimeEnvironment.getApplication());
+        var low = new AdvancedDownloadsTest.Gear("360p", 100, "https://example.com/low");
+        var high = new AdvancedDownloadsTest.Gear("1080p", 400, "https://example.com/high");
+        var original = List.of(high, low);
+        Settings.PLAYBACK_QUALITY.save("auto");
+        assertSame(original, PlaybackQuality.filter(original));
+        Object cached = new Object();
+        assertSame(cached, PlaybackQuality.cacheModel(cached));
+        Settings.PLAYBACK_QUALITY.save("lowest");
+        assertEquals(List.of(low), PlaybackQuality.filter(original));
+        assertNull(PlaybackQuality.cacheModel(cached));
+        assertEquals(List.of(high, low), original);
+        Settings.PLAYBACK_QUALITY.save("highest");
+        assertEquals(List.of(high), PlaybackQuality.filter(original));
+        assertNull(PlaybackQuality.filter(null));
+    }
+
+    @Test public void adaptiveMapKeepsAudioAndLeavesNativeCacheUntouched() {
+        Utils.setContext(RuntimeEnvironment.getApplication());
+        Settings.PLAYBACK_QUALITY.save("lowest");
+        Map<String, Object> original = model();
+        Map<?, ?> originalDynamic = (Map<?, ?>) original.get("dynamic_video");
+        Map<?, ?> result = PlaybackQuality.filterMap(original);
+        Map<?, ?> dynamic = (Map<?, ?>) result.get("dynamic_video");
+        List<?> video = (List<?>) dynamic.get("dynamic_video_list");
+        assertEquals(1, video.size());
+        assertEquals("360p", ((Map<?, ?>) video.get(0)).get("gear_name"));
+        assertSame(originalDynamic.get("dynamic_audio_list"), dynamic.get("dynamic_audio_list"));
+        assertEquals(2, ((List<?>) originalDynamic.get("dynamic_video_list")).size());
+        assertEquals("one", result.get("video_id"));
+        Settings.PLAYBACK_QUALITY.save("auto");
+        assertSame(original, PlaybackQuality.filterMap(original));
+    }
+
+    @Test public void adaptiveJsonTracksSettingChangesAndPreservesAudioMetadata() throws Exception {
+        Utils.setContext(RuntimeEnvironment.getApplication());
+        String original = new JSONObject(model()).toString();
+        Settings.PLAYBACK_QUALITY.save("lowest");
+        JSONObject low = new JSONObject(PlaybackQuality.filterJson(original));
+        JSONObject dynamic = low.getJSONObject("dynamic_video");
+        assertEquals("360p", dynamic.getJSONArray("dynamic_video_list").getJSONObject(0).getString("gear_name"));
+        assertEquals("sound", dynamic.getJSONArray("dynamic_audio_list").getJSONObject(0).getString("file_id"));
+        Settings.PLAYBACK_QUALITY.save("highest");
+        JSONObject high = new JSONObject(PlaybackQuality.filterJson(original));
+        assertEquals("1080p", high.getJSONObject("dynamic_video").getJSONArray("dynamic_video_list").getJSONObject(0).getString("gear_name"));
+        Settings.PLAYBACK_QUALITY.save("auto");
+        assertSame(original, PlaybackQuality.filterJson(original));
+        Settings.PLAYBACK_QUALITY.save("lowest");
+        assertEquals("invalid", PlaybackQuality.filterJson("invalid"));
+        assertNull(PlaybackQuality.filterJson(null));
+    }
+
+    @Test public void standalonePatchShowsPlaybackChoice() throws Exception {
+        try (var controller = Robolectric.buildActivity(AdvancedDownloadsTest.TestActivity.class).setup()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            Utils.setIsDarkModeEnabled(true);
+            SettingsStatus.playbackQualityEnabled = true;
+            Settings.PLAYBACK_QUALITY.save("lowest");
+            var screen = activity.getPreferenceManager().createPreferenceScreen(activity);
+            new PlaybackPreferenceCategory(activity, screen);
+            assertNotNull(screen.findPreference("playback_quality"));
+            activity.setPreferenceScreen(screen);
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            app.morphe.extension.tiktok.UiCapture.save(activity.getWindow().getDecorView(), "playback-settings.png");
+        }
+    }
+}

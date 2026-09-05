@@ -23,16 +23,6 @@ with anchors present first, then adaptations, then new builds.
 
 ### P2
 
-- [ ] P2 - Video quality selector for playback
-  Why: upstream #146 and ReVanced #6713 (11 comments); mobile-data quality control.
-  Evidence: others/eduardo3677-ai_tiktok-patches-for-morphe videoquality/ (scoring table is
-  reusable; its hook recurses through getBitRate and must not be copied);
-  `Lcom/ss/android/ugc/aweme/feed/model/Video;`, `getBitRate` present.
-  Touches: new patch reading the bit-rate backing field directly (name from a jadx dump of
-  Video) or hooking the gear-selection caller, Settings.java, a Playback category.
-  Acceptance: with "lowest" selected, a 1080p video plays at the smallest gear (visible in
-  TikTok's debug info or by network use); no StackOverflow in logcat.
-  Complexity: M
 - [ ] P2 - Automatic clear display with a delay
   Why: BlueDragon's most requested feature in its README; we already post the clear-display
   event on 46.2.3.

@@ -41,6 +41,7 @@ import app.morphe.extension.tiktok.settings.preference.categories.FeedFilterPref
 import app.morphe.extension.tiktok.settings.preference.categories.FeedNavigationPreferenceCategory;
 import app.morphe.extension.tiktok.settings.preference.categories.InboxPreferenceCategory;
 import app.morphe.extension.tiktok.settings.preference.categories.InterfacePreferenceCategory;
+import app.morphe.extension.tiktok.settings.preference.categories.PlaybackPreferenceCategory;
 import app.morphe.extension.tiktok.settings.preference.categories.SharePreferenceCategory;
 import app.morphe.extension.tiktok.settings.preference.categories.SimSpoofPreferenceCategory;
 
@@ -57,6 +58,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         INTERFACE("Interface", "Promotions, popups, publish dates, and feed controls."),
         COMMENTS("Comments and translation", "Auto translate, quick reactions, and copy options."),
         DOWNLOADS("Downloads", "Path, watermark, and offline videos."),
+        PLAYBACK("Playback", "Video quality."),
         INBOX("Inbox", "Rows, stories tray, and header controls."),
         SHARE("Share sheet", "Confirm before sending, and hidden people and options."),
         REGION("Bypass regional restriction", "SIM info, country, and operator."),
@@ -317,6 +319,10 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     SettingsStatus.downloadEnabled && Settings.CUSTOM_OFFLINE_VIDEOS.get()
             ));
         }
+        if (SettingsStatus.playbackQualityEnabled) {
+            addMenu(screen, Section.PLAYBACK, SettingsMenuPreference.Icon.BEHAVIOR,
+                    countEnabled(!"auto".equals(Settings.PLAYBACK_QUALITY.get())));
+        }
         if (SettingsStatus.inboxFilterEnabled
                 || SettingsStatus.hideSuggestedAccountsEnabled
                 || SettingsStatus.hideInboxStoriesEnabled
@@ -419,6 +425,9 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                 break;
             case DOWNLOADS:
                 category = new DownloadsPreferenceCategory(context, screen);
+                break;
+            case PLAYBACK:
+                category = new PlaybackPreferenceCategory(context, screen);
                 break;
             case INBOX:
                 category = new InboxPreferenceCategory(context, screen);
