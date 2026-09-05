@@ -26,6 +26,7 @@ public class SettingsStatus {
     public static boolean externalBrowserEnabled = false;
     public static boolean alwaysShowPublishDateEnabled = false;
     public static boolean diagnosticsEnabled = false;
+    public static boolean blockAuthorEnabled = false;
 
     public static void enableFeedFilter() {
         feedFilterEnabled = true;
@@ -105,6 +106,10 @@ public class SettingsStatus {
 
     public static void enableDiagnostics() {
         diagnosticsEnabled = true;
+    }
+
+    public static void enableBlockAuthor() {
+        blockAuthorEnabled = true;
     }
 
     public static void load() {

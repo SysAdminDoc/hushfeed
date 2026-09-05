@@ -43,3 +43,6 @@ node_modules/
 
 # Local copy of upstream ReVanced sources (do not commit)
 revanced-patches/
+
+# Local working notes
+CLAUDE.md

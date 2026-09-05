@@ -96,6 +96,15 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                     Settings.DISABLE_LONG_PRESS_REPOST
             ));
         }
+        if (SettingsStatus.blockAuthorEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Show block button on videos",
+                    "Add a block button to the video player that blocks the account that posted the "
+                            + "current video in one tap. An undo action is shown after each block.",
+                    Settings.BLOCK_AUTHOR_BUTTON
+            ));
+        }
         if (SettingsStatus.nonPersonalizedSearchEnabled) {
             addPreference(new TogglePreference(
                     context,
