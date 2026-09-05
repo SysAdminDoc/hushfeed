@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Settings that need a restart now save immediately and show a notification instead of a restart dialog.
+
 * Keep all subtitle languages when native metadata supplies a Unicode language name or no language code. Distinct names get distinct filenames.
 
 * Added locale, timezone and native region overrides using the SIM preset. Store-region overrides are separately opt-in. SIM hooks now handle high registers and ignored return values safely.

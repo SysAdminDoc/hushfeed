@@ -172,11 +172,6 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         final var context = getActivity();
         activeFragment = this;
 
-        // Currently no resources can be compiled for TikTok (fails with aapt error).
-        // So all TikTok Strings are hard coded in the extension.
-        restartDialogTitle = "Restart required";
-        restartDialogMessage = "Restart the app for this change to take effect.";
-        restartDialogButtonText = "Restart";
         confirmDialogTitle = "Do you wish to proceed?";
 
         Utils.setIsDarkModeEnabled(isDarkModeEnabled(context));

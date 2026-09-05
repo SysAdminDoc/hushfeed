@@ -52,11 +52,11 @@ public abstract class AbstractPreferenceFragment extends PreferenceFragment {
     private static boolean showingUserDialogMessage;
 
     /**
-     * Confirm and restart dialog button text and title.
+     * Confirmation dialog title.
      * Set by subclasses if Strings cannot be added as a resource.
      */
     @Nullable
-    protected static CharSequence restartDialogTitle, restartDialogMessage, restartDialogButtonText, confirmDialogTitle;
+    protected static CharSequence confirmDialogTitle;
 
     private final SharedPreferences.OnSharedPreferenceChangeListener listener = (sharedPreferences, str) -> {
         try {
@@ -307,31 +307,8 @@ public abstract class AbstractPreferenceFragment extends PreferenceFragment {
 
     public static void showRestartDialog(Context context) {
         Utils.verifyOnMainThread();
-        if (restartDialogTitle == null) {
-            restartDialogTitle = str("morphe_settings_restart_title");
-        }
-        if (restartDialogMessage == null) {
-            restartDialogMessage = str("morphe_settings_restart_dialog_message");
-        }
-        if (restartDialogButtonText == null) {
-            restartDialogButtonText = str("morphe_settings_restart");
-        }
-
-        Pair<Dialog, LinearLayout> dialogPair = CustomDialog.create(
-                context,
-                restartDialogTitle,              // Title.
-                restartDialogMessage,            // Message.
-                null,                            // No EditText.
-                restartDialogButtonText,         // OK button text.
-                () -> Utils.restartApp(context), // OK button action.
-                () -> {},                        // Cancel button action (dismiss only).
-                null,                            // No Neutral button text.
-                null,                            // No Neutral button action.
-                true                             // Dismiss dialog when onNeutralClick.
-        );
-
-        // Show the dialog.
-        dialogPair.first.show();
+        // Keep the existing entry point for callers; saving never prompts or restarts the app.
+        Utils.showToastLong("Saved. Restart TikTok to apply this change.");
     }
 
     @SuppressLint("ResourceType")

@@ -111,7 +111,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 
 <br>
 
-Foldable controls are in App behavior:
+Foldable controls are in App behavior: Settings save immediately. A notification tells you when to restart TikTok.
 
 <img src="assets/foldable-settings.png" alt="Foldable comment settings" width="300" />
 
