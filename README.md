@@ -4,22 +4,24 @@
 
 <p align="center">
   <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-GPLv3-blue.svg" /></a>
+  <a href="CHANGELOG.md"><img alt="version" src="https://img.shields.io/badge/version-0.9.0-6f42c1.svg" /></a>
   <a href="https://github.com/MorpheApp/morphe-cli"><img alt="source" src="https://img.shields.io/badge/source-Morphe-00b894.svg" /></a>
   <a href="https://www.android.com/"><img alt="platform" src="https://img.shields.io/badge/platform-Android-3ddc84.svg" /></a>
   <a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/"><img alt="TikTok 46.2.3" src="https://img.shields.io/badge/TikTok-46.2.3-ff0050.svg" /></a>
 </p>
 
-<p align="center">
-  <a href="https://ko-fi.com/P5P5YOUU7">
-    <img height="42" src="https://storage.ko-fi.com/cdn/kofi2.png?v=3" alt="Support my work on Ko-fi" />
-  </a>
-</p>
-
-<p align="center">
-  <sub><em>If you are using these patches and want to support the work, it helps me keep testing, improving, and keeping the patches maintained.</em></sub>
-</p>
-
 # Metra TikTok Patches
+
+## This fork
+
+This is a private working copy of [icysymmetra/tiktok-patches-for-morphe](https://github.com/icysymmetra/tiktok-patches-for-morphe) with a few patches of my own on top. It builds the same bundle, so everything upstream ships is still here. What's added:
+
+- `Block author button`: one tap blocks whoever posted the current video, with an undo banner. Long press the button to move it. A second button blocks the current sound.
+- `Hide inbox items`: a switch for every row and header control on the Inbox tab, plus a Clear all control for suggested accounts.
+- `Comment tools`: hide comments by keyword or by account, and block a commenter with a two finger hold on their comment.
+- Feed filter switches for paid partnerships, AI generated videos, verified accounts, Series and playlist videos, and a sound blocklist.
+
+Releases are built and versioned by hand here; the upstream release workflow isn't used. The bundle lands in `patches/build/libs/`.
 
 <br>
 
