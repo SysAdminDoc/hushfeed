@@ -60,6 +60,10 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Hide floating promotions` | Removes floating promotional badges, coin icons, and timer banners from the Home feed. |
 | `Hide video overlays` | Hides the "Search this image" prompt over videos and the Live entrance in the top left corner. |
 | `Share sheet tools` | Asks for a second tap before a video is sent to a friend from the share sheet, and hides chosen people or share options, or the whole Send to row. |
+| `Hide feed LIVE button` | Stops the LIVE button at the top left of the feed from being built. Shares its switch with the Live entrance option. |
+| `Hide feed follow button` | Hides the plus button under the creator's avatar on the action rail. |
+| `Hide feed save button` | Hides the save button on the action rail. |
+| `Hide feed search button` | Hides the search button at the top right of the feed. |
 | `Hide inbox items` | Adds a switch for each row and header control on the Inbox tab, plus a Clear all control for suggested accounts. |
 | `Hide quick comment reactions` | Hides TikTok's exposed quick emoji row in supported comment inputs. |
 | `Hold-and-slide 2x lock` | Enables TikTok's native hold, slide down, and release gesture for locking playback at 2x speed. |

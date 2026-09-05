@@ -23,7 +23,11 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
         return SettingsStatus.captchaPopupSuppressionEnabled
                 || SettingsStatus.promotionalBannersEnabled
                 || SettingsStatus.alwaysShowPublishDateEnabled
-                || SettingsStatus.videoOverlaysEnabled;
+                || SettingsStatus.videoOverlaysEnabled
+                || SettingsStatus.hideFeedLiveButtonEnabled
+                || SettingsStatus.hideFeedSearchButtonEnabled
+                || SettingsStatus.hideFeedFollowButtonEnabled
+                || SettingsStatus.hideFeedSaveButtonEnabled;
     }
 
     @Override
@@ -59,11 +63,37 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
                     "Hide the \"Search this image\" prompt TikTok shows over videos when it spots something to shop for.",
                     Settings.HIDE_VISUAL_SEARCH
             ));
+        }
+        if (SettingsStatus.videoOverlaysEnabled || SettingsStatus.hideFeedLiveButtonEnabled) {
             addPreference(new TogglePreference(
                     context,
                     "Hide Live entrance",
                     "Hide the Live button in the top left corner of the feed.",
                     Settings.HIDE_LIVE_ENTRANCE
+            ));
+        }
+        if (SettingsStatus.hideFeedSearchButtonEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide feed search button",
+                    "Hide the search button in the top right corner of the feed.",
+                    Settings.HIDE_FEED_SEARCH_BUTTON
+            ));
+        }
+        if (SettingsStatus.hideFeedFollowButtonEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide feed follow button",
+                    "Hide the plus button under the creator's avatar on the action rail.",
+                    Settings.HIDE_FEED_FOLLOW_BUTTON
+            ));
+        }
+        if (SettingsStatus.hideFeedSaveButtonEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide feed save button",
+                    "Hide the save button on the action rail.",
+                    Settings.HIDE_FEED_SAVE_BUTTON
             ));
         }
     }

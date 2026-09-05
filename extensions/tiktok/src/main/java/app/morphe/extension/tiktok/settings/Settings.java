@@ -156,6 +156,13 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_PLAYLIST_VIDEOS = new BooleanSetting("hide_playlist_videos", FALSE, true);
 
     // Comment tools.
+    // Feed toolbar controls. The LIVE button shares HIDE_LIVE_ENTRANCE with the overlay hider.
+    public static final BooleanSetting HIDE_FEED_FOLLOW_BUTTON =
+            new BooleanSetting("hide_feed_follow_button", FALSE, true);
+    public static final BooleanSetting HIDE_FEED_SAVE_BUTTON =
+            new BooleanSetting("hide_feed_save_button", FALSE, true);
+    public static final BooleanSetting HIDE_FEED_SEARCH_BUTTON =
+            new BooleanSetting("hide_feed_search_button", FALSE, true);
     public static final BooleanSetting HIDE_VISUAL_SEARCH = new BooleanSetting("hide_visual_search", FALSE);
     public static final BooleanSetting HIDE_LIVE_ENTRANCE = new BooleanSetting("hide_live_entrance", FALSE);
     public static final BooleanSetting COMMENT_KEYWORD_FILTER = new BooleanSetting("comment_keyword_filter", FALSE);

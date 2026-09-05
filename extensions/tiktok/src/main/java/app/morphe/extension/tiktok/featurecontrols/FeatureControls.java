@@ -7,6 +7,8 @@ package app.morphe.extension.tiktok.featurecontrols;
 import android.app.Activity;
 import android.content.Intent;
 
+import android.view.View;
+
 import app.morphe.extension.tiktok.settings.Settings;
 
 public final class FeatureControls {
@@ -121,6 +123,26 @@ public final class FeatureControls {
 
     public static boolean overrideHideQuickCommentEmoji(boolean original, int followStatus) {
         return Settings.HIDE_COMMENT_QUICK_REACTIONS.get() || original;
+    }
+
+    public static int hideFeedFollowButtonVisibility(int originalVisibility) {
+        return Settings.HIDE_FEED_FOLLOW_BUTTON.get() ? View.GONE : originalVisibility;
+    }
+
+    public static int hideFeedSaveButtonVisibility(int originalVisibility) {
+        return Settings.HIDE_FEED_SAVE_BUTTON.get() ? View.GONE : originalVisibility;
+    }
+
+    /**
+     * Shares {@code HIDE_LIVE_ENTRANCE} with the video overlay hider, so the switch keeps
+     * its stored value and both mechanisms answer to it.
+     */
+    public static boolean hideFeedLiveButtonEnabled(boolean originalEnabled) {
+        return !Settings.HIDE_LIVE_ENTRANCE.get() && originalEnabled;
+    }
+
+    public static boolean hideFeedSearchButtonEnabled(boolean originalEnabled) {
+        return !Settings.HIDE_FEED_SEARCH_BUTTON.get() && originalEnabled;
     }
 
     public static int overrideLongPressQuickShare(int originalMode) {

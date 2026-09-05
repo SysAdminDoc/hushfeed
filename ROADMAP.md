@@ -65,21 +65,6 @@ with anchors present first, then adaptations, then new builds.
 
 ### P1
 
-- [ ] P1 - Port the four upstream dev feed toolbar hides
-  Why: LIVE (#123), search, follow "+" (#129) and save buttons hidden at the generator or assem
-  level, no per-frame view lookup; retires our `jup` hide in VideoOverlayHider.
-  Evidence: upstream/dev interaction/feedtoolbar/{FeedToolbarHooks,HideFeedLiveButtonPatch,
-  HideFeedSearchButtonPatch}.kt, feedfollowbutton/HideFeedFollowButtonPatch.kt,
-  feedbookmark/HideFeedSaveButtonPatch.kt; anchors LiveIconGenerator.enabled() (classes19, 50),
-  HomePageUIFrameService.getInflatedSearchIcon, FeedAvatarDefaultAssem, VideoFavoriteAssem +
-  "VideoFavoriteAssem showFavoriteState " all present.
-  Touches: new patch files, FeatureControls.java (+4 helpers), Settings.java (+4),
-  SettingsStatus.java, InterfacePreferenceCategory, TikTokPreferenceFragment; remove
-  LIVE_ENTRANCE_ID from feed/VideoOverlayHider.java and migrate `hide_live_entrance`. The follow
-  button patch uses plain `invoke-static {p2}`; switch it to `invoke-static/range { p2 .. p2 }`.
-  Acceptance: each of the four switches removes its button on the next feed page; the Live
-  entrance switch keeps its stored value after the migration.
-  Complexity: S
 - [ ] P1 - Port hxreborn's inbox trio: Hide suggested accounts, Hide inbox stories, Expand activity list
   Why: injector-level hiding covers Inbox, Activity and New followers (#132) with no one-frame
   flash, and Expand activity list replaces the "View all" truncation.

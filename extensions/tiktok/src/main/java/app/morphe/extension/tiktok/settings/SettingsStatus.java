@@ -31,6 +31,10 @@ public class SettingsStatus {
     public static boolean commentToolsEnabled = false;
     public static boolean videoOverlaysEnabled = false;
     public static boolean shareSheetEnabled = false;
+    public static boolean hideFeedFollowButtonEnabled = false;
+    public static boolean hideFeedSaveButtonEnabled = false;
+    public static boolean hideFeedLiveButtonEnabled = false;
+    public static boolean hideFeedSearchButtonEnabled = false;
 
     public static void enableFeedFilter() {
         feedFilterEnabled = true;
@@ -122,6 +126,22 @@ public class SettingsStatus {
 
     public static void enableCommentTools() {
         commentToolsEnabled = true;
+    }
+
+    public static void enableHideFeedFollowButton() {
+        hideFeedFollowButtonEnabled = true;
+    }
+
+    public static void enableHideFeedSaveButton() {
+        hideFeedSaveButtonEnabled = true;
+    }
+
+    public static void enableHideFeedLiveButton() {
+        hideFeedLiveButtonEnabled = true;
+    }
+
+    public static void enableHideFeedSearchButton() {
+        hideFeedSearchButtonEnabled = true;
     }
 
     public static void enableShareSheet() {

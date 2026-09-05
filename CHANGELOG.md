@@ -1,5 +1,9 @@
 ## 0.13.0 (2026-09-05)
 
+### Features
+
+* **feed:** four upstream patches for the feed toolbar: hide the LIVE button, the search button, the follow plus under the avatar, and the save button. The LIVE one shares the existing Live entrance switch and stops the button before it is built
+
 ### Bug Fixes
 
 * **feed:** close the ad delivery gaps upstream found: profile grid videos, the detail page, late insertions, the cache delivery chain, play-lag inserts and reach-bottom cache all run through the filters now
