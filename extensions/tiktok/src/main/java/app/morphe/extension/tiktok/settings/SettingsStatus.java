@@ -30,6 +30,7 @@ public class SettingsStatus {
     public static boolean inboxFilterEnabled = false;
     public static boolean commentToolsEnabled = false;
     public static boolean videoOverlaysEnabled = false;
+    public static boolean shareSheetEnabled = false;
 
     public static void enableFeedFilter() {
         feedFilterEnabled = true;
@@ -121,6 +122,10 @@ public class SettingsStatus {
 
     public static void enableCommentTools() {
         commentToolsEnabled = true;
+    }
+
+    public static void enableShareSheet() {
+        shareSheetEnabled = true;
     }
 
     public static void enableVideoOverlays() {

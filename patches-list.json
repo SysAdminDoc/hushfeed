@@ -1,5 +1,5 @@
 {
-  "version": "v0.10.0",
+  "version": "v0.11.0",
   "appNames": {
     "com.zhiliaoapp.musically": "TikTok"
   },
@@ -62,7 +62,7 @@
     },
     {
       "name": "Comment tools",
-      "description": "Hides comments that contain chosen words or come from chosen accounts, and blocks a commenter with a two finger hold on their comment. Supports TikTok 46.2.3.",
+      "description": "Hides comments that contain chosen words or come from chosen accounts, and puts a one tap block button beside each comment. Supports TikTok 46.2.3.",
       "use": false,
       "dependencies": [
         "BytecodePatch"
@@ -814,6 +814,34 @@
       "name": "Settings",
       "description": "Adds the Metra patches settings menu to TikTok. Supports TikTok 46.2.3.",
       "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Share sheet tools",
+      "description": "Asks for a second tap before a video is sent to a friend from the share sheet, and hides chosen people or share options, or the whole Send to row. Supports TikTok 46.2.3.",
+      "use": false,
       "dependencies": [
         "BytecodePatch"
       ],

@@ -11,6 +11,7 @@ import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -51,6 +52,10 @@ import java.util.WeakHashMap;
  * frame. Feedback (the dimmed row and the undo banner) is drawn in that same window,
  * because the comment panel is not always in the activity's window and anything added to
  * the activity's content root then sits underneath it.
+ *
+ * A cell is bound before it is attached to a window, so at bind time its root view is
+ * just the top of a detached subtree (a LinearLayout on 46.2.3). The layer is therefore
+ * attached from an attach listener, and only to a root whose parent is the window itself.
  */
 public final class CommentTools {
     private static final String BLOCK_GLYPH = "⊘";
@@ -71,6 +76,11 @@ public final class CommentTools {
 
     /** One button layer per window root the comments have been seen in. */
     private static final WeakHashMap<View, ButtonLayer> LAYERS = new WeakHashMap<>();
+
+    /** Cells that already have an attach listener, so each gets exactly one. */
+    private static final WeakHashMap<View, Boolean> ATTACH_HOOKED = new WeakHashMap<>();
+
+    private static boolean warnedNoWindowRoot;
 
     /** Accounts blocked this session, by uid, so a recycled cell shows the right state. */
     private static final Set<String> BLOCKED_UIDS = Collections.synchronizedSet(new HashSet<>());
@@ -100,13 +110,60 @@ public final class CommentTools {
                 CELL_COMMENTS.put(itemView, comment);
             }
 
-            View root = itemView.getRootView();
-            if (root instanceof ViewGroup) {
-                layerFor((ViewGroup) root).requestLayoutPass();
-            }
+            attachWhenReady(itemView);
         } catch (Throwable ex) {
             Logger.printException(() -> "Could not register a comment cell", ex);
         }
+    }
+
+    /**
+     * Binds happen before the cell is attached, and a detached cell's root view is not a
+     * window. Attach the layer now if the cell is already in a window, otherwise once it
+     * gets there. Recycled cells are detached and reattached, so the listener stays on.
+     */
+    private static void attachWhenReady(View cell) {
+        if (cell.isAttachedToWindow()) {
+            attachLayer(cell);
+            return;
+        }
+        synchronized (ATTACH_HOOKED) {
+            if (ATTACH_HOOKED.put(cell, Boolean.TRUE) != null) {
+                return;
+            }
+        }
+        cell.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View view) {
+                attachLayer(view);
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(View view) {
+            }
+        });
+    }
+
+    private static void attachLayer(View cell) {
+        try {
+            View root = cell.getRootView();
+            if (!(root instanceof ViewGroup) || !isWindowRoot(root)) {
+                if (!warnedNoWindowRoot) {
+                    warnedNoWindowRoot = true;
+                    Logger.printInfo(() -> "Comment cell root is not a window: "
+                            + (root == null ? "null" : root.getClass().getName()));
+                }
+                return;
+            }
+            layerFor((ViewGroup) root).requestLayoutPass();
+        } catch (Throwable ex) {
+            Logger.printException(() -> "Could not attach the comment block buttons", ex);
+        }
+    }
+
+    /** The window's decor view is the only view whose parent is not itself a view. */
+    private static boolean isWindowRoot(View view) {
+        ViewParent parent = view.getParent();
+        return parent != null && !(parent instanceof View);
     }
 
     /**
@@ -214,7 +271,8 @@ public final class CommentTools {
             Set<View> live = new HashSet<>();
 
             for (View cell : cells) {
-                if (cell == null || cell.getRootView() != root || !cell.isShown() || cell.getWidth() == 0) {
+                if (cell == null || !cell.isAttachedToWindow() || cell.getRootView() != root
+                        || !cell.isShown() || cell.getWidth() == 0) {
                     continue;
                 }
                 Object comment;

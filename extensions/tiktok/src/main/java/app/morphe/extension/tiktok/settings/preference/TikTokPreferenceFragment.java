@@ -41,6 +41,7 @@ import app.morphe.extension.tiktok.settings.preference.categories.FeedFilterPref
 import app.morphe.extension.tiktok.settings.preference.categories.FeedNavigationPreferenceCategory;
 import app.morphe.extension.tiktok.settings.preference.categories.InboxPreferenceCategory;
 import app.morphe.extension.tiktok.settings.preference.categories.InterfacePreferenceCategory;
+import app.morphe.extension.tiktok.settings.preference.categories.SharePreferenceCategory;
 import app.morphe.extension.tiktok.settings.preference.categories.SimSpoofPreferenceCategory;
 
 @SuppressWarnings("deprecation")
@@ -57,6 +58,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         COMMENTS("Comments and translation", "Auto translate, quick reactions, and copy options."),
         DOWNLOADS("Downloads", "Path, watermark, and offline videos."),
         INBOX("Inbox", "Rows, stories tray, and header controls."),
+        SHARE("Share sheet", "Confirm before sending, and hidden people and options."),
         REGION("Bypass regional restriction", "SIM info, country, and operator."),
         BEHAVIOR("App behavior", "Sharing, playback, and gestures."),
         DIAGNOSTICS("Diagnostics", "Logging, crash capture, and report export.");
@@ -308,6 +310,13 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     Settings.HIDE_INBOX_ACTIVITY_STATUS.get()
             ));
         }
+        if (SettingsStatus.shareSheetEnabled) {
+            addMenu(screen, Section.SHARE, SettingsMenuPreference.Icon.BEHAVIOR, countEnabled(
+                    Settings.SHARE_CONFIRM_SEND.get(),
+                    Settings.HIDE_SHARE_CONTACTS.get(),
+                    !Settings.SHARE_HIDDEN_ITEMS.get().trim().isEmpty()
+            ));
+        }
         if (SettingsStatus.simSpoofEnabled) {
             addMenu(screen, Section.REGION, SettingsMenuPreference.Icon.REGION, countEnabled(
                     Settings.SIM_SPOOF.get()
@@ -382,6 +391,9 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                 break;
             case INBOX:
                 category = new InboxPreferenceCategory(context, screen);
+                break;
+            case SHARE:
+                category = new SharePreferenceCategory(context, screen);
                 break;
             case REGION:
                 category = new SimSpoofPreferenceCategory(context, screen);

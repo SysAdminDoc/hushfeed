@@ -1,3 +1,13 @@
+## 0.11.0 (2026-09-05)
+
+### Features
+
+* **share:** new Share sheet tools patch: a second tap is needed before a video goes to a friend, and people, share targets or actions can be hidden by name, or the whole Send to row
+
+### Bug Fixes
+
+* **comments:** the block button never appeared because a comment cell is bound before it is attached, so its root view was not the window. The button layer now attaches once the cell is in a window
+
 ## 0.10.0 (2026-09-05)
 
 ### Features
