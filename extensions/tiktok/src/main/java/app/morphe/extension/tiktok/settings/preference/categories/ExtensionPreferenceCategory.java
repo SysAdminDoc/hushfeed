@@ -96,6 +96,16 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                     Settings.DISABLE_LONG_PRESS_REPOST
             ));
         }
+        if (SettingsStatus.ghostModeEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Ghost mode",
+                    "Stop TikTok reporting that you viewed a story or a profile, that you are "
+                            + "typing, or that you are online. It cannot undo what the server has "
+                            + "already recorded.",
+                    Settings.GHOST_MODE
+            ));
+        }
         if (SettingsStatus.disableTelemetryEnabled) {
             addPreference(new TogglePreference(
                     context,

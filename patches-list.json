@@ -533,6 +533,34 @@
       "options": []
     },
     {
+      "name": "Ghost mode",
+      "description": "Adds an option to stop TikTok reporting that you viewed a story or a profile, that you are typing, or that you are online. Supports TikTok 46.2.3.",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Hide BdTuring CAPTCHA popups",
       "description": "Hides TikTok's risk control CAPTCHA dialog, which the browsing CAPTCHA patch does not cover. Answers the Hide CAPTCHA popups setting and never touches SMS or two factor verification. A suppressed check can make the action behind it fail silently, so this is off by default. Supports TikTok 46.2.3.",
       "use": false,

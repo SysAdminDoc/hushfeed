@@ -161,6 +161,7 @@ public class Settings extends BaseSettings {
 
     // Comment tools.
     // Feed toolbar controls. The LIVE button shares HIDE_LIVE_ENTRANCE with the overlay hider.
+    public static final BooleanSetting GHOST_MODE = new BooleanSetting("ghost_mode", FALSE);
     public static final BooleanSetting DISABLE_ANALYTICS = new BooleanSetting("disable_analytics", FALSE);
     public static final BooleanSetting HIDE_FEED_FOLLOW_BUTTON =
             new BooleanSetting("hide_feed_follow_button", FALSE, true);

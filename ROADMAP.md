@@ -64,19 +64,6 @@ with anchors present first, then adaptations, then new builds.
 
 ### P1
 
-- [ ] P1 - Ghost mode (no story view, profile view or typing reports)
-  Why: upstream #109, #67, #63 (4 reactions); anchors are real names in 46.2.3.
-  Evidence: others/eduardo3677-ai_tiktok-patches-for-morphe patches/.../ghostmode/{GhostModePatch,
-  Fingerprints}.kt; `/StoryApi;` (7 dex), reportStoryViewed, reportUserInteraction,
-  reportStoryReveal, `/ProfileViewerApiService;`.reportView (classes15, 17),
-  `/TypingStatusSenderTimer;` (classes11), `/IMActiveStatusImpl;` (classes11, 24) present;
-  the obfuscated `LJIILL` presence method is unverified.
-  Touches: new patch and extension class, Settings.java (`ghost_mode`), SettingsStatus.java,
-  a Privacy section in TikTokPreferenceFragment.
-  Acceptance: jadx confirms the matched StoryApi methods have bodies; with the switch on, viewing
-  a friend's story does not mark it viewed on their side (check with a second account) and no
-  typing indicator shows in a DM.
-  Complexity: M
 - [ ] P1 - Hide already seen videos
   Why: unique to BlueDragon; a local watch history that drops rewatched videos from the FYP and
   Follow feeds.

@@ -512,6 +512,9 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         if (SettingsStatus.disableTelemetryEnabled && Settings.DISABLE_ANALYTICS.get()) {
             count++;
         }
+        if (SettingsStatus.ghostModeEnabled && Settings.GHOST_MODE.get()) {
+            count++;
+        }
         return count;
     }
 
