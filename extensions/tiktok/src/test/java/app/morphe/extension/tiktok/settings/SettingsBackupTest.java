@@ -128,6 +128,87 @@ public class SettingsBackupTest {
         assertThrows(java.io.IOException.class, () -> SettingsBackup.read(new ByteArrayInputStream(new byte[]{(byte) 0xc3, 0x28})));
     }
 
+    @Test public void missingSettingsAreRejectedBeforeWritingUndoOrChangingValues() throws Exception {
+        Settings.MAX_VIDEO_SECONDS.save(34);
+        String original = SettingsBackup.create(false);
+        JSONObject empty = new JSONObject(original).put("settings", new JSONObject());
+        JSONObject missing = new JSONObject(original);
+        missing.getJSONObject("settings").remove(Settings.REGION_SPOOF.key);
+        for (String text : new String[]{empty.toString(), missing.toString()}) {
+            assertThrows(Exception.class, () -> SettingsBackup.restore(Utils.getContext(), text, true));
+            assertEquals(original, SettingsBackup.create(false));
+        }
+    }
+
+    @Test public void rollbackStillAttemptsLabWhenOrdinaryPreferenceRecoveryFails() throws Exception {
+        var app = Utils.getContext();
+        FeatureGateLabStore.setMasterEnabled(true);
+        JSONObject next = new JSONObject(SettingsBackup.create(false));
+        next.getJSONObject("settings").put(Settings.REGION_SPOOF.key, true);
+        next.getJSONObject("lab").put("master", false);
+        var original = Setting.preferences.preferences;
+        var normalFailure = new java.util.concurrent.atomic.AtomicBoolean();
+        var labCommits = new java.util.concurrent.atomic.AtomicInteger();
+        var normal = failingCommits(original, normalFailure::get, () -> {});
+        var lab = failingCommits(app.getSharedPreferences("morphe_feature_gate_lab", 0),
+                () -> labCommits.get() == 1, () -> {
+                    if (labCommits.incrementAndGet() == 1) normalFailure.set(true);
+                });
+        var field = app.morphe.extension.shared.settings.preference.SharedPrefCategory.class.getDeclaredField("preferences");
+        field.setAccessible(true);
+        field.set(Setting.preferences, normal);
+        Utils.setContext(new android.content.ContextWrapper(app) {
+            @Override public android.content.SharedPreferences getSharedPreferences(String name, int mode) {
+                return name.equals("morphe_feature_gate_lab") ? lab : super.getSharedPreferences(name, mode);
+            }
+        });
+        try {
+            assertThrows(Exception.class, () -> SettingsBackup.restore(Utils.getContext(), next.toString(), true));
+            assertTrue("Lab recovery must run even after the other store fails", FeatureGateLabStore.masterEnabled());
+            assertTrue(labCommits.get() >= 2);
+        } finally {
+            field.set(Setting.preferences, original);
+            Utils.setContext(app);
+        }
+        SettingsBackup.undo(app);
+        assertFalse(Settings.REGION_SPOOF.get());
+        assertTrue(FeatureGateLabStore.masterEnabled());
+    }
+
+    @Test public void anOlderCompleteInventoryUsesDefaultsForNewerSettings() throws Exception {
+        Settings.MAX_VIDEO_SECONDS.save(75);
+        JSONObject root = new JSONObject(SettingsBackup.create(false));
+        org.json.JSONArray original = root.getJSONArray("setting_keys"), older = new org.json.JSONArray();
+        for (int i = 0; i < original.length(); i++) {
+            if (!original.getString(i).equals(Settings.REGION_SPOOF.key)) older.put(original.get(i));
+        }
+        root.put("setting_keys", older);
+        root.getJSONObject("settings").remove(Settings.REGION_SPOOF.key);
+        Settings.REGION_SPOOF.save(true);
+        Settings.MAX_VIDEO_SECONDS.save(0);
+        SettingsBackup.restore(Utils.getContext(), root.toString(), true);
+        assertFalse(Settings.REGION_SPOOF.get());
+        assertEquals(75, (int) Settings.MAX_VIDEO_SECONDS.get());
+    }
+
+    private static android.content.SharedPreferences failingCommits(android.content.SharedPreferences target,
+            java.util.function.BooleanSupplier fail, Runnable committed) {
+        return (android.content.SharedPreferences) java.lang.reflect.Proxy.newProxyInstance(
+                target.getClass().getClassLoader(), new Class[]{android.content.SharedPreferences.class}, (proxy, method, args) -> {
+                    if (!method.getName().equals("edit")) return method.invoke(target, args);
+                    var editor = target.edit();
+                    return java.lang.reflect.Proxy.newProxyInstance(editor.getClass().getClassLoader(),
+                            new Class[]{android.content.SharedPreferences.Editor.class}, (editorProxy, call, values) -> {
+                                Object result = call.invoke(editor, values);
+                                if (call.getName().equals("commit")) {
+                                    committed.run();
+                                    return !fail.getAsBoolean() && (Boolean) result;
+                                }
+                                return result instanceof android.content.SharedPreferences.Editor ? editorProxy : result;
+                            });
+                });
+    }
+
     @Test public void anUnwritableUndoLocationPreventsAnyChange() throws Exception {
         var file = java.io.File.createTempFile("unwritable-backup", ".tmp", Utils.getContext().getCacheDir());
         var context = new android.content.ContextWrapper(Utils.getContext()) {

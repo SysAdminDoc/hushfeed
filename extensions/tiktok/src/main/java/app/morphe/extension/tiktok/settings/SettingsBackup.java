@@ -33,15 +33,18 @@ public final class SettingsBackup {
     public static String create(boolean defaults) throws JSONException, IOException {
         Settings.REGION_SPOOF.get(); // Initialize the complete settings registry.
         JSONObject values = new JSONObject();
+        JSONArray keys = new JSONArray();
         for (Setting<?> setting : Setting.allLoadedSettings()) {
             if (!included(setting)) continue;
             Object value = defaults ? setting.defaultValue : setting.get();
             values.put(setting.key, value instanceof Enum<?> ? ((Enum<?>) value).name() : value);
+            keys.put(setting.key);
         }
         JSONObject lab = FeatureGateLabStore.exportSettings();
         if (defaults) lab.put("rules", new JSONArray()).put("master", false).put("acknowledged", false);
         String text = new JSONObject().put("format", "metra-settings").put("schema", 1)
                 .put("target", FeatureGateLabStore.TARGET_VERSION).put("settings", values)
+                .put("setting_keys", keys)
                 .put("lab", lab).toString(2);
         if (text.getBytes(StandardCharsets.UTF_8).length > MAX_BYTES) throw new IOException("Backup exceeds 2 MB");
         return text;
@@ -69,7 +72,9 @@ public final class SettingsBackup {
         try {
             apply(next);
         } catch (Exception error) {
-            try { apply(previous); } catch (Exception rollback) { error.addSuppressed(rollback); }
+            try { Setting.saveAll(previous.values); } catch (Exception rollback) { error.addSuppressed(rollback); }
+            try { FeatureGateLabStore.replaceSettings(previous.rules, previous.master, previous.acknowledged); }
+            catch (Exception rollback) { error.addSuppressed(rollback); }
             throw error;
         }
     }
@@ -112,6 +117,15 @@ public final class SettingsBackup {
             throw new JSONException("Unsupported settings backup or TikTok version");
         }
         JSONObject values = root.getJSONObject("settings"), lab = root.getJSONObject("lab");
+        JSONArray required = root.getJSONArray("setting_keys");
+        java.util.Set<String> keys = new java.util.HashSet<>();
+        if (required.length() == 0 || required.length() != values.length()) throw new JSONException("Incomplete settings backup");
+        for (int i = 0; i < required.length(); i++) {
+            Object key = required.get(i);
+            if (!(key instanceof String) || !keys.add((String) key) || !values.has((String) key)) {
+                throw new JSONException("Incomplete settings backup");
+            }
+        }
         Map<Setting<?>, Object> updates = new LinkedHashMap<>();
         for (Setting<?> setting : Setting.allLoadedSettings()) {
             if (!included(setting)) continue;

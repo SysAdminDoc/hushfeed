@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Reject incomplete settings backups using their saved key inventory. Recovery attempts both preference stores independently when a save fails.
+
 * Fixed the shared text importer rejecting complete JSON and partially applying malformed profiles. Fractional or overflowing whole numbers are rejected before preferences change.
 
 * Added settings backup, restore, reset and undo in Diagnostics. Backups include Feature Gate Lab rules and switches. Files are validated before changes, and failed saves attempt to restore the prior values.

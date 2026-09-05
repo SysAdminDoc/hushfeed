@@ -130,6 +130,8 @@ Region spoof requires Override SIM details plus Match locale and timezone to cou
 
 Diagnostics includes Back up settings, Restore settings and Reset settings even without the logging patch. Backups include patch preferences and Feature Gate Lab rules with their enabled state. Choose a JSON file through Android's file picker. Invalid files leave settings unchanged. Restore and reset keep one undo copy inside TikTok; export a backup first if you plan to clear app data or reinstall, since that removes the undo copy too. Restart after restoring or resetting.
 
+Backups record which settings they contain, so missing entries are rejected. A complete backup from an older build uses defaults for controls added later. If saving fails, recovery attempts both preference stores and keeps the undo copy available.
+
 <img src="assets/settings-backup.png" alt="Settings backup, restore, reset and undo controls" width="300" />
 
 ## Add Source
