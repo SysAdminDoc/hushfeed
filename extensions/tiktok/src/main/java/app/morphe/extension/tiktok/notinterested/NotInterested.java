@@ -28,11 +28,14 @@ public final class NotInterested {
             Utils.showToastShort("No video selected");
             return;
         }
+        if (!IN_FLIGHT.compareAndSet(false, true)) return;
+        // The previous worker publishes success before releasing IN_FLIGHT. Check
+        // after acquiring it so a tap racing that completion cannot send twice.
         if (id.equals(lastSubmittedId)) {
+            IN_FLIGHT.set(false);
             Utils.showToastShort("Already marked as not interested");
             return;
         }
-        if (!IN_FLIGHT.compareAndSet(false, true)) return;
         Utils.showToastShort("Sending feedback");
         Utils.runOnBackgroundThread(() -> {
             boolean success = false;
