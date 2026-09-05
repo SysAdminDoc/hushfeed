@@ -96,6 +96,15 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                     Settings.DISABLE_LONG_PRESS_REPOST
             ));
         }
+        if (SettingsStatus.disableTelemetryEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Disable analytics and tracking",
+                    "Stop ByteDance AppLog events, AppsFlyer attribution, Firebase Analytics and "
+                            + "crash reporting from being sent. TikTok's own diagnostics go quiet with them.",
+                    Settings.DISABLE_ANALYTICS
+            ));
+        }
         if (SettingsStatus.blockAuthorEnabled) {
             addPreference(new TogglePreference(
                     context,

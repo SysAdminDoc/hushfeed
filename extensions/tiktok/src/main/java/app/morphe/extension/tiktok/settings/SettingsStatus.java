@@ -34,6 +34,7 @@ public class SettingsStatus {
     public static boolean commentToolsEnabled = false;
     public static boolean videoOverlaysEnabled = false;
     public static boolean shareSheetEnabled = false;
+    public static boolean disableTelemetryEnabled = false;
     public static boolean hideFeedFollowButtonEnabled = false;
     public static boolean hideFeedSaveButtonEnabled = false;
     public static boolean hideFeedLiveButtonEnabled = false;
@@ -141,6 +142,10 @@ public class SettingsStatus {
 
     public static void enableCommentTools() {
         commentToolsEnabled = true;
+    }
+
+    public static void enableDisableTelemetry() {
+        disableTelemetryEnabled = true;
     }
 
     public static void enableHideFeedFollowButton() {

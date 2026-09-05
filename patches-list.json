@@ -282,6 +282,35 @@
       "options": []
     },
     {
+      "name": "Disable telemetry",
+      "description": "Adds an App behavior toggle that stops ByteDance AppLog analytics, AppsFlyer attribution, BDLocation uploads, Firebase Analytics and crash reporting. TikTok's own diagnostics go quiet with them. Off by default. Supports TikTok 46.2.3.",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Downloads",
       "description": "Adds watermark-free downloads, comment sticker saving, configurable folders, and filename templates.",
       "use": true,

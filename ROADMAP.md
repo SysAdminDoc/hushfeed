@@ -65,19 +65,6 @@ with anchors present first, then adaptations, then new builds.
 
 ### P1
 
-- [ ] P1 - Port hxreborn's Disable telemetry
-  Why: upstream #51 (4 reactions); every live anchor is a named SDK class, so it survives TikTok
-  updates.
-  Evidence: others/hxreborn_hxreborn-tiktok-patches patches/.../misc/telemetry/{DisableTelemetryPatch,
-  Fingerprints}.kt (327 lines) + extension telemetry/DisableTelemetryPatch.java; AppLog (12 dex),
-  AppsFlyerLib (6), "XY8Lpakui8g4kBcposRgxA" (classes25), FirebaseAnalytics.setCurrentScreen
-  (classes7), MonitorCrash.reportCustomErr (classes26) present; BDLocationConfig absent and guarded
-  by methodOrNull.
-  Touches: new patch, Settings.java (`disable_analytics`, FALSE), SettingsStatus.java,
-  TikTokPreferenceFragment (Behavior or Diagnostics section).
-  Acceptance: patch applies; with the switch on, logcat shows no AppLog `onEventV3` traffic
-  during a five minute feed session; TikTok still plays and follows.
-  Complexity: S
 - [ ] P1 - Port hxreborn's BdTuring CAPTCHA hook behind our `hide_captcha_popups`
   Why: covers the risk-control dialog our HideCaptchaPopupsPatch misses (upstream #100, #93
   CAPTCHA loops); must stay off by default because a hidden real check makes follows fail.

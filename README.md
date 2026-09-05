@@ -64,6 +64,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Hide feed follow button` | Hides the plus button under the creator's avatar on the action rail. |
 | `Hide feed save button` | Hides the save button on the action rail. |
 | `Hide feed search button` | Hides the search button at the top right of the feed. |
+| `Disable telemetry` | Stops ByteDance AppLog analytics, AppsFlyer attribution, Firebase Analytics and crash reporting from being sent. |
 | `Hide suggested accounts` | Stops the suggested accounts list from being built on the Activity, New followers and Inbox pages. |
 | `Hide inbox stories` | Stops the stories tray at the top of the Inbox from being built. |
 | `Expand activity list` | Shows the whole Activity and New followers lists instead of stopping at a View all button. |
