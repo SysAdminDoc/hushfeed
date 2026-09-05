@@ -275,7 +275,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     Settings.HIDE_TAKO_AI.get()
             ));
         }
-        if (SettingsStatus.captchaPopupSuppressionEnabled
+        if (SettingsStatus.confirmInteractionsEnabled || SettingsStatus.captchaPopupSuppressionEnabled
                 || SettingsStatus.promotionalBannersEnabled
                 || SettingsStatus.alwaysShowPublishDateEnabled
                 || SettingsStatus.videoOverlaysEnabled
@@ -284,6 +284,8 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                 || SettingsStatus.hideFeedFollowButtonEnabled
                 || SettingsStatus.hideFeedSaveButtonEnabled) {
             addMenu(screen, Section.INTERFACE, SettingsMenuPreference.Icon.LAYOUT, countEnabled(
+                    SettingsStatus.confirmInteractionsEnabled && Settings.CONFIRM_FOLLOW.get(),
+                    SettingsStatus.confirmInteractionsEnabled && Settings.CONFIRM_LIKE.get(),
                     SettingsStatus.videoOverlaysEnabled && Settings.HIDE_VISUAL_SEARCH.get(),
                     (SettingsStatus.videoOverlaysEnabled || SettingsStatus.hideFeedLiveButtonEnabled)
                             && Settings.HIDE_LIVE_ENTRANCE.get(),

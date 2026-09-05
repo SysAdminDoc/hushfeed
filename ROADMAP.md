@@ -23,17 +23,6 @@ with anchors present first, then adaptations, then new builds.
 
 ### P2
 
-- [ ] P2 - Confirm before follow and like
-  Why: same accidental-tap problem the share sheet confirm step solves; BHTikTok, BHTikTok++ and
-  the Android port all ship it.
-  Evidence: BandarHL/BHTikTok Tweak.x `like_confirm`, `follow_confirm`; our
-  share/ShareSheetTools.java ConfirmTouchListener; upstream dev
-  interaction/feedfollowbutton/HideFeedFollowButtonPatch.kt locates the follow control.
-  Touches: new patch or an extension of Hide feed follow button, Settings.java, Interface
-  category.
-  Acceptance: first tap on Follow shows the red ring and toast, second tap follows; same for
-  the like heart when enabled.
-  Complexity: M
 - [ ] P2 - Disable double-tap like, optional double-tap opens comments
   Why: accidental likes; FreedomPlus and DouyinEnhancer ship both variants.
   Evidence: `double_click` string present in 9 dex; BlueDragon's gesture remapper identifies the

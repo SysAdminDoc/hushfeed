@@ -20,7 +20,7 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
 
     @Override
     public boolean getSettingsStatus() {
-        return SettingsStatus.captchaPopupSuppressionEnabled
+        return SettingsStatus.confirmInteractionsEnabled || SettingsStatus.captchaPopupSuppressionEnabled
                 || SettingsStatus.promotionalBannersEnabled
                 || SettingsStatus.alwaysShowPublishDateEnabled
                 || SettingsStatus.videoOverlaysEnabled
@@ -32,6 +32,10 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
 
     @Override
     public void addPreferences(Context context) {
+        if (SettingsStatus.confirmInteractionsEnabled) {
+            addPreference(new TogglePreference(context, "Confirm before following", "Tap the feed Follow button twice within four seconds.", Settings.CONFIRM_FOLLOW));
+            addPreference(new TogglePreference(context, "Confirm before liking", "Tap the like heart twice within four seconds. Removing a like stays immediate.", Settings.CONFIRM_LIKE));
+        }
         if (SettingsStatus.promotionalBannersEnabled) {
             addPreference(new TogglePreference(
                     context,

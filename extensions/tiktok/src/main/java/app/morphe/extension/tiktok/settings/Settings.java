@@ -18,6 +18,8 @@ import app.morphe.extension.tiktok.navigation.BottomNavigationTabOptions;
 import app.morphe.extension.tiktok.navigation.NavigationTabOptions;
 
 public class Settings extends BaseSettings {
+    public static final BooleanSetting CONFIRM_FOLLOW = new BooleanSetting("confirm_follow", FALSE);
+    public static final BooleanSetting CONFIRM_LIKE = new BooleanSetting("confirm_like", FALSE);
     public static final StringSetting BLOCKED_CAPTION_WORDS = new StringSetting("blocked_caption_words", "");
     public static final StringSetting BLOCKED_CREATORS = new StringSetting("blocked_creators", "");
     public static final IntegerSetting MAX_VIDEO_SECONDS = new IntegerSetting("max_video_seconds", 0);

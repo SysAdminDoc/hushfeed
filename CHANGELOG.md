@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Optional second-tap protection now guards the feed Follow button and like heart with a red ring and a four-second timeout.
+
 * Feed rules now support caption phrases, exact creator handles or ids, maximum length, promotional music, LIVE replays and views per like. If quality limits reject a whole page, retain its closest eligible video.
 
 * Share sheet tools can hide sharing apps, video actions and the complete Send to row before the panel is built. Hidden names also accept stable action keys.

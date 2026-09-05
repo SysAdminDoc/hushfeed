@@ -129,6 +129,34 @@
       "options": []
     },
     {
+      "name": "Confirm feed interactions",
+      "description": "Adds optional second-tap protection to the feed Follow button and like heart. A red ring marks the armed button.",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Copy comments without username",
       "description": "Copies only the comment text without including the creator's username.",
       "use": true,
