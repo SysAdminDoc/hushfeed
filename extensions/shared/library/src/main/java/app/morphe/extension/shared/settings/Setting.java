@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -528,30 +529,46 @@ public abstract class Setting<T> {
      */
     public static boolean importFromJSON(Context alertDialogContext, String settingsJsonString) {
         try {
-            if (!settingsJsonString.matches("[\\s\\S]*\\{")) {
-                settingsJsonString = '{' + settingsJsonString + '}'; // Restore outer JSON braces
-            }
-            JSONObject json = new JSONObject(settingsJsonString);
+            if (settingsJsonString == null) throw new JSONException("Settings text is missing");
+            String text = settingsJsonString.trim();
+            if (!text.startsWith("{")) text = '{' + text + '}'; // Legacy exports omit braces.
+            JSONTokener reader = new JSONTokener(text);
+            Object decoded = reader.nextValue();
+            if (!(decoded instanceof JSONObject) || reader.nextClean() != 0) throw new JSONException("Invalid settings JSON");
+            JSONObject json = (JSONObject) decoded;
 
             boolean rebootSettingChanged = false;
             int numberOfSettingsImported = 0;
+            Map<Setting<?>, Object> updates = new HashMap<>();
             //noinspection rawtypes
             for (Setting setting : SETTINGS) {
+                if (!setting.includeWithImportExport) continue;
                 String key = setting.getImportExportKey();
                 if (json.has(key)) {
+                    Object raw = json.get(key), fallback = setting.defaultValue;
+                    if ((fallback instanceof Boolean && !(raw instanceof Boolean))
+                            || ((fallback instanceof String || fallback instanceof Enum) && !(raw instanceof String))
+                            || (fallback instanceof Number && !(raw instanceof Number))) {
+                        throw new JSONException("Invalid value for " + key);
+                    }
                     Object value = setting.readFromJSON(json, key);
+                    if ((value instanceof Integer || value instanceof Long)
+                            && new java.math.BigDecimal(raw.toString()).compareTo(new java.math.BigDecimal(value.toString())) != 0) {
+                        throw new JSONException("Invalid whole number for " + key);
+                    }
+                    if (value instanceof Float && !Float.isFinite((Float) value)) throw new JSONException("Invalid number for " + key);
                     if (!setting.get().equals(value)) {
                         rebootSettingChanged |= setting.rebootApp;
-                        //noinspection unchecked
-                        setting.save(value);
+                        updates.put(setting, value);
                     }
                     numberOfSettingsImported++;
-                } else if (setting.includeWithImportExport && !setting.isSetToDefault()) {
+                } else if (!setting.isSetToDefault()) {
                     Logger.printDebug(() -> "Resetting to default: " + setting);
                     rebootSettingChanged |= setting.rebootApp;
-                    setting.resetToDefault();
+                    updates.put(setting, setting.defaultValue);
                 }
             }
+            saveAll(updates);
 
             for (ImportExportCallback callback : importExportCallbacks) {
                 callback.settingsImported(alertDialogContext);
@@ -577,6 +594,7 @@ public abstract class Setting<T> {
             Utils.showToastLong(String.format(toastFormat, ex.getMessage()));
             Logger.printInfo(() -> "", ex);
         } catch (Exception ex) {
+            Utils.showToastLong("Import failed: " + ex.getMessage());
             Logger.printException(() -> "Import failure: " + ex.getMessage(), ex); // Should never happen.
         }
         return false;
