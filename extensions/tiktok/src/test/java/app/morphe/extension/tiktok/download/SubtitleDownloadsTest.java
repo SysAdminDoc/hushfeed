@@ -101,6 +101,34 @@ public class SubtitleDownloadsTest {
             assertTrue(source.delete());
         }
     }
+
+    @Test public void languageIdentitySurvivesUnicodeAndFilenameSanitization() {
+        Track japanese = new Track(null, "vtt", true);
+        japanese.languageName = "日本語";
+        japanese.url = "https://example.com/japanese.vtt";
+        Track japaneseSrt = new Track(null, "srt", false);
+        japaneseSrt.languageName = "日本語";
+        japaneseSrt.url = "https://example.com/japanese.srt";
+        Track korean = new Track(null, "srt", false);
+        korean.languageName = "한국어";
+        korean.url = "https://example.com/korean.srt";
+        Track punctuation = new Track(null, "srt", false);
+        punctuation.languageName = "A.B";
+        Track plain = new Track(null, "srt", false);
+        plain.languageName = "AB";
+        Track unknownOne = new Track(null, "srt", false);
+        unknownOne.url = "https://example.com/unknown-one.srt";
+        Track unknownTwo = new Track(null, "srt", false);
+        unknownTwo.url = "https://example.com/unknown-two.srt";
+        Video video = new Video(japanese, korean, japaneseSrt, punctuation, plain, unknownOne, unknownTwo);
+        var all = SubtitleDownloads.tracks(video, "all", Locale.US);
+        assertEquals(6, all.size());
+        assertEquals(6, all.stream().map(track -> track.language).distinct().count());
+        assertEquals("srt", all.get(0).format);
+        assertEquals("https://example.com/japanese.srt", all.get(0).urls.get(0));
+        assertTrue(all.get(0).original);
+        assertEquals(all.get(0).language, SubtitleDownloads.tracks(video, "original", Locale.US).get(0).language);
+    }
     public static class Provider extends ContentProvider {
         final List<ContentValues> inserted = new ArrayList<>();
         final List<Uri> collections = new ArrayList<>();

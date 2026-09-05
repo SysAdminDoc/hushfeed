@@ -13,9 +13,11 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 final class SubtitleDownloads {
     static final class Track {
@@ -32,6 +34,7 @@ final class SubtitleDownloads {
         Object list = Reflect.readField(model, "captionList");
         if (!(list instanceof List<?>)) return Collections.emptyList();
         LinkedHashMap<String, Track> languages = new LinkedHashMap<>();
+        Set<String> filenames = new HashSet<>();
         for (Object caption : (List<?>) list) {
             String format = Reflect.string(caption, "getFormat", "format");
             if (format == null || !List.of("srt", "webvtt", "vtt", "creator_caption", "json").contains(format)) continue;
@@ -43,14 +46,21 @@ final class SubtitleDownloads {
                 if (mirror instanceof String && ((String) mirror).startsWith("https://") && !urls.contains(mirror)) urls.add((String) mirror);
             }
             if (urls.isEmpty()) continue;
-            String language = Reflect.firstNonBlank(Reflect.string(caption, "getLanguageCode", "languageCode"),
-                    Reflect.string(caption, "getLanguageName", "languageName"), "und").toLowerCase(Locale.ROOT).replace('_', '-');
-            language = language.replaceAll("[^a-z0-9-]", "");
-            if (language.isEmpty()) language = "und";
-            Track old = languages.get(language);
+            String label = Reflect.firstNonBlank(Reflect.string(caption, "getLanguageCode", "languageCode"),
+                    Reflect.string(caption, "getLanguageName", "languageName"));
+            label = label == null ? "" : label.trim().toLowerCase(Locale.ROOT).replace('_', '-');
+            String identity = label.isEmpty() ? "url:" + urls.get(0) : label;
+            Track old = languages.get(identity);
+            String language = old == null ? label.replaceAll("[^\\p{L}\\p{N}-]", "") : old.language;
+            if (old == null) {
+                if (language.isEmpty()) language = "und";
+                String stem = language.substring(0, language.offsetByCodePoints(0, Math.min(48, language.codePointCount(0, language.length()))));
+                language = stem;
+                for (int suffix = 2; !filenames.add(language); suffix++) language = stem + "-" + suffix;
+            }
             boolean original = Boolean.TRUE.equals(Reflect.property(caption, "isOriginalCaption", "isOriginalCaption"));
-            if (old == null || priority(format) < priority(old.format)) languages.put(language, new Track(language, format, urls, original || (old != null && old.original)));
-            else if (original && !old.original) languages.put(language, new Track(language, old.format, old.urls, true));
+            if (old == null || priority(format) < priority(old.format)) languages.put(identity, new Track(language, format, urls, original || (old != null && old.original)));
+            else if (original && !old.original) languages.put(identity, new Track(language, old.format, old.urls, true));
         }
         List<Track> result = new ArrayList<>(languages.values());
         if (result.isEmpty() || "all".equals(choice)) return result;

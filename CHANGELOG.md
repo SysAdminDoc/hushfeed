@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Keep all subtitle languages when native metadata supplies a Unicode language name or no language code. Distinct names get distinct filenames.
+
 * Added locale, timezone and native region overrides using the SIM preset. Store-region overrides are separately opt-in. SIM hooks now handle high registers and ignored return values safely.
 
 * Added an optional side-by-side comment layout for wider windows, with a configurable width threshold.
