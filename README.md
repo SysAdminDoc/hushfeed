@@ -166,6 +166,8 @@ Run the runtime tests, then build the Morphe patch bundle and metadata:
 
 Run these tasks in this order. The Android build finishes with `verifyBundle`, which checks the patch list and all three DEX payloads against the checksum recorded by the Android build. You can also run `./gradlew :patches:verifyBundle` to inspect an existing bundle without rebuilding it.
 
+Runtime tests cover feed marker and sound filters using both getter and field model shapes. Empty metadata and unrelated ids remain eligible; matching markers and sound phrases are rejected by their enabled filters.
+
 The generated bundle is written to:
 
 ```text

@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Added feed filter regression tests for content labels, paid content, verified authors and blocked sounds. They cover empty metadata, independent switches, exact sound ids and case-insensitive sound phrases.
+
 * Inbox system switches now use bound category data in every language, including rows already on screen. Recycled rows recover their original height, and conversation titles do not trigger system filters.
 
 * Added persistent automatic video advance using TikTok's native completion handler, with pause and dialog checks preserved. Disabling the option stops the scrolling it started.
