@@ -11,14 +11,6 @@ requests worth building. P0 is broken, P3 is nice to have.
 - [ ] P3 - Localise the five inbox system labels
   Why: they only match in English.
   Where: InboxFilter.matchesSystemLabel
-- [ ] P2 - Replace the fragment back stack guard in FeedVisibility
-  Why: getSupportFragmentManager cannot be found by reflection on 46.2.3 (logcat: "Fragment
-  back stack not readable"), so backing out of a grid video to its profile still leaves the
-  block button showing until the bottom navigation reappears. Needs a different "page popped"
-  signal: a hook on TikTok's own back handling, or a fingerprint on the detail page's
-  lifecycle method.
-  Where: extensions/tiktok/.../blockauthor/FeedVisibility.java backStackDepth()
-
 ## Research-Driven Additions
 
 From the 2026-09-05 research pass (see RESEARCH.md, gitignored). Candidate patches come from

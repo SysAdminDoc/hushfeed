@@ -54,6 +54,20 @@ val blockAuthorPatch = bytecodePatch(
         // extension calls it by reflection, so without this the patch would install a
         // button that silently fails on a build that reshaped the API.
         BlockServiceFingerprint.method
+
+        val detail = mutableClassDefBy("Lcom/ss/android/ugc/aweme/detail/ui/DetailPageFragment;")
+        val visibility = "Lapp/morphe/extension/tiktok/blockauthor/FeedVisibility;"
+        listOf(
+            Triple("onViewCreated", listOf("Landroid/view/View;", "Landroid/os/Bundle;"), "onDetailView(Ljava/lang/Object;Landroid/view/View;)V"),
+            Triple("onResume", emptyList(), "onDetailResume(Ljava/lang/Object;)V"),
+            Triple("onPause", emptyList(), "onDetailPause(Ljava/lang/Object;)V"),
+            Triple("onDestroyView", emptyList(), "onDetailDestroyed(Ljava/lang/Object;)V"),
+            Triple("setUserVisibleHint", listOf("Z"), "onDetailVisibility(Ljava/lang/Object;Z)V"),
+        ).forEach { (name, parameters, callback) ->
+            val method = detail.methods.single { it.name == name && it.parameterTypes == parameters }
+            val endRegister = if (parameters.isEmpty()) "p0" else "p1"
+            method.addInstruction(0, "invoke-static/range { p0 .. $endRegister }, $visibility->$callback")
+        }
     }
 }
 

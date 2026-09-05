@@ -5,13 +5,13 @@
 package app.morphe.extension.tiktok.blockauthor;
 
 import android.app.Activity;
-import android.os.SystemClock;
 import android.view.View;
 
 import app.morphe.extension.shared.Logger;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * Tells whether the video feed is the screen currently on show.
@@ -24,37 +24,51 @@ import java.lang.reflect.Method;
  * is a reliable and cheap signal. Verified against TikTok 46.2.3, where the bottom
  * navigation ids are o1k Home, o1j Friends, o1g Create, o1l Inbox, o1m Profile.
  */
-final class FeedVisibility {
+public final class FeedVisibility {
     /** Bottom navigation Home tab on TikTok 46.2.3. */
     private static final String HOME_TAB_RESOURCE_NAME = "o1k";
 
     private static WeakReference<View> homeTabReference = new WeakReference<>(null);
     private static volatile boolean warnedMissing;
 
-    /**
-     * When the bottom navigation was last seen disappearing, on the monotonic clock, or
-     * -1 while it is showing.
-     */
-    private static long navHiddenAtMs = -1L;
+    // Fragment instances are weak keys, and values never retain the fragment or its view.
+    // Lifecycle hooks are injected into TikTok's kept DetailPageFragment methods.
+    private static final Map<Object, PageState> DETAIL_PAGES = new WeakHashMap<>();
 
-    /**
-     * A video page that opens from a profile grid or search hides the navigation and
-     * reports its author at about the same moment, in either order. A report this close
-     * to the hide is taken as belonging to the new page rather than the feed behind it.
-     */
-    private static final long REPORT_GRACE_MS = 1_500L;
+    private static final class PageState {
+        WeakReference<View> view = new WeakReference<>(null);
+        boolean resumed;
+        boolean visible = true;
+    }
 
-    /**
-     * Fragment back stack depth when the feed last reported an author, or -1 if unknown.
-     * Backing out of a video opened from a profile grid pops that page, which changes the
-     * depth while the navigation stays hidden and the last report stays recent. Comparing
-     * depths is what tells that state from the video page itself.
-     */
-    private static volatile int depthAtReport = -1;
+    public static void onDetailView(Object page, View view) {
+        DETAIL_PAGES.computeIfAbsent(page, ignored -> new PageState()).view = new WeakReference<>(view);
+    }
 
-    private static volatile Method fragmentManagerMethod;
-    private static volatile Method backStackCountMethod;
-    private static volatile boolean stackUnavailable;
+    public static void onDetailResume(Object page) {
+        DETAIL_PAGES.computeIfAbsent(page, ignored -> new PageState()).resumed = true;
+    }
+
+    public static void onDetailPause(Object page) {
+        PageState state = DETAIL_PAGES.get(page);
+        if (state != null) state.resumed = false;
+    }
+
+    public static void onDetailVisibility(Object page, boolean visible) {
+        DETAIL_PAGES.computeIfAbsent(page, ignored -> new PageState()).visible = visible;
+    }
+
+    public static void onDetailDestroyed(Object page) {
+        DETAIL_PAGES.remove(page);
+    }
+
+    static boolean isDetailVisible() {
+        for (PageState state : DETAIL_PAGES.values()) {
+            View view = state.view.get();
+            if (state.resumed && state.visible && view != null && view.isShown()) return true;
+        }
+        return false;
+    }
 
     private FeedVisibility() {
     }
@@ -68,66 +82,8 @@ final class FeedVisibility {
         if (homeTab == null) {
             return true;
         }
-        if (homeTab.isShown()) {
-            navHiddenAtMs = -1L;
-            return homeTab.isSelected();
-        }
-
-        // The bottom navigation is hidden. That is either a profile page pushed over the
-        // feed, which should hide the button, or a video page opened from a profile grid
-        // or search, which should keep it. Only the video page reports an author after
-        // the navigation goes, so the order of those two events tells them apart.
-        if (navHiddenAtMs < 0) {
-            navHiddenAtMs = SystemClock.elapsedRealtime();
-        }
-        if (CurrentVideoAuthor.lastReportMs() < navHiddenAtMs - REPORT_GRACE_MS) {
-            return false;
-        }
-
-        // The report is recent enough, but the page that made it may have been popped
-        // since, with the navigation still hidden behind whatever is left.
-        int depthNow = backStackDepth(activity);
-        int depthThen = depthAtReport;
-        return depthNow < 0 || depthThen < 0 || depthNow == depthThen;
-    }
-
-    /** Called by CurrentVideoAuthor whenever the feed reports an item. */
-    static void noteReport(Activity activity) {
-        depthAtReport = activity == null ? -1 : backStackDepth(activity);
-    }
-
-    /**
-     * @return the AndroidX fragment back stack depth, or -1 when it cannot be read. The
-     *         fragment classes are not on the extension's compile path, so this goes
-     *         through reflection on real, unobfuscated AndroidX method names.
-     */
-    private static int backStackDepth(Activity activity) {
-        if (stackUnavailable) {
-            return -1;
-        }
-        try {
-            Method managerMethod = fragmentManagerMethod;
-            if (managerMethod == null) {
-                managerMethod = activity.getClass().getMethod("getSupportFragmentManager");
-                fragmentManagerMethod = managerMethod;
-            }
-            Object manager = managerMethod.invoke(activity);
-            if (manager == null) {
-                return -1;
-            }
-
-            Method countMethod = backStackCountMethod;
-            if (countMethod == null) {
-                countMethod = manager.getClass().getMethod("getBackStackEntryCount");
-                backStackCountMethod = countMethod;
-            }
-            Object count = countMethod.invoke(manager);
-            return count instanceof Integer ? (Integer) count : -1;
-        } catch (Throwable ex) {
-            stackUnavailable = true;
-            Logger.printInfo(() -> "Fragment back stack not readable; page pops will not hide the block button");
-            return -1;
-        }
+        if (homeTab.isShown()) return homeTab.isSelected();
+        return isDetailVisible();
     }
 
     private static View homeTab(Activity activity) {

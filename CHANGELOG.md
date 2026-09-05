@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Feed overlay controls now follow the detail page lifecycle and disappear when a grid video is closed.
+
 * AMOLED dark theme adds an optional black background palette with a patcher color picker.
 
 * **feed:** add a Not interested button beside the block control. It uses TikTok's own service and reports success only when the response says the feedback was accepted.

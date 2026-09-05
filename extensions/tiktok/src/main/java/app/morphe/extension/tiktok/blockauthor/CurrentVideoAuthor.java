@@ -4,10 +4,7 @@
  */
 package app.morphe.extension.tiktok.blockauthor;
 
-import android.os.SystemClock;
-
 import app.morphe.extension.shared.Logger;
-import app.morphe.extension.shared.Utils;
 
 /**
  * Holds the author of the video that is currently on screen.
@@ -19,9 +16,6 @@ public final class CurrentVideoAuthor {
     private static volatile VideoAuthor author;
     private static volatile Object currentAweme;
 
-    /** When the feed last reported an item, on the monotonic clock. Read by FeedVisibility. */
-    private static volatile long lastReportMs;
-
     private CurrentVideoAuthor() {
     }
 
@@ -29,9 +23,6 @@ public final class CurrentVideoAuthor {
      * @param videoItemParams a {@code com.ss.android.ugc.aweme.feed.model.VideoItemParams}
      */
     static void update(Object videoItemParams) {
-        lastReportMs = SystemClock.elapsedRealtime();
-        FeedVisibility.noteReport(Utils.getActivity());
-
         VideoAuthor parsed = parse(videoItemParams);
         if (parsed == null || !parsed.isUsable()) {
             currentAweme = null;
@@ -68,11 +59,6 @@ public final class CurrentVideoAuthor {
 
     public static Object getAweme() {
         return currentAweme;
-    }
-
-    /** @return {@link SystemClock#elapsedRealtime()} of the most recent feed report, or 0. */
-    static long lastReportMs() {
-        return lastReportMs;
     }
 
     private static VideoAuthor parse(Object videoItemParams) {
