@@ -11,6 +11,7 @@ import android.preference.PreferenceScreen;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.DownloadPathPreference;
+import app.morphe.extension.tiktok.settings.preference.ChoicePreference;
 import app.morphe.extension.tiktok.settings.preference.InputTextPreference;
 import app.morphe.extension.tiktok.settings.preference.NumberInputPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
@@ -26,11 +27,18 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
 
     @Override
     public boolean getSettingsStatus() {
-        return SettingsStatus.downloadEnabled;
+        return SettingsStatus.downloadEnabled || SettingsStatus.advancedDownloadsEnabled;
     }
 
     @Override
     public void addPreferences(Context context) {
+        if (SettingsStatus.advancedDownloadsEnabled) {
+            addPreference(new ChoicePreference(context, "Video download quality", Settings.DOWNLOAD_VIDEO_QUALITY,
+                    new String[]{"Automatic", "Highest", "Lowest", "1080p", "720p", "540p", "480p", "360p"},
+                    new String[]{"auto", "highest", "lowest", "1080", "720", "540", "480", "360"}));
+            addPreference(new TogglePreference(context, "Download original photos",
+                    "Save every photo in the post directly from its source URL, without rendering it again.", Settings.DOWNLOAD_ORIGINAL_PHOTOS));
+        }
         addPreference(new DownloadPathPreference(
                 context,
                 "Video destination",
@@ -43,7 +51,7 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
                 Settings.DOWNLOAD_PHOTO_PATH,
                 DownloadDestination.Kind.PHOTO
         ));
-        addPreference(new DownloadPathPreference(
+        if (SettingsStatus.downloadEnabled) addPreference(new DownloadPathPreference(
                 context,
                 "Sticker destination",
                 Settings.DOWNLOAD_STICKER_PATH,
@@ -61,6 +69,7 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
                 "Tokens: {creator}, {date}, {video_id}, {index}. The file extension is kept automatically.",
                 Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE
         ));
+        if (!SettingsStatus.downloadEnabled) return;
         addPreference(new InputTextPreference(
                 context,
                 "Comment media filename",
@@ -90,4 +99,3 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
 
     }
 }
-

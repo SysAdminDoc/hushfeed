@@ -6,6 +6,8 @@
 package app.morphe.extension.tiktok.settings;
 
 public class SettingsStatus {
+    public static boolean advancedDownloadsEnabled;
+    public static void enableAdvancedDownloads() { advancedDownloadsEnabled = true; }
     public static boolean doubleTapEnabled;
     public static void enableDoubleTap() { doubleTapEnabled = true; }
     public static boolean confirmInteractionsEnabled;

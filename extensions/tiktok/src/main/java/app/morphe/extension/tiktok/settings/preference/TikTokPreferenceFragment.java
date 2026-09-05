@@ -309,10 +309,12 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     SettingsStatus.copyCommentsWithoutUsernameEnabled && Settings.COPY_COMMENTS_WITHOUT_USERNAME.get()
             ));
         }
-        if (SettingsStatus.downloadEnabled) {
+        if (SettingsStatus.downloadEnabled || SettingsStatus.advancedDownloadsEnabled) {
             addMenu(screen, Section.DOWNLOADS, SettingsMenuPreference.Icon.DOWNLOADS, countEnabled(
-                    Settings.DOWNLOAD_WATERMARK.get(),
-                    Settings.CUSTOM_OFFLINE_VIDEOS.get()
+                    SettingsStatus.advancedDownloadsEnabled && !"auto".equals(Settings.DOWNLOAD_VIDEO_QUALITY.get()),
+                    SettingsStatus.advancedDownloadsEnabled && Settings.DOWNLOAD_ORIGINAL_PHOTOS.get(),
+                    SettingsStatus.downloadEnabled && Settings.DOWNLOAD_WATERMARK.get(),
+                    SettingsStatus.downloadEnabled && Settings.CUSTOM_OFFLINE_VIDEOS.get()
             ));
         }
         if (SettingsStatus.inboxFilterEnabled

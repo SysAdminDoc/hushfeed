@@ -23,19 +23,6 @@ with anchors present first, then adaptations, then new builds.
 
 ### P2
 
-- [ ] P2 - Download quality selector and original photo downloader
-  Why: force the highest gear or a target height for saves (#146 in spirit), and save Photo
-  Mode originals instead of TikTok's rendered copies.
-  Evidence: others/BlueDragon4251_tiktok-patches-for-morphe interaction/downloads/
-  {AdvancedDownloadsPatch,OriginalPhotoModeDownloaderPatch}.kt, extension
-  download/DownloadQualitySelector.java (288 lines, reflective), OriginalPhotoModeDownloader.java
-  (516); `getBitRate`, `gearName`, `qualityType` present; our DownloadSuccessCoroutineFingerprint
-  is the same hook site.
-  Touches: download/DownloadsPatch.java (`select()` call in patchVideoObject), one invoke at the
-  download-success site, Settings.java, DownloadsPreferenceCategory.
-  Acceptance: a save with "highest" picks the largest gear (compare file size to auto); a Photo
-  Mode save writes the origin image URLs.
-  Complexity: M
 - [ ] P2 - Video quality selector for playback
   Why: upstream #146 and ReVanced #6713 (11 comments); mobile-data quality control.
   Evidence: others/eduardo3677-ai_tiktok-patches-for-morphe videoquality/ (scoring table is

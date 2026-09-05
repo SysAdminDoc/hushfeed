@@ -45,6 +45,34 @@
       ]
     },
     {
+      "name": "Advanced downloads",
+      "description": "Adds download quality choices and saves Photo Mode images directly from their source URLs.",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Always show publish date",
       "description": "Always shows the publish date in video author information. Thanks to lyyako for the original implementation.",
       "use": true,

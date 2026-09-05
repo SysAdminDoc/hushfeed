@@ -124,6 +124,29 @@ public final class DownloadFilenameFormatter {
         return result.getName();
     }
 
+    static String formatOriginalPhotoName(Object aweme, int index, String extension) {
+        return formatSourceName(aweme, index, extension, true);
+    }
+
+    static String formatSelectedVideoName(Object aweme) {
+        return formatSourceName(aweme, 1, "mp4", false);
+    }
+
+    private static String formatSourceName(Object aweme, int index, String extension, boolean photo) {
+        Object author = invoke(aweme, "getAuthor");
+        String creator = firstNonBlank(invokeString(author, "getUniqueId"), invokeString(author, "getNickname"), "unknown");
+        String id = firstNonBlank(invokeString(aweme, "getAid"), "unknown");
+        String template = photo ? Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.get() : Settings.DOWNLOAD_VIDEO_FILENAME_TEMPLATE.get();
+        if (template == null || template.trim().isEmpty()) template = "{creator}_{date}_{video_id}" + (photo ? "_{index}" : "");
+        String base = template.replace("{creator}", sanitizeToken(creator))
+                .replace("{date}", formatDate(readCreateTime(aweme)))
+                .replace("{video_id}", sanitizeToken(id)).replace("{index}", String.valueOf(index));
+        if (photo && !template.contains("{index}")) base += "_" + index;
+        base = trimToLength(sanitizeBaseName(base), MAX_BASENAME_LENGTH);
+        if (base.isEmpty()) base = photo ? "original_photo_" + index : "video";
+        return base + "." + sanitizeExtension(extension);
+    }
+
     private static File resolveTarget(
             File original,
             String template,

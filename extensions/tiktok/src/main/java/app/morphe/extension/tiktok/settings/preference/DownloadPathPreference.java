@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.DialogPreference;
 import android.text.Editable;
 import android.text.InputType;
@@ -43,7 +42,7 @@ public class DownloadPathPreference extends DialogPreference {
         super(context);
         this.kind = kind;
         setTitle(title);
-        setSummary(Environment.getExternalStorageDirectory().getPath() + "/" + setting.get());
+        setSummary(setting.get());
         setKey(setting.key);
         setValue(setting.get());
     }
@@ -54,7 +53,7 @@ public class DownloadPathPreference extends DialogPreference {
 
     public void setValue(String value) {
         String normalizedValue = normalizePath(value);
-        setSummary(Environment.getExternalStorageDirectory().getPath() + "/" + normalizedValue);
+        setSummary(normalizedValue);
         final boolean changed = !TextUtils.equals(mValue, normalizedValue);
         if (changed || !mValueSet) {
             mValue = normalizedValue;
@@ -179,4 +178,3 @@ public class DownloadPathPreference extends DialogPreference {
         return DownloadDestination.resolve(path, kind);
     }
 }
-
