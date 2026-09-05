@@ -128,6 +128,10 @@ Region spoof requires Override SIM details plus Match locale and timezone to cou
 
 <img src="assets/region-settings.png" alt="Country and region settings" width="300" />
 
+Diagnostics includes Back up settings, Restore settings and Reset settings even without the logging patch. Backups include patch preferences and Feature Gate Lab rules with their enabled state. Choose a JSON file through Android's file picker. Invalid files leave settings unchanged. Restore and reset keep one undo copy inside TikTok; export a backup first if you plan to clear app data or reinstall, since that removes the undo copy too. Restart after restoring or resetting.
+
+<img src="assets/settings-backup.png" alt="Settings backup, restore, reset and undo controls" width="300" />
+
 ## Add Source
 
 Open this link on the Android device where Morphe is installed:

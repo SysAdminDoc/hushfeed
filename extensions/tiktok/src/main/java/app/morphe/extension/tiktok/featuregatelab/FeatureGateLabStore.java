@@ -173,6 +173,59 @@ public final class FeatureGateLabStore {
         return root.toString(2);
     }
 
+    public static JSONObject exportSettings() throws JSONException {
+        return new JSONObject(exportProfile()).put("master", masterEnabled())
+                .put("acknowledged", warningAcknowledged());
+    }
+
+    /** Decode the entire backup before any setting or rule is changed. */
+    public static List<Rule> parseSettings(JSONObject root) throws JSONException {
+        if (!Integer.valueOf(1).equals(root.get("schema")) || !TARGET_VERSION.equals(root.optString("tiktok_version"))
+                || !(root.get("master") instanceof Boolean)
+                || !(root.get("acknowledged") instanceof Boolean)) {
+            throw new JSONException("Invalid Lab backup or TikTok version");
+        }
+        JSONArray items = root.getJSONArray("rules");
+        List<Rule> rules = new ArrayList<>();
+        java.util.Set<String> ids = new java.util.HashSet<>();
+        for (int i = 0; i < items.length(); i++) {
+            JSONObject item = items.getJSONObject(i);
+            for (String field : new String[]{"manager", "key", "type", "value"}) {
+                if (!(item.get(field) instanceof String)) throw new JSONException("Invalid Lab " + field);
+            }
+            String manager = item.getString("manager"), key = item.getString("key");
+            String type = normalizeType(item.getString("type")), value = item.getString("value");
+            String id = idFor(manager, key, type);
+            if (key.isEmpty() || !(item.get("force") instanceof Boolean) || !ids.add(id)
+                    || validateValue(type, value) != null) throw new JSONException("Invalid Lab rule: " + key);
+            rules.add(new Rule(id, manager, key, type, value, item.getBoolean("force"), System.currentTimeMillis()));
+        }
+        return rules;
+    }
+
+    /** Replace configuration only; captured diagnostics are retained. Call on a worker thread. */
+    public static void replaceSettings(List<Rule> rules, boolean master, boolean acknowledged) throws java.io.IOException {
+        SharedPreferences prefs = prefs();
+        if (prefs == null) throw new java.io.IOException("Lab storage unavailable");
+        SharedPreferences.Editor editor = prefs.edit();
+        for (String id : ruleIds(prefs)) removeRuleFields(editor, id);
+        List<String> ids = new ArrayList<>();
+        for (Rule rule : rules) {
+            ids.add(rule.id);
+            String prefix = "rule." + rule.id + ".";
+            editor.putString(prefix + "manager", rule.manager).putString(prefix + "key", rule.key)
+                    .putString(prefix + "type", rule.type).putString(prefix + "value", rule.value)
+                    .putBoolean(prefix + "enabled", rule.enabled).putLong(prefix + "updated", rule.updatedAtMs);
+        }
+        boolean saved = editor.putString(RULE_IDS_KEY, join(ids)).putBoolean(MASTER_KEY, master)
+                .putBoolean(WARNING_ACK_KEY, acknowledged).putBoolean(MIGRATION_NOTICE_KEY, false)
+                .putString(STORED_TARGET_VERSION_KEY, TARGET_VERSION).commit();
+        FeatureGateLabRuntime.clearTriggered();
+        FeatureGateLabRuntime.reloadRules();
+        FeatureGateLabSession.markRestartNeeded();
+        if (!saved) throw new java.io.IOException("Could not save Lab settings");
+    }
+
     public static ImportReview reviewProfile(String text, Map<String, FeatureGateCatalog.Entry> catalog) throws JSONException {
         JSONObject root = new JSONObject(text);
         String version = root.optString("tiktok_version", "");

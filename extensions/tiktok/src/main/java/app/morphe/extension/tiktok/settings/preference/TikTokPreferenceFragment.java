@@ -63,7 +63,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         SHARE("Share sheet", "Confirm before sending, and hidden people and options."),
         REGION("Region settings", "Country, operator, locale and timezone."),
         BEHAVIOR("App behavior", "Sharing, playback, and gestures."),
-        DIAGNOSTICS("Diagnostics", "Logging, crash capture, and report export.");
+        DIAGNOSTICS("Diagnostics", "Settings backup and diagnostic reports.");
 
         final String title;
         final String description;
@@ -386,12 +386,10 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             screen.addPreference(new FeatureGateRecorderPreference(context));
         }
 
-        if (SettingsStatus.diagnosticsEnabled) {
-            addMenu(screen, Section.DIAGNOSTICS, SettingsMenuPreference.Icon.DIAGNOSTICS, countEnabled(
-                    BaseSettings.DEBUG.get(),
-                    BaseSettings.CAPTURE_JAVA_CRASHES.get()
-            ));
-        }
+        addMenu(screen, Section.DIAGNOSTICS, SettingsMenuPreference.Icon.DIAGNOSTICS, countEnabled(
+                SettingsStatus.diagnosticsEnabled && BaseSettings.DEBUG.get(),
+                SettingsStatus.diagnosticsEnabled && BaseSettings.CAPTURE_JAVA_CRASHES.get()
+        ));
 
         screen.addPreference(new MorpheTikTokAboutPreference(context));
     }
@@ -457,7 +455,10 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                 break;
         }
         flattenCategory(screen, category);
+        if (section == Section.DIAGNOSTICS) SettingsBackupPreference.addTo(this, screen);
     }
+
+    void refreshBackupSettings() { updateUIToSettingValues(); }
 
     private static void flattenCategory(PreferenceScreen screen, PreferenceCategory category) {
         if (category == null) {
@@ -582,6 +583,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (SettingsBackupPreference.onResult(this, requestCode, resultCode, data)) return;
         if (requestCode != REQUEST_DOWNLOAD_PATH_FOLDER) {
             return;
         }

@@ -387,6 +387,40 @@ public abstract class Setting<T> {
         return defaultValue;
     }
 
+    /** Apply a validated batch in one preference transaction. Call on a worker thread. */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static synchronized void saveAll(Map<Setting<?>, Object> updates) throws java.io.IOException {
+        Map<Setting<?>, Object> previous = new HashMap<>();
+        for (var entry : updates.entrySet()) {
+            Setting setting = entry.getKey();
+            Object next = entry.getValue();
+            Class<?> type = setting.defaultValue instanceof Enum
+                    ? ((Enum) setting.defaultValue).getDeclaringClass() : setting.defaultValue.getClass();
+            if (next == null || !type.isInstance(next)) {
+                throw new IllegalArgumentException("Invalid value for " + setting.key);
+            }
+            previous.put(setting, setting.get());
+        }
+        if (!writeBatch(updates)) {
+            boolean restored = writeBatch(previous);
+            throw new java.io.IOException(restored ? "Could not save settings" : "Could not save settings or roll back; use Undo");
+        }
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static boolean writeBatch(Map<Setting<?>, Object> values) {
+        var editor = preferences.preferences.edit();
+        for (var entry : values.entrySet()) {
+            Setting setting = entry.getKey();
+            Object next = entry.getValue();
+            setting.value = next;
+            if (setting.defaultValue.equals(next)) editor.remove(setting.key);
+            else if (next instanceof Boolean) editor.putBoolean(setting.key, (Boolean) next);
+            else editor.putString(setting.key, next instanceof Enum ? ((Enum) next).name() : next.toString());
+        }
+        return editor.commit();
+    }
+
     /**
      * @return if this setting can be configured and used.
      */
