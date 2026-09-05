@@ -25,6 +25,7 @@ import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.feedfilter.SoundIdentity;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
+import app.morphe.extension.tiktok.notinterested.NotInterested;
 
 import java.lang.ref.WeakReference;
 
@@ -51,6 +52,7 @@ public final class BlockAuthorOverlay {
 
     private static WeakReference<View> buttonReference = new WeakReference<>(null);
     private static WeakReference<View> soundButtonReference = new WeakReference<>(null);
+    private static WeakReference<View> notInterestedReference = new WeakReference<>(null);
     private static WeakReference<ViewGroup> rootReference = new WeakReference<>(null);
     private static ViewTreeObserver.OnGlobalLayoutListener visibilityListener;
     private static WeakReference<View> undoReference = new WeakReference<>(null);
@@ -68,7 +70,7 @@ public final class BlockAuthorOverlay {
 
     /** @param author the new current author, or null when the current item has none. */
     static void onAuthorChanged(VideoAuthor author) {
-        if (!Settings.BLOCK_AUTHOR_BUTTON.get()) {
+        if (!Settings.BLOCK_AUTHOR_BUTTON.get() && !notInterestedEnabled()) {
             Utils.runOnMainThread(BlockAuthorOverlay::detach);
             return;
         }
@@ -90,7 +92,7 @@ public final class BlockAuthorOverlay {
         if (button == null) {
             return;
         }
-        int wanted = visible ? View.VISIBLE : View.GONE;
+        int wanted = visible && Settings.BLOCK_AUTHOR_BUTTON.get() ? View.VISIBLE : View.GONE;
         if (button.getVisibility() != wanted) {
             button.setVisibility(wanted);
             if (!visible) {
@@ -100,13 +102,15 @@ public final class BlockAuthorOverlay {
         View soundButton = soundButtonReference.get();
         if (soundButton != null) {
             // The sound button needs a sound to act on, and a feed filter to act through.
-            boolean soundWanted = visible && SettingsStatus.feedFilterEnabled
+            boolean soundWanted = visible && Settings.BLOCK_AUTHOR_BUTTON.get() && SettingsStatus.feedFilterEnabled
                     && CurrentVideoSound.get() != null && CurrentVideoSound.get().isUsable();
             int soundVisibility = soundWanted ? View.VISIBLE : View.GONE;
             if (soundButton.getVisibility() != soundVisibility) {
                 soundButton.setVisibility(soundVisibility);
             }
         }
+        View feedback = notInterestedReference.get();
+        if (feedback != null) feedback.setVisibility(visible && notInterestedEnabled() ? View.VISIBLE : View.GONE);
     }
 
     /**
@@ -135,7 +139,7 @@ public final class BlockAuthorOverlay {
 
             View existing = buttonReference.get();
             if (existing != null && existing.getParent() == root) {
-                existing.setVisibility(View.VISIBLE);
+                syncVisibility();
                 return;
             }
 
@@ -152,6 +156,10 @@ public final class BlockAuthorOverlay {
             soundButton.setLayoutParams(new FrameLayout.LayoutParams(size, size, Gravity.TOP | Gravity.START));
             root.addView(soundButton);
             soundButtonReference = new WeakReference<>(soundButton);
+            View feedback = createNotInterestedButton(activity);
+            feedback.setLayoutParams(new FrameLayout.LayoutParams(size, size, Gravity.TOP | Gravity.START));
+            root.addView(feedback);
+            notInterestedReference = new WeakReference<>(feedback);
 
             // The root has no measured size until it lays out, so the saved fraction can
             // only be turned into margins once dimensions are known.
@@ -198,6 +206,11 @@ public final class BlockAuthorOverlay {
             ((ViewGroup) soundButton.getParent()).removeView(soundButton);
         }
         soundButtonReference = new WeakReference<>(null);
+        View feedback = notInterestedReference.get();
+        if (feedback != null && feedback.getParent() instanceof ViewGroup) {
+            ((ViewGroup) feedback.getParent()).removeView(feedback);
+        }
+        notInterestedReference = new WeakReference<>(null);
         dismissUndo();
     }
 
@@ -216,6 +229,26 @@ public final class BlockAuthorOverlay {
         button.setBackground(background);
 
         button.setOnClickListener(view -> onBlockSoundTapped());
+        return button;
+    }
+
+    private static boolean notInterestedEnabled() {
+        return SettingsStatus.notInterestedEnabled && Settings.NOT_INTERESTED_BUTTON.get();
+    }
+
+    private static View createNotInterestedButton(Activity activity) {
+        TextView button = new TextView(activity);
+        button.setText("-");
+        button.setTextColor(Color.WHITE);
+        button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
+        button.setGravity(Gravity.CENTER);
+        button.setContentDescription("Not interested in this video");
+        GradientDrawable background = new GradientDrawable();
+        background.setColor(Color.argb(180, 0, 0, 0));
+        background.setCornerRadius(dp(activity, 8));
+        background.setStroke(dp(activity, 1), Color.argb(90, 255, 255, 255));
+        button.setBackground(background);
+        button.setOnClickListener(view -> NotInterested.submit());
         return button;
     }
 
@@ -263,6 +296,15 @@ public final class BlockAuthorOverlay {
         soundParams.leftMargin = blockParams.leftMargin;
         soundParams.topMargin = Math.min(top, maxTop);
         soundButton.setLayoutParams(soundParams);
+        View feedback = notInterestedReference.get();
+        if (feedback != null && feedback.getParent() == parent) {
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) feedback.getLayoutParams();
+            int left = blockParams.leftMargin - size - gap;
+            if (left < 0) left = blockParams.leftMargin + size + gap;
+            params.leftMargin = Math.max(0, Math.min(left, parent.getWidth() - size));
+            params.topMargin = blockParams.topMargin;
+            feedback.setLayoutParams(params);
+        }
     }
 
     private static View createButton(Activity activity) {

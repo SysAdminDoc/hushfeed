@@ -1,5 +1,7 @@
 ## Unreleased
 
+* **feed:** add a Not interested button beside the block control. It uses TikTok's own service and reports success only when the response says the feedback was accepted.
+
 * Inbox: filter New followers, Activity and Tako in the notice model before rows are built. The switches work regardless of the interface language.
 
 * **privacy:** require all story, profile and typing hooks. Remove the unsupported online-status claim and describe the Firebase screen hook precisely. Seen history now clears reliably, retains at most 10,000 videos and rejects the video just watched on refreshed pages.

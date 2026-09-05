@@ -27,6 +27,11 @@ public class SettingsStatus {
     public static boolean alwaysShowPublishDateEnabled = false;
     public static boolean diagnosticsEnabled = false;
     public static boolean blockAuthorEnabled = false;
+    public static boolean notInterestedEnabled = false;
+
+    public static void enableNotInterested() {
+        notInterestedEnabled = true;
+    }
     public static boolean inboxFilterEnabled = false;
     public static boolean hideSuggestedAccountsEnabled = false;
     public static boolean hideInboxStoriesEnabled = false;
@@ -185,4 +190,3 @@ public class SettingsStatus {
     public static void load() {
     }
 }
-

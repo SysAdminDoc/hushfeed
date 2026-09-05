@@ -1,0 +1,81 @@
+package app.morphe.extension.tiktok.notinterested;
+
+import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.Utils;
+import app.morphe.extension.tiktok.blockauthor.CurrentVideoAuthor;
+import app.morphe.extension.tiktok.blockauthor.Reflect;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+public final class NotInterested {
+    private static final AtomicBoolean IN_FLIGHT = new AtomicBoolean();
+    private static volatile String lastSubmittedId;
+    private NotInterested() {}
+
+    /** Replaced at patch time with TikTok's own service call. */
+    public static Object createCall(String id, String requestId, Map<String, String> fields) {
+        return null;
+    }
+
+    public static void submit() {
+        Object video = CurrentVideoAuthor.getAweme();
+        String id = Reflect.string(video, "getAid", "aid");
+        if (id == null) {
+            Utils.showToastShort("No video selected");
+            return;
+        }
+        if (id.equals(lastSubmittedId)) {
+            Utils.showToastShort("Already marked as not interested");
+            return;
+        }
+        if (!IN_FLIGHT.compareAndSet(false, true)) return;
+        Utils.showToastShort("Sending feedback");
+        Utils.runOnBackgroundThread(() -> {
+            boolean success = false;
+            try {
+                String requestId = Reflect.string(video, "getRequestId", "requestId");
+                Map<String, String> fields = new HashMap<>();
+                String authorId = Reflect.string(video, "getAuthorUid", "authorUid");
+                if (authorId != null) fields.put("author_id", authorId);
+                Object music = Reflect.invoke(video, "getMusic");
+                String musicId = Reflect.string(music, "getMid", "mid");
+                if (musicId != null) fields.put("music_id", musicId);
+                Object call = createCall(id, requestId == null ? "" : requestId, fields);
+                if (call == null) throw new IllegalStateException("Dislike service is unavailable");
+                Method execute = call.getClass().getMethod("execute");
+                execute.setAccessible(true);
+                success = succeeded(execute.invoke(call));
+                if (success) lastSubmittedId = id;
+            } catch (Throwable e) {
+                Logger.printException(() -> "Not interested request failed", e);
+            } finally {
+                IN_FLIGHT.set(false);
+            }
+            final boolean accepted = success;
+            Utils.runOnMainThread(() -> Utils.showToastShort(accepted
+                    ? "Marked as not interested" : "TikTok didn't accept the feedback. Try again later."));
+        });
+    }
+
+    static boolean succeeded(Object response) throws IllegalAccessException {
+        if (response == null) return false;
+        Object body = Reflect.invoke(response, "body");
+        if (body == null) {
+            for (Field field : response.getClass().getDeclaredFields()) {
+                if (Modifier.isStatic(field.getModifiers())) continue;
+                field.setAccessible(true);
+                Object value = field.get(response);
+                if (value != null && Reflect.readField(value, "status_code") instanceof Number) {
+                    body = value;
+                    break;
+                }
+            }
+        }
+        Object status = Reflect.property(body, "getStatusCode", "status_code");
+        return status instanceof Number && ((Number) status).intValue() == 0;
+    }
+}

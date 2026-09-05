@@ -124,6 +124,11 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                     Settings.BLOCK_AUTHOR_BUTTON
             ));
         }
+        if (SettingsStatus.notInterestedEnabled) {
+            addPreference(new TogglePreference(context, "Not interested button",
+                    "Add a button beside the block control to send feedback about the current video.",
+                    Settings.NOT_INTERESTED_BUTTON));
+        }
         if (SettingsStatus.nonPersonalizedSearchEnabled) {
             addPreference(new TogglePreference(
                     context,

@@ -23,6 +23,10 @@ This is a private working copy of [icysymmetra/tiktok-patches-for-morphe](https:
 - `Share sheet tools`: a second tap is needed before a video goes to a friend, and people or share options can be hidden by name, or the whole Send to row.
 - Feed filter switches for paid partnerships, AI generated videos, verified accounts, Series and playlist videos, and a sound blocklist.
 
+The block, sound and Not interested controls (rendered in a local UI test):
+
+![Overlay controls](assets/overlay-controls.png)
+
 Releases are built and versioned by hand here; the upstream release workflow isn't used. The bundle lands in `patches/build/libs/`.
 
 <br>
@@ -40,6 +44,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | Patch | Description |
 |---|---|
 | `Always show publish date` | Keeps the video's publish date visible in its author information. |
+| `Not interested button` | Sends feedback about the current video through TikTok's own service. The button works independently of the block switch. |
 | `Block author button` | Adds a button to the video player that blocks the account that posted the current video in one tap, with an undo banner. Long press it to move it. A second button blocks the current sound. |
 | `Comment tools` | Hides comments containing chosen words or from chosen accounts, and turns the thumbs down on each comment into a block button. |
 | `Copy comments without username` | Copies only the comment text without including the creator's username. |
@@ -123,7 +128,7 @@ Build the Morphe patch bundle and metadata:
 ./gradlew :patches:buildAndroid
 ```
 
-Run these tasks in this order. The Android build finishes with `verifyBundle`, which checks the patch list and all three DEX payloads. You can also run `./gradlew :patches:verifyBundle` to inspect an existing bundle without rebuilding it.
+Run these tasks in this order. The Android build finishes with `verifyBundle`, which checks the patch list and all three DEX payloads against the checksum recorded by the Android build. You can also run `./gradlew :patches:verifyBundle` to inspect an existing bundle without rebuilding it.
 
 The generated bundle is written to:
 

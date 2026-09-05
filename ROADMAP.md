@@ -3,17 +3,6 @@
 Findings from the 2026-09-05 audit that were not fixed in that pass, plus upstream
 requests worth building. P0 is broken, P3 is nice to have.
 
-- [ ] P2 - "Not interested" one-tap button beside the block button
-  Why: same shape as the block button. Confirmed endpoint /aweme/v1/commit/dislike/item/, but it
-  sits behind an obfuscated Kotlin suspend interface (X.0MlK on 46.2.3) taking a Map body and a
-  Continuation, which churns every build. Needs a Proxy-built Continuation and a fingerprint on
-  the endpoint string rather than the class name.
-  Where: new patch; scratchpad tt/out3/sources/X/InterfaceC17470MlK.java shows the shape.
-  Note (research 2026-09-05): no ReVanced or Morphe patch calls a suspend function today. The
-  technique is a `java.lang.reflect.Proxy` Continuation (getContext returns
-  EmptyCoroutineContext.INSTANCE, resumeWith receives a kotlin.Result) and a fingerprint that
-  scans `classDef.methods[].annotations[].elements[].value` for "/aweme/v1/commit/dislike/item/"
-  (present in one 46.2.3 dex) instead of the class name. `/aweme/v1/commit/item/skip/` is absent.
 - [ ] P3 - Bulk unfollow / follower management (upstream #108)
   Why: IUserService follow calls are already mapped by FollowDiagnosticsPatch. Simplest shape is
   the Clear all pattern: an injected control on the Following list that presses each Following

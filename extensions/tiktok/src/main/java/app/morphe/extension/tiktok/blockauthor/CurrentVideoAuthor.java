@@ -17,6 +17,7 @@ import app.morphe.extension.shared.Utils;
  */
 public final class CurrentVideoAuthor {
     private static volatile VideoAuthor author;
+    private static volatile Object currentAweme;
 
     /** When the feed last reported an item, on the monotonic clock. Read by FeedVisibility. */
     private static volatile long lastReportMs;
@@ -33,6 +34,7 @@ public final class CurrentVideoAuthor {
 
         VideoAuthor parsed = parse(videoItemParams);
         if (parsed == null || !parsed.isUsable()) {
+            currentAweme = null;
             // A card with nothing to block (a LIVE preview, a promo, an end of feed card)
             // must not leave the previous creator armed behind the button.
             CurrentVideoSound.clear();
@@ -64,6 +66,10 @@ public final class CurrentVideoAuthor {
         return author;
     }
 
+    public static Object getAweme() {
+        return currentAweme;
+    }
+
     /** @return {@link SystemClock#elapsedRealtime()} of the most recent feed report, or 0. */
     static long lastReportMs() {
         return lastReportMs;
@@ -75,6 +81,7 @@ public final class CurrentVideoAuthor {
             if (aweme == null) {
                 return null;
             }
+            currentAweme = aweme;
 
             CurrentVideoSound.update(aweme);
 

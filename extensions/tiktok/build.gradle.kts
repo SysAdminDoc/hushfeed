@@ -27,6 +27,9 @@ android {
         unitTests.isIncludeAndroidResources = true
         unitTests.all {
             it.maxHeapSize = "1g"
+            providers.gradleProperty("screenshotDir").orNull?.let { directory ->
+                it.systemProperty("morphe.screenshotDir", directory)
+            }
             it.jvmArgs(
                 "--add-opens=java.base/java.lang=ALL-UNNAMED",
                 "--add-opens=java.base/java.util=ALL-UNNAMED",

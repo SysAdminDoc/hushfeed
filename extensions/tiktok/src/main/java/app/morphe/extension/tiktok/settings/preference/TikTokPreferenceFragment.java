@@ -487,6 +487,8 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
 
     private int countBehaviorSettings() {
         int count = countEnabled(
+                SettingsStatus.blockAuthorEnabled && Settings.BLOCK_AUTHOR_BUTTON.get(),
+                SettingsStatus.notInterestedEnabled && Settings.NOT_INTERESTED_BUTTON.get(),
                 BaseSettings.SANITIZE_SHARING_LINKS.get(),
                 Settings.SHOW_SEEKBAR.get()
         );
@@ -584,4 +586,3 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         }
     }
 }
-
