@@ -45,6 +45,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 
 | Patch | Description |
 |---|---|
+| `Double-tap controls` | Changes feed double taps to do nothing or open comments for the current video. TikTok's normal action is the default. |
 | `Confirm feed interactions` | Adds optional second-tap protection to Follow and the like heart. The red ring expires after four seconds and resets when the video changes. |
 | `AMOLED dark theme` | Replaces the dark background palette with black or a chosen opaque color. Select the patch and its color in the patcher. Light theme colors stay unchanged. |
 | `Always show publish date` | Keeps the video's publish date visible in its author information. |

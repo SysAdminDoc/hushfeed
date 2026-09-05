@@ -379,6 +379,34 @@
       "options": []
     },
     {
+      "name": "Double-tap controls",
+      "description": "Lets double taps do nothing or open the current video's comments.",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Downloads",
       "description": "Adds watermark-free downloads, comment sticker saving, configurable folders, and filename templates.",
       "use": true,

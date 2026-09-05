@@ -6,6 +6,8 @@
 package app.morphe.extension.tiktok.settings;
 
 public class SettingsStatus {
+    public static boolean doubleTapEnabled;
+    public static void enableDoubleTap() { doubleTapEnabled = true; }
     public static boolean confirmInteractionsEnabled;
     public static void enableConfirmInteractions() { confirmInteractionsEnabled = true; }
     public static boolean feedFilterEnabled = false;

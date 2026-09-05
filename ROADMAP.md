@@ -23,16 +23,6 @@ with anchors present first, then adaptations, then new builds.
 
 ### P2
 
-- [ ] P2 - Disable double-tap like, optional double-tap opens comments
-  Why: accidental likes; FreedomPlus and DouyinEnhancer ship both variants.
-  Evidence: `double_click` string present in 9 dex; BlueDragon's gesture remapper identifies the
-  listener as `LX/0QeR;` with `onDoubleTap(MotionEvent)Z` and `handleDoubleClick` (present,
-  identity unverified).
-  Touches: new patch (fingerprint the listener structurally: a class implementing
-  onSingleTapConfirmed, onDoubleTap and onLongPress whose fields reference the feed panel),
-  Settings.java, Interface category.
-  Acceptance: a double tap no longer likes; with the option on it opens the comment panel.
-  Complexity: M
 - [ ] P2 - Download quality selector and original photo downloader
   Why: force the highest gear or a target height for saves (#146 in spirit), and save Photo
   Mode originals instead of TikTok's rendered copies.

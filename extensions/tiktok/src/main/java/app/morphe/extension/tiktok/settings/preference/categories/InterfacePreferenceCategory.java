@@ -10,6 +10,7 @@ import android.preference.PreferenceScreen;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
+import app.morphe.extension.tiktok.settings.preference.ChoicePreference;
 
 @SuppressWarnings("deprecation")
 public final class InterfacePreferenceCategory extends ConditionalPreferenceCategory {
@@ -20,7 +21,7 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
 
     @Override
     public boolean getSettingsStatus() {
-        return SettingsStatus.confirmInteractionsEnabled || SettingsStatus.captchaPopupSuppressionEnabled
+        return SettingsStatus.doubleTapEnabled || SettingsStatus.confirmInteractionsEnabled || SettingsStatus.captchaPopupSuppressionEnabled
                 || SettingsStatus.promotionalBannersEnabled
                 || SettingsStatus.alwaysShowPublishDateEnabled
                 || SettingsStatus.videoOverlaysEnabled
@@ -32,6 +33,11 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
 
     @Override
     public void addPreferences(Context context) {
+        if (SettingsStatus.doubleTapEnabled) {
+            addPreference(new ChoicePreference(context, "Double tap", Settings.DOUBLE_TAP_ACTION,
+                    new String[]{"TikTok default", "Do nothing", "Open comments"},
+                    new String[]{"default", "nothing", "comments"}));
+        }
         if (SettingsStatus.confirmInteractionsEnabled) {
             addPreference(new TogglePreference(context, "Confirm before following", "Tap the feed Follow button twice within four seconds.", Settings.CONFIRM_FOLLOW));
             addPreference(new TogglePreference(context, "Confirm before liking", "Tap the like heart twice within four seconds. Removing a like stays immediate.", Settings.CONFIRM_LIKE));
