@@ -17,7 +17,7 @@ import java.io.OutputStream;
 final class MediaFileWriter {
     private MediaFileWriter() {}
 
-    static void publish(Context context, File source, String name, String mime, String path, boolean video) throws IOException {
+    static String publish(Context context, File source, String name, String mime, String path, boolean video) throws IOException {
         if (Build.VERSION.SDK_INT >= 29) {
             var resolver = context.getContentResolver();
             ContentValues values = new ContentValues();
@@ -25,16 +25,26 @@ final class MediaFileWriter {
             values.put(MediaStore.MediaColumns.MIME_TYPE, mime);
             values.put(MediaStore.MediaColumns.RELATIVE_PATH, path);
             values.put(MediaStore.MediaColumns.IS_PENDING, 1);
-            Uri uri = resolver.insert(DownloadDestination.collectionUri(path, video), values);
+            Uri collection = "application/x-subrip".equals(mime)
+                    ? MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+                    : DownloadDestination.collectionUri(path, video);
+            Uri uri = resolver.insert(collection, values);
             if (uri == null) throw new IOException("Could not create gallery entry");
             try {
                 try (InputStream input = new FileInputStream(source); OutputStream output = resolver.openOutputStream(uri, "w")) {
                     if (output == null) throw new IOException("Could not open gallery entry");
                     copy(input, output);
                 }
+                String savedName;
+                try (var cursor = resolver.query(uri, new String[]{MediaStore.MediaColumns.DISPLAY_NAME}, null, null, null)) {
+                    if (cursor == null || !cursor.moveToFirst()) throw new IOException("Could not read saved filename");
+                    savedName = cursor.getString(0);
+                    if (savedName == null || savedName.isEmpty()) throw new IOException("Saved filename is empty");
+                }
                 values.clear();
                 values.put(MediaStore.MediaColumns.IS_PENDING, 0);
                 if (resolver.update(uri, values, null, null) != 1) throw new IOException("Could not publish gallery entry");
+                return savedName;
             } catch (IOException | RuntimeException exception) {
                 try { resolver.delete(uri, null, null); } catch (RuntimeException cleanup) { exception.addSuppressed(cleanup); }
                 throw exception;
@@ -54,6 +64,7 @@ final class MediaFileWriter {
                 throw exception;
             }
             MediaScannerConnection.scanFile(context, new String[]{target.getAbsolutePath()}, new String[]{mime}, null);
+            return target.getName();
         }
     }
 

@@ -22,7 +22,7 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
 
     @Override
     public boolean getSettingsStatus() {
-        return SettingsStatus.screenCaptureEnabled || SettingsStatus.automaticClearDisplayEnabled || SettingsStatus.doubleTapEnabled || SettingsStatus.confirmInteractionsEnabled || SettingsStatus.captchaPopupSuppressionEnabled
+        return SettingsStatus.subtitleToolsEnabled || SettingsStatus.screenCaptureEnabled || SettingsStatus.automaticClearDisplayEnabled || SettingsStatus.doubleTapEnabled || SettingsStatus.confirmInteractionsEnabled || SettingsStatus.captchaPopupSuppressionEnabled
                 || SettingsStatus.promotionalBannersEnabled
                 || SettingsStatus.alwaysShowPublishDateEnabled
                 || SettingsStatus.videoOverlaysEnabled
@@ -34,6 +34,17 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
 
     @Override
     public void addPreferences(Context context) {
+        if (SettingsStatus.subtitleToolsEnabled) {
+            addPreference(new NumberInputPreference(context, "Caption text size",
+                    "Use 0 for TikTok's size, or 12 to 48 sp. Applies to the next caption.", Settings.CAPTION_TEXT_SIZE, 0, 48, "sp") {
+                @Override protected int clamp(int value) { return value <= 0 ? 0 : Math.max(12, Math.min(48, value)); }
+            });
+            addPreference(new ChoicePreference(context, "Caption background", Settings.CAPTION_BACKGROUND,
+                    new String[]{"TikTok default", "Transparent", "Dark", "Black"},
+                    new String[]{"default", "transparent", "dark", "black"}));
+            addPreference(new TogglePreference(context, "Keep captions in clear display",
+                    "Show the current spoken caption while the other controls are hidden.", Settings.KEEP_CAPTIONS_CLEAR_DISPLAY));
+        }
         if (SettingsStatus.screenCaptureEnabled) {
             addPreference(new TogglePreference(context, "Allow screenshots and Circle to Search",
                     "Remove secure window flags. Restart TikTok after changing.", Settings.ALLOW_SCREEN_CAPTURE));

@@ -77,7 +77,7 @@ public final class FeedVisibility {
      * @return true when the feed is showing. Unknown states report true so a TikTok build
      *         that renames the tab loses the hiding behaviour rather than the button.
      */
-    static boolean isOnFeed(Activity activity) {
+    public static boolean isOnFeed(Activity activity) {
         View homeTab = homeTab(activity);
         if (homeTab == null) {
             return true;

@@ -29,6 +29,12 @@ The block, sound and Not interested controls (rendered in a local UI test):
 
 ![Overlay controls](assets/overlay-controls.png)
 
+Select `Subtitle tools` in the patcher, then enable subtitle downloads in Downloads. Captioned videos and their SRT files share the same filename stem. Android 11 and later save the pair in Movies; Android 10 uses Download. The selected subfolder still applies. A failed subtitle transfer leaves the saved video intact and reports the partial result.
+
+Caption appearance and the clear display option are in Interface. These views were rendered in local UI tests:
+
+<img src="assets/caption-settings.png" alt="Caption appearance settings" width="300" /> <img src="assets/subtitle-download-settings.png" alt="Subtitle download settings" width="300" />
+
 Releases are built and versioned by hand here; the upstream release workflow isn't used. The bundle lands in `patches/build/libs/`.
 
 <br>
@@ -45,6 +51,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 
 | Patch | Description |
 |---|---|
+| `Subtitle tools` | Saves captions as SRT files beside downloaded videos. Choose original, device or all available languages, adjust caption size and background, and keep the current caption visible in clear display. |
 | `Playback quality` | Chooses the lowest, highest or a target video quality for regular and adaptive playback. Download quality has its own setting. |
 | `Advanced downloads` | Selects a video quality or target resolution and combines separate audio tracks when needed. An optional Photo Mode downloader saves source images directly, preserving their bytes and format. |
 | `Double-tap controls` | Changes feed double taps to do nothing or open comments for the current video. TikTok's normal action is the default. |
@@ -66,7 +73,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Enable Live search` | Shows TikTok's search entry in the Live drawer where supported. |
 | `Enable non-personalized search` | Uses TikTok's non-personalized search mode instead of its saved account choice. |
 | `Feature Gate Lab` | Adds a searchable menu for viewing and overriding supported TikTok feature flags and configuration values. Client-side overrides cannot bypass server enforcement. |
-| `Feature Gate Recorder` | Records gate reads while you use a feature, then shows new and changed values in a report you can copy. |
+| `Feature Gate Recorder` | Records gate reads while you use a feature, then shows new and changed values. Save the full report as JSON or copy a smaller report. |
 | `Feed filter` | Hides feed ads, TikTok Shop items, livestreams, stories, photo posts, the playlist bar, the floating event badge, inserted cards, the countdown lock on short drama adverts, and videos outside configured view or like ranges, with optional filtering of cached and offline FYP fallback videos. |
 | `Feed tab navigation` | Controls which loaded top and bottom navigation tabs remain visible, blocks newly added tabs when requested, and can hide the Tako AI bubble. |
 | `Fix Google login` | Restores Google account sign-in after patching. |
@@ -130,9 +137,10 @@ Only the global package is declared in Morphe compatibility metadata. The JP pac
 
 ## Building
 
-Build the Morphe patch bundle and metadata:
+Run the runtime tests, then build the Morphe patch bundle and metadata:
 
 ```bash
+./gradlew :extensions:tiktok:test
 ./gradlew :patches:generatePatchesList
 ./gradlew :patches:buildAndroid
 ```

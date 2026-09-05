@@ -1499,6 +1499,35 @@
       "options": []
     },
     {
+      "name": "Subtitle tools",
+      "description": "Saves subtitle files beside downloaded videos and adds caption size, background, and clear-display options.",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Translate comments",
       "description": "Adds comment translation controls using TikTok's translation system, with selectable language exclusions.",
       "use": true,

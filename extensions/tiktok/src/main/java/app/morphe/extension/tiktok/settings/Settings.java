@@ -18,6 +18,11 @@ import app.morphe.extension.tiktok.navigation.BottomNavigationTabOptions;
 import app.morphe.extension.tiktok.navigation.NavigationTabOptions;
 
 public class Settings extends BaseSettings {
+    public static final BooleanSetting DOWNLOAD_SUBTITLES = new BooleanSetting("download_subtitles", FALSE);
+    public static final StringSetting SUBTITLE_LANGUAGE = new StringSetting("subtitle_language", "original");
+    public static final IntegerSetting CAPTION_TEXT_SIZE = new IntegerSetting("caption_text_size", 0);
+    public static final StringSetting CAPTION_BACKGROUND = new StringSetting("caption_background", "default");
+    public static final BooleanSetting KEEP_CAPTIONS_CLEAR_DISPLAY = new BooleanSetting("keep_captions_clear_display", FALSE);
     public static final BooleanSetting ALLOW_SCREEN_CAPTURE = new BooleanSetting("allow_screen_capture", FALSE, true);
     public static final BooleanSetting AUTOMATIC_CLEAR_DISPLAY = new BooleanSetting("automatic_clear_display", FALSE);
     public static final IntegerSetting AUTOMATIC_CLEAR_DISPLAY_DELAY = new IntegerSetting("automatic_clear_display_delay", 1000);

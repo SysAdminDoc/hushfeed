@@ -5,11 +5,13 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.settings.SettingsStatus;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -22,16 +24,25 @@ final class VideoDownloads {
     private VideoDownloads() {}
 
     static boolean start(Object aweme, Context context) {
-        if (context == null || "auto".equals(Settings.DOWNLOAD_VIDEO_QUALITY.get())) return false;
+        if (context == null) return false;
         if (android.os.Build.VERSION.SDK_INT >= 23 && android.os.Build.VERSION.SDK_INT < 29
                 && context.checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != android.content.pm.PackageManager.PERMISSION_GRANTED) return false;
         Object video = Reflect.property(aweme, "getVideo", "video");
+        List<SubtitleDownloads.Track> captions = SettingsStatus.subtitleToolsEnabled && Settings.DOWNLOAD_SUBTITLES.get()
+                ? SubtitleDownloads.tracks(video, Settings.SUBTITLE_LANGUAGE.get(), Locale.getDefault()) : Collections.emptyList();
+        String quality = Settings.DOWNLOAD_VIDEO_QUALITY.get();
+        if (captions.isEmpty() && "auto".equals(quality)) return false;
         Object rates = Reflect.readField(video, "bitRate");
-        Object selected = rates instanceof List<?> ? QualitySelector.choose((List<?>) rates, Settings.DOWNLOAD_VIDEO_QUALITY.get()) : null;
-        if (selected == null) return false;
-        List<String> videoUrls = urls(Reflect.property(selected, "getPlayAddr", "playAddr"));
-        boolean dash = Boolean.TRUE.equals(Reflect.invoke(video, "hasDashBitrate"));
+        Object selected = rates instanceof List<?> ? QualitySelector.choose((List<?>) rates, "auto".equals(quality) ? "highest" : quality) : null;
+        if (selected == null && captions.isEmpty()) return false;
+        List<String> selectedUrls = urls(Reflect.property(selected, "getPlayAddr", "playAddr"));
+        if (selected == null) {
+            selectedUrls = urls(Reflect.property(video, "getDownloadNoWatermarkAddr", "downloadNoWatermarkAddr"));
+            if (selectedUrls.isEmpty()) selectedUrls = urls(Reflect.property(video, "getDownloadAddr", "downloadAddr"));
+        }
+        List<String> videoUrls = selectedUrls;
+        boolean dash = selected != null && Boolean.TRUE.equals(Reflect.invoke(video, "hasDashBitrate"));
         List<String> audioUrls = dash ? audioUrls(video, selected) : Collections.emptyList();
         if (videoUrls.isEmpty() || (dash && audioUrls.isEmpty())) {
             Utils.showToastShort("This quality isn't available as a complete download; using TikTok's download");
@@ -41,7 +52,10 @@ final class VideoDownloads {
         if (id == null) return false;
         if (!ACTIVE.add(id)) return true;
         Context app = context.getApplicationContext();
-        Utils.showToastShort("Saving the selected video quality");
+        String name = DownloadFilenameFormatter.formatSelectedVideoName(aweme);
+        String path = captions.isEmpty() ? DownloadsPatch.getVideoDownloadPath()
+                : SubtitleDownloads.pairedPath(DownloadsPatch.getVideoDownloadPath());
+        Utils.showToastShort(captions.isEmpty() ? "Saving the selected video quality" : "Saving video and subtitles to " + path);
         WORKER.execute(() -> {
             List<File> temporary = new ArrayList<>();
             try {
@@ -54,9 +68,11 @@ final class VideoDownloads {
                     result = temp(app, temporary);
                     TrackMuxer.combine(picture, sound, result);
                 }
-                MediaFileWriter.publish(app, result, DownloadFilenameFormatter.formatSelectedVideoName(aweme),
-                        "video/mp4", DownloadsPatch.getVideoDownloadPath(), true);
-                Utils.showToastShort("Video saved");
+                String savedName = MediaFileWriter.publish(app, result, name, "video/mp4", path, true);
+                int saved = SubtitleDownloads.save(app, captions, savedName, path);
+                Utils.showToastLong(captions.isEmpty() ? "Video saved"
+                        : "Video saved with " + saved + "/" + captions.size() + " subtitles in " + path
+                                + (saved == captions.size() ? "" : ". Some subtitles couldn't be saved."));
             } catch (IOException | RuntimeException exception) {
                 Logger.printException(() -> "Selected-quality download failed", exception);
                 Utils.showToastLong("Video download failed. Try again or choose Automatic.");

@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Added SRT subtitle saves with language selection and matching video filenames. Caption size, background and visibility in clear display are configurable.
+
 * Cancel automatic clear display immediately when focus or its settings change. Save large feature gate reports as JSON with a bounded preview and clipboard error handling.
 
 * Added an option to allow screenshots and Circle to Search by removing secure window flags and disabling the native search block.

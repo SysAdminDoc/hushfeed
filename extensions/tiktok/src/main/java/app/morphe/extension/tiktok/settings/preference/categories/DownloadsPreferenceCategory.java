@@ -32,6 +32,13 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
 
     @Override
     public void addPreferences(Context context) {
+        if (SettingsStatus.subtitleToolsEnabled) {
+            addPreference(new TogglePreference(context, "Save subtitles beside videos",
+                    "Save SRT files with the video. Paired saves use Movies on Android 11+, Download on Android 10, and your video folder on older versions.", Settings.DOWNLOAD_SUBTITLES));
+            addPreference(new ChoicePreference(context, "Subtitle language", Settings.SUBTITLE_LANGUAGE,
+                    new String[]{"Original language", "Device language, then original", "All available languages"},
+                    new String[]{"original", "device", "all"}));
+        }
         if (SettingsStatus.advancedDownloadsEnabled) {
             addPreference(new ChoicePreference(context, "Video download quality", Settings.DOWNLOAD_VIDEO_QUALITY,
                     new String[]{"Automatic", "Highest", "Lowest", "1080p", "720p", "540p", "480p", "360p"},

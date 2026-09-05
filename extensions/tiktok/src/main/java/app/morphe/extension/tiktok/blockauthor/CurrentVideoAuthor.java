@@ -26,6 +26,7 @@ public final class CurrentVideoAuthor {
         VideoAuthor parsed = parse(videoItemParams);
         if (!java.util.Objects.equals(author == null ? null : author.awemeId, parsed == null ? null : parsed.awemeId)) {
             app.morphe.extension.tiktok.interaction.TapConfirmation.onVideoChanged();
+            app.morphe.extension.tiktok.captions.CaptionTools.onVideoChanged(parsed == null ? null : parsed.awemeId);
         }
         if (parsed == null || !parsed.isUsable()) {
             currentAweme = null;

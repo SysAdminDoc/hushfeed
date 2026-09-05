@@ -6,6 +6,8 @@
 package app.morphe.extension.tiktok.settings;
 
 public class SettingsStatus {
+    public static boolean subtitleToolsEnabled;
+    public static void enableSubtitleTools() { subtitleToolsEnabled = true; }
     public static boolean screenCaptureEnabled;
     public static void enableScreenCapture() { screenCaptureEnabled = true; }
     public static boolean featureGateRecorderEnabled;

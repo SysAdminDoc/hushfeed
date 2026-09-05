@@ -142,7 +142,7 @@ public class NumberInputPreference extends EditTextPreference {
         }
     }
 
-    private int clamp(int value) {
+    protected int clamp(int value) {
         return Math.max(minValue, Math.min(maxValue, value));
     }
 }
