@@ -18,6 +18,8 @@ import app.morphe.extension.tiktok.navigation.BottomNavigationTabOptions;
 import app.morphe.extension.tiktok.navigation.NavigationTabOptions;
 
 public class Settings extends BaseSettings {
+    public static final BooleanSetting REGION_SPOOF = new BooleanSetting("region_spoof", FALSE);
+    public static final BooleanSetting REGION_STORE_SPOOF = new BooleanSetting("region_store_spoof", FALSE);
     public static final BooleanSetting FOLDABLE_SPLIT_VIEW = new BooleanSetting("foldable_split_view", FALSE, true);
     public static final IntegerSetting FOLDABLE_SPLIT_VIEW_MIN_WIDTH_DP = new IntegerSetting("foldable_split_view_min_width_dp", 600, true);
     public static final BooleanSetting DOWNLOAD_SUBTITLES = new BooleanSetting("download_subtitles", FALSE);

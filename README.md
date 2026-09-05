@@ -100,6 +100,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Playback speed` | Enables playback-speed controls for all videos and remembers the selected speed between videos. |
 | `Remember clear display` | Remembers clear display between videos, or enters it automatically after a chosen delay. Tap to restore the controls. |
 | `Resume videos after scrolling` | Restores a video's prior playback position when returning to it in the feed. |
+| `Region spoof` | Matches locale country, timezone and native region getters to the SIM preset while preserving the interface language. Store-region overrides have a separate experimental switch. IP address and server account rules still apply. |
 | `SIM spoof` | Replaces SIM country and operator values reported to TikTok and provides country presets. TikTok may still use IP address, account history, language, and other region signals. |
 | `Sanitize sharing links` | Removes tracking parameters from TikTok links before they are shared. |
 | `Settings` | Adds the Metra patches settings screen inside TikTok. |
@@ -113,6 +114,10 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 Foldable controls are in App behavior:
 
 <img src="assets/foldable-settings.png" alt="Foldable comment settings" width="300" />
+
+Region spoof requires Override SIM details plus Match locale and timezone to country in Region settings. Each built-in country preset supplies a timezone. Restart TikTok after changing these settings. Enable the separate store-region option only if needed; it can affect search. GPS and the network address stay unchanged.
+
+<img src="assets/region-settings.png" alt="Country and region settings" width="300" />
 
 ## Add Source
 

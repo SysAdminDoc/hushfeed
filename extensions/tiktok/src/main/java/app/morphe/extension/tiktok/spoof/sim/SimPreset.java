@@ -7,20 +7,22 @@ public class SimPreset {
     public final String iso;
     public final String mccMnc;
     public final String operatorName;
+    public final String timeZone;
 
     private final String searchableText;
 
-    public SimPreset(String country, String iso, String mccMnc, String operatorName) {
+    public SimPreset(String country, String iso, String mccMnc, String operatorName, String timeZone) {
         this.country = country;
         this.iso = iso;
         this.mccMnc = mccMnc;
         this.operatorName = operatorName;
+        this.timeZone = timeZone;
         this.searchableText = (country + " " + iso + " " + mccMnc + " " + operatorName)
                 .toLowerCase(Locale.US);
     }
 
     public String getSummary() {
-        return operatorName + " - " + mccMnc + " - " + iso;
+        return operatorName + " (" + mccMnc + ", " + iso + ")";
     }
 
     public boolean matches(String query) {

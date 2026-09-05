@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import app.morphe.extension.shared.Logger;
-import app.morphe.extension.shared.settings.preference.AbstractPreferenceFragment;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.spoof.sim.SimPreset;
 import app.morphe.extension.tiktok.spoof.sim.SimPresets;
@@ -59,8 +58,8 @@ public class SimPresetPreference extends Preference {
     public void refreshSummary(String iso, String mccMnc, String operatorName) {
         SimPreset selectedPreset = SimPresets.findSelected(iso, mccMnc, operatorName);
         if (selectedPreset != null) {
-            setSummary(selectedPreset.country + " - " + selectedPreset.operatorName + " - "
-                    + selectedPreset.mccMnc);
+            setSummary(selectedPreset.country + ", " + selectedPreset.operatorName + " ("
+                    + selectedPreset.mccMnc + ")");
         } else if (SimPresets.hasEmptyCurrentValues(iso, mccMnc, operatorName)) {
             setSummary("No preset selected");
         } else {
@@ -212,7 +211,7 @@ public class SimPresetPreference extends Preference {
                 + preset.operatorName + " / " + preset.mccMnc + " / " + preset.iso);
 
         if (Settings.SIM_SPOOF.get()) {
-            AbstractPreferenceFragment.showRestartDialog(getContext());
+            app.morphe.extension.shared.Utils.showToastLong("SIM preset saved. Restart TikTok to apply it.");
         } else {
             app.morphe.extension.shared.Utils.showToastShort("SIM preset saved");
         }

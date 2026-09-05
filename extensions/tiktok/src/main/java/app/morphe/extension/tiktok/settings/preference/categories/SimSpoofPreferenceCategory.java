@@ -18,7 +18,7 @@ import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 public class SimSpoofPreferenceCategory extends ConditionalPreferenceCategory {
     public SimSpoofPreferenceCategory(Context context, PreferenceScreen screen) {
         super(context, screen);
-        setTitle("Bypass regional restriction");
+        setTitle("Region settings");
     }
 
     @Override
@@ -30,10 +30,16 @@ public class SimSpoofPreferenceCategory extends ConditionalPreferenceCategory {
     public void addPreferences(Context context) {
         addPreference(new TogglePreference(
                 context,
-                "Fake sim card info",
-                "Bypass regional restriction by fake sim card information.",
+                "Override SIM details",
+                "Use the selected country and operator values. Restart TikTok after changing region settings.",
                 Settings.SIM_SPOOF
         ));
+        if (SettingsStatus.regionSpoofEnabled) {
+            addPreference(new TogglePreference(context, "Match locale and timezone to country",
+                    "Also override TikTok's region getters. Keeps your interface language. Requires Override SIM details and a restart; IP address and account rules still apply.", Settings.REGION_SPOOF));
+            addPreference(new TogglePreference(context, "Override store region (experimental)",
+                    "Use the preset for TikTok's account and store region getters too. May affect search. Requires the locale option and a restart.", Settings.REGION_STORE_SPOOF));
+        }
         InputTextPreference countryIsoPreference = new InputTextPreference(
                 context,
                 "Country ISO", "us, gb, jp, ...",
@@ -57,6 +63,10 @@ public class SimSpoofPreferenceCategory extends ConditionalPreferenceCategory {
         );
 
         countryIsoPreference.setOnPreferenceChangeListener((preference, newValue) -> {
+            if (!app.morphe.extension.tiktok.spoof.region.RegionSpoof.validCountry(newValue.toString())) {
+                app.morphe.extension.shared.Utils.showToastShort("Enter a valid two-letter country code");
+                return false;
+            }
             simPresetPreference.refreshSummary(
                     newValue.toString(),
                     mccMncPreference.getText(),
@@ -87,4 +97,3 @@ public class SimSpoofPreferenceCategory extends ConditionalPreferenceCategory {
         addPreference(operatorNamePreference);
     }
 }
-

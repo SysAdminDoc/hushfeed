@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Added locale, timezone and native region overrides using the SIM preset. Store-region overrides are separately opt-in. SIM hooks now handle high registers and ignored return values safely.
+
 * Added an optional side-by-side comment layout for wider windows, with a configurable width threshold.
 
 * Added SRT subtitle saves with language selection and matching video filenames. Caption size, background and visibility in clear display are configurable.

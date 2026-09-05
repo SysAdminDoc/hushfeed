@@ -47,6 +47,7 @@ val simSpoofPatch = bytecodePatch(
 
         val patchesByMethod = linkedMapOf<Method, ArrayDeque<Pair<Int, String>>>()
         classDefForEach { classDef ->
+            if (classDef.type.startsWith("Lapp/morphe/extension/")) return@classDefForEach
             for (method in classDef.methods) {
                 val implementation = method.implementation ?: continue
                 implementation.instructions.forEachIndexed { index, instruction ->
@@ -69,7 +70,9 @@ val simSpoofPatch = bytecodePatch(
                     if (replacement == null || methodReference.returnType != "Ljava/lang/String;") {
                         return@forEachIndexed
                     }
-                    patchesByMethod.getOrPut(method) { ArrayDeque() }.add(index to replacement)
+                    if (implementation.instructions.elementAtOrNull(index + 1)?.opcode == Opcode.MOVE_RESULT_OBJECT) {
+                        patchesByMethod.getOrPut(method) { ArrayDeque() }.add(index to replacement)
+                    }
                 }
             }
         }
@@ -83,7 +86,7 @@ val simSpoofPatch = bytecodePatch(
                 mutableMethod.addInstructions(
                     index + 2,
                     """
-                        invoke-static { v$resultRegister }, $EXTENSION_CLASS_DESCRIPTOR->$replacement(Ljava/lang/String;)Ljava/lang/String;
+                        invoke-static/range { v$resultRegister .. v$resultRegister }, $EXTENSION_CLASS_DESCRIPTOR->$replacement(Ljava/lang/String;)Ljava/lang/String;
                         move-result-object v$resultRegister
                     """,
                 )

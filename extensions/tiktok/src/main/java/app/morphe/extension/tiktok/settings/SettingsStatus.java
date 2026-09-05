@@ -6,6 +6,8 @@
 package app.morphe.extension.tiktok.settings;
 
 public class SettingsStatus {
+    public static boolean regionSpoofEnabled;
+    public static void enableRegionSpoof() { regionSpoofEnabled = true; }
     public static boolean foldableSplitViewEnabled;
     public static void enableFoldableSplitView() { foldableSplitViewEnabled = true; }
     public static boolean subtitleToolsEnabled;

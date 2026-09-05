@@ -61,7 +61,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         PLAYBACK("Playback", "Video quality."),
         INBOX("Inbox", "Rows, stories tray, and header controls."),
         SHARE("Share sheet", "Confirm before sending, and hidden people and options."),
-        REGION("Bypass regional restriction", "SIM info, country, and operator."),
+        REGION("Region settings", "Country, operator, locale and timezone."),
         BEHAVIOR("App behavior", "Sharing, playback, and gestures."),
         DIAGNOSTICS("Diagnostics", "Logging, crash capture, and report export.");
 
@@ -362,7 +362,9 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         }
         if (SettingsStatus.simSpoofEnabled) {
             addMenu(screen, Section.REGION, SettingsMenuPreference.Icon.REGION, countEnabled(
-                    Settings.SIM_SPOOF.get()
+                    Settings.SIM_SPOOF.get(),
+                    SettingsStatus.regionSpoofEnabled && Settings.SIM_SPOOF.get() && Settings.REGION_SPOOF.get(),
+                    SettingsStatus.regionSpoofEnabled && Settings.SIM_SPOOF.get() && Settings.REGION_SPOOF.get() && Settings.REGION_STORE_SPOOF.get()
             ));
         }
 

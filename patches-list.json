@@ -1275,6 +1275,34 @@
       "options": []
     },
     {
+      "name": "Region spoof",
+      "description": "Matches locale, timezone and native region getters to the SIM preset, with a separate experimental store-region switch.",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Remember clear display",
       "description": "Remembers clear display between videos, or enters it automatically after a chosen delay.",
       "use": true,
