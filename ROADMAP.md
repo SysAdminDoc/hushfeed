@@ -8,14 +8,6 @@ requests worth building. P0 is broken, P3 is nice to have.
   the Clear all pattern: an injected control on the Following list that presses each Following
   button in turn. Needs a uiautomator dump of that screen for the row and button ids.
   Where: new patch; extensions/tiktok/.../inbox/InboxFilter.java shows the pattern.
-- [ ] P2 - AMOLED black theme (upstream #72, 8 reactions)
-  Why: the user's default for Android; needs the theme resource hook.
-  Note (research 2026-09-05): resource patches do run on-device (manager Session.kt builds
-  PatcherConfig without aapt; the patcher picks ResourceMode.FULL through ARSCLib), and our
-  AntiRecordingPatch is already a resourcePatch. Copy Morphe's shared/layout/theme/BaseThemePatch
-  shape: append <color> entries to res/values/colors.xml and values-night, restyle the window
-  background, and expose a colorOption once the patcher pin is 1.12.0. First step is one
-  throwaway build that edits colors.xml to prove the round trip on the 590 MB APK.
 - [ ] P3 - Localise the five inbox system labels
   Why: they only match in English.
   Where: InboxFilter.matchesSystemLabel

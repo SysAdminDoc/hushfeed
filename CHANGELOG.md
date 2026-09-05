@@ -1,5 +1,7 @@
 ## Unreleased
 
+* AMOLED dark theme adds an optional black background palette with a patcher color picker.
+
 * **feed:** add a Not interested button beside the block control. It uses TikTok's own service and reports success only when the response says the feedback was accepted.
 
 * Inbox: filter New followers, Activity and Tako in the notice model before rows are built. The switches work regardless of the interface language.

@@ -5,6 +5,46 @@
   },
   "patches": [
     {
+      "name": "AMOLED dark theme",
+      "description": "Replaces TikTok's dark background palette with black or a chosen color. The light theme keeps its colors. Choose this patch to enable it.",
+      "use": false,
+      "dependencies": [],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "backgroundColor",
+          "title": "Dark background color",
+          "description": "An opaque hex color. Black turns off OLED pixels on the main dark surfaces.",
+          "required": false,
+          "type": "kotlin.String",
+          "default": "#000000",
+          "values": {
+            "Black": "#000000",
+            "Mocha": "#181825",
+            "Dark gray": "#121212"
+          }
+        }
+      ]
+    },
+    {
       "name": "Always show publish date",
       "description": "Always shows the publish date in video author information. Thanks to lyyako for the original implementation.",
       "use": true,
