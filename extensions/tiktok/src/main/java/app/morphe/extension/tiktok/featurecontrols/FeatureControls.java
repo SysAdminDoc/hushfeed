@@ -9,6 +9,7 @@ import android.content.Intent;
 
 import android.view.View;
 
+import app.morphe.extension.shared.Logger;
 import app.morphe.extension.tiktok.settings.Settings;
 
 public final class FeatureControls {
@@ -28,6 +29,23 @@ public final class FeatureControls {
 
     public static boolean shouldHideCaptchaPopup(Activity activity) {
         return shouldHideCaptchaPopup(activity, null);
+    }
+
+    /**
+     * The risk control dialog. Account security verification must always be shown, so the
+     * two service types that carry it are never suppressed. Every suppression is logged,
+     * because a hidden real check makes whatever triggered it fail with no message.
+     */
+    public static boolean shouldHideTuringCaptchaPopup(Activity activity, String serviceType) {
+        if ("sms".equals(serviceType) || "twice_verify".equals(serviceType)) {
+            return false;
+        }
+        boolean hide = shouldHideCaptchaPopup(activity, serviceType);
+        if (hide) {
+            Logger.printInfo(() -> "Suppressed a risk control check of type " + serviceType
+                    + "; the action behind it may fail");
+        }
+        return hide;
     }
 
     public static boolean shouldHideCaptchaPopup(Activity activity, String riskInfo) {

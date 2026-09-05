@@ -4,6 +4,7 @@
 
 * **feed:** four upstream patches for the feed toolbar: hide the LIVE button, the search button, the follow plus under the avatar, and the save button. The LIVE one shares the existing Live entrance switch and stops the button before it is built
 
+* **captcha:** a second CAPTCHA patch for TikTok's risk control dialog, answering the existing switch. Off by default, it never touches SMS or two factor verification, and it logs every suppression
 * **privacy:** a Disable telemetry patch that stops ByteDance AppLog, AppsFlyer, Firebase Analytics and crash reporting at their SDK entry points. Off by default, and it silences TikTok's own diagnostics too
 * **inbox:** three patches that work on TikTok's widgets instead of the finished views: suggested accounts and the stories tray are never built (and suggested accounts is now covered on Activity and New followers too), and the Activity and New followers lists can show in full instead of stopping at View all
 

@@ -65,16 +65,6 @@ with anchors present first, then adaptations, then new builds.
 
 ### P1
 
-- [ ] P1 - Port hxreborn's BdTuring CAPTCHA hook behind our `hide_captcha_popups`
-  Why: covers the risk-control dialog our HideCaptchaPopupsPatch misses (upstream #100, #93
-  CAPTCHA loops); must stay off by default because a hidden real check makes follows fail.
-  Evidence: others/hxreborn_hxreborn-tiktok-patches patches/.../captchapopup/BdTuringCaptchaPopupPatch.kt;
-  RiskControlService (classes26), getServiceType, "twice_verify" present.
-  Touches: new patch, featurecontrols/FeatureControls.java (`shouldHideTuringCaptchaPopup`),
-  a log line per suppression.
-  Acceptance: patch applies; a browsing CAPTCHA is suppressed and logged; "sms" and
-  "twice_verify" still show.
-  Complexity: S
 - [ ] P1 - Port hxreborn's five feed card filters
   Why: friend recommendation cards (#132), bulletin and inserted cards (aweme type 105), in-feed
   playlist bar, floating event badge, and scrolling past countdown-locked short-drama ads.
