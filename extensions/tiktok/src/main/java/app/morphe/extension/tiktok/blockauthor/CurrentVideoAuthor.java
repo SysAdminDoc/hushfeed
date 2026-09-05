@@ -7,6 +7,7 @@ package app.morphe.extension.tiktok.blockauthor;
 import android.os.SystemClock;
 
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.Utils;
 
 /**
  * Holds the author of the video that is currently on screen.
@@ -28,6 +29,7 @@ public final class CurrentVideoAuthor {
      */
     static void update(Object videoItemParams) {
         lastReportMs = SystemClock.elapsedRealtime();
+        FeedVisibility.noteReport(Utils.getActivity());
 
         VideoAuthor parsed = parse(videoItemParams);
         if (parsed == null || !parsed.isUsable()) {

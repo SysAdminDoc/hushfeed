@@ -11,6 +11,7 @@ import android.view.View;
 import app.morphe.extension.shared.Logger;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 
 /**
  * Tells whether the video feed is the screen currently on show.
@@ -43,6 +44,18 @@ final class FeedVisibility {
      */
     private static final long REPORT_GRACE_MS = 1_500L;
 
+    /**
+     * Fragment back stack depth when the feed last reported an author, or -1 if unknown.
+     * Backing out of a video opened from a profile grid pops that page, which changes the
+     * depth while the navigation stays hidden and the last report stays recent. Comparing
+     * depths is what tells that state from the video page itself.
+     */
+    private static volatile int depthAtReport = -1;
+
+    private static volatile Method fragmentManagerMethod;
+    private static volatile Method backStackCountMethod;
+    private static volatile boolean stackUnavailable;
+
     private FeedVisibility() {
     }
 
@@ -67,7 +80,54 @@ final class FeedVisibility {
         if (navHiddenAtMs < 0) {
             navHiddenAtMs = SystemClock.elapsedRealtime();
         }
-        return CurrentVideoAuthor.lastReportMs() >= navHiddenAtMs - REPORT_GRACE_MS;
+        if (CurrentVideoAuthor.lastReportMs() < navHiddenAtMs - REPORT_GRACE_MS) {
+            return false;
+        }
+
+        // The report is recent enough, but the page that made it may have been popped
+        // since, with the navigation still hidden behind whatever is left.
+        int depthNow = backStackDepth(activity);
+        int depthThen = depthAtReport;
+        return depthNow < 0 || depthThen < 0 || depthNow == depthThen;
+    }
+
+    /** Called by CurrentVideoAuthor whenever the feed reports an item. */
+    static void noteReport(Activity activity) {
+        depthAtReport = activity == null ? -1 : backStackDepth(activity);
+    }
+
+    /**
+     * @return the AndroidX fragment back stack depth, or -1 when it cannot be read. The
+     *         fragment classes are not on the extension's compile path, so this goes
+     *         through reflection on real, unobfuscated AndroidX method names.
+     */
+    private static int backStackDepth(Activity activity) {
+        if (stackUnavailable) {
+            return -1;
+        }
+        try {
+            Method managerMethod = fragmentManagerMethod;
+            if (managerMethod == null) {
+                managerMethod = activity.getClass().getMethod("getSupportFragmentManager");
+                fragmentManagerMethod = managerMethod;
+            }
+            Object manager = managerMethod.invoke(activity);
+            if (manager == null) {
+                return -1;
+            }
+
+            Method countMethod = backStackCountMethod;
+            if (countMethod == null) {
+                countMethod = manager.getClass().getMethod("getBackStackEntryCount");
+                backStackCountMethod = countMethod;
+            }
+            Object count = countMethod.invoke(manager);
+            return count instanceof Integer ? (Integer) count : -1;
+        } catch (Throwable ex) {
+            stackUnavailable = true;
+            Logger.printInfo(() -> "Fragment back stack not readable; page pops will not hide the block button");
+            return -1;
+        }
     }
 
     private static View homeTab(Activity activity) {
