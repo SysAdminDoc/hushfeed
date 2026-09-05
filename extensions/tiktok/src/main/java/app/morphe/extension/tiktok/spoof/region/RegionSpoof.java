@@ -16,7 +16,9 @@ public final class RegionSpoof {
     private RegionSpoof() { }
 
     public static boolean validCountry(String value) {
-        return value != null && COUNTRIES.contains(value.trim().toUpperCase(Locale.ROOT));
+        if (value == null) return false;
+        String code = value.trim();
+        return code.matches("[A-Za-z]{2}") && COUNTRIES.contains(code.toUpperCase(Locale.ROOT));
     }
 
     private static String selectedCountry() {
@@ -40,8 +42,17 @@ public final class RegionSpoof {
         try {
             return new Locale.Builder().setLocale(original).setRegion(country).build();
         } catch (java.util.IllformedLocaleException error) {
-            // Legacy locales may have variants rejected by Builder. Keep their language and variant.
-            return new Locale(original.getLanguage(), country, original.getVariant());
+            // Legacy variants can be invalid BCP 47. Keep the other locale fields intact.
+            try {
+                Locale.Builder builder = new Locale.Builder().setLanguage(original.getLanguage())
+                        .setScript(original.getScript()).setRegion(country);
+                for (Character key : original.getExtensionKeys()) {
+                    builder.setExtension(key, original.getExtension(key));
+                }
+                return builder.build();
+            } catch (java.util.IllformedLocaleException invalidLanguage) {
+                return original;
+            }
         }
     }
 

@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Reject malformed country input and preserve locale scripts and extensions when a legacy variant needs fallback handling.
+
 * Settings that need a restart now save immediately and show a notification instead of a restart dialog.
 
 * Keep all subtitle languages when native metadata supplies a Unicode language name or no language code. Distinct names get distinct filenames.

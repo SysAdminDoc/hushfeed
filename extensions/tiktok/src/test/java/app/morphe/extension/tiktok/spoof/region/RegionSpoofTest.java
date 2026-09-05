@@ -81,6 +81,28 @@ public class RegionSpoofTest {
         if (Build.VERSION.SDK_INT >= 24) assertEquals("IS", android.icu.util.TimeZone.getRegion(RegionSpoof.timeZone(zone).getID()));
         else assertSame(zone, RegionSpoof.timeZone(zone));
     }
+    @Test public void legacyVariantKeepsScriptAndExtensionsWhenCountryChanges() {
+        Locale original = Locale.forLanguageTag("zh-Hant-TW-u-nu-hanidec-x-custom-lvariant-WIN");
+        Locale changed = RegionSpoof.locale(original);
+        assertEquals("JP", changed.getCountry());
+        assertEquals(original.getLanguage(), changed.getLanguage());
+        assertEquals(original.getScript(), changed.getScript());
+        for (Character key : original.getExtensionKeys()) {
+            assertEquals(original.getExtension(key), changed.getExtension(key));
+        }
+    }
+    @Test public void countryCodesRejectUnicodeCaseExpansion() {
+        Locale original = Locale.CANADA_FRENCH;
+        TimeZone zone = TimeZone.getTimeZone("America/Toronto");
+        for (String value : new String[]{"ß", "ſs", "ıS", "ｊｐ"}) {
+            Settings.SIM_SPOOF_ISO.save(value);
+            assertFalse(value, RegionSpoof.validCountry(value));
+            assertSame(original, RegionSpoof.locale(original));
+            assertSame(zone, RegionSpoof.timeZone(zone));
+            assertEquals("CA", RegionSpoof.country("CA"));
+        }
+        assertTrue(RegionSpoof.validCountry(" ss "));
+    }
     @Test public void regionControlsAreReachableAndRejectInvalidCountryInput() throws Exception {
         try (var owner = Robolectric.buildActivity(app.morphe.extension.tiktok.interaction.GestureActionsTest.TestActivity.class).setup()) {
             var activity = owner.get();
