@@ -14,6 +14,14 @@ import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import app.morphe.util.getReference
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+
+private object InboxRowBindingFingerprint : Fingerprint(
+    returnType = "V",
+    parameters = listOf("I", "Ljava/lang/Object;"),
+    strings = listOf("MultiBaseVH innerOnBind data type is not match!"),
+)
 
 private object InboxNoticeItemsFingerprint : Fingerprint(
     definingClass = "Lcom/ss/android/ugc/aweme/inbox/widget/multi/NoticeWidget;",
@@ -47,6 +55,15 @@ val inboxFilterPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
+        val binding = InboxRowBindingFingerprint.method
+        check(binding.implementation!!.instructions.any { instruction ->
+            instruction.getReference<FieldReference>()?.let {
+                it.name == "itemView" && it.type == "Landroid/view/View;" &&
+                    it.definingClass == "Landroidx/recyclerview/widget/RecyclerView\$ViewHolder;"
+            } == true
+        })
+        binding.addInstruction(0,
+            "invoke-static/range {p0 .. p2}, $EXTENSION_CLASS_DESCRIPTOR->onRowBound(Ljava/lang/Object;ILjava/lang/Object;)V")
         SettingsStatusLoadFingerprint.method.addInstruction(
             0,
             "invoke-static {}, " +

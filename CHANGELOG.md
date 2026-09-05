@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Inbox system switches now use bound category data in every language, including rows already on screen. Recycled rows recover their original height, and conversation titles do not trigger system filters.
+
 * Added persistent automatic video advance using TikTok's native completion handler, with pause and dialog checks preserved. Disabling the option stops the scrolling it started.
 
 * Added a default playback speed for each new video and custom speed menu choices through 3x. Manual choices remain active for the current video, and the native menu state follows the player.

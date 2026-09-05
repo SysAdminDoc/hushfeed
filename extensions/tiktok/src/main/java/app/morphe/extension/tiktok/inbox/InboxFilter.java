@@ -93,6 +93,20 @@ public final class InboxFilter {
 
     /** Original row heights, so a hidden row can be restored exactly. */
     private static final WeakHashMap<View, Integer> ORIGINAL_HEIGHTS = new WeakHashMap<>();
+    private static final WeakHashMap<View, BooleanSetting> SYSTEM_ROWS = new WeakHashMap<>();
+
+    /** Native MultiBaseVH binding supplies category identity before localized text is laid out. */
+    public static void onRowBound(Object holder, int position, Object model) {
+        Object item = app.morphe.extension.tiktok.blockauthor.Reflect.readField(holder, "itemView");
+        if (!(item instanceof View)) return;
+        View row = (View) item;
+        if (SYSTEM_ROWS.remove(row) != null) setRowHidden(row, false);
+        BooleanSetting setting = InboxModelFilter.settingFor(model);
+        if (setting != null) {
+            SYSTEM_ROWS.put(row, setting);
+            setRowHidden(row, setting.get());
+        }
+    }
 
     private static WeakReference<Activity> activityReference = new WeakReference<>(null);
     private static ViewTreeObserver.OnGlobalLayoutListener listener;
@@ -207,35 +221,18 @@ public final class InboxFilter {
                     || matchesCustomList(textOf(findWithin(activity, row, USER_ROW_TITLE_ID)));
         }
 
-        // A system notice row. On 46.2.3 the live hierarchy shows New followers, Activity,
-        // Archive, TikTok Tako and TikTok Shop all as tyh rows with a bo5 title; none of
-        // them is conversation shaped, which is why conversations above skip these labels.
+        BooleanSetting category = SYSTEM_ROWS.get(row);
+        if (category != null) {
+            return category.get() || matchesCustomList(textOf(findWithin(activity, row, SYSTEM_ROW_TITLE_ID)));
+        }
+
+        // Unknown system rows still support the user's exact custom title list.
         if (hasId(activity, row, SYSTEM_ROW_ID)) {
             String title = textOf(findWithin(activity, row, SYSTEM_ROW_TITLE_ID));
-            return matchesSystemLabel(title) || matchesCustomList(title);
+            return matchesCustomList(title);
         }
 
         return false;
-    }
-
-    /**
-     * Matches a system row title against the built in categories. These are the visible
-     * English labels, since the rows share one container and text is all that separates
-     * them, so they stop matching if the app language changes.
-     */
-    private static boolean matchesSystemLabel(String title) {
-        if (title == null || title.isEmpty()) {
-            return false;
-        }
-        return matches(title, "New followers", Settings.HIDE_INBOX_NEW_FOLLOWERS)
-                || matches(title, "Activity", Settings.HIDE_INBOX_ACTIVITY)
-                || matches(title, "Archive", Settings.HIDE_INBOX_ARCHIVE)
-                || matches(title, "TikTok Tako", Settings.HIDE_INBOX_TAKO)
-                || matches(title, "TikTok Shop", Settings.HIDE_INBOX_SHOP);
-    }
-
-    private static boolean matches(String title, String label, BooleanSetting setting) {
-        return title.equalsIgnoreCase(label) && setting.get();
     }
 
     /** Lets the user hide a row this patch does not know about by typing its title. */

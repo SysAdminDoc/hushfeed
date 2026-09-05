@@ -17,7 +17,7 @@
 This is a private working copy of [icysymmetra/tiktok-patches-for-morphe](https://github.com/icysymmetra/tiktok-patches-for-morphe) with a few patches of my own on top. It builds the same bundle, so everything upstream ships is still here. What's added:
 
 - `Block author button`: one tap blocks whoever posted the current video, with an undo banner. Long press the button to move it. A second button blocks the current sound.
-- `Hide inbox items`: a switch for every row and header control on the Inbox tab, plus a Clear all control for suggested accounts.
+- `Hide inbox items`: a switch for every row and header control on the Inbox tab, plus a Clear all control for suggested accounts. System categories follow TikTok's row data, so their switches work in every language and leave conversations with the same title alone.
 - `Comment tools`: hide comments by keyword or by account, and block a commenter with the thumbs down on their comment.
 - `Hide video overlays`: switches for the "Search this image" prompt and the top left Live entrance.
 - `Share sheet tools`: a second tap is needed before a video goes to a friend, and people or share options can be hidden by name, or the whole Send to row.
