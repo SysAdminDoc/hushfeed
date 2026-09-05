@@ -1,5 +1,7 @@
 ## Unreleased
 
+* **privacy:** require all story, profile and typing hooks. Remove the unsupported online-status claim and describe the Firebase screen hook precisely. Seen history now clears reliably, retains at most 10,000 videos and rejects the video just watched on refreshed pages.
+
 * **build:** reject bundles missing a DEX payload or containing a stale patch list. The build instructions now put the Android task last.
 
 ## 0.13.0 (2026-09-05)
@@ -12,8 +14,8 @@
 * **feed:** a Hide already seen videos patch. Watched video ids go into a local database and are dropped from later feed pages, with a retention setting and a clear button. Nothing leaves the device
 * **feed:** switches for the playlist bar, the floating event badge and the cards TikTok inserts between videos, plus the countdown lock on short drama adverts, which now releases when ads are being removed
 * **captcha:** a second CAPTCHA patch for TikTok's risk control dialog, answering the existing switch. Off by default, it never touches SMS or two factor verification, and it logs every suppression
-* **privacy:** a Ghost mode patch that stops the reports telling other people what you looked at: story views, profile views, the typing indicator and the online dot
-* **privacy:** a Disable telemetry patch that stops ByteDance AppLog, AppsFlyer, Firebase Analytics and crash reporting at their SDK entry points. Off by default, and it silences TikTok's own diagnostics too
+* **privacy:** a Ghost mode patch that stops the reports telling other people what you looked at: story views, profile views, the typing indicator. Online status is unchanged
+* **privacy:** a Disable telemetry patch that stops ByteDance AppLog, AppsFlyer, explicit Firebase screen reports and crash reporting at their SDK entry points. Off by default, and it silences TikTok's own diagnostics too
 * **inbox:** the Archive and TikTok Shop rows are now stopped at their widget injectors, so they never lay out
 * **inbox:** three patches that work on TikTok's widgets instead of the finished views: suggested accounts and the stories tray are never built (and suggested accounts is now covered on Activity and New followers too), and the Activity and New followers lists can show in full instead of stopping at View all
 

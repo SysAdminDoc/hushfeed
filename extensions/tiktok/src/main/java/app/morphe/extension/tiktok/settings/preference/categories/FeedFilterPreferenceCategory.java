@@ -124,7 +124,7 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
             addPreference(new NumberInputPreference(
                     context,
                     "Forget seen videos after",
-                    "Days to remember a watched video for. Zero remembers them forever.",
+                    "Days to remember a video. Zero removes the age limit. History keeps at most 10,000 videos.",
                     Settings.SEEN_VIDEO_RETENTION_DAYS,
                     0,
                     3650
@@ -157,4 +157,3 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
         ));
     }
 }
-

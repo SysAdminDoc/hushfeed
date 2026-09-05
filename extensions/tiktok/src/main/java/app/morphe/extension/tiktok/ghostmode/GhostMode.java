@@ -28,8 +28,4 @@ public final class GhostMode {
     public static boolean shouldBlockTypingStatus() {
         return Settings.GHOST_MODE.get();
     }
-
-    public static boolean shouldBlockPresence() {
-        return Settings.GHOST_MODE.get();
-    }
 }

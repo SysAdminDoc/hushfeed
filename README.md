@@ -57,7 +57,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Feed tab navigation` | Controls which loaded top and bottom navigation tabs remain visible, blocks newly added tabs when requested, and can hide the Tako AI bubble. |
 | `Fix Google login` | Restores Google account sign-in after patching. |
 | `Hide already seen videos` | Keeps a local record of what you have watched and drops those videos from later feed pages. |
-| `Ghost mode` | Stops TikTok reporting that you viewed a story or a profile, that you are typing, or that you are online. |
+| `Ghost mode` | Stops TikTok reporting that you viewed a story or a profile, or that you are typing. Online status is unchanged. |
 | `Hide BdTuring CAPTCHA popups` | Hides TikTok's risk control CAPTCHA dialog, which the browsing CAPTCHA patch does not cover. Off by default; a suppressed check can make a follow or like fail silently. |
 | `Hide CAPTCHA popups` | Hides non-account verification puzzle dialogs, including those shown while browsing LIVE. Account verification remains available, and server checks are not bypassed. |
 | `Hide floating promotions` | Removes floating promotional badges, coin icons, and timer banners from the Home feed. |
@@ -67,7 +67,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Hide feed follow button` | Hides the plus button under the creator's avatar on the action rail. |
 | `Hide feed save button` | Hides the save button on the action rail. |
 | `Hide feed search button` | Hides the search button at the top right of the feed. |
-| `Disable telemetry` | Stops ByteDance AppLog analytics, AppsFlyer attribution, Firebase Analytics and crash reporting from being sent. |
+| `Disable telemetry` | Stops ByteDance AppLog analytics, AppsFlyer attribution, explicit Firebase screen reports and crash reporting from being sent. |
 | `Hide suggested accounts` | Stops the suggested accounts list from being built on the Activity, New followers and Inbox pages. |
 | `Hide inbox stories` | Stops the stories tray at the top of the Inbox from being built. |
 | `Expand activity list` | Shows the whole Activity and New followers lists instead of stopping at a View all button. |

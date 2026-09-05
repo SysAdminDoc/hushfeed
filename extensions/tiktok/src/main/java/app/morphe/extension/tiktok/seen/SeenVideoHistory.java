@@ -40,6 +40,9 @@ public final class SeenVideoHistory {
     private static final long MIN_MARK_MS = 1_000L;
     private static final long MAX_MARK_MS = 5_000L;
     private static final int MARK_PERCENT = 10;
+    private static final int MAX_RECORDS = 10_000;
+    private static final Object HISTORY_LOCK = new Object();
+    private static int generation;
 
     private static final ConcurrentHashMap<String, Long> SEEN = new ConcurrentHashMap<>();
     private static final ExecutorService IO = Executors.newSingleThreadExecutor(runnable -> {
@@ -50,7 +53,6 @@ public final class SeenVideoHistory {
     private static final AtomicBoolean LOAD_STARTED = new AtomicBoolean();
 
     private static volatile Database database;
-    private static volatile String currentPlaybackAid;
     private static volatile String callbackAid;
     private static volatile boolean callbackAidMarked;
 
@@ -62,8 +64,6 @@ public final class SeenVideoHistory {
         if (normalizedAid == null) {
             return;
         }
-
-        currentPlaybackAid = normalizedAid;
 
         if (!normalizedAid.equals(callbackAid)) {
             callbackAid = normalizedAid;
@@ -90,10 +90,6 @@ public final class SeenVideoHistory {
         if (normalizedAid == null) {
             return false;
         }
-        if (normalizedAid.equals(currentPlaybackAid)) {
-            return false;
-        }
-
         ensureLoaded();
         Long lastSeen = SEEN.get(normalizedAid);
         if (lastSeen == null) {
@@ -105,23 +101,26 @@ public final class SeenVideoHistory {
             return true;
         }
 
-        SEEN.remove(normalizedAid, lastSeen);
-        deleteAsync(normalizedAid);
+        if (SEEN.remove(normalizedAid, lastSeen)) {
+            deleteAsync(normalizedAid, lastSeen);
+        }
         return false;
     }
 
     public static void clear() {
-        SEEN.clear();
-        currentPlaybackAid = null;
-        callbackAid = null;
-        callbackAidMarked = false;
-        IO.execute(() -> {
-            try {
-                getDatabase().getWritableDatabase().delete(TABLE, null, null);
-            } catch (Throwable throwable) {
-                Logger.printException(() -> "Seen video history clear failed", throwable);
-            }
-        });
+        synchronized (HISTORY_LOCK) {
+            generation++;
+            SEEN.clear();
+            callbackAid = null;
+            callbackAidMarked = false;
+            IO.execute(() -> {
+                try {
+                    getDatabase().getWritableDatabase().delete(TABLE, null, null);
+                } catch (Throwable throwable) {
+                    Logger.printException(() -> "Seen video history clear failed", throwable);
+                }
+            });
+        }
     }
 
     public static int size() {
@@ -130,79 +129,91 @@ public final class SeenVideoHistory {
     }
 
     private static void markSeen(String aid, long nowMs) {
-        ensureLoaded();
-        SEEN.put(aid, nowMs);
-        IO.execute(() -> {
-            try {
-                ContentValues values = new ContentValues();
-                values.put(COLUMN_AID, aid);
-                values.put(COLUMN_LAST_SEEN, nowMs);
-                getDatabase().getWritableDatabase().insertWithOnConflict(
-                        TABLE,
-                        null,
-                        values,
-                        SQLiteDatabase.CONFLICT_REPLACE
-                );
-                pruneDatabase(nowMs);
-            } catch (Throwable throwable) {
-                Logger.printException(() -> "Seen video history write failed", throwable);
-            }
-        });
+        synchronized (HISTORY_LOCK) {
+            ensureLoaded();
+            SEEN.put(aid, nowMs);
+            trimMemory();
+            IO.execute(() -> {
+                try {
+                    ContentValues values = new ContentValues();
+                    values.put(COLUMN_AID, aid);
+                    values.put(COLUMN_LAST_SEEN, nowMs);
+                    getDatabase().getWritableDatabase().insertWithOnConflict(
+                            TABLE,
+                            null,
+                            values,
+                            SQLiteDatabase.CONFLICT_REPLACE
+                    );
+                    pruneDatabase(nowMs);
+                } catch (Throwable throwable) {
+                    Logger.printException(() -> "Seen video history write failed", throwable);
+                }
+            });
+        }
     }
 
     private static void ensureLoaded() {
-        if (!LOAD_STARTED.compareAndSet(false, true)) {
-            return;
-        }
-
-        IO.execute(() -> {
-            long nowMs = System.currentTimeMillis();
-            long cutoff = retentionCutoff(nowMs);
-            try {
-                SQLiteDatabase readable = getDatabase().getReadableDatabase();
-                String selection = cutoff == Long.MIN_VALUE ? null : COLUMN_LAST_SEEN + " >= ?";
-                String[] selectionArgs = cutoff == Long.MIN_VALUE
-                        ? null
-                        : new String[]{String.valueOf(cutoff)};
-                try (Cursor cursor = readable.query(
-                        TABLE,
-                        new String[]{COLUMN_AID, COLUMN_LAST_SEEN},
-                        selection,
-                        selectionArgs,
-                        null,
-                        null,
-                        null
-                )) {
-                    int aidColumn = cursor.getColumnIndexOrThrow(COLUMN_AID);
-                    int seenColumn = cursor.getColumnIndexOrThrow(COLUMN_LAST_SEEN);
-                    while (cursor.moveToNext()) {
-                        String aid = normalizeAid(cursor.getString(aidColumn));
-                        if (aid == null) {
-                            continue;
-                        }
-                        long persisted = cursor.getLong(seenColumn);
-                        SEEN.merge(aid, persisted, Math::max);
-                    }
-                }
-                pruneDatabase(nowMs);
-            } catch (Throwable throwable) {
-                Logger.printException(() -> "Seen video history load failed", throwable);
+        synchronized (HISTORY_LOCK) {
+            if (!LOAD_STARTED.compareAndSet(false, true)) {
+                return;
             }
-        });
+            final int loadGeneration = generation;
+            IO.execute(() -> {
+                long nowMs = System.currentTimeMillis();
+                long cutoff = retentionCutoff(nowMs);
+                try {
+                    SQLiteDatabase readable = getDatabase().getReadableDatabase();
+                    String selection = cutoff == Long.MIN_VALUE ? null : COLUMN_LAST_SEEN + " >= ?";
+                    String[] selectionArgs = cutoff == Long.MIN_VALUE
+                            ? null
+                            : new String[]{String.valueOf(cutoff)};
+                    try (Cursor cursor = readable.query(
+                            TABLE,
+                            new String[]{COLUMN_AID, COLUMN_LAST_SEEN},
+                            selection,
+                            selectionArgs,
+                            null,
+                            null,
+                            COLUMN_LAST_SEEN + " DESC",
+                            String.valueOf(MAX_RECORDS)
+                    )) {
+                        int aidColumn = cursor.getColumnIndexOrThrow(COLUMN_AID);
+                        int seenColumn = cursor.getColumnIndexOrThrow(COLUMN_LAST_SEEN);
+                        while (cursor.moveToNext()) {
+                            String aid = normalizeAid(cursor.getString(aidColumn));
+                            if (aid == null) {
+                                continue;
+                            }
+                            long persisted = cursor.getLong(seenColumn);
+                            synchronized (HISTORY_LOCK) {
+                                if (generation != loadGeneration) break;
+                                SEEN.merge(aid, persisted, Math::max);
+                                trimMemory();
+                            }
+                        }
+                    }
+                    pruneDatabase(nowMs);
+                } catch (Throwable throwable) {
+                    Logger.printException(() -> "Seen video history load failed", throwable);
+                }
+            });
+        }
     }
 
     private static void pruneDatabase(long nowMs) {
         long cutoff = retentionCutoff(nowMs);
-        if (cutoff == Long.MIN_VALUE) {
-            return;
-        }
-
         try {
+            if (cutoff != Long.MIN_VALUE) {
             getDatabase().getWritableDatabase().delete(
                     TABLE,
                     COLUMN_LAST_SEEN + " < ?",
                     new String[]{String.valueOf(cutoff)}
             );
+            }
+            getDatabase().getWritableDatabase().execSQL(
+                    "DELETE FROM " + TABLE + " WHERE " + COLUMN_AID + " NOT IN (SELECT "
+                            + COLUMN_AID + " FROM " + TABLE + " ORDER BY " + COLUMN_LAST_SEEN
+                            + " DESC LIMIT " + MAX_RECORDS + ")");
         } catch (Throwable throwable) {
             Logger.printException(() -> "Seen video history prune failed", throwable);
         }
@@ -215,13 +226,25 @@ public final class SeenVideoHistory {
         }
     }
 
-    private static void deleteAsync(String aid) {
+    private static void trimMemory() {
+        // Called under HISTORY_LOCK. Scanning happens only when a new id reaches the cap.
+        while (SEEN.size() > MAX_RECORDS) {
+            Map.Entry<String, Long> oldest = null;
+            for (Map.Entry<String, Long> entry : SEEN.entrySet()) {
+                if (oldest == null || entry.getValue() < oldest.getValue()) oldest = entry;
+            }
+            if (oldest == null) return;
+            SEEN.remove(oldest.getKey(), oldest.getValue());
+        }
+    }
+
+    private static void deleteAsync(String aid, long expiredTimestamp) {
         IO.execute(() -> {
             try {
                 getDatabase().getWritableDatabase().delete(
                         TABLE,
-                        COLUMN_AID + " = ?",
-                        new String[]{aid}
+                        COLUMN_AID + " = ? AND " + COLUMN_LAST_SEEN + " <= ?",
+                        new String[]{aid, String.valueOf(expiredTimestamp)}
                 );
             } catch (Throwable throwable) {
                 Logger.printException(() -> "Seen video history delete failed", throwable);

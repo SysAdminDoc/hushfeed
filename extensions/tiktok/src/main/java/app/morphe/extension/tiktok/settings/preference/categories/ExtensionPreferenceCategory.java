@@ -101,7 +101,7 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                     context,
                     "Ghost mode",
                     "Stop TikTok reporting that you viewed a story or a profile, that you are "
-                            + "typing, or that you are online. It cannot undo what the server has "
+                            + "typing. Online status is unchanged. It cannot undo what the server has "
                             + "already recorded.",
                     Settings.GHOST_MODE
             ));
@@ -110,7 +110,7 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
             addPreference(new TogglePreference(
                     context,
                     "Disable analytics and tracking",
-                    "Stop ByteDance AppLog events, AppsFlyer attribution, Firebase Analytics and "
+                    "Stop ByteDance AppLog events, AppsFlyer attribution, explicit Firebase screen reports and "
                             + "crash reporting from being sent. TikTok's own diagnostics go quiet with them.",
                     Settings.DISABLE_ANALYTICS
             ));
@@ -143,4 +143,3 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
 
     }
 }
-

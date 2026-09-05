@@ -44,13 +44,6 @@ private object TypingStatusSenderFingerprint : Fingerprint(
     },
 )
 
-/** Brings up the active status (green dot) reporting. The name is obfuscated, so optional. */
-private object ActivityStatusInitFingerprint : Fingerprint(
-    custom = { method, classDef ->
-        classDef.endsWith("/IMActiveStatusImpl;") && method.name == "LJIILL"
-    },
-)
-
 /**
  * Returns from the method before it reports anything, when the extension says to. The
  * return instruction is chosen from the method's own return type rather than assumed, and
@@ -89,14 +82,14 @@ private fun MutableMethod.guardWith(extensionMethodName: String): Boolean {
 
 /**
  * Stops the reports that tell other people what you looked at: story views, profile
- * views, the typing indicator and the active status dot. It suppresses the client's own
+ * views and the typing indicator. It suppresses the client's own
  * reporting only; nothing here changes what the server already knows.
  */
 @Suppress("unused")
 val ghostModePatch = bytecodePatch(
     name = "Ghost mode",
     description = "Adds an option to stop TikTok reporting that you viewed a story or a " +
-        "profile, that you are typing, or that you are online. Supports TikTok 46.2.3.",
+        "profile or that you are typing. Online status is unchanged. Supports TikTok 46.2.3.",
     default = false,
 ) {
     dependsOn(sharedExtensionPatch)
@@ -110,26 +103,16 @@ val ghostModePatch = bytecodePatch(
                 "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableGhostMode()V",
         )
 
-        val storyReports = StoryViewReportFingerprint.matchAll()
-            .count { it.method.guardWith("shouldBlockStoryView") }
-        if (storyReports == 0) {
-            throw PatchException("Ghost mode: found no story view report to guard.")
+        listOf(
+            StoryViewReportFingerprint to "shouldBlockStoryView",
+            ProfileViewReportFingerprint to "shouldBlockProfileView",
+            TypingStatusSenderFingerprint to "shouldBlockTypingStatus",
+        ).forEach { (fingerprint, guard) ->
+            // Retrofit declarations have no body. Every concrete reporting method is mandatory.
+            val methods = fingerprint.matchAll().map { it.method }.filter { it.implementation != null }
+            if (methods.isEmpty() || methods.any { !it.guardWith(guard) }) {
+                throw PatchException("Ghost mode: could not install every $guard hook.")
+            }
         }
-
-        val profileReports = ProfileViewReportFingerprint.matchAll()
-            .count { it.method.guardWith("shouldBlockProfileView") }
-        if (profileReports == 0) {
-            throw PatchException("Ghost mode: found no profile view report to guard.")
-        }
-
-        val typingReports = TypingStatusSenderFingerprint.matchAll()
-            .count { it.method.guardWith("shouldBlockTypingStatus") }
-        if (typingReports == 0) {
-            throw PatchException("Ghost mode: found no typing indicator sender to guard.")
-        }
-
-        // The active status method carries an obfuscated name, so losing it is not fatal.
-        ActivityStatusInitFingerprint.matchAllOrNull()
-            ?.forEach { it.method.guardWith("shouldBlockPresence") }
     }
 }
