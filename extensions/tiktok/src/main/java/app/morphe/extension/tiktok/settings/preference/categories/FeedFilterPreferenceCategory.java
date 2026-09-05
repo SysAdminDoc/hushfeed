@@ -12,6 +12,8 @@ import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.RangeValuePreference;
 import app.morphe.extension.tiktok.settings.preference.InputTextPreference;
+import app.morphe.extension.tiktok.settings.preference.ClearSeenVideoHistoryPreference;
+import app.morphe.extension.tiktok.settings.preference.NumberInputPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 
 @SuppressWarnings("deprecation")
@@ -111,6 +113,24 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
                 "Comma separated sound ids recorded by the player's sound button. Remove one to unblock it.",
                 Settings.BLOCKED_SOUND_IDS
         ));
+        if (SettingsStatus.seenVideoFilterEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide videos you have already seen",
+                    "Keep a local record of what you have watched and drop those videos from "
+                            + "later feed pages.",
+                    Settings.HIDE_SEEN_VIDEOS
+            ));
+            addPreference(new NumberInputPreference(
+                    context,
+                    "Forget seen videos after",
+                    "Days to remember a watched video for. Zero remembers them forever.",
+                    Settings.SEEN_VIDEO_RETENTION_DAYS,
+                    0,
+                    3650
+            ));
+            addPreference(new ClearSeenVideoHistoryPreference(context));
+        }
         addPreference(new TogglePreference(
                 context,
                 "Hide the playlist bar",

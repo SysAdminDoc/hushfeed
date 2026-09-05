@@ -256,7 +256,8 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     Settings.HIDE_IMAGE.get(),
                     Settings.HIDE_PLAYLIST_BAR.get(),
                     Settings.HIDE_EVENT_BADGE.get(),
-                    Settings.HIDE_INSERTED_CARDS.get()
+                    Settings.HIDE_INSERTED_CARDS.get(),
+                    SettingsStatus.seenVideoFilterEnabled && Settings.HIDE_SEEN_VIDEOS.get()
             ));
         }
         if (SettingsStatus.feedNavigationEnabled) {

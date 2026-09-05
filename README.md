@@ -56,6 +56,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Feed filter` | Hides feed ads, TikTok Shop items, livestreams, stories, photo posts, the playlist bar, the floating event badge, inserted cards, the countdown lock on short drama adverts, and videos outside configured view or like ranges, with optional filtering of cached and offline FYP fallback videos. |
 | `Feed tab navigation` | Controls which loaded top and bottom navigation tabs remain visible, blocks newly added tabs when requested, and can hide the Tako AI bubble. |
 | `Fix Google login` | Restores Google account sign-in after patching. |
+| `Hide already seen videos` | Keeps a local record of what you have watched and drops those videos from later feed pages. |
 | `Ghost mode` | Stops TikTok reporting that you viewed a story or a profile, that you are typing, or that you are online. |
 | `Hide BdTuring CAPTCHA popups` | Hides TikTok's risk control CAPTCHA dialog, which the browsing CAPTCHA patch does not cover. Off by default; a suppressed check can make a follow or like fail silently. |
 | `Hide CAPTCHA popups` | Hides non-account verification puzzle dialogs, including those shown while browsing LIVE. Account verification remains available, and server checks are not bypassed. |

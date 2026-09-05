@@ -64,20 +64,6 @@ with anchors present first, then adaptations, then new builds.
 
 ### P1
 
-- [ ] P1 - Hide already seen videos
-  Why: unique to BlueDragon; a local watch history that drops rewatched videos from the FYP and
-  Follow feeds.
-  Evidence: others/BlueDragon4251_tiktok-patches-for-morphe interaction/seen/HideSeenVideosPatch.kt,
-  extension seen/SeenVideoHistory.java (SQLite), feedfilter/SeenVideoFeedFilter.java;
-  `onPlayProgressChange(String,J,J)V` on `/PlayerController;` present in 18 dex; its ForYou
-  fingerprint is 46.4.3 only and must be swapped for our MainFeedResponseFingerprint.
-  Touches: new patch (one hook), SeenVideoHistory + SeenVideoFeedFilter registered as an IFilter
-  in FeedItemsFilter.CONTENT_FILTERS, Settings.java (`hide_seen_videos` FALSE, retention days),
-  FeedFilterPreferenceCategory (switch, retention, clear history).
-  Acceptance: a video watched past 3 s does not reappear after refresh; Clear history empties the
-  table; retention prunes rows older than the setting.
-  Complexity: M
-
 ### P2
 
 - [ ] P2 - Share sheet data-level backend from PR #143
