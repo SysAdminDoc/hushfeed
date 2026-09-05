@@ -1,5 +1,5 @@
 {
-  "version": "0.7.0",
+  "version": "v0.7.0",
   "appNames": {
     "com.zhiliaoapp.musically": "TikTok"
   },
@@ -8,6 +8,34 @@
       "name": "Always show publish date",
       "description": "Always shows the publish date in video author information. Thanks to lyyako for the original implementation.",
       "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Block author button",
+      "description": "Adds a block button to the video player that blocks the account that posted the current video in one tap, with an undo action. Supports TikTok 46.2.3.",
+      "use": false,
       "dependencies": [
         "BytecodePatch"
       ],
