@@ -260,8 +260,13 @@ public final class BlockAuthorOverlay {
 
     /** Moves the button, keeping it fully inside its parent. */
     private static void moveTo(View view, ViewGroup parent, float left, float top) {
-        int maxLeft = Math.max(0, parent.getWidth() - view.getWidth());
-        int maxTop = Math.max(0, parent.getHeight() - view.getHeight());
+        // Before the first layout the view has no size, so fall back to the size it was
+        // given, or the clamp would let it sit partly off the right and bottom edges.
+        ViewGroup.LayoutParams layout = view.getLayoutParams();
+        int width = view.getWidth() > 0 ? view.getWidth() : layout.width;
+        int height = view.getHeight() > 0 ? view.getHeight() : layout.height;
+        int maxLeft = Math.max(0, parent.getWidth() - width);
+        int maxTop = Math.max(0, parent.getHeight() - height);
 
         ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
         params.leftMargin = Math.round(Math.min(Math.max(left, 0), maxLeft));

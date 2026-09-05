@@ -38,6 +38,7 @@ import java.lang.reflect.Modifier;
 public final class BlockAuthorService {
     private static final String BLOCK_API = "com.ss.android.ugc.aweme.profile.api.BlockApi";
     private static final String BLOCK_SERVICE = BLOCK_API + "$BlockService";
+    private static final String BLOCK_STRUCT = "com.ss.android.ugc.aweme.profile.model.BlockStruct";
 
     private static final int BLOCK = 1;
     private static final int UNBLOCK = 0;
@@ -107,13 +108,58 @@ public final class BlockAuthorService {
             return false;
         }
 
-        // Mirrors TikTok's own call site: execute synchronously, and treat a request that
-        // returns without throwing as accepted.
+        // Mirrors TikTok's own call site: execute synchronously, then read the status code
+        // off the response body. TikTok reports a refusal (rate limited, already blocked)
+        // as a body with a non-zero status code rather than an exception.
         Method execute = call.getClass().getMethod("execute");
         execute.setAccessible(true);
         Object response = execute.invoke(call);
+        if (response == null) {
+            return false;
+        }
 
-        return response != null;
+        Integer status = statusCodeOf(response);
+        if (status == null) {
+            // Body shape unknown: a request that came back without throwing is the best
+            // signal available.
+            return true;
+        }
+        if (status != 0) {
+            Logger.printInfo(() -> "Block request refused with status " + status);
+        }
+        return status == 0;
+    }
+
+    /**
+     * Digs the {@code BlockStruct} body out of the response wrapper and reads its status
+     * code. The wrapper's field names are obfuscated, but the body's class name is not, so
+     * the body is located by declared type.
+     */
+    private static Integer statusCodeOf(Object response) {
+        Object body = Reflect.invoke(response, "body");
+        if (body == null) {
+            for (Field field : response.getClass().getDeclaredFields()) {
+                if (!BLOCK_STRUCT.equals(field.getType().getName())) {
+                    continue;
+                }
+                try {
+                    field.setAccessible(true);
+                    body = field.get(response);
+                } catch (Exception ignored) {
+                    body = null;
+                }
+                break;
+            }
+        }
+        if (body == null) {
+            return null;
+        }
+
+        Object status = Reflect.property(body, "getStatusCode", "status_code");
+        if (status == null) {
+            status = Reflect.readField(body, "statusCode");
+        }
+        return status instanceof Number ? ((Number) status).intValue() : null;
     }
 
     private static Method blockMethod() throws Exception {

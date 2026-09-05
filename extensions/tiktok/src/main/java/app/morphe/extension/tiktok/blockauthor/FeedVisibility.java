@@ -41,7 +41,9 @@ final class FeedVisibility {
         if (homeTab == null) {
             return true;
         }
-        return homeTab.isSelected();
+        // A profile or similar page pushed over the feed leaves Home selected but hides
+        // the bottom navigation, so the tab has to be both selected and actually shown.
+        return homeTab.isSelected() && homeTab.isShown();
     }
 
     private static View homeTab(Activity activity) {

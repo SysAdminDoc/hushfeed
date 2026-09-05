@@ -13,14 +13,7 @@ import app.morphe.extension.shared.Logger;
  * feed item becomes current.
  */
 public final class CurrentVideoAuthor {
-    /**
-     * How long a captured author stays valid. If the feed view model stops reporting,
-     * the button hides itself rather than acting on a stale account.
-     */
-    private static final long FRESHNESS_MS = 30_000L;
-
     private static volatile VideoAuthor author;
-    private static volatile long capturedAtMs;
 
     private CurrentVideoAuthor() {
     }
@@ -36,7 +29,6 @@ public final class CurrentVideoAuthor {
 
         VideoAuthor previous = author;
         author = parsed;
-        capturedAtMs = System.currentTimeMillis();
 
         if (!parsed.equals(previous)) {
             Logger.printDebug(() -> "Current video author: " + parsed.label()
@@ -45,16 +37,14 @@ public final class CurrentVideoAuthor {
         }
     }
 
-    /** @return the current author, or null when nothing fresh has been captured. */
+    /**
+     * @return the author of the video most recently made current, or null before the
+     *         first one. There is deliberately no expiry: a video can run for minutes,
+     *         and the feed only reports again when the item changes. Keeping the button
+     *         off other screens is {@link FeedVisibility}'s job, not this one's.
+     */
     public static VideoAuthor get() {
-        VideoAuthor current = author;
-        if (current == null) {
-            return null;
-        }
-        if (System.currentTimeMillis() - capturedAtMs > FRESHNESS_MS) {
-            return null;
-        }
-        return current;
+        return author;
     }
 
     private static VideoAuthor parse(Object videoItemParams) {

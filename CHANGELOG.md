@@ -1,3 +1,18 @@
+## Unreleased
+
+### Features
+
+* **tiktok:** add a one-tap block button to the video player, with an undo banner and a drag-to-move position that is remembered
+* **tiktok:** add a switch for each Inbox row and header control, and a Clear all control for suggested accounts
+
+### Bug Fixes
+
+* **block-button:** hide the button off the video feed, and keep it available on videos longer than thirty seconds
+* **block-button:** treat a block reply with a non-zero status code as a refusal instead of a success
+* **inbox:** stop hiding every conversation when only message requests are switched off
+* **inbox:** match the suggested accounts section, which uses none of the row title ids
+* **inbox:** resolve view ids once instead of on every layout pass
+
 # [0.7.0](https://github.com/icysymmetra/tiktok-patches-for-morphe/compare/v0.6.1...v0.7.0) (2026-08-23)
 
 
