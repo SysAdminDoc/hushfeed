@@ -4,6 +4,8 @@
  */
 package app.morphe.extension.tiktok.blockauthor;
 
+import android.os.SystemClock;
+
 import app.morphe.extension.shared.Logger;
 
 /**
@@ -15,6 +17,9 @@ import app.morphe.extension.shared.Logger;
 public final class CurrentVideoAuthor {
     private static volatile VideoAuthor author;
 
+    /** When the feed last reported an item, on the monotonic clock. Read by FeedVisibility. */
+    private static volatile long lastReportMs;
+
     private CurrentVideoAuthor() {
     }
 
@@ -22,8 +27,17 @@ public final class CurrentVideoAuthor {
      * @param videoItemParams a {@code com.ss.android.ugc.aweme.feed.model.VideoItemParams}
      */
     static void update(Object videoItemParams) {
+        lastReportMs = SystemClock.elapsedRealtime();
+
         VideoAuthor parsed = parse(videoItemParams);
         if (parsed == null || !parsed.isUsable()) {
+            // A card with nothing to block (a LIVE preview, a promo, an end of feed card)
+            // must not leave the previous creator armed behind the button.
+            if (author != null) {
+                author = null;
+                Logger.printDebug(() -> "Current item has no blockable author");
+                BlockAuthorOverlay.onAuthorChanged(null);
+            }
             return;
         }
 
@@ -45,6 +59,11 @@ public final class CurrentVideoAuthor {
      */
     public static VideoAuthor get() {
         return author;
+    }
+
+    /** @return {@link SystemClock#elapsedRealtime()} of the most recent feed report, or 0. */
+    static long lastReportMs() {
+        return lastReportMs;
     }
 
     private static VideoAuthor parse(Object videoItemParams) {

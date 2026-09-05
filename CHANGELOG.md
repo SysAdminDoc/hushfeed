@@ -8,6 +8,7 @@
 ### Bug Fixes
 
 * **block-button:** hide the button off the video feed, and keep it available on videos longer than thirty seconds
+* **block-button:** keep the button on a video opened from a profile or search, hide it over a profile page, and drop it on cards that have no account to block
 * **block-button:** treat a block reply with a non-zero status code as a refusal instead of a success
 * **inbox:** stop hiding every conversation when only message requests are switched off
 * **inbox:** match the suggested accounts section, which uses none of the row title ids

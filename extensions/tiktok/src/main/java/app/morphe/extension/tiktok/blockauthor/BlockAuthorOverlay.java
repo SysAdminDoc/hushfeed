@@ -60,9 +60,14 @@ public final class BlockAuthorOverlay {
     private BlockAuthorOverlay() {
     }
 
+    /** @param author the new current author, or null when the current item has none. */
     static void onAuthorChanged(VideoAuthor author) {
         if (!Settings.BLOCK_AUTHOR_BUTTON.get()) {
             Utils.runOnMainThread(BlockAuthorOverlay::detach);
+            return;
+        }
+        if (author == null) {
+            Utils.runOnMainThread(BlockAuthorOverlay::syncVisibility);
             return;
         }
         Utils.runOnMainThread(() -> attach(author));
@@ -97,7 +102,7 @@ public final class BlockAuthorOverlay {
         if (activity == null) {
             return;
         }
-        setFeedVisible(FeedVisibility.isOnFeed(activity));
+        setFeedVisible(FeedVisibility.isOnFeed(activity) && CurrentVideoAuthor.get() != null);
     }
 
     private static void attach(VideoAuthor author) {

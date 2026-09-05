@@ -5,6 +5,7 @@
 package app.morphe.extension.tiktok.blockauthor;
 
 import android.app.Activity;
+import android.os.SystemClock;
 import android.view.View;
 
 import app.morphe.extension.shared.Logger;
@@ -29,6 +30,19 @@ final class FeedVisibility {
     private static WeakReference<View> homeTabReference = new WeakReference<>(null);
     private static volatile boolean warnedMissing;
 
+    /**
+     * When the bottom navigation was last seen disappearing, on the monotonic clock, or
+     * -1 while it is showing.
+     */
+    private static long navHiddenAtMs = -1L;
+
+    /**
+     * A video page that opens from a profile grid or search hides the navigation and
+     * reports its author at about the same moment, in either order. A report this close
+     * to the hide is taken as belonging to the new page rather than the feed behind it.
+     */
+    private static final long REPORT_GRACE_MS = 1_500L;
+
     private FeedVisibility() {
     }
 
@@ -41,9 +55,19 @@ final class FeedVisibility {
         if (homeTab == null) {
             return true;
         }
-        // A profile or similar page pushed over the feed leaves Home selected but hides
-        // the bottom navigation, so the tab has to be both selected and actually shown.
-        return homeTab.isSelected() && homeTab.isShown();
+        if (homeTab.isShown()) {
+            navHiddenAtMs = -1L;
+            return homeTab.isSelected();
+        }
+
+        // The bottom navigation is hidden. That is either a profile page pushed over the
+        // feed, which should hide the button, or a video page opened from a profile grid
+        // or search, which should keep it. Only the video page reports an author after
+        // the navigation goes, so the order of those two events tells them apart.
+        if (navHiddenAtMs < 0) {
+            navHiddenAtMs = SystemClock.elapsedRealtime();
+        }
+        return CurrentVideoAuthor.lastReportMs() >= navHiddenAtMs - REPORT_GRACE_MS;
     }
 
     private static View homeTab(Activity activity) {

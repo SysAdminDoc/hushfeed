@@ -207,7 +207,9 @@ public final class InboxFilter {
                     || matchesCustomList(textOf(findWithin(activity, row, USER_ROW_TITLE_ID)));
         }
 
-        // A system notice row: New followers, Activity, Archive, Tako, Shop.
+        // A system notice row. On 46.2.3 the live hierarchy shows New followers, Activity,
+        // Archive, TikTok Tako and TikTok Shop all as tyh rows with a bo5 title; none of
+        // them is conversation shaped, which is why conversations above skip these labels.
         if (hasId(activity, row, SYSTEM_ROW_ID)) {
             String title = textOf(findWithin(activity, row, SYSTEM_ROW_TITLE_ID));
             return matchesSystemLabel(title) || matchesCustomList(title);
@@ -289,10 +291,15 @@ public final class InboxFilter {
         clearAll.setPadding(padding, 0, padding, 0);
         clearAll.setOnClickListener(view -> clearAllSuggested(activity));
 
-        // Zero width with weight takes whatever the title and Learn more leave, and the
-        // end gravity parks the text against the right edge.
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
+        // The heading is a horizontal LinearLayout on 46.2.3 (title at x 45 to 457, Learn
+        // more at 470 to 501, of 1080), so zero width with weight takes the slack and the
+        // end gravity parks the text at the right edge. Any other parent would keep the
+        // zero width and drop the weight, leaving an invisible control, so it gets a
+        // plain wrap instead.
+        ViewGroup.LayoutParams params = headerGroup instanceof LinearLayout
+                ? new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+                : new ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
         headerGroup.addView(clearAll, params);
 
         Logger.printDebug(() -> "Clear all control added to the suggested accounts heading");
@@ -357,9 +364,11 @@ public final class InboxFilter {
     }
 
     /**
-     * The remove button's description names the account ("Remove name from suggested
-     * accounts"), which identifies the row however its view gets recycled. A button with
-     * no description falls back to its identity.
+     * The remove button's description names the account, which identifies the row however
+     * its view gets recycled. Read off the live hierarchy on 46.2.3: "Remove Whitemanstandup
+     * from suggested accounts", "Remove chieftwit7 from suggested accounts", one per row. A
+     * button with no description falls back to its identity, which is the pre-recycling
+     * behaviour rather than a stop.
      */
     private static String labelOf(View button) {
         CharSequence description = button.getContentDescription();

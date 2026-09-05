@@ -51,6 +51,7 @@ public final class BlockAuthorService {
 
     private static volatile Object cachedService;
     private static volatile Method cachedBlockMethod;
+    private static volatile boolean warnedUnreadableBody;
 
     private BlockAuthorService() {
     }
@@ -138,20 +139,14 @@ public final class BlockAuthorService {
     private static Integer statusCodeOf(Object response) {
         Object body = Reflect.invoke(response, "body");
         if (body == null) {
-            for (Field field : response.getClass().getDeclaredFields()) {
-                if (!BLOCK_STRUCT.equals(field.getType().getName())) {
-                    continue;
-                }
-                try {
-                    field.setAccessible(true);
-                    body = field.get(response);
-                } catch (Exception ignored) {
-                    body = null;
-                }
-                break;
-            }
+            body = findBlockStruct(response);
         }
         if (body == null) {
+            if (!warnedUnreadableBody) {
+                warnedUnreadableBody = true;
+                Logger.printInfo(() -> "Block reply body could not be read from "
+                        + response.getClass().getName() + "; refusals will not be detected");
+            }
             return null;
         }
 
@@ -160,6 +155,32 @@ public final class BlockAuthorService {
             status = Reflect.readField(body, "statusCode");
         }
         return status instanceof Number ? ((Number) status).intValue() : null;
+    }
+
+    /**
+     * The wrapper keeps the body in a generic field, whose declared type is {@code Object}
+     * once erased, so the body has to be found by the class of the value it holds.
+     */
+    private static Object findBlockStruct(Object response) {
+        Class<?> type = response.getClass();
+        while (type != null && type != Object.class) {
+            for (Field field : type.getDeclaredFields()) {
+                if (Modifier.isStatic(field.getModifiers())) {
+                    continue;
+                }
+                try {
+                    field.setAccessible(true);
+                    Object value = field.get(response);
+                    if (value != null && BLOCK_STRUCT.equals(value.getClass().getName())) {
+                        return value;
+                    }
+                } catch (Exception ignored) {
+                    // Inaccessible field; keep looking.
+                }
+            }
+            type = type.getSuperclass();
+        }
+        return null;
     }
 
     private static Method blockMethod() throws Exception {
