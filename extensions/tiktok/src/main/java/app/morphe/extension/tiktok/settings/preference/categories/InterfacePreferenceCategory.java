@@ -22,7 +22,8 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
     public boolean getSettingsStatus() {
         return SettingsStatus.captchaPopupSuppressionEnabled
                 || SettingsStatus.promotionalBannersEnabled
-                || SettingsStatus.alwaysShowPublishDateEnabled;
+                || SettingsStatus.alwaysShowPublishDateEnabled
+                || SettingsStatus.videoOverlaysEnabled;
     }
 
     @Override
@@ -49,6 +50,20 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
                     "Always show publish date",
                     "Always show the publish date in video author information. Requires restart.",
                     Settings.ALWAYS_SHOW_PUBLISH_DATE
+            ));
+        }
+        if (SettingsStatus.videoOverlaysEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide visual search prompt",
+                    "Hide the \"Search this image\" prompt TikTok shows over videos when it spots something to shop for.",
+                    Settings.HIDE_VISUAL_SEARCH
+            ));
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide Live entrance",
+                    "Hide the Live button in the top left corner of the feed.",
+                    Settings.HIDE_LIVE_ENTRANCE
             ));
         }
     }

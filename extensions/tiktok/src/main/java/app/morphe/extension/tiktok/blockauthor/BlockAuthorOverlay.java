@@ -470,15 +470,28 @@ public final class BlockAuthorOverlay {
      */
     public static void showUndoBanner(String message, Runnable undoAction) {
         Utils.runOnMainThread(() -> {
+            Activity activity = Utils.getActivity();
+            ViewGroup root = activity == null || activity.isFinishing()
+                    ? null : activity.findViewById(android.R.id.content);
+            showUndoBanner(root, message, undoAction);
+        });
+    }
+
+    /**
+     * Shows a message with an UNDO action for six seconds inside {@code root}, which
+     * should be the window the user is looking at. A banner added to the activity's
+     * content root is invisible under a panel that has its own window, which is why the
+     * root is a parameter. Falls back to a plain toast when there is nowhere to draw it.
+     */
+    public static void showUndoBanner(ViewGroup root, String message, Runnable undoAction) {
+        Utils.runOnMainThread(() -> {
             try {
-                Activity activity = Utils.getActivity();
-                if (activity == null || activity.isFinishing()) {
+                if (root == null) {
                     Utils.showToastShort(message);
                     return;
                 }
-
-                ViewGroup root = activity.findViewById(android.R.id.content);
-                if (root == null) {
+                Activity activity = Utils.getActivity();
+                if (activity == null) {
                     Utils.showToastShort(message);
                     return;
                 }
@@ -512,6 +525,7 @@ public final class BlockAuthorOverlay {
                 });
                 banner.addView(undo, new LinearLayout.LayoutParams(-2, -2));
 
+                // Every window decor is a FrameLayout, so gravity params work in any root.
                 FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(-1, -2,
                         Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
                 params.setMargins(dp(activity, 16), 0, dp(activity, 16), dp(activity, 96));

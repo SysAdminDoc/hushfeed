@@ -4,14 +4,16 @@
  */
 package app.morphe.extension.tiktok.comment;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.ContextWrapper;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewConfiguration;
-import android.view.Window;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
@@ -21,22 +23,20 @@ import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.blockauthor.VideoAuthor;
 import app.morphe.extension.tiktok.settings.Settings;
 
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 /**
- * Comment list tools: a keyword filter on loaded comments, and blocking a commenter with a
- * two finger hold on their comment.
+ * Comment list tools: a keyword filter on loaded comments, and a block button drawn
+ * beside each comment that blocks its author in one tap.
  *
  * Both entry points are called from the same places the comment translation patch hooks:
  * {@code BaseCommentCell} binding a cell, and the comment list response being handled.
@@ -44,24 +44,38 @@ import java.util.WeakHashMap;
  * 46.2.3 ({@code getText}, {@code getUser}, {@code getCid}, {@code getReplyComments}, and
  * the public {@code items} list), so nothing here depends on an obfuscated name.
  *
- * The block gesture is watched at the window, not on the cell. A finger resting on a
- * comment lands on the comment's own children (text, avatar, like button), and Android
- * only hands a touch to the cell's listener when no child takes it, so a listener on the
- * cell never saw the gesture. The window's callback sees every touch before any view
- * does; wrapping it with a proxy that forwards everything and merely observes
- * {@code dispatchTouchEvent} costs TikTok nothing.
+ * The button is not added to the comment cell. The cell's layout type and the position of
+ * TikTok's own like control are not known, and a child dropped into an unknown layout can
+ * land anywhere. Instead one transparent layer is added on top of the window the comments
+ * live in, and each visible cell gets a small button positioned over it before every
+ * frame. Feedback (the dimmed row and the undo banner) is drawn in that same window,
+ * because the comment panel is not always in the activity's window and anything added to
+ * the activity's content root then sits underneath it.
  */
 public final class CommentTools {
-    private static final long HOLD_MS = 700L;
+    private static final String BLOCK_GLYPH = "⊘";
+    private static final String BLOCKED_GLYPH = "✓";
+    private static final int BUTTON_SIZE_DP = 28;
+    private static final int BUTTON_TOP_DP = 6;
 
-    /** Comment model bound to each cell view, so a hit test can name whose comment it is. */
+    /**
+     * Distance from the cell's right edge to the button's right edge. TikTok's like heart
+     * sits against the right edge on the username row; this parks the button just left
+     * of it.
+     */
+    private static final int BUTTON_RIGHT_INSET_DP = 56;
+    private static final float BLOCKED_ROW_ALPHA = 0.35f;
+
+    /** Comment model bound to each cell view. */
     private static final WeakHashMap<View, Object> CELL_COMMENTS = new WeakHashMap<>();
 
-    /** Windows already wrapped, keyed by the activity that owns them. */
-    private static final WeakHashMap<Activity, Boolean> OBSERVED = new WeakHashMap<>();
+    /** One button layer per window root the comments have been seen in. */
+    private static final WeakHashMap<View, ButtonLayer> LAYERS = new WeakHashMap<>();
+
+    /** Accounts blocked this session, by uid, so a recycled cell shows the right state. */
+    private static final Set<String> BLOCKED_UIDS = Collections.synchronizedSet(new HashSet<>());
 
     private static volatile boolean blockInFlight;
-    private static volatile boolean warnedOtherWindow;
 
     private CommentTools() {
     }
@@ -86,12 +100,9 @@ public final class CommentTools {
                 CELL_COMMENTS.put(itemView, comment);
             }
 
-            Activity activity = activityOf(itemView.getContext());
-            if (activity == null) {
-                activity = Utils.getActivity();
-            }
-            if (activity != null) {
-                observeWindow(activity, itemView);
+            View root = itemView.getRootView();
+            if (root instanceof ViewGroup) {
+                layerFor((ViewGroup) root).requestLayoutPass();
             }
         } catch (Throwable ex) {
             Logger.printException(() -> "Could not register a comment cell", ex);
@@ -129,188 +140,174 @@ public final class CommentTools {
         }
     }
 
-    // ---- touch observation -------------------------------------------------------------
+    // ---- button layer ------------------------------------------------------------------
 
-    /**
-     * Wraps the window callback once per activity. Also checks that the cell actually
-     * lives in that window: if TikTok ever moves the comment panel into a dialog, its
-     * touches go through the dialog's window instead, and this logs that rather than
-     * silently watching the wrong one.
-     */
-    private static void observeWindow(Activity activity, View itemView) {
-        Window window = activity.getWindow();
-        if (window == null) {
-            return;
-        }
-
-        View decor = window.peekDecorView();
-        if (decor != null && itemView.getRootView() != decor && !warnedOtherWindow) {
-            warnedOtherWindow = true;
-            Logger.printInfo(() -> "Comment cells live in a window other than the activity's ("
-                    + itemView.getRootView().getClass().getName()
-                    + "); the two finger block gesture will not see them");
-        }
-
-        synchronized (OBSERVED) {
-            if (Boolean.TRUE.equals(OBSERVED.get(activity))) {
-                return;
+    private static ButtonLayer layerFor(ViewGroup root) {
+        synchronized (LAYERS) {
+            ButtonLayer layer = LAYERS.get(root);
+            if (layer == null) {
+                layer = new ButtonLayer(root);
+                LAYERS.put(root, layer);
+                Logger.printInfo(() -> "Comment block buttons attached to " + root.getClass().getName());
             }
-
-            Window.Callback existing = window.getCallback();
-            if (existing == null || Proxy.isProxyClass(existing.getClass())
-                    && Proxy.getInvocationHandler(existing) instanceof TouchObserver) {
-                OBSERVED.put(activity, Boolean.TRUE);
-                return;
-            }
-
-            Window.Callback wrapped = (Window.Callback) Proxy.newProxyInstance(
-                    Window.Callback.class.getClassLoader(),
-                    new Class<?>[]{Window.Callback.class},
-                    new TouchObserver(existing));
-            window.setCallback(wrapped);
-            OBSERVED.put(activity, Boolean.TRUE);
-            Logger.printInfo(() -> "Comment block gesture is watching the window");
+            return layer;
         }
     }
 
     /**
-     * Forwards every window callback untouched and watches {@code dispatchTouchEvent} for
-     * two fingers resting still for {@link #HOLD_MS}.
+     * A transparent full-window layer holding one button per visible comment cell.
+     * It is not clickable itself, so touches on empty parts of it fall through to
+     * TikTok; only the buttons take a tap.
      */
-    private static final class TouchObserver implements InvocationHandler {
-        private final Window.Callback wrapped;
-        private long startedAt = -1L;
-        private float startX;
-        private float startY;
-        private boolean cancelled;
+    private static final class ButtonLayer implements ViewTreeObserver.OnPreDrawListener {
+        private final ViewGroup root;
+        private final FrameLayout layer;
+        private final WeakHashMap<View, TextView> buttons = new WeakHashMap<>();
+        private final int size;
+        private final int topInset;
+        private final int rightInset;
 
-        TouchObserver(Window.Callback wrapped) {
-            this.wrapped = wrapped;
+        ButtonLayer(ViewGroup root) {
+            this.root = root;
+            float density = root.getResources().getDisplayMetrics().density;
+            size = Math.round(BUTTON_SIZE_DP * density);
+            topInset = Math.round(BUTTON_TOP_DP * density);
+            rightInset = Math.round(BUTTON_RIGHT_INSET_DP * density);
+
+            layer = new FrameLayout(root.getContext());
+            layer.setClickable(false);
+            layer.setFocusable(false);
+            root.addView(layer, new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            root.getViewTreeObserver().addOnPreDrawListener(this);
+        }
+
+        void requestLayoutPass() {
+            layer.invalidate();
         }
 
         @Override
-        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            if ("dispatchTouchEvent".equals(method.getName()) && args != null && args.length == 1
-                    && args[0] instanceof MotionEvent) {
-                try {
-                    observe((MotionEvent) args[0]);
-                } catch (Throwable ex) {
-                    Logger.printException(() -> "Comment gesture observer failed", ex);
+        public boolean onPreDraw() {
+            try {
+                place();
+            } catch (Throwable ex) {
+                Logger.printException(() -> "Comment block buttons failed to place", ex);
+            }
+            return true;
+        }
+
+        private void place() {
+            // The layer must stay the top child so buttons draw over the list.
+            if (layer.getParent() == root && root.getChildAt(root.getChildCount() - 1) != layer) {
+                root.removeView(layer);
+                root.addView(layer);
+            }
+
+            List<View> cells;
+            synchronized (CELL_COMMENTS) {
+                cells = new ArrayList<>(CELL_COMMENTS.keySet());
+            }
+
+            int[] layerOrigin = new int[2];
+            layer.getLocationInWindow(layerOrigin);
+            int[] location = new int[2];
+            Set<View> live = new HashSet<>();
+
+            for (View cell : cells) {
+                if (cell == null || cell.getRootView() != root || !cell.isShown() || cell.getWidth() == 0) {
+                    continue;
+                }
+                Object comment;
+                synchronized (CELL_COMMENTS) {
+                    comment = CELL_COMMENTS.get(cell);
+                }
+                if (comment == null) {
+                    continue;
+                }
+                live.add(cell);
+
+                TextView button = buttons.get(cell);
+                if (button == null) {
+                    button = createButton(cell);
+                    buttons.put(cell, button);
+                    layer.addView(button, new FrameLayout.LayoutParams(size, size));
+                }
+
+                cell.getLocationInWindow(location);
+                int left = location[0] - layerOrigin[0] + cell.getWidth() - rightInset - size;
+                int top = location[1] - layerOrigin[1] + topInset;
+                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) button.getLayoutParams();
+                if (params.leftMargin != left || params.topMargin != top) {
+                    params.leftMargin = Math.max(0, left);
+                    params.topMargin = Math.max(0, top);
+                    button.setLayoutParams(params);
+                }
+
+                boolean blocked = isBlocked(comment);
+                applyState(cell, button, blocked);
+                if (button.getVisibility() != View.VISIBLE) {
+                    button.setVisibility(View.VISIBLE);
                 }
             }
-            try {
-                return method.invoke(wrapped, args);
-            } catch (java.lang.reflect.InvocationTargetException ex) {
-                throw ex.getCause() != null ? ex.getCause() : ex;
+
+            // Hide buttons whose cells scrolled away or were recycled into something else.
+            for (View cell : new ArrayList<>(buttons.keySet())) {
+                if (!live.contains(cell)) {
+                    TextView button = buttons.get(cell);
+                    if (button != null && button.getVisibility() != View.GONE) {
+                        button.setVisibility(View.GONE);
+                    }
+                }
             }
         }
 
-        private void observe(MotionEvent event) {
-            switch (event.getActionMasked()) {
-                case MotionEvent.ACTION_POINTER_DOWN:
-                    if (event.getPointerCount() == 2) {
-                        startedAt = event.getEventTime();
-                        startX = midX(event);
-                        startY = midY(event);
-                        cancelled = false;
-                    } else {
-                        cancelled = true;
-                    }
-                    break;
+        private TextView createButton(View cell) {
+            TextView button = new TextView(root.getContext());
+            button.setText(BLOCK_GLYPH);
+            button.setTextColor(Color.WHITE);
+            button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+            button.setGravity(Gravity.CENTER);
+            button.setContentDescription("Block this commenter");
 
-                case MotionEvent.ACTION_MOVE:
-                    if (startedAt >= 0 && !cancelled && event.getPointerCount() >= 2) {
-                        Activity activity = Utils.getActivity();
-                        float slop = activity == null ? 24f
-                                : ViewConfiguration.get(activity).getScaledTouchSlop() * 2f;
-                        if (Math.abs(midX(event) - startX) > slop || Math.abs(midY(event) - startY) > slop) {
-                            cancelled = true;
-                        }
-                    }
-                    break;
+            GradientDrawable background = new GradientDrawable();
+            background.setShape(GradientDrawable.OVAL);
+            background.setColor(Color.argb(170, 0, 0, 0));
+            background.setStroke(Math.round(root.getResources().getDisplayMetrics().density),
+                    Color.argb(110, 255, 255, 255));
+            button.setBackground(background);
 
-                case MotionEvent.ACTION_POINTER_UP:
-                    if (startedAt >= 0 && !cancelled && event.getPointerCount() == 2
-                            && event.getEventTime() - startedAt >= HOLD_MS) {
-                        float x = midX(event);
-                        float y = midY(event);
-                        startedAt = -1L;
-                        cancelled = true;
-                        View cell = cellAt(x, y);
-                        if (cell != null) {
-                            blockCommenter(cell);
-                        } else {
-                            Logger.printDebug(() -> "Two finger hold landed on no registered comment");
-                        }
-                    }
-                    break;
+            button.setOnClickListener(view -> blockCommenter(cell, root));
+            return button;
+        }
 
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-                    startedAt = -1L;
-                    cancelled = false;
-                    break;
-
-                default:
-                    break;
+        private void applyState(View cell, TextView button, boolean blocked) {
+            String glyph = blocked ? BLOCKED_GLYPH : BLOCK_GLYPH;
+            if (!glyph.contentEquals(button.getText())) {
+                button.setText(glyph);
             }
-        }
-
-        private static float midX(MotionEvent event) {
-            return (event.getX(0) + event.getX(1)) / 2f;
-        }
-
-        private static float midY(MotionEvent event) {
-            return (event.getY(0) + event.getY(1)) / 2f;
+            if (button.isEnabled() == blocked) {
+                button.setEnabled(!blocked);
+            }
+            float alpha = blocked ? BLOCKED_ROW_ALPHA : 1f;
+            if (cell.getAlpha() != alpha) {
+                cell.setAlpha(alpha);
+            }
         }
     }
 
-    /** @return the registered comment cell under a point in window coordinates, or null. */
-    private static View cellAt(float x, float y) {
-        Activity activity = Utils.getActivity();
-        View decor = activity == null ? null : activity.getWindow().peekDecorView();
-        int[] decorOrigin = new int[2];
-        if (decor != null) {
-            decor.getLocationOnScreen(decorOrigin);
-        }
-        float screenX = x + decorOrigin[0];
-        float screenY = y + decorOrigin[1];
-
-        List<View> cells;
-        synchronized (CELL_COMMENTS) {
-            cells = new ArrayList<>(CELL_COMMENTS.keySet());
-        }
-
-        int[] location = new int[2];
-        for (View cell : cells) {
-            if (cell == null || !cell.isShown()) {
-                continue;
-            }
-            cell.getLocationOnScreen(location);
-            if (screenX >= location[0] && screenX <= location[0] + cell.getWidth()
-                    && screenY >= location[1] && screenY <= location[1] + cell.getHeight()) {
-                return cell;
-            }
-        }
-        return null;
+    private static boolean isBlocked(Object comment) {
+        String uid = uidOf(comment);
+        return uid != null && BLOCKED_UIDS.contains(uid);
     }
 
-    private static Activity activityOf(Context context) {
-        while (context != null) {
-            if (context instanceof Activity) {
-                return (Activity) context;
-            }
-            if (!(context instanceof ContextWrapper)) {
-                return null;
-            }
-            context = ((ContextWrapper) context).getBaseContext();
-        }
-        return null;
+    private static String uidOf(Object comment) {
+        Object user = Reflect.property(comment, "getUser", "user");
+        return Reflect.string(user, "getUid", "uid");
     }
 
     // ---- blocking ----------------------------------------------------------------------
 
-    private static void blockCommenter(View cell) {
+    private static void blockCommenter(View cell, ViewGroup root) {
         if (blockInFlight) {
             return;
         }
@@ -341,14 +338,24 @@ public final class CommentTools {
         cell.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
         BlockAuthorService.block(author, (success, message) -> {
             blockInFlight = false;
-            if (success) {
-                BlockAuthorOverlay.showUndoBanner("Blocked " + author.label(),
-                        () -> BlockAuthorService.unblock(author, (undone, ignored) -> Utils.showToastShort(
-                                undone ? "Unblocked " + author.label() : "Could not unblock " + author.label())));
-            } else {
+            if (!success) {
                 Utils.showToastLong("Could not block " + author.label()
                         + (message == null ? "" : ": " + message));
+                return;
             }
+
+            if (author.uid != null) {
+                BLOCKED_UIDS.add(author.uid);
+            }
+            root.invalidate();
+            BlockAuthorOverlay.showUndoBanner(root, "Blocked " + author.label(), () -> {
+                if (author.uid != null) {
+                    BLOCKED_UIDS.remove(author.uid);
+                }
+                root.invalidate();
+                BlockAuthorService.unblock(author, (undone, ignored) -> Utils.showToastShort(
+                        undone ? "Unblocked " + author.label() : "Could not unblock " + author.label()));
+            });
         });
     }
 

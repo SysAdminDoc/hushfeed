@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-GPLv3-blue.svg" /></a>
-  <a href="CHANGELOG.md"><img alt="version" src="https://img.shields.io/badge/version-0.9.0-6f42c1.svg" /></a>
+  <a href="CHANGELOG.md"><img alt="version" src="https://img.shields.io/badge/version-0.10.0-6f42c1.svg" /></a>
   <a href="https://github.com/MorpheApp/morphe-cli"><img alt="source" src="https://img.shields.io/badge/source-Morphe-00b894.svg" /></a>
   <a href="https://www.android.com/"><img alt="platform" src="https://img.shields.io/badge/platform-Android-3ddc84.svg" /></a>
   <a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/"><img alt="TikTok 46.2.3" src="https://img.shields.io/badge/TikTok-46.2.3-ff0050.svg" /></a>
@@ -18,7 +18,8 @@ This is a private working copy of [icysymmetra/tiktok-patches-for-morphe](https:
 
 - `Block author button`: one tap blocks whoever posted the current video, with an undo banner. Long press the button to move it. A second button blocks the current sound.
 - `Hide inbox items`: a switch for every row and header control on the Inbox tab, plus a Clear all control for suggested accounts.
-- `Comment tools`: hide comments by keyword or by account, and block a commenter with a two finger hold on their comment.
+- `Comment tools`: hide comments by keyword or by account, and block a commenter with one tap on the button beside their comment.
+- `Hide video overlays`: switches for the "Search this image" prompt and the top left Live entrance.
 - Feed filter switches for paid partnerships, AI generated videos, verified accounts, Series and playlist videos, and a sound blocklist.
 
 Releases are built and versioned by hand here; the upstream release workflow isn't used. The bundle lands in `patches/build/libs/`.
@@ -39,7 +40,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 |---|---|
 | `Always show publish date` | Keeps the video's publish date visible in its author information. |
 | `Block author button` | Adds a button to the video player that blocks the account that posted the current video in one tap, with an undo banner. Long press it to move it. A second button blocks the current sound. |
-| `Comment tools` | Hides comments containing chosen words or from chosen accounts, and blocks a commenter with a two finger hold on their comment. |
+| `Comment tools` | Hides comments containing chosen words or from chosen accounts, and puts a one tap block button beside each comment. |
 | `Copy comments without username` | Copies only the comment text without including the creator's username. |
 | `Custom offline videos limit` | Adds a custom entry to TikTok's offline videos menu with a configurable limit from 1 to 1000 videos. Values outside the range use the nearest valid limit. |
 | `Disable login requirement` | Removes TikTok's mandatory login gate from supported flows. |
@@ -56,6 +57,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Fix Google login` | Restores Google account sign-in after patching. |
 | `Hide CAPTCHA popups` | Hides non-account verification puzzle dialogs, including those shown while browsing LIVE. Account verification remains available, and server checks are not bypassed. |
 | `Hide floating promotions` | Removes floating promotional badges, coin icons, and timer banners from the Home feed. |
+| `Hide video overlays` | Hides the "Search this image" prompt over videos and the Live entrance in the top left corner. |
 | `Hide inbox items` | Adds a switch for each row and header control on the Inbox tab, plus a Clear all control for suggested accounts. |
 | `Hide quick comment reactions` | Hides TikTok's exposed quick emoji row in supported comment inputs. |
 | `Hold-and-slide 2x lock` | Enables TikTok's native hold, slide down, and release gesture for locking playback at 2x speed. |

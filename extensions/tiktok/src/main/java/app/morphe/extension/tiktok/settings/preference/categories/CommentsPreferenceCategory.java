@@ -70,9 +70,9 @@ public class CommentsPreferenceCategory extends ConditionalPreferenceCategory {
             ));
             addPreference(new TogglePreference(
                     context,
-                    "Two finger hold blocks a commenter",
-                    "Rest two fingers on a comment for about a second to block the account that posted it. "
-                            + "An undo banner follows.",
+                    "Block button on comments",
+                    "Show a small block button beside each comment. One tap blocks the account that "
+                            + "posted it, dims the comment, and offers an undo.",
                     Settings.BLOCK_FROM_COMMENT
             ));
         }

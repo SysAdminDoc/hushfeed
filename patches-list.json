@@ -1,5 +1,5 @@
 {
-  "version": "v0.9.0",
+  "version": "v0.10.0",
   "appNames": {
     "com.zhiliaoapp.musically": "TikTok"
   },
@@ -563,6 +563,34 @@
       "name": "Hide quick comment reactions",
       "description": "Hides TikTok's exposed quick emoji row in supported comment inputs.",
       "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Hide video overlays",
+      "description": "Hides the visual search prompt TikTok lays over videos and the Live entrance in the top left corner, each with its own switch. Supports TikTok 46.2.3.",
+      "use": false,
       "dependencies": [
         "BytecodePatch"
       ],

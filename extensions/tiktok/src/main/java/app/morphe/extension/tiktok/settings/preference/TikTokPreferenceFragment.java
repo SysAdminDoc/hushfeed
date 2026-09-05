@@ -53,7 +53,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
     private enum Section {
         FEED_FILTER("Feed filter", "Ads, Shop, livestreams, and view limits."),
         FEED_NAVIGATION("Feed navigation", "Feed tabs, bottom tabs, and Tako AI."),
-        INTERFACE("Interface", "Promotions, popups, and publish dates."),
+        INTERFACE("Interface", "Promotions, popups, publish dates, and video overlays."),
         COMMENTS("Comments and translation", "Auto translate, quick reactions, and copy options."),
         DOWNLOADS("Downloads", "Path, watermark, and offline videos."),
         INBOX("Inbox", "Rows, stories tray, and header controls."),
@@ -265,8 +265,11 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         }
         if (SettingsStatus.captchaPopupSuppressionEnabled
                 || SettingsStatus.promotionalBannersEnabled
-                || SettingsStatus.alwaysShowPublishDateEnabled) {
+                || SettingsStatus.alwaysShowPublishDateEnabled
+                || SettingsStatus.videoOverlaysEnabled) {
             addMenu(screen, Section.INTERFACE, SettingsMenuPreference.Icon.LAYOUT, countEnabled(
+                    SettingsStatus.videoOverlaysEnabled && Settings.HIDE_VISUAL_SEARCH.get(),
+                    SettingsStatus.videoOverlaysEnabled && Settings.HIDE_LIVE_ENTRANCE.get(),
                     SettingsStatus.promotionalBannersEnabled && Settings.HIDE_HOMEPAGE_COIN.get(),
                     SettingsStatus.captchaPopupSuppressionEnabled && Settings.HIDE_CAPTCHA_POPUPS.get(),
                     SettingsStatus.alwaysShowPublishDateEnabled && Settings.ALWAYS_SHOW_PUBLISH_DATE.get()

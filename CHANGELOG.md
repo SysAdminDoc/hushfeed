@@ -1,3 +1,14 @@
+## 0.10.0 (2026-09-05)
+
+### Features
+
+* **interface:** hide the "Search this image" prompt over videos and the top left Live entrance, each with its own switch
+* **comments:** replace the two finger hold with a one tap block button drawn beside each comment
+
+### Bug Fixes
+
+* **comments:** draw the dimmed row and the undo banner in the comment panel's own window, so blocking a commenter is visibly confirmed
+
 ## 0.9.0 (2026-09-05)
 
 ### Features
