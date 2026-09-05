@@ -20,11 +20,14 @@ public final class FeatureGateLabPreferenceCategory extends ConditionalPreferenc
 
     @Override
     public boolean getSettingsStatus() {
-        return FeatureGateLabRuntime.isInstalled();
+        return FeatureGateLabRuntime.isInstalled() || app.morphe.extension.tiktok.settings.SettingsStatus.featureGateRecorderEnabled;
     }
 
     @Override
     public void addPreferences(Context context) {
+        if (app.morphe.extension.tiktok.settings.SettingsStatus.featureGateRecorderEnabled) {
+            addPreference(new app.morphe.extension.tiktok.settings.preference.FeatureGateRecorderPreference(context));
+        }
         if (context instanceof Activity) {
             addPreference(new FeatureGateLabPreference((Activity) context));
         }

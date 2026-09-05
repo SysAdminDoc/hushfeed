@@ -38,6 +38,9 @@ final class SettingsManagerObservationRecorder {
     }
 
     static Object observeWithoutDefault(String key, Class<?> requestedClass, Object returnedValue) {
+        FeatureGateLearnMode.observe(FeatureGateLabStore.MANAGER_SETTINGS_MANAGER, key,
+                (requestedClass == null ? "unknown" : requestedClass.getName())
+                        + "(Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Object;", returnedValue);
         if (key != null && (DEFAULT_WRAPPER_KEYS.containsKey(key) || calledFromDefaultWrapper())) {
             return returnedValue;
         }
@@ -135,6 +138,9 @@ final class SettingsManagerObservationRecorder {
     ) {
         if (key == null || key.isEmpty() || requestedClass == null) {
             return;
+        }
+        if (defaultValue != NO_DEFAULT) {
+            FeatureGateLearnMode.observe(manager, key, requestedClass.getName() + methodDescriptor, returnedValue);
         }
         String identity = manager + "\n" + key + "\n"
                 + requestedClass.getName() + "\n" + methodDescriptor;

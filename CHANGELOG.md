@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Added Feature Gate Recorder with Start and Stop controls, a gate-read diff and a copyable report.
+
 * Added automatic clear display with a configurable delay. Manual restoration cancels the timer until the next video.
 
 * Added playback quality choices for regular and adaptive video streams. Playback limits leave the full set of download variants available.

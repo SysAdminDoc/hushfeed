@@ -377,6 +377,10 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             ));
         }
 
+        if (SettingsStatus.featureGateRecorderEnabled) {
+            screen.addPreference(new FeatureGateRecorderPreference(context));
+        }
+
         if (SettingsStatus.diagnosticsEnabled) {
             addMenu(screen, Section.DIAGNOSTICS, SettingsMenuPreference.Icon.DIAGNOSTICS, countEnabled(
                     BaseSettings.DEBUG.get(),

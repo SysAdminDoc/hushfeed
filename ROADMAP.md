@@ -23,15 +23,6 @@ with anchors present first, then adaptations, then new builds.
 
 ### P2
 
-- [ ] P2 - Feature Gate Recorder
-  Why: baseline-and-diff over Feature Gate Lab observations makes finding the gate behind a
-  TikTok behaviour a two-minute job (needed for #6, #136 and future hides).
-  Evidence: others/BlueDragon4251_tiktok-patches-for-morphe misc/featuregatelab/
-  FeatureGateRecorderPatch.kt, extension featuregatelab/{FeatureGateLearnMode,
-  FeatureGateRecorderPreference}.java; the rest of the Lab is byte-identical to ours.
-  Touches: new patch (dependsOn featureGateLabPatch), FeatureGateLabPreferenceCategory.
-  Acceptance: Start, reproduce, Stop yields a diff listing the gates read in between.
-  Complexity: S
 - [ ] P2 - Screenshot black screen and Circle to Search (upstream #6, 14 comments)
   Why: our Disable screen capture detection stops the reaction but not the FLAG_SECURE blackout.
   Evidence: `circle_search_block` gate present in 2 dex (a commenter's workaround sets it to 0);

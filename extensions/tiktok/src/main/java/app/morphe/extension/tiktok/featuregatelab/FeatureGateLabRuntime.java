@@ -107,6 +107,7 @@ public final class FeatureGateLabRuntime {
     }
 
     private static boolean overrideBooleanFor(String manager, String key, boolean original) {
+        FeatureGateLearnMode.observe(manager, key, "BOOLEAN", original);
         FeatureGateLabStore.Rule rule = activeRule(manager, key, "BOOLEAN");
         if (rule == null) {
             return original;
@@ -129,6 +130,7 @@ public final class FeatureGateLabRuntime {
     }
 
     private static int overrideIntFor(String manager, String key, int original) {
+        FeatureGateLearnMode.observe(manager, key, "INT", original);
         FeatureGateLabStore.Rule rule = activeRule(manager, key, "INT");
         if (rule == null) {
             return original;
@@ -155,6 +157,7 @@ public final class FeatureGateLabRuntime {
     }
 
     private static long overrideLongFor(String manager, String key, long original) {
+        FeatureGateLearnMode.observe(manager, key, "LONG", original);
         FeatureGateLabStore.Rule rule = activeRule(manager, key, "LONG");
         if (rule == null) {
             return original;
@@ -181,6 +184,7 @@ public final class FeatureGateLabRuntime {
     }
 
     private static float overrideFloatFor(String manager, String key, float original) {
+        FeatureGateLearnMode.observe(manager, key, "FLOAT", original);
         FeatureGateLabStore.Rule rule = activeRule(manager, key, "FLOAT");
         if (rule == null) {
             return original;
@@ -206,6 +210,7 @@ public final class FeatureGateLabRuntime {
     }
 
     private static double overrideDoubleFor(String manager, String key, double original) {
+        FeatureGateLearnMode.observe(manager, key, "DOUBLE", original);
         FeatureGateLabStore.Rule rule = activeRule(manager, key, "DOUBLE");
         if (rule == null) {
             return original;
@@ -235,6 +240,7 @@ public final class FeatureGateLabRuntime {
     }
 
     public static Object overrideRawAbValue(String key, Object original, boolean returnStringForObject) {
+        FeatureGateLearnMode.observe(FeatureGateLabStore.MANAGER_ABMOCK, key, "RAW", original);
         if (returnStringForObject) {
             return original;
         }
@@ -260,6 +266,7 @@ public final class FeatureGateLabRuntime {
     }
 
     public static Object overridePlayerValue(String key, Type declaredType, Object original) {
+        FeatureGateLearnMode.observe(FeatureGateLabStore.MANAGER_PLAYER_CONFIG, key, String.valueOf(declaredType), original);
         String type = scalarTypeOf(declaredType, original);
         if (type == null || key == null) {
             return original;
@@ -499,6 +506,7 @@ public final class FeatureGateLabRuntime {
     }
 
     private static String overrideStringFor(String manager, String key, String original) {
+        FeatureGateLearnMode.observe(manager, key, "STRING", original);
         FeatureGateLabStore.Rule rule = activeRule(manager, key, "STRING");
         if (rule == null) {
             return original;
