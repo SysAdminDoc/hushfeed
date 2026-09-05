@@ -7,9 +7,8 @@ requests worth building. P0 is broken, P3 is nice to have.
   Why: rows are hidden as they lay out, so a row can flash for a frame, and the five system
   rows match on English titles because they share one container id.
   Where: extensions/tiktok/.../inbox/InboxFilter.java; needs the inbox adapter located in the APK.
-  Note (research 2026-09-05): hxreborn hooks the widget injectors instead of the adapter
-  (`*WidgetV2Injector.enable()`), which covers stories and suggested accounts with no flash.
-  See the Research-Driven Additions below; after that port, only the five system rows remain here.
+  Note: the widget injector patches now cover the stories tray and suggested accounts with
+  no flash, so only the five system rows are still hidden at layout time here.
 - [ ] P2 - Draw the block glyph instead of relying on the font having U+2298
   Why: a font without the glyph shows a tofu box.
   Where: extensions/tiktok/.../blockauthor/BlockAuthorOverlay.java

@@ -32,12 +32,6 @@ public final class InboxPreferenceCategory extends ConditionalPreferenceCategory
         if (SettingsStatus.inboxFilterEnabled) {
             addPreference(new TogglePreference(
                     context,
-                    "Hide stories tray",
-                    "Hide the row of story avatars across the top of the Inbox.",
-                    Settings.HIDE_INBOX_STORIES
-            ));
-            addPreference(new TogglePreference(
-                    context,
                     "Hide new followers",
                     "Hide the New followers row.",
                     Settings.HIDE_INBOX_NEW_FOLLOWERS
@@ -65,12 +59,6 @@ public final class InboxPreferenceCategory extends ConditionalPreferenceCategory
                     "Hide TikTok Shop",
                     "Hide TikTok Shop updates and coupon messages.",
                     Settings.HIDE_INBOX_SHOP
-            ));
-            addPreference(new TogglePreference(
-                    context,
-                    "Hide suggested accounts",
-                    "Hide suggested account rows.",
-                    Settings.HIDE_INBOX_SUGGESTED_ACCOUNTS
             ));
             addPreference(new TogglePreference(
                     context,
@@ -110,6 +98,22 @@ public final class InboxPreferenceCategory extends ConditionalPreferenceCategory
                             + "Use this for anything not listed above.",
                     Settings.HIDE_INBOX_CUSTOM_TITLES
             ));
+        }
+        if (SettingsStatus.inboxFilterEnabled || SettingsStatus.hideInboxStoriesEnabled) {
+        addPreference(new TogglePreference(
+                context,
+                "Hide stories tray",
+                "Hide the row of story avatars across the top of the Inbox.",
+                Settings.HIDE_INBOX_STORIES
+        ));
+        }
+        if (SettingsStatus.inboxFilterEnabled || SettingsStatus.hideSuggestedAccountsEnabled) {
+        addPreference(new TogglePreference(
+                context,
+                "Hide suggested accounts",
+                "Hide suggested account rows.",
+                Settings.HIDE_INBOX_SUGGESTED_ACCOUNTS
+        ));
         }
         if (SettingsStatus.expandActivityListEnabled) {
             addPreference(new TogglePreference(

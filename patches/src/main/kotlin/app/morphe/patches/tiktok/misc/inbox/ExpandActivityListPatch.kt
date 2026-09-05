@@ -78,7 +78,11 @@ val expandActivityListPatch = bytecodePatch(
         FollowerWidgetContainerConstructorFingerprint.method.apply {
             val index = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.INVOKE_DIRECT &&
-                    getReference<MethodReference>()?.definingClass == ATOMIC_BOOLEAN_DESCRIPTOR
+                    getReference<MethodReference>()?.let { reference ->
+                        reference.definingClass == ATOMIC_BOOLEAN_DESCRIPTOR &&
+                            reference.name == "<init>" &&
+                            reference.parameterTypes.map(CharSequence::toString) == listOf("Z")
+                    } == true
             }
 
             addInstructions(

@@ -310,18 +310,20 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                 || SettingsStatus.hideInboxStoriesEnabled
                 || SettingsStatus.expandActivityListEnabled) {
             addMenu(screen, Section.INBOX, SettingsMenuPreference.Icon.LAYOUT, countEnabled(
-                    Settings.HIDE_INBOX_STORIES.get(),
-                    Settings.HIDE_INBOX_NEW_FOLLOWERS.get(),
-                    Settings.HIDE_INBOX_ACTIVITY.get(),
-                    Settings.HIDE_INBOX_ARCHIVE.get(),
-                    Settings.HIDE_INBOX_TAKO.get(),
-                    Settings.HIDE_INBOX_SHOP.get(),
-                    Settings.HIDE_INBOX_SUGGESTED_ACCOUNTS.get(),
-                    Settings.HIDE_INBOX_MESSAGE_REQUESTS.get(),
-                    Settings.HIDE_INBOX_CONVERSATIONS.get(),
-                    Settings.HIDE_INBOX_ADD_PEOPLE.get(),
-                    Settings.HIDE_INBOX_SEARCH.get(),
-                    Settings.HIDE_INBOX_ACTIVITY_STATUS.get(),
+                    (SettingsStatus.inboxFilterEnabled || SettingsStatus.hideInboxStoriesEnabled)
+                            && Settings.HIDE_INBOX_STORIES.get(),
+                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_NEW_FOLLOWERS.get(),
+                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_ACTIVITY.get(),
+                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_ARCHIVE.get(),
+                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_TAKO.get(),
+                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_SHOP.get(),
+                    (SettingsStatus.inboxFilterEnabled || SettingsStatus.hideSuggestedAccountsEnabled)
+                            && Settings.HIDE_INBOX_SUGGESTED_ACCOUNTS.get(),
+                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_MESSAGE_REQUESTS.get(),
+                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_CONVERSATIONS.get(),
+                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_ADD_PEOPLE.get(),
+                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_SEARCH.get(),
+                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_ACTIVITY_STATUS.get(),
                     SettingsStatus.expandActivityListEnabled && Settings.EXPAND_ACTIVITY_LIST.get()
             ));
         }
