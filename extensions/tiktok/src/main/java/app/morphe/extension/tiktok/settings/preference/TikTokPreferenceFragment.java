@@ -302,7 +302,10 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     Settings.CUSTOM_OFFLINE_VIDEOS.get()
             ));
         }
-        if (SettingsStatus.inboxFilterEnabled) {
+        if (SettingsStatus.inboxFilterEnabled
+                || SettingsStatus.hideSuggestedAccountsEnabled
+                || SettingsStatus.hideInboxStoriesEnabled
+                || SettingsStatus.expandActivityListEnabled) {
             addMenu(screen, Section.INBOX, SettingsMenuPreference.Icon.LAYOUT, countEnabled(
                     Settings.HIDE_INBOX_STORIES.get(),
                     Settings.HIDE_INBOX_NEW_FOLLOWERS.get(),
@@ -315,7 +318,8 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     Settings.HIDE_INBOX_CONVERSATIONS.get(),
                     Settings.HIDE_INBOX_ADD_PEOPLE.get(),
                     Settings.HIDE_INBOX_SEARCH.get(),
-                    Settings.HIDE_INBOX_ACTIVITY_STATUS.get()
+                    Settings.HIDE_INBOX_ACTIVITY_STATUS.get(),
+                    SettingsStatus.expandActivityListEnabled && Settings.EXPAND_ACTIVITY_LIST.get()
             ));
         }
         if (SettingsStatus.shareSheetEnabled) {

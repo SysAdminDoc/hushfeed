@@ -28,6 +28,9 @@ public class SettingsStatus {
     public static boolean diagnosticsEnabled = false;
     public static boolean blockAuthorEnabled = false;
     public static boolean inboxFilterEnabled = false;
+    public static boolean hideSuggestedAccountsEnabled = false;
+    public static boolean hideInboxStoriesEnabled = false;
+    public static boolean expandActivityListEnabled = false;
     public static boolean commentToolsEnabled = false;
     public static boolean videoOverlaysEnabled = false;
     public static boolean shareSheetEnabled = false;
@@ -118,6 +121,18 @@ public class SettingsStatus {
 
     public static void enableBlockAuthor() {
         blockAuthorEnabled = true;
+    }
+
+    public static void enableHideSuggestedAccounts() {
+        hideSuggestedAccountsEnabled = true;
+    }
+
+    public static void enableHideInboxStories() {
+        hideInboxStoriesEnabled = true;
+    }
+
+    public static void enableExpandActivityList() {
+        expandActivityListEnabled = true;
     }
 
     public static void enableInboxFilter() {

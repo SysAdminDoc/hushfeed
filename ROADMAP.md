@@ -65,20 +65,6 @@ with anchors present first, then adaptations, then new builds.
 
 ### P1
 
-- [ ] P1 - Port hxreborn's inbox trio: Hide suggested accounts, Hide inbox stories, Expand activity list
-  Why: injector-level hiding covers Inbox, Activity and New followers (#132) with no one-frame
-  flash, and Expand activity list replaces the "View all" truncation.
-  Evidence: others/hxreborn_hxreborn-tiktok-patches patches/.../inbox/{HideSuggestedAccountsPatch,
-  HideInboxStoriesPatch,ExpandActivityListPatch,Fingerprints}.kt, extension inbox/InboxControls.java;
-  anchors NotificationRecommendUserWidgetV2Injector, FollowerUserCardWidgetV2Injector,
-  RecommendUserWidgetV2Injector, InboxSkylightWidgetV2Injector (classes15, 19),
-  NotificationWidgetContainer + "expandNotification()" (classes15), FollowerWidgetContainer present.
-  Touches: new patch files, Settings.java (reuse `hide_inbox_suggested_accounts` and
-  `hide_inbox_stories`, add `expand_activity_list`), SettingsStatus.java, InboxPreferenceCategory,
-  inbox/InboxFilter.java (drop the stories and suggested-accounts row rules, keep Clear all).
-  Acceptance: with the switches on, the stories tray and suggested accounts never render on any
-  of the three pages; Activity shows the full list; Clear all still works on rows that remain.
-  Complexity: S
 - [ ] P1 - Port hxreborn's Disable telemetry
   Why: upstream #51 (4 reactions); every live anchor is a named SDK class, so it survives TikTok
   updates.

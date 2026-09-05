@@ -64,6 +64,9 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Hide feed follow button` | Hides the plus button under the creator's avatar on the action rail. |
 | `Hide feed save button` | Hides the save button on the action rail. |
 | `Hide feed search button` | Hides the search button at the top right of the feed. |
+| `Hide suggested accounts` | Stops the suggested accounts list from being built on the Activity, New followers and Inbox pages. |
+| `Hide inbox stories` | Stops the stories tray at the top of the Inbox from being built. |
+| `Expand activity list` | Shows the whole Activity and New followers lists instead of stopping at a View all button. |
 | `Hide inbox items` | Adds a switch for each row and header control on the Inbox tab, plus a Clear all control for suggested accounts. |
 | `Hide quick comment reactions` | Hides TikTok's exposed quick emoji row in supported comment inputs. |
 | `Hold-and-slide 2x lock` | Enables TikTok's native hold, slide down, and release gesture for locking playback at 2x speed. |
