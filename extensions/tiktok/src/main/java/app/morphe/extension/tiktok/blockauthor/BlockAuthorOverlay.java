@@ -9,6 +9,8 @@ import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.HapticFeedbackConstants;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -28,18 +30,29 @@ import java.lang.ref.WeakReference;
  * the button is drawn rather than inflated, and it is attached to the activity content
  * root instead of TikTok's own action rail. That keeps it working across builds that
  * reshuffle the player view hierarchy.
+ *
+ * Long pressing the button enters drag mode so it can be parked anywhere. The position is
+ * stored as a fraction of the screen, so it survives rotation and a different device.
  */
 public final class BlockAuthorOverlay {
     private static final String BLOCK_GLYPH = "⊘";
     private static final int BUTTON_SIZE_DP = 44;
-    private static final int EDGE_MARGIN_DP = 12;
     private static final long UNDO_VISIBLE_MS = 6_000L;
+
+    /** Right edge, just above TikTok's own action rail. */
+    private static final float DEFAULT_X_FRACTION = 0.91f;
+    private static final float DEFAULT_Y_FRACTION = 0.40f;
 
     private static WeakReference<View> buttonReference = new WeakReference<>(null);
     private static WeakReference<View> undoReference = new WeakReference<>(null);
 
     /** Guards against a double tap blocking, then unblocking, the same account. */
     private static volatile boolean requestInFlight;
+
+    /** True while the user is dragging the button, which suppresses the click. */
+    private static boolean dragging;
+    private static float dragOffsetX;
+    private static float dragOffsetY;
 
     private BlockAuthorOverlay() {
     }
@@ -50,6 +63,25 @@ public final class BlockAuthorOverlay {
             return;
         }
         Utils.runOnMainThread(() -> attach(author));
+    }
+
+    /**
+     * Shows or hides the button as the feed comes and goes.
+     *
+     * The button is an overlay on the activity content root, so nothing removes it when
+     * the user leaves the video feed. This is the seam that does it.
+     */
+    public static void setFeedVisible(boolean visible) {
+        Utils.runOnMainThread(() -> {
+            View button = buttonReference.get();
+            if (button == null) {
+                return;
+            }
+            button.setVisibility(visible ? View.VISIBLE : View.GONE);
+            if (!visible) {
+                dismissUndo();
+            }
+        });
     }
 
     private static void attach(VideoAuthor author) {
@@ -70,17 +102,18 @@ public final class BlockAuthorOverlay {
                 return;
             }
 
-            View button = createButton(activity);
+            final View button = createButton(activity);
+            final int size = dp(activity, BUTTON_SIZE_DP);
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                    dp(activity, BUTTON_SIZE_DP),
-                    dp(activity, BUTTON_SIZE_DP),
-                    Gravity.START | Gravity.CENTER_VERTICAL
-            );
-            params.leftMargin = dp(activity, EDGE_MARGIN_DP);
+                    size, size, Gravity.TOP | Gravity.START);
             button.setLayoutParams(params);
 
             root.addView(button);
             buttonReference = new WeakReference<>(button);
+
+            // The root has no measured size until it lays out, so the saved fraction can
+            // only be turned into margins once dimensions are known.
+            root.post(() -> applySavedPosition(button, root, size));
 
             Logger.printDebug(() -> "Block button attached for " + author.label());
         } catch (Throwable ex) {
@@ -111,8 +144,137 @@ public final class BlockAuthorOverlay {
         background.setStroke(dp(activity, 1), Color.argb(90, 255, 255, 255));
         button.setBackground(background);
 
-        button.setOnClickListener(view -> onBlockTapped());
+        button.setOnClickListener(view -> {
+            // A drag ends with an ACTION_UP that would otherwise read as a click.
+            if (dragging) {
+                return;
+            }
+            onBlockTapped();
+        });
+
+        button.setOnLongClickListener(view -> {
+            dragging = true;
+            view.setAlpha(0.75f);
+            view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+            Utils.showToastShort("Drag to move, release to place");
+            return true;
+        });
+
+        button.setOnTouchListener(BlockAuthorOverlay::onButtonTouch);
         return button;
+    }
+
+    /**
+     * Handles dragging. Returns false unless a drag is in progress so that normal click
+     * and long press handling is left alone.
+     */
+    private static boolean onButtonTouch(View view, MotionEvent event) {
+        if (!dragging) {
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                dragOffsetX = event.getX();
+                dragOffsetY = event.getY();
+            }
+            return false;
+        }
+
+        ViewGroup parent = view.getParent() instanceof ViewGroup
+                ? (ViewGroup) view.getParent()
+                : null;
+        if (parent == null) {
+            dragging = false;
+            return false;
+        }
+
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_MOVE: {
+                float left = event.getRawX() - dragOffsetX - parentLeft(parent);
+                float top = event.getRawY() - dragOffsetY - parentTop(parent);
+                moveTo(view, parent, left, top);
+                return true;
+            }
+
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL: {
+                dragging = false;
+                view.setAlpha(1f);
+                savePosition(view, parent);
+                return true;
+            }
+
+            default:
+                return true;
+        }
+    }
+
+    private static int parentLeft(ViewGroup parent) {
+        int[] location = new int[2];
+        parent.getLocationOnScreen(location);
+        return location[0];
+    }
+
+    private static int parentTop(ViewGroup parent) {
+        int[] location = new int[2];
+        parent.getLocationOnScreen(location);
+        return location[1];
+    }
+
+    /** Moves the button, keeping it fully inside its parent. */
+    private static void moveTo(View view, ViewGroup parent, float left, float top) {
+        int maxLeft = Math.max(0, parent.getWidth() - view.getWidth());
+        int maxTop = Math.max(0, parent.getHeight() - view.getHeight());
+
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+        params.leftMargin = Math.round(Math.min(Math.max(left, 0), maxLeft));
+        params.topMargin = Math.round(Math.min(Math.max(top, 0), maxTop));
+        view.setLayoutParams(params);
+    }
+
+    private static void applySavedPosition(View view, ViewGroup parent, int size) {
+        if (parent.getWidth() == 0 || parent.getHeight() == 0) {
+            return;
+        }
+
+        float[] fractions = loadPositionFractions();
+        float left = fractions[0] * parent.getWidth() - size / 2f;
+        float top = fractions[1] * parent.getHeight() - size / 2f;
+        moveTo(view, parent, left, top);
+    }
+
+    /** @return the stored centre position as {x, y} fractions of the parent. */
+    private static float[] loadPositionFractions() {
+        String stored = Settings.BLOCK_AUTHOR_BUTTON_POSITION.get();
+        if (stored != null && !stored.isEmpty()) {
+            String[] parts = stored.split(",");
+            if (parts.length == 2) {
+                try {
+                    float x = Float.parseFloat(parts[0].trim());
+                    float y = Float.parseFloat(parts[1].trim());
+                    if (x >= 0f && x <= 1f && y >= 0f && y <= 1f) {
+                        return new float[]{x, y};
+                    }
+                } catch (NumberFormatException ignored) {
+                    // Fall through to the default.
+                }
+            }
+        }
+        return new float[]{DEFAULT_X_FRACTION, DEFAULT_Y_FRACTION};
+    }
+
+    private static void savePosition(View view, ViewGroup parent) {
+        if (parent.getWidth() == 0 || parent.getHeight() == 0) {
+            return;
+        }
+
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+        float x = (params.leftMargin + view.getWidth() / 2f) / parent.getWidth();
+        float y = (params.topMargin + view.getHeight() / 2f) / parent.getHeight();
+
+        Settings.BLOCK_AUTHOR_BUTTON_POSITION.save(round(x) + "," + round(y));
+        Logger.printDebug(() -> "Block button moved to " + round(x) + "," + round(y));
+    }
+
+    private static String round(float value) {
+        return String.valueOf(Math.round(value * 1000f) / 1000f);
     }
 
     private static void onBlockTapped() {
