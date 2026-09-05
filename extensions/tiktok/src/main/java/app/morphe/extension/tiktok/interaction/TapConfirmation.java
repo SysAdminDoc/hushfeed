@@ -23,6 +23,11 @@ public final class TapConfirmation {
     private static int generation;
     private TapConfirmation() {}
 
+    public static void onVideoChanged() {
+        if (Looper.myLooper() == Looper.getMainLooper()) clear();
+        else MAIN.post(TapConfirmation::clear);
+    }
+
     public static boolean follow(View view) {
         Object video = CurrentVideoAuthor.getAweme();
         Object user = Reflect.property(video, "getAuthor", "author");

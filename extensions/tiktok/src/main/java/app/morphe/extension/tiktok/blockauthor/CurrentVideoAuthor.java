@@ -24,6 +24,9 @@ public final class CurrentVideoAuthor {
      */
     static void update(Object videoItemParams) {
         VideoAuthor parsed = parse(videoItemParams);
+        if (!java.util.Objects.equals(author == null ? null : author.awemeId, parsed == null ? null : parsed.awemeId)) {
+            app.morphe.extension.tiktok.interaction.TapConfirmation.onVideoChanged();
+        }
         if (parsed == null || !parsed.isUsable()) {
             currentAweme = null;
             // A card with nothing to block (a LIVE preview, a promo, an end of feed card)

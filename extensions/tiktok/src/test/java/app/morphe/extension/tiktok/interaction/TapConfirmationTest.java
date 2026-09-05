@@ -29,6 +29,31 @@ import org.robolectric.annotation.GraphicsMode;
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class TapConfirmationTest {
     public static final class TestActivity extends PreferenceActivity {}
+    public static final class Params {
+        public final Clip aweme;
+        Params(String id) { aweme = new Clip(id); }
+    }
+    public static final class Clip {
+        public final String aid;
+        public final Author author = new Author();
+        Clip(String id) { aid = id; }
+    }
+    public static final class Author { public final String uid = "same_creator"; }
+
+    @Test public void leavingAndReturningToSameVideoRequiresFreshConfirmation() throws Exception {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            Utils.setContext(controller.get());
+            View view = new View(controller.get());
+            var update = app.morphe.extension.tiktok.blockauthor.CurrentVideoAuthor.class.getDeclaredMethod("update", Object.class);
+            update.setAccessible(true);
+            update.invoke(null, new Params("one"));
+            assertFalse(TapConfirmation.allow(view, "follow", "one", true));
+            update.invoke(null, new Params("two"));
+            assertNull(view.getForeground());
+            update.invoke(null, new Params("one"));
+            assertFalse(TapConfirmation.allow(view, "follow", "one", true));
+        }
+    }
     @Test public void firstTapArmsSecondTapRunsButNewVideoAndExpiredTapsRearm() throws Exception {
         try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
             PreferenceActivity activity = controller.get();

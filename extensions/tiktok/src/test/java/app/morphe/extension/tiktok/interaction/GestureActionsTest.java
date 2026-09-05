@@ -59,6 +59,11 @@ public class GestureActionsTest {
             assertTrue(GestureActions.openComments("three"));
             root.removeView(second);
             assertFalse(GestureActions.openComments("three"));
+            Object newOwner = new Object();
+            GestureActions.registerCommentView(newOwner, first);
+            GestureActions.bindCommentView(newOwner, new Params("four"));
+            assertFalse(GestureActions.openComments("one"));
+            assertTrue(GestureActions.openComments("four"));
             assertFalse(GestureActions.openComments(null));
             Settings.DOUBLE_TAP_ACTION.save("nothing");
             assertTrue(GestureActions.onDoubleTap());

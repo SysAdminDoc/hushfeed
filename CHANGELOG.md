@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Fixed stale confirmation rings after a video change and removed old ownership when a comment control is recycled.
+
 * Added a double-tap choice for the feed: normal behavior, no action, or comments for the current video.
 
 * Optional second-tap protection now guards the feed Follow button and like heart with a red ring and a four-second timeout.

@@ -21,6 +21,9 @@ public final class GestureActions {
     }
 
     public static void registerCommentView(Object owner, View view) {
+        for (Map.Entry<Object, CommentControl> entry : COMMENTS.entrySet()) {
+            if (entry.getKey() != owner && entry.getValue().view.get() == view) entry.getValue().view.clear();
+        }
         COMMENTS.computeIfAbsent(owner, ignored -> new CommentControl()).view = new WeakReference<>(view);
     }
 
