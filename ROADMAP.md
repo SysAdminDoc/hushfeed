@@ -7,8 +7,13 @@ requests worth building. P0 is broken, P3 is nice to have.
   Why: rows are hidden as they lay out, so a row can flash for a frame, and the five system
   rows match on English titles because they share one container id.
   Where: extensions/tiktok/.../inbox/InboxFilter.java; needs the inbox adapter located in the APK.
-  Note: the widget injector patches now cover the stories tray and suggested accounts with
-  no flash, so only the five system rows are still hidden at layout time here.
+  Note: the stories tray, suggested accounts, Archive and Shop are now stopped at their
+  widget injectors (`InboxFragmentWidgetInjectProtocol.enable()`), so they never lay out.
+  What is left is New followers, Activity and Tako: they are rows inside one shared
+  `InboxEntranceWidgetContainer` with no injector of their own, so they are still matched
+  by English title. Finishing this means finding the per-entrance data inside that
+  container. The full injector map is in classes19.dex; decompile it and grep for
+  `implements InboxFragmentWidgetInjectProtocol`.
 - [ ] P2 - Draw the block glyph instead of relying on the font having U+2298
   Why: a font without the glyph shows a tofu box.
   Where: extensions/tiktok/.../blockauthor/BlockAuthorOverlay.java

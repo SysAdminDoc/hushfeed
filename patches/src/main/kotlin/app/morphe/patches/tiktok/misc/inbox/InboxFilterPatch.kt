@@ -6,6 +6,7 @@ package app.morphe.patches.tiktok.misc.inbox
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels as addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
@@ -13,6 +14,8 @@ import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 
 private const val EXTENSION_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/inbox/InboxFilter;"
+private const val CONTROLS_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/tiktok/inbox/InboxControls;"
 
 internal object MainActivityOnCreateFingerprint : Fingerprint(
     definingClass = "Lcom/ss/android/ugc/aweme/main/MainActivity;",
@@ -47,5 +50,26 @@ val inboxFilterPatch = bytecodePatch(
             "invoke-static/range { p0 .. p0 }, " +
                 "$EXTENSION_CLASS_DESCRIPTOR->install(Landroid/app/Activity;)V",
         )
+
+        // Archive and Shop are the two entrance rows with an injector of their own, so they
+        // can be stopped before the row exists instead of hidden once it has laid out. The
+        // rest share one container and are still matched by title in the layout listener.
+        mapOf(
+            ArchiveEntranceWidgetEnableFingerprint to "shouldShowArchiveEntrance",
+            ShopEntranceWidgetEnableFingerprint to "shouldShowShopEntrance",
+        ).forEach { (fingerprint, extensionMethodName) ->
+            fingerprint.method.addInstructions(
+                0,
+                """
+                    invoke-static {}, $CONTROLS_CLASS_DESCRIPTOR->$extensionMethodName()Z
+                    move-result v0
+                    if-nez v0, :morphe_show_inbox_entrance
+                    const/4 v0, 0x0
+                    return v0
+                    :morphe_show_inbox_entrance
+                    nop
+                """,
+            )
+        }
     }
 }

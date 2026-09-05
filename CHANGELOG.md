@@ -10,6 +10,7 @@
 * **captcha:** a second CAPTCHA patch for TikTok's risk control dialog, answering the existing switch. Off by default, it never touches SMS or two factor verification, and it logs every suppression
 * **privacy:** a Ghost mode patch that stops the reports telling other people what you looked at: story views, profile views, the typing indicator and the online dot
 * **privacy:** a Disable telemetry patch that stops ByteDance AppLog, AppsFlyer, Firebase Analytics and crash reporting at their SDK entry points. Off by default, and it silences TikTok's own diagnostics too
+* **inbox:** the Archive and TikTok Shop rows are now stopped at their widget injectors, so they never lay out
 * **inbox:** three patches that work on TikTok's widgets instead of the finished views: suggested accounts and the stories tray are never built (and suggested accounts is now covered on Activity and New followers too), and the Activity and New followers lists can show in full instead of stopping at View all
 
 ### Bug Fixes
