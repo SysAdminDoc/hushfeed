@@ -1,8 +1,6 @@
 package app.morphe.extension.tiktok.settings.preference;
 
 import android.app.AlertDialog;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.preference.Preference;
 import android.view.View;
@@ -33,25 +31,22 @@ public final class FeatureGateRecorderPreference extends Preference {
     public static void showReport(Context context, String report) {
         ScrollView scroll = new ScrollView(context);
         TextView text = new TextView(context);
-        text.setText(report);
+        text.setText(report.length() <= GateReportExport.MAX_CLIPBOARD_CHARS ? report
+                : report.substring(0, GateReportExport.MAX_CLIPBOARD_CHARS) + "\n\nPreview shortened. Save JSON includes the full report.");
         text.setTextIsSelectable(true);
         text.setTextColor(SettingsUi.textPrimary());
         text.setTextSize(13);
         int padding = SettingsUi.dp(context, 16);
         text.setPadding(padding, padding, padding, padding);
         scroll.addView(text);
-        AlertDialog dialog = new AlertDialog.Builder(context)
+        AlertDialog.Builder builder = new AlertDialog.Builder(context)
                 .setTitle("Recorded gate reads (" + FeatureGateLearnMode.lastCandidateCount() + ")")
                 .setView(scroll).setPositiveButton("Close", null)
-                .setNeutralButton("Copy report", (ignored, which) -> {
-                    ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-                    if (clipboard == null) {
-                        app.morphe.extension.shared.Utils.showToastShort("Clipboard is unavailable");
-                        return;
-                    }
-                    clipboard.setPrimaryClip(ClipData.newPlainText("Feature gate recording", report));
-                    app.morphe.extension.shared.Utils.showToastShort("Copied feature gate report");
-                }).create();
+                .setNegativeButton("Save JSON", (ignored, which) -> GateReportExport.save(context, report));
+        if (report.length() <= GateReportExport.MAX_CLIPBOARD_CHARS) {
+            builder.setNeutralButton("Copy report", (ignored, which) -> GateReportExport.copy(context, report));
+        }
+        AlertDialog dialog = builder.create();
         dialog.show();
         SettingsUi.styleFramedDialog(dialog);
     }

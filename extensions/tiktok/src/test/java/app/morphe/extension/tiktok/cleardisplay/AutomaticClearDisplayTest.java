@@ -79,6 +79,26 @@ public class AutomaticClearDisplayTest {
         RememberClearDisplayPatch.firstFrame("three", () -> true, events::add);
         assertEquals(List.of(false, false, true), events);
     }
+    @Test public void disablingAndReenablingBeforeTheDeadlineCancelsTheTimer() {
+        List<Boolean> events = new ArrayList<>();
+        RememberClearDisplayPatch.firstFrame("one", () -> true, events::add);
+        Settings.AUTOMATIC_CLEAR_DISPLAY.save(false);
+        Settings.AUTOMATIC_CLEAR_DISPLAY.save(true);
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(2));
+        assertEquals(List.of(false), events);
+    }
+    @Test public void leavingAndReturningBeforeTheDeadlineCancelsTheTimer() {
+        try (var owner = Robolectric.buildActivity(android.app.Activity.class).setup().visible()) {
+            RememberClearDisplayPatch.observeWindow(owner.get().getWindow().getDecorView());
+            List<Boolean> events = new ArrayList<>();
+            RememberClearDisplayPatch.firstFrame("one", () -> true, events::add);
+            owner.windowFocusChanged(false);
+            owner.windowFocusChanged(true);
+            RememberClearDisplayPatch.firstFrame("one", () -> true, events::add);
+            Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(2));
+            assertEquals(List.of(false), events);
+        }
+    }
     @Test public void standaloneControlsShowDelayInMilliseconds() throws Exception {
         try (var owner = Robolectric.buildActivity(
                 app.morphe.extension.tiktok.interaction.GestureActionsTest.TestActivity.class).setup()) {

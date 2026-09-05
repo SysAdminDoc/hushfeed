@@ -1,9 +1,13 @@
 package app.morphe.extension.tiktok.cleardisplay;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.View;
+import android.view.ViewTreeObserver;
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.settings.Setting;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.settings.Settings;
 import java.lang.ref.WeakReference;
@@ -15,6 +19,42 @@ public final class RememberClearDisplayPatch {
     private static String currentId;
     private static Runnable pending;
     private static boolean posting;
+    private static boolean observingPreferences;
+    private static WeakReference<View> window = new WeakReference<>(null);
+    private static final SharedPreferences.OnSharedPreferenceChangeListener PREFERENCES = (preferences, key) -> {
+        if (key == null || key.equals(Settings.AUTOMATIC_CLEAR_DISPLAY.key)
+                || key.equals(Settings.AUTOMATIC_CLEAR_DISPLAY_DELAY.key)) cancelOnMain();
+    };
+    private static final ViewTreeObserver.OnWindowFocusChangeListener FOCUS = focused -> {
+        if (!focused) cancel();
+    };
+    private static final View.OnAttachStateChangeListener ATTACH = new View.OnAttachStateChangeListener() {
+        @Override public void onViewAttachedToWindow(View view) { }
+        @Override public void onViewDetachedFromWindow(View view) {
+            cancel();
+            if (view.getViewTreeObserver().isAlive()) view.getViewTreeObserver().removeOnWindowFocusChangeListener(FOCUS);
+            view.removeOnAttachStateChangeListener(this);
+            if (window.get() == view) window.clear();
+        }
+    };
+
+    static void observeWindow(View view) {
+        if (window.get() == view) return;
+        View old = window.get();
+        if (old != null) {
+            if (old.getViewTreeObserver().isAlive()) old.getViewTreeObserver().removeOnWindowFocusChangeListener(FOCUS);
+            old.removeOnAttachStateChangeListener(ATTACH);
+        }
+        cancel();
+        window = new WeakReference<>(view);
+        view.getViewTreeObserver().addOnWindowFocusChangeListener(FOCUS);
+        view.addOnAttachStateChangeListener(ATTACH);
+    }
+
+    private static void cancelOnMain() {
+        if (Looper.myLooper() == Looper.getMainLooper()) cancel();
+        else MAIN.post(RememberClearDisplayPatch::cancel);
+    }
 
     // Kept for already-patched first-frame hooks.
     public static boolean getClearDisplayState() {
@@ -26,6 +66,8 @@ public final class RememberClearDisplayPatch {
         MAIN.post(() -> {
             Object player = owner.get();
             if (player == null) return;
+            Object activity = Reflect.readField(player, "activity");
+            if (activity instanceof Activity) observeWindow(((Activity) activity).getWindow().getDecorView());
             String id = videoId(player);
             firstFrame(id, () -> {
                 Object live = owner.get();
@@ -42,6 +84,10 @@ public final class RememberClearDisplayPatch {
     }
 
     static void firstFrame(String id, BooleanSupplier stillCurrent, Consumer<Boolean> event) {
+        if (!observingPreferences) {
+            Setting.preferences.preferences.registerOnSharedPreferenceChangeListener(PREFERENCES);
+            observingPreferences = true;
+        }
         if (id == null || id.isEmpty()) return;
         if (!Settings.AUTOMATIC_CLEAR_DISPLAY.get()) {
             cancel();
@@ -81,8 +127,7 @@ public final class RememberClearDisplayPatch {
         if (!(clear instanceof Boolean) || !(type instanceof Integer)) return;
         if ((Integer) type == 3 || (Integer) type == 9) return;
         if (posting) return;
-        if (Looper.myLooper() == Looper.getMainLooper()) cancel();
-        else MAIN.post(RememberClearDisplayPatch::cancel);
+        cancelOnMain();
         Settings.CLEAR_DISPLAY.save((Boolean) clear);
     }
 
