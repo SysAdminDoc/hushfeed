@@ -13,6 +13,7 @@ import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -44,6 +45,8 @@ public final class BlockAuthorOverlay {
     private static final float DEFAULT_Y_FRACTION = 0.40f;
 
     private static WeakReference<View> buttonReference = new WeakReference<>(null);
+    private static WeakReference<ViewGroup> rootReference = new WeakReference<>(null);
+    private static ViewTreeObserver.OnGlobalLayoutListener visibilityListener;
     private static WeakReference<View> undoReference = new WeakReference<>(null);
 
     /** Guards against a double tap blocking, then unblocking, the same account. */
@@ -72,16 +75,29 @@ public final class BlockAuthorOverlay {
      * the user leaves the video feed. This is the seam that does it.
      */
     public static void setFeedVisible(boolean visible) {
-        Utils.runOnMainThread(() -> {
-            View button = buttonReference.get();
-            if (button == null) {
-                return;
-            }
-            button.setVisibility(visible ? View.VISIBLE : View.GONE);
+        View button = buttonReference.get();
+        if (button == null) {
+            return;
+        }
+        int wanted = visible ? View.VISIBLE : View.GONE;
+        if (button.getVisibility() != wanted) {
+            button.setVisibility(wanted);
             if (!visible) {
                 dismissUndo();
             }
-        });
+        }
+    }
+
+    /**
+     * Re-checks whether the feed is on screen. Runs on every layout pass, so it does
+     * nothing but read a cached view's selected state.
+     */
+    private static void syncVisibility() {
+        Activity activity = Utils.getActivity();
+        if (activity == null) {
+            return;
+        }
+        setFeedVisible(FeedVisibility.isOnFeed(activity));
     }
 
     private static void attach(VideoAuthor author) {
@@ -115,13 +131,37 @@ public final class BlockAuthorOverlay {
             // only be turned into margins once dimensions are known.
             root.post(() -> applySavedPosition(button, root, size));
 
+            installVisibilityListener(root);
+            syncVisibility();
+
             Logger.printDebug(() -> "Block button attached for " + author.label());
         } catch (Throwable ex) {
             Logger.printException(() -> "Could not attach the block button", ex);
         }
     }
 
+    private static void installVisibilityListener(ViewGroup root) {
+        if (visibilityListener != null && rootReference.get() == root) {
+            return;
+        }
+        removeVisibilityListener();
+
+        visibilityListener = BlockAuthorOverlay::syncVisibility;
+        root.getViewTreeObserver().addOnGlobalLayoutListener(visibilityListener);
+        rootReference = new WeakReference<>(root);
+    }
+
+    private static void removeVisibilityListener() {
+        ViewGroup root = rootReference.get();
+        if (root != null && visibilityListener != null) {
+            root.getViewTreeObserver().removeOnGlobalLayoutListener(visibilityListener);
+        }
+        visibilityListener = null;
+        rootReference = new WeakReference<>(null);
+    }
+
     private static void detach() {
+        removeVisibilityListener();
         View button = buttonReference.get();
         if (button != null && button.getParent() instanceof ViewGroup) {
             ((ViewGroup) button.getParent()).removeView(button);
