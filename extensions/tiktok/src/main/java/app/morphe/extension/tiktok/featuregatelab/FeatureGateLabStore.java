@@ -125,21 +125,6 @@ public final class FeatureGateLabStore {
         deleteRuleById(idFor(manager, key, type));
     }
 
-    public static void resetAllOverrides() {
-        SharedPreferences prefs = prefs();
-        if (prefs == null) {
-            return;
-        }
-        SharedPreferences.Editor editor = prefs.edit();
-        for (String id : ruleIds(prefs)) {
-            removeRuleFields(editor, id);
-        }
-        editor.remove(RULE_IDS_KEY).apply();
-        FeatureGateLabRuntime.clearTriggered();
-        FeatureGateLabRuntime.reloadRules();
-        FeatureGateLabSession.markRestartNeeded();
-    }
-
     public static void resetAllLabData() {
         SettingsManagerObservationRecorder.clear();
         SharedPreferences prefs = prefs();
@@ -270,15 +255,6 @@ public final class FeatureGateLabStore {
             accepted.add(new Rule(idFor(manager, key, type), manager, key, type, value, false, System.currentTimeMillis()));
         }
         return new ImportReview(accepted, rejected);
-    }
-
-    public static void applyImport(ImportReview review) {
-        if (review == null) {
-            return;
-        }
-        for (Rule rule : review.accepted) {
-            saveRule(rule.manager, rule.key, rule.type, rule.value, false);
-        }
     }
 
     public static String validateValue(String type, String value) {

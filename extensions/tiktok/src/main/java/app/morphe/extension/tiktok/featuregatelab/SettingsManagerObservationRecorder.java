@@ -37,6 +37,17 @@ final class SettingsManagerObservationRecorder {
         DEFAULT_WRAPPER_KEYS.clear();
     }
 
+    /** Observations are immutable serialized values and exist only for this process. */
+    static Runnable checkpoint() {
+        var observations = new java.util.HashMap<>(OBSERVATIONS);
+        var wrappers = new java.util.HashMap<>(DEFAULT_WRAPPER_KEYS);
+        return () -> {
+            clear();
+            OBSERVATIONS.putAll(observations);
+            DEFAULT_WRAPPER_KEYS.putAll(wrappers);
+        };
+    }
+
     static Object observeWithoutDefault(String key, Class<?> requestedClass, Object returnedValue) {
         FeatureGateLearnMode.observe(FeatureGateLabStore.MANAGER_SETTINGS_MANAGER, key,
                 (requestedClass == null ? "unknown" : requestedClass.getName())

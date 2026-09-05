@@ -57,6 +57,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.shared.Logger;
 import app.morphe.extension.tiktok.settings.preference.SettingsUi;
 
 @SuppressWarnings({"deprecation", "SetTextI18n"})
@@ -76,6 +77,7 @@ public final class FeatureGateLabFragment extends Fragment {
             FeatureGateLabStore.MANAGER_PIA_ACTIVITY_CENTER
     };
     private static final long SEARCH_DELAY_MS = 160;
+    private static final java.util.concurrent.atomic.AtomicBoolean CHANGING = new java.util.concurrent.atomic.AtomicBoolean();
     private static final int REQUEST_EXPORT_LOADED = 0x6f10;
     private static final int REQUEST_IMPORT_LOADED = 0x6f11;
     private static final int MAX_COMPRESSED_IMPORT_BYTES = 32 * 1024 * 1024;
@@ -370,12 +372,7 @@ public final class FeatureGateLabFragment extends Fragment {
         if (activity == null || activity.isFinishing() || !FeatureGateLabStore.consumeMigrationNotice()) {
             return;
         }
-        AlertDialog dialog = new AlertDialog.Builder(activity)
-                .setTitle("Review saved overrides")
-                .setMessage("Overrides saved for an older TikTok version were kept but disabled. Review their values before enabling them on TikTok 46.2.3.")
-                .setPositiveButton("Review", null)
-                .create();
-        showStyled(dialog);
+        Utils.showToastLong("Older overrides were kept disabled. Review their values before enabling them on TikTok 46.2.3.");
     }
 
     @Override
@@ -638,24 +635,17 @@ public final class FeatureGateLabFragment extends Fragment {
     }
 
     private void onMasterChanged(boolean checked) {
-        if (checked && !FeatureGateLabStore.warningAcknowledged()) {
-            master.setChecked(false);
-            AlertDialog dialog = new AlertDialog.Builder(getActivity())
-                    .setTitle("Enable Feature Gate Lab overrides?")
-                    .setMessage("Client-side override values apply to all accounts in this app data. Some gates can affect account safety, compliance, login, region, or payment behavior. Use only keys you can test and roll back.")
-                    .setPositiveButton("Enable", (ignored, which) -> {
-                        FeatureGateLabStore.acknowledgeWarning();
-                        master.setChecked(true);
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .create();
-            showStyled(dialog);
+        if (FeatureGateLabStore.masterEnabled() == checked) return;
+        if (CHANGING.get()) {
+            master.setChecked(FeatureGateLabStore.masterEnabled());
+            Utils.showToastLong("A Lab change is already running");
             return;
         }
-        if (FeatureGateLabStore.masterEnabled() != checked) {
-            FeatureGateLabStore.setMasterEnabled(checked);
-            rebuild();
-        }
+        if (checked) FeatureGateLabStore.acknowledgeWarning();
+        FeatureGateLabStore.setMasterEnabled(checked);
+        rebuild();
+        Utils.showToastLong(checked ? "Overrides enabled. Restart TikTok to apply saved values."
+                : "Overrides disabled. Restart TikTok to restore native values.");
     }
 
     private void openDetail(FeatureGateCatalog.Entry entry) {
@@ -682,6 +672,7 @@ public final class FeatureGateLabFragment extends Fragment {
         menu.getMenu().add(0, 3, 2, "Import loaded values");
         menu.getMenu().add(0, 4, 3, "Reset all overrides");
         menu.getMenu().add(0, 5, 4, "Reset all Lab data");
+        menu.getMenu().add(0, 6, 5, "Undo last Lab change");
         menu.setOnMenuItemClickListener(item -> {
             switch (item.getItemId()) {
                 case 1:
@@ -694,10 +685,13 @@ public final class FeatureGateLabFragment extends Fragment {
                     chooseLoadedValuesFile();
                     return true;
                 case 4:
-                    confirmReset(false);
+                    reset(false);
                     return true;
                 case 5:
-                    confirmReset(true);
+                    reset(true);
+                    return true;
+                case 6:
+                    runLabChange(FeatureGateLabUndo::undo, "Restored the previous Lab settings. Restart TikTok.");
                     return true;
                 default:
                     return false;
@@ -763,6 +757,7 @@ public final class FeatureGateLabFragment extends Fragment {
                 }
                 reviewLoadedImport(new JSONObject(readGzipJson(compressed)));
             } catch (Throwable throwable) {
+                Logger.printException(() -> "Loaded-value file import failed", throwable);
                 postToast("Loaded-value file is invalid or too large");
             }
         }, "MorpheGateFileImport").start();
@@ -784,10 +779,15 @@ public final class FeatureGateLabFragment extends Fragment {
         JSONArray candidates = new JSONArray();
         int same = 0;
         int unavailable = 0;
-        if (sourceRules != null) {
+        int malformed = 0;
+        if (sourceRules == null) throw new IllegalArgumentException("Missing loaded values");
+        {
             for (int i = 0; i < sourceRules.length(); i++) {
                 JSONObject item = sourceRules.optJSONObject(i);
-                if (item == null) continue;
+                if (item == null) {
+                    malformed++;
+                    continue;
+                }
                 String manager = item.optString("manager");
                 String key = item.optString("key");
                 String type = item.optString("type", "").toUpperCase(Locale.ROOT);
@@ -819,36 +819,10 @@ public final class FeatureGateLabFragment extends Fragment {
         FeatureGateLabStore.ImportReview review = FeatureGateLabStore.reviewProfile(
                 profile.toString(), currentSnapshot.byIdentity);
 
-        String message = review.accepted.size()
-                + " missing, different, or overridden values can be imported.\n"
-                + same + " values and saved rules already match this account.\n"
-                + unavailable + " keys are unavailable in this catalog.\n"
-                + review.rejected.size() + " values failed type or boundary validation.\n\n"
-                + "Imported values remain disabled until you enable individual overrides.";
-        activity.runOnUiThread(() -> {
-            AlertDialog dialog = new AlertDialog.Builder(activity)
-                    .setTitle("Review loaded values")
-                    .setMessage(message)
-                    .setPositiveButton("Import disabled", (ignored, which) ->
-                            applyImportAsync(review, review.accepted.size()))
-                    .setNegativeButton("Cancel", null)
-                    .create();
-            showStyled(dialog);
-        });
-    }
-
-    private void applyImportAsync(FeatureGateLabStore.ImportReview review, int acceptedCount) {
-        new Thread(() -> {
-            try {
-                FeatureGateLabStore.applyImport(review);
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    rebuild();
-                    Utils.showToastLong("Imported " + acceptedCount + " disabled values");
-                });
-            } catch (Throwable throwable) {
-                postToast("Could not save imported values");
-            }
-        }, "MorpheGateImportApply").start();
+        String message = "Imported " + review.accepted.size() + " disabled values. " + same
+                + " already matched, " + unavailable + " unavailable, " + (review.rejected.size() + malformed)
+                + " rejected. Undo last Lab change is in the menu.";
+        runLabChange(() -> FeatureGateLabUndo.importRules(review), message);
     }
 
     private ExportPayload buildExportPayload() throws Exception {
@@ -933,28 +907,34 @@ public final class FeatureGateLabFragment extends Fragment {
         }
     }
 
-    private void confirmReset(boolean allData) {
-        if (!FeatureGateLabStore.masterEnabled()) {
-            Utils.showToastLong("Enable overrides before changing saved Lab data");
+    private void reset(boolean allData) {
+        runLabChange(() -> FeatureGateLabUndo.reset(allData),
+                "Lab " + (allData ? "data" : "overrides") + " reset. Undo last Lab change is in the menu. Restart TikTok.");
+    }
+
+    private interface LabChange { void run() throws Exception; }
+
+    private void runLabChange(LabChange change, String message) {
+        if (!CHANGING.compareAndSet(false, true)) {
+            postToast("A Lab change is already running");
             return;
         }
-        AlertDialog dialog = new AlertDialog.Builder(getActivity())
-                .setTitle(allData ? "Reset all Lab data?" : "Reset all overrides?")
-                .setMessage(allData
-                        ? "This removes all rules, the master state, and the warning acknowledgement."
-                        : "This removes every saved override rule and selected value.")
-                .setPositiveButton("Reset", (ignored, which) -> {
-                    if (allData) {
-                        FeatureGateLabStore.resetAllLabData();
-                        master.setChecked(false);
-                    } else {
-                        FeatureGateLabStore.resetAllOverrides();
-                    }
-                    rebuild();
-                })
-                .setNegativeButton("Cancel", null)
-                .create();
-        showStyled(dialog);
+        Utils.runOnBackgroundThread(() -> {
+            String result = message;
+            try {
+                change.run();
+            } catch (Exception error) {
+                Logger.printException(() -> "Lab change failed", error);
+                result = "Could not change Lab settings. " + error.getMessage();
+            }
+            String notice = result;
+            new Handler(Looper.getMainLooper()).post(() -> {
+                CHANGING.set(false);
+                if (master != null) master.setChecked(FeatureGateLabStore.masterEnabled());
+                rebuild();
+                Utils.showToastLong(notice);
+            });
+        });
     }
 
     private static void showStyled(AlertDialog dialog) {

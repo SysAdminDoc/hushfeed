@@ -136,6 +136,10 @@ Backups record which settings they contain, so missing entries are rejected. A c
 
 <img src="assets/settings-backup.png" alt="Settings backup, restore, reset and undo controls" width="300" />
 
+Feature Gate Lab saves its master switch immediately. Its menu can reset overrides while the switch is off, reset all Lab data, or undo the last reset or import. Imported values stay disabled. Changes run in the background and report their result with a notification. The undo copy stores Lab configuration privately; full-reset undo also restores captured observations during the same app run. Other patch preferences are unchanged.
+
+<img src="assets/feature-gate-lab.png" alt="Feature Gate Lab with immediate master control and settings menu" width="300" />
+
 ## Add Source
 
 Open this link on the Android device where Morphe is installed:

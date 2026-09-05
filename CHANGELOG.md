@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Feature Gate Lab applies its master switch, resets and loaded-value imports without confirmations. Reset works while overrides are off, and the menu can undo the last reset or import. Migration and restart guidance use notifications.
+
 * Keep inbox category models available so disabling a hide switch restores the row and its height on the next layout, including Archive and Shop.
 
 * Reject incomplete settings backups using their saved key inventory. Recovery attempts both preference stores independently when a save fails.
