@@ -60,6 +60,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Disable long-press quick share` | Keeps long-pressing Share from opening TikTok's quick-share interaction. |
 | `Disable long-press repost` | Keeps holding Like from opening TikTok's repost action without disabling TikTok's wider repost and upvote systems. |
 | `Disable screen capture detection` | Prevents TikTok from detecting screenshots and screen recordings. |
+| `Allow screenshots and Circle to Search` | Removes secure window flags and the native Circle to Search block. Off by default. Restart after changing the setting. |
 | `Diagnostic tools` | Adds optional structured Morphe logs, TikTok crash capture, and clipboard or file report export. |
 | `Downloads` | Adds watermark-free downloads, filename templates, and comment sticker saving with animated-media preservation. |
 | `Enable Live search` | Shows TikTok's search entry in the Live drawer where supported. |

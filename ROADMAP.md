@@ -23,15 +23,6 @@ with anchors present first, then adaptations, then new builds.
 
 ### P2
 
-- [ ] P2 - Screenshot black screen and Circle to Search (upstream #6, 14 comments)
-  Why: our Disable screen capture detection stops the reaction but not the FLAG_SECURE blackout.
-  Evidence: `circle_search_block` gate present in 2 dex (a commenter's workaround sets it to 0);
-  `setSecure` present in 3 dex; Morphe's all/misc/screencapture/RemoveScreenCaptureRestrictionPatch
-  shows the FLAG_SECURE clear.
-  Touches: new patch (override the gate via Feature Gate Lab or clear the secure flag at the
-  Window and SurfaceView calls), Settings.java.
-  Acceptance: a screenshot of a playing video is not black; Circle to Search sees the frame.
-  Complexity: S
 - [ ] P2 - Subtitle download and caption styling (upstream #57)
   Why: subtitle size, background and survival in clear display; 2 reactions.
   Evidence: `getClaInfo`, `getCaptionInfos` present (classes with cla_info); yt-dlp's tiktok.py

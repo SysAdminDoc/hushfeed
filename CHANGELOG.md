@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Added an option to allow screenshots and Circle to Search by removing secure window flags and disabling the native search block.
+
 * Added Feature Gate Recorder with Start and Stop controls, a gate-read diff and a copyable report.
 
 * Added automatic clear display with a configurable delay. Manual restoration cancels the timer until the next video.

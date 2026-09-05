@@ -6,6 +6,8 @@
 package app.morphe.extension.tiktok.settings;
 
 public class SettingsStatus {
+    public static boolean screenCaptureEnabled;
+    public static void enableScreenCapture() { screenCaptureEnabled = true; }
     public static boolean featureGateRecorderEnabled;
     public static void enableFeatureGateRecorder() { featureGateRecorderEnabled = true; }
     public static boolean automaticClearDisplayEnabled;
