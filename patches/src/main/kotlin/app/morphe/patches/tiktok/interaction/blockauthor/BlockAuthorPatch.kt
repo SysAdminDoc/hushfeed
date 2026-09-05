@@ -40,9 +40,13 @@ val blockAuthorPatch = bytecodePatch(
         val paramsRegister = trackerMethod.registerOfParameter(VIDEO_ITEM_PARAMS_DESCRIPTOR)
             ?: error("Could not locate the VideoItemParams parameter on paramSync2StateAccept")
 
+        // Must be invoke-static/range. Parameter registers sit at the top of the frame, so
+        // on a method with a large frame this register is well above v15, which the plain
+        // invoke-static (format 35c) cannot encode. The smali assembler drops the whole
+        // method when that happens, and the patcher then fails with "Collection is empty".
         trackerMethod.addInstruction(
             0,
-            "invoke-static {$paramsRegister}, " +
+            "invoke-static/range { $paramsRegister .. $paramsRegister }, " +
                 "$EXTENSION_CLASS_DESCRIPTOR->setCurrentVideoParams(Ljava/lang/Object;)V",
         )
 
