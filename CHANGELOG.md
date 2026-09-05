@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Added automatic clear display with a configurable delay. Manual restoration cancels the timer until the next video.
+
 * Added playback quality choices for regular and adaptive video streams. Playback limits leave the full set of download variants available.
 
 * Selected-quality saves now pair adaptive video with its matching audio track before writing the final MP4.

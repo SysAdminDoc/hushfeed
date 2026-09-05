@@ -11,6 +11,7 @@ import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 import app.morphe.extension.tiktok.settings.preference.ChoicePreference;
+import app.morphe.extension.tiktok.settings.preference.NumberInputPreference;
 
 @SuppressWarnings("deprecation")
 public final class InterfacePreferenceCategory extends ConditionalPreferenceCategory {
@@ -21,7 +22,7 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
 
     @Override
     public boolean getSettingsStatus() {
-        return SettingsStatus.doubleTapEnabled || SettingsStatus.confirmInteractionsEnabled || SettingsStatus.captchaPopupSuppressionEnabled
+        return SettingsStatus.automaticClearDisplayEnabled || SettingsStatus.doubleTapEnabled || SettingsStatus.confirmInteractionsEnabled || SettingsStatus.captchaPopupSuppressionEnabled
                 || SettingsStatus.promotionalBannersEnabled
                 || SettingsStatus.alwaysShowPublishDateEnabled
                 || SettingsStatus.videoOverlaysEnabled
@@ -33,6 +34,12 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
 
     @Override
     public void addPreferences(Context context) {
+        if (SettingsStatus.automaticClearDisplayEnabled) {
+            addPreference(new TogglePreference(context, "Automatic clear display",
+                    "Hide controls after each video starts. Tap to restore them.", Settings.AUTOMATIC_CLEAR_DISPLAY));
+            addPreference(new NumberInputPreference(context, "Clear display delay",
+                    "Wait before hiding the controls.", Settings.AUTOMATIC_CLEAR_DISPLAY_DELAY, 0, 30000, "ms"));
+        }
         if (SettingsStatus.doubleTapEnabled) {
             addPreference(new ChoicePreference(context, "Double tap", Settings.DOUBLE_TAP_ACTION,
                     new String[]{"TikTok default", "Do nothing", "Open comments"},

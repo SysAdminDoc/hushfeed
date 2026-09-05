@@ -6,6 +6,8 @@
 package app.morphe.extension.tiktok.settings;
 
 public class SettingsStatus {
+    public static boolean automaticClearDisplayEnabled;
+    public static void enableAutomaticClearDisplay() { automaticClearDisplayEnabled = true; }
     public static boolean playbackQualityEnabled;
     public static void enablePlaybackQuality() { playbackQualityEnabled = true; }
     public static boolean advancedDownloadsEnabled;

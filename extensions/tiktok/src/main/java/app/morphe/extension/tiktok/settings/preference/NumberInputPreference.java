@@ -20,10 +20,17 @@ public class NumberInputPreference extends EditTextPreference {
     private final String baseSummary;
     private final int minValue;
     private final int maxValue;
+    private final String unit;
 
     public NumberInputPreference(Context context, String title, String summary, IntegerSetting setting,
                                  int minValue, int maxValue) {
+        this(context, title, summary, setting, minValue, maxValue, "videos");
+    }
+
+    public NumberInputPreference(Context context, String title, String summary, IntegerSetting setting,
+                                 int minValue, int maxValue, String unit) {
         super(context);
+        this.unit = unit;
         this.baseSummary = summary;
         this.minValue = minValue;
         this.maxValue = maxValue;
@@ -41,7 +48,7 @@ public class NumberInputPreference extends EditTextPreference {
         int clampedValue = parseAndClamp(value);
         String text = String.valueOf(clampedValue);
         setText(text);
-        setSummary(baseSummary + "\nCurrent: " + text + " videos");
+        setSummary(baseSummary + "\nCurrent: " + text + " " + unit);
     }
 
     @Override

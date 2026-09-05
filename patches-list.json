@@ -1191,9 +1191,11 @@
     },
     {
       "name": "Remember clear display",
-      "description": "Remembers TikTok's clear-display state between videos.",
+      "description": "Remembers clear display between videos, or enters it automatically after a chosen delay.",
       "use": true,
-      "dependencies": [],
+      "dependencies": [
+        "BytecodePatch"
+      ],
       "compatiblePackages": {
         "com.zhiliaoapp.musically": [
           "46.2.3"

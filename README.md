@@ -88,7 +88,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Hold-and-slide 2x lock` | Enables TikTok's native hold, slide down, and release gesture for locking playback at 2x speed. |
 | `Open external links directly` | Opens profile and story website links in the system browser instead of TikTok's in-app browser. |
 | `Playback speed` | Enables playback-speed controls for all videos and remembers the selected speed between videos. |
-| `Remember clear display` | Remembers TikTok's clear-display state between videos. |
+| `Remember clear display` | Remembers clear display between videos, or enters it automatically after a chosen delay. Tap to restore the controls. |
 | `Resume videos after scrolling` | Restores a video's prior playback position when returning to it in the feed. |
 | `SIM spoof` | Replaces SIM country and operator values reported to TikTok and provides country presets. TikTok may still use IP address, account history, language, and other region signals. |
 | `Sanitize sharing links` | Removes tracking parameters from TikTok links before they are shared. |

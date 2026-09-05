@@ -23,17 +23,6 @@ with anchors present first, then adaptations, then new builds.
 
 ### P2
 
-- [ ] P2 - Automatic clear display with a delay
-  Why: BlueDragon's most requested feature in its README; we already post the clear-display
-  event on 46.2.3.
-  Evidence: our interaction/cleardisplay/RememberClearDisplayPatch.kt and
-  extension cleardisplay/RememberClearDisplayPatch.java (OnRenderFirstFrame hook);
-  others/BlueDragon4251_tiktok-patches-for-morphe cleardisplay/AutomaticClearDisplayPatch.kt
-  (its runtime names 0SKe, 12x2, 093F, Rv0 are not ours and are not needed).
-  Touches: cleardisplay/RememberClearDisplayPatch.java (Handler.postDelayed of the existing
-  event), Settings.java (`automatic_clear_display`, delay ms), Interface category.
-  Acceptance: after the delay, every new video enters clear display; tapping restores.
-  Complexity: S
 - [ ] P2 - Feature Gate Recorder
   Why: baseline-and-diff over Feature Gate Lab observations makes finding the gate behind a
   TikTok behaviour a two-minute job (needed for #6, #136 and future hides).
