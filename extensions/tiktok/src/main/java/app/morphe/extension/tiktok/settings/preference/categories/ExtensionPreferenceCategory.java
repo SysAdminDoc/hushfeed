@@ -27,6 +27,13 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
 
     @Override
     public void addPreferences(Context context) {
+        if (SettingsStatus.foldableSplitViewEnabled) {
+            addPreference(new TogglePreference(context, "Comments beside the video",
+                    "Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.", Settings.FOLDABLE_SPLIT_VIEW));
+            addPreference(new app.morphe.extension.tiktok.settings.preference.NumberInputPreference(context,
+                    "Split comment minimum width", "Window width needed to enable the layout. Restart after changing.",
+                    Settings.FOLDABLE_SPLIT_VIEW_MIN_WIDTH_DP, 320, 1600, "dp"));
+        }
         addPreference(new TogglePreference(
                 context,
                 "Sanitize sharing links",

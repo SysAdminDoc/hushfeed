@@ -51,6 +51,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 
 | Patch | Description |
 |---|---|
+| `Foldable split comment view` | Enables comments beside the video from a configurable window width (600 dp by default). Off by default, with multi-window and picture-in-picture restrictions preserved. Restart after changing its settings or unfolding if TikTok keeps the old layout. |
 | `Subtitle tools` | Saves captions as SRT files beside downloaded videos. Choose original, device or all available languages, adjust caption size and background, and keep the current caption visible in clear display. |
 | `Playback quality` | Chooses the lowest, highest or a target video quality for regular and adaptive playback. Download quality has its own setting. |
 | `Advanced downloads` | Selects a video quality or target resolution and combines separate audio tracks when needed. An optional Photo Mode downloader saves source images directly, preserving their bytes and format. |
@@ -108,6 +109,10 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Translate comments` | Adds comment translation controls using TikTok's translation system, with selectable language exclusions. |
 
 <br>
+
+Foldable controls are in App behavior:
+
+<img src="assets/foldable-settings.png" alt="Foldable comment settings" width="300" />
 
 ## Add Source
 
