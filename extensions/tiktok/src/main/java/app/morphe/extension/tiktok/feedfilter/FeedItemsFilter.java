@@ -26,7 +26,13 @@ public final class FeedItemsFilter {
         new LiveFilter(),
         new StoryFilter(),
         new ImageVideoFilter(),
-        new ShopFilter()
+        new ShopFilter(),
+        new SoundFilter(),
+        new ContentMarkerFilters.PaidPartnershipFilter(),
+        new ContentMarkerFilters.AiGeneratedFilter(),
+        new ContentMarkerFilters.VerifiedFilter(),
+        new ContentMarkerFilters.SeriesFilter(),
+        new ContentMarkerFilters.PlaylistFilter()
     );
     private static final List<IFilter> RANGE_FILTERS = List.of(
         new ViewCountFilter(),

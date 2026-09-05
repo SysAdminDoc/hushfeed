@@ -1,0 +1,55 @@
+/*
+ * Copyright (c) 2026 Metra TikTok Patches
+ * https://github.com/icysymmetra/tiktok-patches-for-morphe
+ */
+package app.morphe.extension.tiktok.blockauthor;
+
+import app.morphe.extension.tiktok.feedfilter.SoundIdentity;
+
+/**
+ * The sound on the video currently on screen, captured alongside its author.
+ */
+public final class CurrentVideoSound {
+    public final String id;
+    public final String name;
+    public final String author;
+
+    private static volatile CurrentVideoSound current;
+
+    private CurrentVideoSound(String id, String name, String author) {
+        this.id = id;
+        this.name = name;
+        this.author = author;
+    }
+
+    /** @return the current sound, or null when the current item has none. */
+    public static CurrentVideoSound get() {
+        return current;
+    }
+
+    public String label() {
+        if (name != null && !name.isEmpty()) {
+            return author != null && !author.isEmpty() ? name + " (" + author + ")" : name;
+        }
+        return id != null ? "sound " + id : "this sound";
+    }
+
+    /** The block button needs either an id to record or a name to match on. */
+    public boolean isUsable() {
+        return (id != null && !id.isEmpty()) || (name != null && !name.isEmpty());
+    }
+
+    static void update(Object aweme) {
+        Object music = aweme == null ? null : Reflect.property(aweme, "getMusic", "music");
+        if (music == null) {
+            current = null;
+            return;
+        }
+        current = new CurrentVideoSound(
+                SoundIdentity.idOf(music), SoundIdentity.nameOf(music), SoundIdentity.authorOf(music));
+    }
+
+    static void clear() {
+        current = null;
+    }
+}

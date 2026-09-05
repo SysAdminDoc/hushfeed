@@ -5,6 +5,7 @@ import android.preference.PreferenceScreen;
 
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
+import app.morphe.extension.tiktok.settings.preference.InputTextPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 
 @SuppressWarnings("deprecation")
@@ -16,7 +17,8 @@ public class CommentsPreferenceCategory extends ConditionalPreferenceCategory {
 
     @Override
     public boolean getSettingsStatus() {
-        return SettingsStatus.commentTranslationEnabled
+        return SettingsStatus.commentToolsEnabled
+                || SettingsStatus.commentTranslationEnabled
                 || SettingsStatus.hideCommentQuickReactionsEnabled
                 || SettingsStatus.copyCommentsWithoutUsernameEnabled;
     }
@@ -45,6 +47,33 @@ public class CommentsPreferenceCategory extends ConditionalPreferenceCategory {
                     "Copy comments without username",
                     "Copy only the comment text when using TikTok's copy comment action.",
                     Settings.COPY_COMMENTS_WITHOUT_USERNAME
+            ));
+        }
+        if (SettingsStatus.commentToolsEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Filter comments by keyword",
+                    "Hide comments that contain any of the words below, or that come from the accounts below.",
+                    Settings.COMMENT_KEYWORD_FILTER
+            ));
+            addPreference(new InputTextPreference(
+                    context,
+                    "Blocked comment words",
+                    "Comma separated. A comment is hidden if its text contains any of them. Case does not matter.",
+                    Settings.COMMENT_BLOCKED_KEYWORDS
+            ));
+            addPreference(new InputTextPreference(
+                    context,
+                    "Hidden commenters",
+                    "Comma separated usernames or display names whose comments are hidden.",
+                    Settings.COMMENT_BLOCKED_USERS
+            ));
+            addPreference(new TogglePreference(
+                    context,
+                    "Two finger hold blocks a commenter",
+                    "Rest two fingers on a comment for about a second to block the account that posted it. "
+                            + "An undo banner follows.",
+                    Settings.BLOCK_FROM_COMMENT
             ));
         }
     }

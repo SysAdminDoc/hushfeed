@@ -272,10 +272,12 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     SettingsStatus.alwaysShowPublishDateEnabled && Settings.ALWAYS_SHOW_PUBLISH_DATE.get()
             ));
         }
-        if (SettingsStatus.commentTranslationEnabled
+        if (SettingsStatus.commentToolsEnabled
+                || SettingsStatus.commentTranslationEnabled
                 || SettingsStatus.hideCommentQuickReactionsEnabled
                 || SettingsStatus.copyCommentsWithoutUsernameEnabled) {
             addMenu(screen, Section.COMMENTS, SettingsMenuPreference.Icon.COMMENTS, countEnabled(
+                    SettingsStatus.commentToolsEnabled && Settings.COMMENT_KEYWORD_FILTER.get(),
                     SettingsStatus.commentTranslationEnabled && Settings.COMMENT_BATCH_TRANSLATION.get(),
                     SettingsStatus.hideCommentQuickReactionsEnabled && Settings.HIDE_COMMENT_QUICK_REACTIONS.get(),
                     SettingsStatus.copyCommentsWithoutUsernameEnabled && Settings.COPY_COMMENTS_WITHOUT_USERNAME.get()

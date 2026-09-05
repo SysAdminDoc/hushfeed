@@ -28,6 +28,7 @@ public class SettingsStatus {
     public static boolean diagnosticsEnabled = false;
     public static boolean blockAuthorEnabled = false;
     public static boolean inboxFilterEnabled = false;
+    public static boolean commentToolsEnabled = false;
 
     public static void enableFeedFilter() {
         feedFilterEnabled = true;
@@ -115,6 +116,10 @@ public class SettingsStatus {
 
     public static void enableInboxFilter() {
         inboxFilterEnabled = true;
+    }
+
+    public static void enableCommentTools() {
+        commentToolsEnabled = true;
     }
 
     public static void load() {

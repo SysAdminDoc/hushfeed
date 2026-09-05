@@ -56,17 +56,17 @@ public final class BlockAuthorService {
     private BlockAuthorService() {
     }
 
-    interface Callback {
+    public interface Callback {
         void onResult(boolean success, String message);
     }
 
     /** Blocks {@code author}. Runs on a background thread. */
-    static void block(VideoAuthor author, Callback callback) {
+    public static void block(VideoAuthor author, Callback callback) {
         submit(author, BLOCK, callback);
     }
 
     /** Reverses a block, used by the undo action. */
-    static void unblock(VideoAuthor author, Callback callback) {
+    public static void unblock(VideoAuthor author, Callback callback) {
         submit(author, UNBLOCK, callback);
     }
 

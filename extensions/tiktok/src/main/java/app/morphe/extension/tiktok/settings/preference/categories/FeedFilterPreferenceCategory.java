@@ -11,6 +11,7 @@ import android.preference.PreferenceScreen;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.RangeValuePreference;
+import app.morphe.extension.tiktok.settings.preference.InputTextPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 
 @SuppressWarnings("deprecation")
@@ -61,6 +62,54 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
                 context,
                 "Min/Max likes", "The minimum or maximum likes of a video to show.",
                 Settings.MIN_MAX_LIKES
+        ));
+        addPreference(new TogglePreference(
+                context,
+                "Hide paid partnerships",
+                "Hide videos marked as paid partnership or branded content.",
+                Settings.HIDE_PAID_PARTNERSHIP
+        ));
+        addPreference(new TogglePreference(
+                context,
+                "Hide AI generated videos",
+                "Hide videos carrying TikTok's AI generated label.",
+                Settings.HIDE_AI_GENERATED
+        ));
+        addPreference(new TogglePreference(
+                context,
+                "Hide verified accounts",
+                "Hide videos posted by verified accounts.",
+                Settings.HIDE_VERIFIED
+        ));
+        addPreference(new TogglePreference(
+                context,
+                "Hide Series",
+                "Hide videos that belong to a paid Series.",
+                Settings.HIDE_SERIES
+        ));
+        addPreference(new TogglePreference(
+                context,
+                "Hide playlist videos",
+                "Hide videos posted as part of a playlist.",
+                Settings.HIDE_PLAYLIST_VIDEOS
+        ));
+        addPreference(new TogglePreference(
+                context,
+                "Skip blocked sounds",
+                "Skip videos that use a sound blocked with the player's sound button, or named below.",
+                Settings.HIDE_BLOCKED_SOUNDS
+        ));
+        addPreference(new InputTextPreference(
+                context,
+                "Blocked sound names",
+                "Comma separated words to match against a sound's name, like saxophone. Case does not matter.",
+                Settings.BLOCKED_SOUND_NAMES
+        ));
+        addPreference(new InputTextPreference(
+                context,
+                "Blocked sound ids",
+                "Comma separated sound ids recorded by the player's sound button. Remove one to unblock it.",
+                Settings.BLOCKED_SOUND_IDS
         ));
         addPreference(new TogglePreference(
                 context,

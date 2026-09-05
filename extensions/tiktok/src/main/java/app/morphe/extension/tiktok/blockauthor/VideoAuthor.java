@@ -12,7 +12,7 @@ public final class VideoAuthor {
     /** Aweme id of the video the author was read from, used only for logging. */
     public final String awemeId;
 
-    VideoAuthor(String uid, String secUid, String displayName, String awemeId) {
+    public VideoAuthor(String uid, String secUid, String displayName, String awemeId) {
         this.uid = uid;
         this.secUid = secUid;
         this.displayName = displayName;

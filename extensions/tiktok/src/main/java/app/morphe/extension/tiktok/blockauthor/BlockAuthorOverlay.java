@@ -20,7 +20,9 @@ import android.widget.TextView;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.tiktok.feedfilter.SoundIdentity;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.settings.SettingsStatus;
 
 import java.lang.ref.WeakReference;
 
@@ -37,7 +39,9 @@ import java.lang.ref.WeakReference;
  */
 public final class BlockAuthorOverlay {
     private static final String BLOCK_GLYPH = "⊘";
+    private static final String SOUND_GLYPH = "♪";
     private static final int BUTTON_SIZE_DP = 44;
+    private static final int BUTTON_GAP_DP = 8;
     private static final long UNDO_VISIBLE_MS = 6_000L;
 
     /** Right edge, just above TikTok's own action rail. */
@@ -45,6 +49,7 @@ public final class BlockAuthorOverlay {
     private static final float DEFAULT_Y_FRACTION = 0.40f;
 
     private static WeakReference<View> buttonReference = new WeakReference<>(null);
+    private static WeakReference<View> soundButtonReference = new WeakReference<>(null);
     private static WeakReference<ViewGroup> rootReference = new WeakReference<>(null);
     private static ViewTreeObserver.OnGlobalLayoutListener visibilityListener;
     private static WeakReference<View> undoReference = new WeakReference<>(null);
@@ -91,6 +96,16 @@ public final class BlockAuthorOverlay {
                 dismissUndo();
             }
         }
+        View soundButton = soundButtonReference.get();
+        if (soundButton != null) {
+            // The sound button needs a sound to act on, and a feed filter to act through.
+            boolean soundWanted = visible && SettingsStatus.feedFilterEnabled
+                    && CurrentVideoSound.get() != null && CurrentVideoSound.get().isUsable();
+            int soundVisibility = soundWanted ? View.VISIBLE : View.GONE;
+            if (soundButton.getVisibility() != soundVisibility) {
+                soundButton.setVisibility(soundVisibility);
+            }
+        }
     }
 
     /**
@@ -132,6 +147,11 @@ public final class BlockAuthorOverlay {
             root.addView(button);
             buttonReference = new WeakReference<>(button);
 
+            final View soundButton = createSoundButton(activity);
+            soundButton.setLayoutParams(new FrameLayout.LayoutParams(size, size, Gravity.TOP | Gravity.START));
+            root.addView(soundButton);
+            soundButtonReference = new WeakReference<>(soundButton);
+
             // The root has no measured size until it lays out, so the saved fraction can
             // only be turned into margins once dimensions are known.
             root.post(() -> applySavedPosition(button, root, size));
@@ -172,7 +192,76 @@ public final class BlockAuthorOverlay {
             ((ViewGroup) button.getParent()).removeView(button);
         }
         buttonReference = new WeakReference<>(null);
+        View soundButton = soundButtonReference.get();
+        if (soundButton != null && soundButton.getParent() instanceof ViewGroup) {
+            ((ViewGroup) soundButton.getParent()).removeView(soundButton);
+        }
+        soundButtonReference = new WeakReference<>(null);
         dismissUndo();
+    }
+
+    private static View createSoundButton(Activity activity) {
+        TextView button = new TextView(activity);
+        button.setText(SOUND_GLYPH);
+        button.setTextColor(Color.WHITE);
+        button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+        button.setGravity(Gravity.CENTER);
+        button.setContentDescription("Block this sound");
+
+        GradientDrawable background = new GradientDrawable();
+        background.setShape(GradientDrawable.OVAL);
+        background.setColor(Color.argb(140, 0, 0, 0));
+        background.setStroke(dp(activity, 1), Color.argb(90, 255, 255, 255));
+        button.setBackground(background);
+
+        button.setOnClickListener(view -> onBlockSoundTapped());
+        return button;
+    }
+
+    /**
+     * Records the current sound so the feed filter skips every video that uses it. Ids
+     * are exact; a sound with no id is recorded by name, which also catches re-uploads.
+     */
+    private static void onBlockSoundTapped() {
+        CurrentVideoSound sound = CurrentVideoSound.get();
+        if (sound == null || !sound.isUsable()) {
+            Utils.showToastShort("No sound to block on this video");
+            return;
+        }
+
+        final boolean byId = sound.id != null && !sound.id.isEmpty();
+        if (byId) {
+            Settings.BLOCKED_SOUND_IDS.save(SoundIdentity.withEntry(Settings.BLOCKED_SOUND_IDS.get(), sound.id));
+        } else {
+            Settings.BLOCKED_SOUND_NAMES.save(SoundIdentity.withEntry(Settings.BLOCKED_SOUND_NAMES.get(), sound.name));
+        }
+        Logger.printDebug(() -> "Blocked sound " + sound.label() + (byId ? " by id" : " by name"));
+
+        showUndoBanner("Skipping videos with " + sound.label(), () -> {
+            if (byId) {
+                Settings.BLOCKED_SOUND_IDS.save(SoundIdentity.withoutEntry(Settings.BLOCKED_SOUND_IDS.get(), sound.id));
+            } else {
+                Settings.BLOCKED_SOUND_NAMES.save(SoundIdentity.withoutEntry(Settings.BLOCKED_SOUND_NAMES.get(), sound.name));
+            }
+            Utils.showToastShort("Unblocked " + sound.label());
+        });
+    }
+
+    /** Keeps the sound button parked directly under the block button. */
+    private static void placeSoundButton(View blockButton, ViewGroup parent) {
+        View soundButton = soundButtonReference.get();
+        if (soundButton == null || soundButton.getParent() != parent) {
+            return;
+        }
+        ViewGroup.MarginLayoutParams blockParams = (ViewGroup.MarginLayoutParams) blockButton.getLayoutParams();
+        ViewGroup.MarginLayoutParams soundParams = (ViewGroup.MarginLayoutParams) soundButton.getLayoutParams();
+        int size = blockParams.height > 0 ? blockParams.height : blockButton.getHeight();
+        int gap = Math.round(BUTTON_GAP_DP * parent.getResources().getDisplayMetrics().density);
+        int top = blockParams.topMargin + size + gap;
+        int maxTop = Math.max(0, parent.getHeight() - size);
+        soundParams.leftMargin = blockParams.leftMargin;
+        soundParams.topMargin = Math.min(top, maxTop);
+        soundButton.setLayoutParams(soundParams);
     }
 
     private static View createButton(Activity activity) {
@@ -277,6 +366,7 @@ public final class BlockAuthorOverlay {
         params.leftMargin = Math.round(Math.min(Math.max(left, 0), maxLeft));
         params.topMargin = Math.round(Math.min(Math.max(top, 0), maxTop));
         view.setLayoutParams(params);
+        placeSoundButton(view, parent);
     }
 
     private static void applySavedPosition(View view, ViewGroup parent, int size) {
@@ -367,64 +457,75 @@ public final class BlockAuthorOverlay {
      * for a mis-tap while scrolling.
      */
     private static void showUndo(VideoAuthor author) {
-        try {
-            Activity activity = Utils.getActivity();
-            if (activity == null || activity.isFinishing()) {
-                Utils.showToastShort("Blocked " + author.label());
-                return;
-            }
-
-            ViewGroup root = activity.findViewById(android.R.id.content);
-            if (root == null) {
-                Utils.showToastShort("Blocked " + author.label());
-                return;
-            }
-
-            dismissUndo();
-
-            LinearLayout banner = new LinearLayout(activity);
-            banner.setOrientation(LinearLayout.HORIZONTAL);
-            banner.setGravity(Gravity.CENTER_VERTICAL);
-            banner.setPadding(dp(activity, 16), dp(activity, 12), dp(activity, 16), dp(activity, 12));
-
-            GradientDrawable background = new GradientDrawable();
-            background.setCornerRadius(dp(activity, 10));
-            background.setColor(Color.argb(235, 28, 28, 30));
-            banner.setBackground(background);
-
-            TextView label = new TextView(activity);
-            label.setText("Blocked " + author.label());
-            label.setTextColor(Color.WHITE);
-            label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-            banner.addView(label, new LinearLayout.LayoutParams(0, -2, 1f));
-
-            TextView undo = new TextView(activity);
-            undo.setText("UNDO");
-            undo.setTextColor(Color.rgb(254, 44, 85));
-            undo.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-            undo.setPadding(dp(activity, 12), 0, 0, 0);
-            undo.setOnClickListener(view -> {
-                dismissUndo();
-                BlockAuthorService.unblock(author, (success, message) -> Utils.showToastShort(
+        showUndoBanner("Blocked " + author.label(), () -> BlockAuthorService.unblock(author,
+                (success, message) -> Utils.showToastShort(
                         success
                                 ? "Unblocked " + author.label()
-                                : "Could not unblock " + author.label()));
-            });
-            banner.addView(undo, new LinearLayout.LayoutParams(-2, -2));
+                                : "Could not unblock " + author.label())));
+    }
 
-            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(-1, -2,
-                    Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
-            params.setMargins(dp(activity, 16), 0, dp(activity, 16), dp(activity, 96));
-            banner.setLayoutParams(params);
+    /**
+     * Shows a message with an UNDO action for six seconds, over whatever activity is on
+     * screen. Falls back to a plain toast when there is nowhere to draw it.
+     */
+    public static void showUndoBanner(String message, Runnable undoAction) {
+        Utils.runOnMainThread(() -> {
+            try {
+                Activity activity = Utils.getActivity();
+                if (activity == null || activity.isFinishing()) {
+                    Utils.showToastShort(message);
+                    return;
+                }
 
-            root.addView(banner);
-            undoReference = new WeakReference<>(banner);
+                ViewGroup root = activity.findViewById(android.R.id.content);
+                if (root == null) {
+                    Utils.showToastShort(message);
+                    return;
+                }
 
-            Utils.runOnMainThreadDelayed(BlockAuthorOverlay::dismissUndo, UNDO_VISIBLE_MS);
-        } catch (Throwable ex) {
-            Logger.printException(() -> "Could not show the undo banner", ex);
-            Utils.showToastShort("Blocked " + author.label());
-        }
+                dismissUndo();
+
+                LinearLayout banner = new LinearLayout(activity);
+                banner.setOrientation(LinearLayout.HORIZONTAL);
+                banner.setGravity(Gravity.CENTER_VERTICAL);
+                banner.setPadding(dp(activity, 16), dp(activity, 12), dp(activity, 16), dp(activity, 12));
+
+                GradientDrawable background = new GradientDrawable();
+                background.setCornerRadius(dp(activity, 10));
+                background.setColor(Color.argb(235, 28, 28, 30));
+                banner.setBackground(background);
+
+                TextView label = new TextView(activity);
+                label.setText(message);
+                label.setTextColor(Color.WHITE);
+                label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+                banner.addView(label, new LinearLayout.LayoutParams(0, -2, 1f));
+
+                TextView undo = new TextView(activity);
+                undo.setText("UNDO");
+                undo.setTextColor(Color.rgb(254, 44, 85));
+                undo.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+                undo.setPadding(dp(activity, 12), 0, 0, 0);
+                undo.setOnClickListener(view -> {
+                    dismissUndo();
+                    undoAction.run();
+                });
+                banner.addView(undo, new LinearLayout.LayoutParams(-2, -2));
+
+                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(-1, -2,
+                        Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+                params.setMargins(dp(activity, 16), 0, dp(activity, 16), dp(activity, 96));
+                banner.setLayoutParams(params);
+
+                root.addView(banner);
+                undoReference = new WeakReference<>(banner);
+
+                Utils.runOnMainThreadDelayed(BlockAuthorOverlay::dismissUndo, UNDO_VISIBLE_MS);
+            } catch (Throwable ex) {
+                Logger.printException(() -> "Could not show the undo banner", ex);
+                Utils.showToastShort(message);
+            }
+        });
     }
 
     private static void dismissUndo() {

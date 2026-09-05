@@ -1,5 +1,5 @@
 {
-  "version": "v0.8.0",
+  "version": "v0.9.0",
   "appNames": {
     "com.zhiliaoapp.musically": "TikTok"
   },
@@ -35,6 +35,34 @@
     {
       "name": "Block author button",
       "description": "Adds a block button to the video player that blocks the account that posted the current video in one tap, with an undo action. Supports TikTok 46.2.3.",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Comment tools",
+      "description": "Hides comments that contain chosen words or come from chosen accounts, and blocks a commenter with a two finger hold on their comment. Supports TikTok 46.2.3.",
       "use": false,
       "dependencies": [
         "BytecodePatch"

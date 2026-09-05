@@ -1,3 +1,11 @@
+## 0.9.0 (2026-09-05)
+
+### Features
+
+* **feed-filter:** skip videos by sound, with a block-sound button on the player and a name list for re-uploads
+* **feed-filter:** switches for paid partnerships, AI generated videos, verified accounts, Series and playlist videos
+* **comments:** hide comments by keyword or by account, and block a commenter with a two finger hold
+
 ## 0.8.0 (2026-09-05)
 
 ### Features

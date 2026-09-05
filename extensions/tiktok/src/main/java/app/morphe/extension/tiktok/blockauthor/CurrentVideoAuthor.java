@@ -35,6 +35,7 @@ public final class CurrentVideoAuthor {
         if (parsed == null || !parsed.isUsable()) {
             // A card with nothing to block (a LIVE preview, a promo, an end of feed card)
             // must not leave the previous creator armed behind the button.
+            CurrentVideoSound.clear();
             if (author != null) {
                 author = null;
                 Logger.printDebug(() -> "Current item has no blockable author");
@@ -74,6 +75,8 @@ public final class CurrentVideoAuthor {
             if (aweme == null) {
                 return null;
             }
+
+            CurrentVideoSound.update(aweme);
 
             Object user = Reflect.property(aweme, "getAuthor", "author");
             if (user == null) {
