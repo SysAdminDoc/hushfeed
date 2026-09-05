@@ -4,6 +4,7 @@
 
 * **feed:** four upstream patches for the feed toolbar: hide the LIVE button, the search button, the follow plus under the avatar, and the save button. The LIVE one shares the existing Live entrance switch and stops the button before it is built
 
+* **build:** move to Morphe patcher 1.12.0 and patches plugin 1.3.4, which is what Morphe Manager 1.29 ships. Typed patch options, sliders and colour pickers are available to patches from here on
 * **feed:** switches for the playlist bar, the floating event badge and the cards TikTok inserts between videos, plus the countdown lock on short drama adverts, which now releases when ads are being removed
 * **captcha:** a second CAPTCHA patch for TikTok's risk control dialog, answering the existing switch. Off by default, it never touches SMS or two factor verification, and it logs every suppression
 * **privacy:** a Disable telemetry patch that stops ByteDance AppLog, AppsFlyer, Firebase Analytics and crash reporting at their SDK entry points. Off by default, and it silences TikTok's own diagnostics too

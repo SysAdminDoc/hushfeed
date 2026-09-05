@@ -140,10 +140,10 @@ private fun Method.findInstructionIndexFromToString(fieldName: String) : Int {
  *
  * @param fieldName The name of the field to find.  Partial matches are allowed.
  */
-context(BytecodePatchContext)
+context(patchContext: BytecodePatchContext)
 internal fun Method.findMethodFromToString(fieldName: String) : MutableMethod {
     val methodUsageIndex = findInstructionIndexFromToString(fieldName)
-    return navigate(this).to(methodUsageIndex).stop()
+    return patchContext.navigate(this).to(methodUsageIndex).stop()
 }
 
 /**
@@ -418,9 +418,9 @@ inline fun <reified T : Reference> Instruction.getReference() = (this as? Refere
 /**
  * @return The mutable method for this method call reference.
  */
-context(BytecodePatchContext)
+context(patchContext: BytecodePatchContext)
 fun MethodReference.getMutableMethod(): MutableMethod {
-    return mutableClassDefBy(this.definingClass).methods.first { classMethod ->
+    return patchContext.mutableClassDefBy(this.definingClass).methods.first { classMethod ->
         MethodUtil.methodSignaturesMatch(classMethod, this@getMutableMethod)
     }
 }
@@ -747,9 +747,9 @@ fun BytecodePatchContext.forEachLiteralValueInstruction(
  *
  * **Fingerprint match indexes will be increased positively by [numberOfParameterRegistersLogical]**.
  */
-context(BytecodePatchContext)
+context(patchContext: BytecodePatchContext)
 fun Method.cloneMutableAndPreserveParameters() = cloneMutableAndPreserveParameters(
-    mutableClassDefBy(definingClass)
+    patchContext.mutableClassDefBy(definingClass)
 )
 
 /**
@@ -1297,7 +1297,7 @@ internal fun BytecodePatchContext.addStaticFieldToExtension(
     }
 }
 
-context(BytecodePatchContext)
+context(patchContext: BytecodePatchContext)
 internal fun setExtensionIsPatchIncluded(patchExtensionClassType: String) {
     val methodName = "isPatchIncluded"
     val returnType = "Z"
@@ -1312,13 +1312,15 @@ internal fun setExtensionIsPatchIncluded(patchExtensionClassType: String) {
         }
     )
 
-    if (fingerprint.methodOrNull == null) {
-        throw PatchException(
-            "Could not find required extension method: $patchExtensionClassType->$methodName()$returnType"
-        )
-    }
+    with(patchContext) {
+        if (fingerprint.methodOrNull == null) {
+            throw PatchException(
+                "Could not find required extension method: $patchExtensionClassType->$methodName()$returnType"
+            )
+        }
 
-    fingerprint.method.returnEarly(true)
+        fingerprint.method.returnEarly(true)
+    }
 }
 
 /**

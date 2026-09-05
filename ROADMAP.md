@@ -64,19 +64,6 @@ with anchors present first, then adaptations, then new builds.
 
 ### P1
 
-- [ ] P1 - Upgrade the Morphe patcher pin from 1.5.1 to 1.12.0
-  Why: unlocks typed options (colour picker for the theme, sliders), PatchAvailability, and the
-  Kotlin context-parameter syntax; the manager on the phone already ships 1.12.x and refuses
-  only bundles built on a newer patcher.
-  Evidence: MorpheApp/morphe-patcher CHANGELOG 1.5.2 to 1.12.0 (1.10.0 replaced context
-  receivers); gradle/libs.versions.toml; patches/build.gradle.kts `-Xcontext-receivers`;
-  patches/.../misc/settings/LegacySettingsEntryPatch.kt `context(BytecodePatchContext)`.
-  Touches: gradle/libs.versions.toml, settings.gradle.kts plugin version, patches/build.gradle.kts,
-  every `context(...)` use, patches/src/main/kotlin/app/morphe/util/*.kt (vendored copies may
-  now duplicate the library).
-  Acceptance: both governor tasks build; the bundle loads in Morphe Manager 1.29 with all
-  patches listed; a test patch with an `intSliderOption` renders a slider in expert options.
-  Complexity: M
 - [ ] P1 - Ghost mode (no story view, profile view or typing reports)
   Why: upstream #109, #67, #63 (4 reactions); anchors are real names in 46.2.3.
   Evidence: others/eduardo3677-ai_tiktok-patches-for-morphe patches/.../ghostmode/{GhostModePatch,

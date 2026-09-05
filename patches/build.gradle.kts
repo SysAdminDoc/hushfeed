@@ -40,9 +40,3 @@ tasks {
         dependsOn("generatePatchesList")
     }
 }
-
-kotlin {
-    compilerOptions {
-        freeCompilerArgs = listOf("-Xcontext-receivers")
-    }
-}

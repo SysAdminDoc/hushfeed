@@ -27,7 +27,7 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/telemetry/DisableTelemetryPatch;"
 private const val BD_LOCATION_CONFIG_DESCRIPTOR = "Lcom/bytedance/bdlocation/client/BDLocationConfig;"
 
-context(BytecodePatchContext)
+context(patchContext: BytecodePatchContext)
 private fun Method.returnEarlyIfTelemetryDisabled(disabledInstructions: (register: Int) -> String) {
     val scratchRegister = implementation?.registerCount
         ?: throw PatchException("Cannot guard a method without an implementation: $this")
@@ -35,14 +35,14 @@ private fun Method.returnEarlyIfTelemetryDisabled(disabledInstructions: (registe
 
     val guardedMethod = if (numberOfParameterRegisters == 0) {
         cloneMutable(additionalRegisters = 1).also { clonedMethod ->
-            mutableClassDefBy(definingClass).methods.apply {
+            patchContext.mutableClassDefBy(definingClass).methods.apply {
                 remove(this@returnEarlyIfTelemetryDisabled)
                 add(clonedMethod)
             }
         }
     } else {
         // Keep the original parameters intact when the guard uses a shifted parameter register
-        cloneMutableAndPreserveParameters()
+        with(patchContext) { cloneMutableAndPreserveParameters() }
     }
 
     guardedMethod.addInstructionsWithLabels(

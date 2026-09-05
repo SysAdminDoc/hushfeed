@@ -13,8 +13,8 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/settings/TikTokActivityHook;"
 
-context(BytecodePatchContext)
-internal fun addLegacySettingsEntryFallback() {
+context(patchContext: BytecodePatchContext)
+internal fun addLegacySettingsEntryFallback() = with(patchContext) {
         val createSettingsEntryMethodDescriptor =
             "$EXTENSION_CLASS_DESCRIPTOR->createSettingsEntry(" +
                 "Ljava/lang/String;" +
@@ -54,4 +54,5 @@ internal fun addLegacySettingsEntryFallback() {
             )
         }
 
+    Unit
 }
