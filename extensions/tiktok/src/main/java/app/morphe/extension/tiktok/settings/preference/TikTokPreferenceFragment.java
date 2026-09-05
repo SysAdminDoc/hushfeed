@@ -249,6 +249,12 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
 
         if (SettingsStatus.feedFilterEnabled) {
             addMenu(screen, Section.FEED_FILTER, SettingsMenuPreference.Icon.FILTER, countEnabled(
+                    !Settings.BLOCKED_CAPTION_WORDS.get().trim().isEmpty(),
+                    !Settings.BLOCKED_CREATORS.get().trim().isEmpty(),
+                    Settings.MAX_VIDEO_SECONDS.get() > 0,
+                    Settings.MAX_VIEWS_PER_LIKE.get() > 0,
+                    Settings.HIDE_PROMOTIONAL_MUSIC.get(),
+                    Settings.HIDE_LIVE_REPLAYS.get(),
                     Settings.REMOVE_ADS.get(),
                     Settings.HIDE_SHOP.get(),
                     Settings.HIDE_LIVE.get(),

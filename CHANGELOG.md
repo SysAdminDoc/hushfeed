@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Feed rules now support caption phrases, exact creator handles or ids, maximum length, promotional music, LIVE replays and views per like. If quality limits reject a whole page, retain its closest eligible video.
+
 * Share sheet tools can hide sharing apps, video actions and the complete Send to row before the panel is built. Hidden names also accept stable action keys.
 
 * Prevent a rapid feedback tap from racing the completion of the previous request.

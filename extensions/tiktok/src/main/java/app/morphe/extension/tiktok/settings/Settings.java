@@ -18,6 +18,12 @@ import app.morphe.extension.tiktok.navigation.BottomNavigationTabOptions;
 import app.morphe.extension.tiktok.navigation.NavigationTabOptions;
 
 public class Settings extends BaseSettings {
+    public static final StringSetting BLOCKED_CAPTION_WORDS = new StringSetting("blocked_caption_words", "");
+    public static final StringSetting BLOCKED_CREATORS = new StringSetting("blocked_creators", "");
+    public static final IntegerSetting MAX_VIDEO_SECONDS = new IntegerSetting("max_video_seconds", 0);
+    public static final IntegerSetting MAX_VIEWS_PER_LIKE = new IntegerSetting("max_views_per_like", 0);
+    public static final BooleanSetting HIDE_PROMOTIONAL_MUSIC = new BooleanSetting("hide_promotional_music", FALSE);
+    public static final BooleanSetting HIDE_LIVE_REPLAYS = new BooleanSetting("hide_live_replays", FALSE);
     public static final BooleanSetting HIDE_SHARE_CHANNELS = new BooleanSetting("hide_share_channels", FALSE);
     public static final BooleanSetting HIDE_SHARE_ACTIONS = new BooleanSetting("hide_share_actions", FALSE);
     public static final BooleanSetting REMOVE_ADS = new BooleanSetting("remove_ads", TRUE, true);

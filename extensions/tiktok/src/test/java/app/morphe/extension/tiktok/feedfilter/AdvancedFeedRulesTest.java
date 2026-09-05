@@ -1,0 +1,96 @@
+package app.morphe.extension.tiktok.feedfilter;
+
+import static org.junit.Assert.*;
+import app.morphe.extension.shared.Utils;
+import app.morphe.extension.tiktok.settings.Settings;
+import com.ss.android.ugc.aweme.feed.model.Aweme;
+import com.ss.android.ugc.aweme.feed.model.AwemeStatistics;
+import com.ss.android.ugc.aweme.feed.model.FeedItemList;
+import java.util.ArrayList;
+import java.util.Arrays;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
+
+@RunWith(RobolectricTestRunner.class)
+@Config(manifest = Config.NONE, sdk = 28)
+public class AdvancedFeedRulesTest {
+    public static final class Video {
+        long duration;
+        public long getDuration() { return duration; }
+    }
+    public static final class Author {
+        String handle;
+        public String getUniqueId() { return handle; }
+        public String getUid() { return "123"; }
+    }
+    public static final class Stats extends AwemeStatistics {
+        long views, likes;
+        public long getPlayCount() { return views; }
+        public long getDiggCount() { return likes; }
+    }
+    public static final class Item extends Aweme {
+        final String id;
+        String desc = "";
+        final Video video = new Video();
+        final Author author = new Author();
+        final Stats stats = new Stats();
+        Item(String id, String handle, long ms) { this.id = id; author.handle = handle; video.duration = ms; }
+        public String getAid() { return id; }
+        public String getDesc() { return desc; }
+        public Object getAuthor() { return author; }
+        public Object getVideo() { return video; }
+        public AwemeStatistics getStatistics() { return stats; }
+        public String getShareUrl() { return null; }
+    }
+    @Before public void reset() {
+        Utils.setContext(RuntimeEnvironment.getApplication());
+        Settings.REMOVE_ADS.save(false);
+        Settings.BLOCKED_CAPTION_WORDS.save("");
+        Settings.BLOCKED_CREATORS.save("");
+        Settings.MAX_VIDEO_SECONDS.save(0);
+        Settings.MAX_VIEWS_PER_LIKE.save(0);
+    }
+    private FeedItemList page(Item... items) {
+        FeedItemList page = new FeedItemList();
+        page.items = new ArrayList<>(Arrays.asList(items));
+        FeedItemsFilter.filter(page);
+        return page;
+    }
+    @Test public void captionAndCreatorMatchingIsCaseInsensitiveButCreatorNamesAreExact() {
+        Item item = new Item("a", "Poster", 800);
+        item.desc = "A SPONSORED demonstration";
+        Settings.BLOCKED_CAPTION_WORDS.save("sponsored, unrelated");
+        assertTrue(new AdvancedFeedRules.KeywordFilter().getFiltered(item));
+        Settings.BLOCKED_CREATORS.save("@post");
+        assertFalse(new AdvancedFeedRules.CreatorFilter().getFiltered(item));
+        Settings.BLOCKED_CREATORS.save("@POSTER");
+        assertTrue(new AdvancedFeedRules.CreatorFilter().getFiltered(item));
+        Settings.BLOCKED_CREATORS.save("123");
+        assertTrue(new AdvancedFeedRules.CreatorFilter().getFiltered(item));
+    }
+    @Test public void nearestQualityFallbackCannotRestoreAHardBlockedCreator() {
+        Settings.MAX_VIDEO_SECONDS.save(1);
+        Settings.BLOCKED_CREATORS.save("blocked");
+        Item blocked = new Item("1", "blocked", 1010);
+        Item longer = new Item("2", "allowed", 5000);
+        Item closest = new Item("3", "allowed", 2000);
+        assertEquals(Arrays.asList(closest), page(blocked, longer, closest).items);
+        assertTrue(page(blocked).items.isEmpty());
+    }
+    @Test public void qualityRuleUsesMillisecondsAndAllowsUnknownStats() {
+        Settings.MAX_VIDEO_SECONDS.save(1);
+        Item shortVideo = new Item("1", "allowed", 800);
+        Item longVideo = new Item("2", "allowed", 1500);
+        assertEquals(Arrays.asList(shortVideo), page(shortVideo, longVideo).items);
+        Settings.MAX_VIEWS_PER_LIKE.save(10);
+        shortVideo.stats.views = 100;
+        shortVideo.stats.likes = 0;
+        assertTrue(new AdvancedFeedRules.QualityFilter().getFiltered(shortVideo));
+        shortVideo.stats.likes = 20;
+        assertFalse(new AdvancedFeedRules.QualityFilter().getFiltered(shortVideo));
+    }
+}

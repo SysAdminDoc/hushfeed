@@ -23,17 +23,6 @@ with anchors present first, then adaptations, then new builds.
 
 ### P2
 
-- [ ] P2 - Advanced feed rules our way
-  Why: caption keyword blocklist (#140, 5 sources), creator blocklist, max duration (Toki,
-  Plugin, FreedomPlus), promotional music, LIVE replays, views-per-like ratio.
-  Evidence: others/BlueDragon4251_tiktok-patches-for-morphe feedfilter/advanced/ (681 lines of
-  reflective rules over Aweme and AwemeStatistics, including the "keep one nearest reject when a
-  page would be empty" guard); `getDuration`, `isAd`, `getRegion` present.
-  Touches: new IFilter classes beside feedfilter/ContentMarkerFilters.java, Settings.java (string
-  lists and ints), FeedFilterPreferenceCategory, TikTokPreferenceFragment counts.
-  Acceptance: a caption containing a listed word is skipped; a creator on the list never
-  appears; a page is never emptied entirely.
-  Complexity: M
 - [ ] P2 - Confirm before follow and like
   Why: same accidental-tap problem the share sheet confirm step solves; BHTikTok, BHTikTok++ and
   the Android port all ship it.

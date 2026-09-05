@@ -34,7 +34,12 @@ public final class FeedItemsFilter {
         new ContentMarkerFilters.SeriesFilter(),
         new ContentMarkerFilters.PlaylistFilter(),
         new CardFilters.InsertedCardFilter(),
-        new SeenVideoFilter()
+        new SeenVideoFilter(),
+        new AdvancedFeedRules.KeywordFilter(),
+        new AdvancedFeedRules.CreatorFilter(),
+        new AdvancedFeedRules.PromotionalMusicFilter(),
+        new AdvancedFeedRules.LiveReplayFilter(),
+        new AdvancedFeedRules.QualityFilter()
     );
     private static final List<IFilter> RANGE_FILTERS = List.of(
         new ViewCountFilter(),
@@ -376,6 +381,8 @@ public final class FeedItemsFilter {
         List snapshot = new ArrayList(list);
         List contentKept = new ArrayList(snapshot.size());
         List rangeKept = new ArrayList(snapshot.size());
+        Object qualityFallback = null;
+        double closestDistance = Double.POSITIVE_INFINITY;
         for (Object container : snapshot) {
             Aweme item = extractor.extract(container);
             if (item == null) {
@@ -386,6 +393,13 @@ public final class FeedItemsFilter {
 
             String contentReason = getFilterReason(activeContentFilters, item);
             if (contentReason != null) {
+                if (contentReason.equals("QualityFilter") && getFilterReason(activeRangeFilters, item) == null) {
+                    double distance = AdvancedFeedRules.QualityFilter.distance(item);
+                    if (distance < closestDistance) {
+                        qualityFallback = container;
+                        closestDistance = distance;
+                    }
+                }
                 contentRemoved++;
                 incrementReason(reasonCounts, contentReason);
                 logItem(item, contentReason, verbose);
@@ -404,6 +418,8 @@ public final class FeedItemsFilter {
             rangeKept.add(container);
         }
 
+        // Never restore ads, blocked creators/words, seen videos, or other hard rejects.
+        if (rangeKept.isEmpty() && qualityFallback != null) rangeKept.add(qualityFallback);
         List kept = rangeKept;
         int removed = initialSize - kept.size();
 
@@ -1028,4 +1044,3 @@ public final class FeedItemsFilter {
         }
     }
 }
-

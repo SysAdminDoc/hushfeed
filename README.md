@@ -21,7 +21,9 @@ This is a private working copy of [icysymmetra/tiktok-patches-for-morphe](https:
 - `Comment tools`: hide comments by keyword or by account, and block a commenter with the thumbs down on their comment.
 - `Hide video overlays`: switches for the "Search this image" prompt and the top left Live entrance.
 - `Share sheet tools`: a second tap is needed before a video goes to a friend, and people or share options can be hidden by name, or the whole Send to row.
-- Feed filter switches for paid partnerships, AI generated videos, verified accounts, Series and playlist videos, and a sound blocklist.
+- Feed filters include blocked caption phrases and creator handles, maximum video length, promotional music, LIVE replays and views per like. The sound blocklist and existing content switches remain available.
+
+Duration and engagement limits keep the closest eligible video if they would empty a page. Creator blocks, blocked words and other content filters always win, so a page containing only blocked content stays empty.
 
 The block, sound and Not interested controls (rendered in a local UI test):
 
