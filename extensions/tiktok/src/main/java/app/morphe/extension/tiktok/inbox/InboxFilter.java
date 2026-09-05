@@ -5,12 +5,17 @@
 package app.morphe.extension.tiktok.inbox;
 
 import android.app.Activity;
+import android.graphics.Color;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.widget.LinearLayout;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.TextView;
 
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.BooleanSetting;
 import app.morphe.extension.tiktok.settings.Settings;
 
@@ -30,7 +35,9 @@ import java.util.WeakHashMap;
  *   kmx        the Inbox RecyclerView
  *   tyh        a system notice row, with its title in bo5
  *   v15        the message requests row
- *   vid        a direct message row, with its title in user_name
+ *   vid        the title wrapper that only a real conversation has
+ *   t4g        the suggested accounts section title
+ *   fnc        remove an account from suggested accounts
  *   vpj        a title inside the horizontal stories tray
  *   f8t        header, add people
  *   k_f        header, search
@@ -45,11 +52,26 @@ public final class InboxFilter {
     private static final String SYSTEM_ROW_TITLE_ID = "bo5";
     private static final String USER_ROW_TITLE_ID = "user_name";
     private static final String STORIES_TITLE_ID = "vpj";
+    private static final String SUGGESTED_TITLE_ID = "t4g";
+    private static final String SUGGESTED_REMOVE_ID = "fnc";
+    private static final String SUGGESTED_HEADER_ID = "pgu";
 
     private static final String INBOX_TAB_ID = "o1l";
     private static final String HEADER_ADD_PEOPLE_ID = "f8t";
     private static final String HEADER_SEARCH_ID = "k_f";
     private static final String HEADER_ACTIVITY_STATUS_ID = "kmz";
+
+    /** One dismissal at a time, so bulk clearing does not hammer TikTok's API. */
+    private static final long DISMISS_INTERVAL_MS = 300L;
+
+    /** Stops a runaway loop if TikTok keeps refilling the list while clearing. */
+    private static final int MAX_CLEARED_PER_RUN = 60;
+
+    /** Id for the injected Clear all button, so it is only added once. */
+    private static final int CLEAR_ALL_VIEW_ID = View.generateViewId();
+
+    /** Buttons already clicked, so a row cannot be dismissed twice while it lingers. */
+    private static final WeakHashMap<View, Boolean> DISMISSED = new WeakHashMap<>();
 
     /** Original row heights, so a hidden row can be restored exactly. */
     private static final WeakHashMap<View, Integer> ORIGINAL_HEIGHTS = new WeakHashMap<>();
@@ -115,9 +137,110 @@ public final class InboxFilter {
                 View row = rows.getChildAt(index);
                 setRowHidden(row, shouldHideRow(activity, row));
             }
+
+            addClearAllButton(activity);
         } catch (Throwable ex) {
             Logger.printException(() -> "Inbox filter failed", ex);
         }
+    }
+
+    /**
+     * Puts a Clear all control next to the Suggested accounts heading.
+     *
+     * Pressing it works through the remove buttons one at a time, which is the same
+     * action as pressing each x by hand, so TikTok stops suggesting those accounts.
+     */
+    private static void addClearAllButton(Activity activity) {
+        if (Settings.HIDE_INBOX_SUGGESTED_ACCOUNTS.get()) {
+            return;
+        }
+
+        View header = find(activity, SUGGESTED_HEADER_ID);
+        if (!(header instanceof ViewGroup)) {
+            return;
+        }
+
+        ViewGroup headerGroup = (ViewGroup) header;
+        if (headerGroup.findViewById(CLEAR_ALL_VIEW_ID) != null) {
+            return;
+        }
+
+        TextView clearAll = new TextView(activity);
+        clearAll.setId(CLEAR_ALL_VIEW_ID);
+        clearAll.setText("Clear all");
+        clearAll.setTextColor(Color.rgb(254, 44, 85));
+        clearAll.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        clearAll.setGravity(Gravity.CENTER_VERTICAL);
+        float density = activity.getResources().getDisplayMetrics().density;
+        int padding = Math.round(16 * density);
+        clearAll.setPadding(padding, 0, padding, 0);
+        clearAll.setOnClickListener(view -> clearAllSuggested(activity));
+
+        ViewGroup.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.MATCH_PARENT);
+        headerGroup.addView(clearAll, params);
+
+        Logger.printDebug(() -> "Clear all button added to the suggested accounts heading");
+    }
+
+    private static void clearAllSuggested(Activity activity) {
+        // A fresh run reconsiders every button, since rows are recycled as the list shrinks.
+        DISMISSED.clear();
+        clearNextSuggested(activity, 0);
+    }
+
+    /**
+     * Dismisses one account then schedules the next, rather than clicking everything at
+     * once, so TikTok sees the same pacing as a person tapping.
+     */
+    private static void clearNextSuggested(Activity activity, int cleared) {
+        try {
+            if (cleared >= MAX_CLEARED_PER_RUN) {
+                report(cleared);
+                return;
+            }
+
+            View list = find(activity, LIST_ID);
+            int removeId = identifier(activity, SUGGESTED_REMOVE_ID);
+            View button = (list == null || removeId == 0) ? null : findUndismissed(list, removeId);
+
+            if (button == null) {
+                report(cleared);
+                return;
+            }
+
+            DISMISSED.put(button, Boolean.TRUE);
+            button.performClick();
+
+            Utils.runOnMainThreadDelayed(
+                    () -> clearNextSuggested(activity, cleared + 1), DISMISS_INTERVAL_MS);
+        } catch (Throwable ex) {
+            Logger.printException(() -> "Could not clear suggested accounts", ex);
+        }
+    }
+
+    private static void report(int cleared) {
+        Utils.showToastShort(cleared == 0
+                ? "No suggested accounts to clear"
+                : "Cleared " + cleared + " suggested account" + (cleared == 1 ? "" : "s"));
+    }
+
+    /** Depth first search for a remove button that has not been clicked yet. */
+    private static View findUndismissed(View view, int removeId) {
+        if (view.getId() == removeId && !DISMISSED.containsKey(view)) {
+            return view;
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int index = 0; index < group.getChildCount(); index++) {
+                View match = findUndismissed(group.getChildAt(index), removeId);
+                if (match != null) {
+                    return match;
+                }
+            }
+        }
+        return null;
     }
 
     private static void applyHeader(Activity activity) {
@@ -127,29 +250,37 @@ public final class InboxFilter {
     }
 
     private static boolean shouldHideRow(Activity activity, View row) {
-        // The message requests row carries its own id, so it needs no text matching.
-        if (hasId(activity, row, MESSAGE_REQUESTS_ID)) {
-            return Settings.HIDE_INBOX_MESSAGE_REQUESTS.get();
-        }
-
         // The stories tray is the row that holds the horizontal avatar titles.
         if (findWithin(activity, row, STORIES_TITLE_ID) != null) {
             return Settings.HIDE_INBOX_STORIES.get();
         }
 
-        // A system notice row: New followers, Activity, Archive, Tako, Shop.
-        if (hasId(activity, row, SYSTEM_ROW_ID)) {
-            return hideByTitle(textOf(findWithin(activity, row, SYSTEM_ROW_TITLE_ID)));
+        // Suggested accounts is a section header followed by one row per account. The
+        // header carries the section title, and each account row carries the remove
+        // button. Neither uses the row title ids, so both are matched on their own marker.
+        if (findWithin(activity, row, SUGGESTED_TITLE_ID) != null
+                || findWithin(activity, row, SUGGESTED_REMOVE_ID) != null) {
+            return Settings.HIDE_INBOX_SUGGESTED_ACCOUNTS.get();
         }
 
-        // Anything left carrying a user name is a conversation.
-        if (hasId(activity, row, DIRECT_MESSAGE_ID)
-                || findWithin(activity, row, DIRECT_MESSAGE_ID) != null
-                || findWithin(activity, row, USER_ROW_TITLE_ID) != null) {
+        // A real conversation and the message requests row share the same container id,
+        // so the container alone cannot tell them apart. Only a conversation wraps its
+        // title in the vid layout, so that is the discriminator. Checking the container
+        // id first is what made hiding message requests hide every chat.
+        if (findWithin(activity, row, DIRECT_MESSAGE_ID) != null) {
             if (Settings.HIDE_INBOX_CONVERSATIONS.get()) {
                 return true;
             }
             return hideByTitle(textOf(findWithin(activity, row, USER_ROW_TITLE_ID)));
+        }
+
+        if (hasId(activity, row, MESSAGE_REQUESTS_ID)) {
+            return Settings.HIDE_INBOX_MESSAGE_REQUESTS.get();
+        }
+
+        // A system notice row: New followers, Activity, Archive, Tako, Shop.
+        if (hasId(activity, row, SYSTEM_ROW_ID)) {
+            return hideByTitle(textOf(findWithin(activity, row, SYSTEM_ROW_TITLE_ID)));
         }
 
         return false;
@@ -168,8 +299,7 @@ public final class InboxFilter {
                 || matches(title, "Activity", Settings.HIDE_INBOX_ACTIVITY)
                 || matches(title, "Archive", Settings.HIDE_INBOX_ARCHIVE)
                 || matches(title, "TikTok Tako", Settings.HIDE_INBOX_TAKO)
-                || matches(title, "TikTok Shop", Settings.HIDE_INBOX_SHOP)
-                || matches(title, "Suggested accounts", Settings.HIDE_INBOX_SUGGESTED_ACCOUNTS)) {
+                || matches(title, "TikTok Shop", Settings.HIDE_INBOX_SHOP)) {
             return true;
         }
 
