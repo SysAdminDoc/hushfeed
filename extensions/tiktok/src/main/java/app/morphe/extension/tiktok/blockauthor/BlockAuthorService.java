@@ -40,6 +40,15 @@ public final class BlockAuthorService {
     private static final String BLOCK_SERVICE = BLOCK_API + "$BlockService";
     private static final String BLOCK_STRUCT = "com.ss.android.ugc.aweme.profile.model.BlockStruct";
 
+    /**
+     * The {@code block_type} argument. Both values were read off TikTok's own IM block
+     * controller, which branches on whether the account is already blocked:
+     * {@code BlockUserController.LIZ()} shows the unblock dialog when {@code isBlock()} is
+     * true and the block dialog otherwise, and the two confirm buttons reach
+     * {@code LIZJ(0, uid, secUid)} and {@code LIZJ(1, uid, secUid)} respectively. That int
+     * is handed straight to {@code BlockApi.blockUser} and lands on the
+     * {@code @Query("block_type")} parameter of the same endpoint this class calls.
+     */
     private static final int BLOCK = 1;
     private static final int UNBLOCK = 0;
 

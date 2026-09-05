@@ -10,9 +10,6 @@ requests worth building. P0 is broken, P3 is nice to have.
   Note (research 2026-09-05): hxreborn hooks the widget injectors instead of the adapter
   (`*WidgetV2Injector.enable()`), which covers stories and suggested accounts with no flash.
   See the Research-Driven Additions below; after that port, only the five system rows remain here.
-- [ ] P1 - Verify unblock (block_type 0) against a real unblock call site
-  Why: the Undo path sends 0, inferred from TikTok passing 1 to block. Never observed.
-  Where: extensions/tiktok/.../blockauthor/BlockAuthorService.java
 - [ ] P2 - Draw the block glyph instead of relying on the font having U+2298
   Why: a font without the glyph shows a tofu box.
   Where: extensions/tiktok/.../blockauthor/BlockAuthorOverlay.java
