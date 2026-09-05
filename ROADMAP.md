@@ -14,9 +14,6 @@ requests worth building. P0 is broken, P3 is nice to have.
   by English title. Finishing this means finding the per-entrance data inside that
   container. The full injector map is in classes19.dex; decompile it and grep for
   `implements InboxFragmentWidgetInjectProtocol`.
-- [ ] P2 - Draw the block glyph instead of relying on the font having U+2298
-  Why: a font without the glyph shows a tofu box.
-  Where: extensions/tiktok/.../blockauthor/BlockAuthorOverlay.java
 - [ ] P2 - "Not interested" one-tap button beside the block button
   Why: same shape as the block button. Confirmed endpoint /aweme/v1/commit/dislike/item/, but it
   sits behind an obfuscated Kotlin suspend interface (X.0MlK on 46.2.3) taking a Map body and a
@@ -44,13 +41,6 @@ requests worth building. P0 is broken, P3 is nice to have.
 - [ ] P3 - Localise the five inbox system labels
   Why: they only match in English.
   Where: InboxFilter.matchesSystemLabel
-- [ ] P2 - Verify 0.9.0 to 0.12.0 on device
-  Why: the sound filter, feed switches and comment keyword filter have not run on a device;
-  the thumbs down block (0.12.0), the visual search hide, the Live entrance hide and the share
-  sheet confirm step have not been seen working. The 0.11.0 comment buttons did render (seen
-  in a panel dump). Confirm each once, then remove this item.
-  Where: extensions/tiktok/.../feedfilter/SoundFilter.java, ContentMarkerFilters.java,
-  comment/CommentTools.java, blockauthor/BlockAuthorOverlay.java
 - [ ] P2 - Replace the fragment back stack guard in FeedVisibility
   Why: getSupportFragmentManager cannot be found by reflection on 46.2.3 (logcat: "Fragment
   back stack not readable"), so backing out of a grid video to its profile still leaves the

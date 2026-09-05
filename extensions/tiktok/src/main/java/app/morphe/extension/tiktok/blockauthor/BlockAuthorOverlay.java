@@ -6,7 +6,9 @@ package app.morphe.extension.tiktok.blockauthor;
 
 import android.app.Activity;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
@@ -38,7 +40,6 @@ import java.lang.ref.WeakReference;
  * stored as a fraction of the screen, so it survives rotation and a different device.
  */
 public final class BlockAuthorOverlay {
-    private static final String BLOCK_GLYPH = "⊘";
     private static final String SOUND_GLYPH = "♪";
     private static final int BUTTON_SIZE_DP = 44;
     private static final int BUTTON_GAP_DP = 8;
@@ -266,9 +267,6 @@ public final class BlockAuthorOverlay {
 
     private static View createButton(Activity activity) {
         TextView button = new TextView(activity);
-        button.setText(BLOCK_GLYPH);
-        button.setTextColor(Color.WHITE);
-        button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
         button.setGravity(Gravity.CENTER);
         button.setContentDescription("Block this account");
 
@@ -276,7 +274,11 @@ public final class BlockAuthorOverlay {
         background.setShape(GradientDrawable.OVAL);
         background.setColor(Color.argb(140, 0, 0, 0));
         background.setStroke(dp(activity, 1), Color.argb(90, 255, 255, 255));
-        button.setBackground(background);
+
+        // The symbol is drawn over the disc instead of set as text, because the font
+        // TikTok happens to be using may not carry it.
+        Drawable glyph = new BlockGlyphDrawable(Color.WHITE, dp(activity, 2));
+        button.setBackground(new LayerDrawable(new Drawable[]{background, glyph}));
 
         button.setOnClickListener(view -> {
             // A drag ends with an ACTION_UP that would otherwise read as a click.
