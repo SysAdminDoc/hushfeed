@@ -4,9 +4,14 @@
  */
 package app.morphe.extension.tiktok.comment;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.Window;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
@@ -16,12 +21,17 @@ import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.blockauthor.VideoAuthor;
 import app.morphe.extension.tiktok.settings.Settings;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
@@ -34,20 +44,24 @@ import java.util.WeakHashMap;
  * 46.2.3 ({@code getText}, {@code getUser}, {@code getCid}, {@code getReplyComments}, and
  * the public {@code items} list), so nothing here depends on an obfuscated name.
  *
- * The block gesture is a two finger hold rather than a long press because TikTok already
- * owns long press on a comment (copy, report). The touch listener never consumes an event,
- * so TikTok's own click and long press handling keeps working underneath it.
+ * The block gesture is watched at the window, not on the cell. A finger resting on a
+ * comment lands on the comment's own children (text, avatar, like button), and Android
+ * only hands a touch to the cell's listener when no child takes it, so a listener on the
+ * cell never saw the gesture. The window's callback sees every touch before any view
+ * does; wrapping it with a proxy that forwards everything and merely observes
+ * {@code dispatchTouchEvent} costs TikTok nothing.
  */
 public final class CommentTools {
     private static final long HOLD_MS = 700L;
 
-    /** Comment model bound to each cell view, so the gesture knows whose comment it is on. */
+    /** Comment model bound to each cell view, so a hit test can name whose comment it is. */
     private static final WeakHashMap<View, Object> CELL_COMMENTS = new WeakHashMap<>();
 
-    /** Cells that already carry the gesture listener. */
-    private static final WeakHashMap<View, Boolean> INSTRUMENTED = new WeakHashMap<>();
+    /** Windows already wrapped, keyed by the activity that owns them. */
+    private static final WeakHashMap<Activity, Boolean> OBSERVED = new WeakHashMap<>();
 
     private static volatile boolean blockInFlight;
+    private static volatile boolean warnedOtherWindow;
 
     private CommentTools() {
     }
@@ -64,15 +78,20 @@ public final class CommentTools {
         try {
             Object comment = findComment(manager);
             if (comment == null) {
+                Logger.printDebug(() -> "Comment cell bound but no comment found on " + manager.getClass().getName());
                 return;
             }
 
             synchronized (CELL_COMMENTS) {
                 CELL_COMMENTS.put(itemView, comment);
-                if (!Boolean.TRUE.equals(INSTRUMENTED.get(itemView))) {
-                    itemView.setOnTouchListener(new TwoFingerHold());
-                    INSTRUMENTED.put(itemView, Boolean.TRUE);
-                }
+            }
+
+            Activity activity = activityOf(itemView.getContext());
+            if (activity == null) {
+                activity = Utils.getActivity();
+            }
+            if (activity != null) {
+                observeWindow(activity, itemView);
             }
         } catch (Throwable ex) {
             Logger.printException(() -> "Could not register a comment cell", ex);
@@ -110,6 +129,231 @@ public final class CommentTools {
         }
     }
 
+    // ---- touch observation -------------------------------------------------------------
+
+    /**
+     * Wraps the window callback once per activity. Also checks that the cell actually
+     * lives in that window: if TikTok ever moves the comment panel into a dialog, its
+     * touches go through the dialog's window instead, and this logs that rather than
+     * silently watching the wrong one.
+     */
+    private static void observeWindow(Activity activity, View itemView) {
+        Window window = activity.getWindow();
+        if (window == null) {
+            return;
+        }
+
+        View decor = window.peekDecorView();
+        if (decor != null && itemView.getRootView() != decor && !warnedOtherWindow) {
+            warnedOtherWindow = true;
+            Logger.printInfo(() -> "Comment cells live in a window other than the activity's ("
+                    + itemView.getRootView().getClass().getName()
+                    + "); the two finger block gesture will not see them");
+        }
+
+        synchronized (OBSERVED) {
+            if (Boolean.TRUE.equals(OBSERVED.get(activity))) {
+                return;
+            }
+
+            Window.Callback existing = window.getCallback();
+            if (existing == null || Proxy.isProxyClass(existing.getClass())
+                    && Proxy.getInvocationHandler(existing) instanceof TouchObserver) {
+                OBSERVED.put(activity, Boolean.TRUE);
+                return;
+            }
+
+            Window.Callback wrapped = (Window.Callback) Proxy.newProxyInstance(
+                    Window.Callback.class.getClassLoader(),
+                    new Class<?>[]{Window.Callback.class},
+                    new TouchObserver(existing));
+            window.setCallback(wrapped);
+            OBSERVED.put(activity, Boolean.TRUE);
+            Logger.printInfo(() -> "Comment block gesture is watching the window");
+        }
+    }
+
+    /**
+     * Forwards every window callback untouched and watches {@code dispatchTouchEvent} for
+     * two fingers resting still for {@link #HOLD_MS}.
+     */
+    private static final class TouchObserver implements InvocationHandler {
+        private final Window.Callback wrapped;
+        private long startedAt = -1L;
+        private float startX;
+        private float startY;
+        private boolean cancelled;
+
+        TouchObserver(Window.Callback wrapped) {
+            this.wrapped = wrapped;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if ("dispatchTouchEvent".equals(method.getName()) && args != null && args.length == 1
+                    && args[0] instanceof MotionEvent) {
+                try {
+                    observe((MotionEvent) args[0]);
+                } catch (Throwable ex) {
+                    Logger.printException(() -> "Comment gesture observer failed", ex);
+                }
+            }
+            try {
+                return method.invoke(wrapped, args);
+            } catch (java.lang.reflect.InvocationTargetException ex) {
+                throw ex.getCause() != null ? ex.getCause() : ex;
+            }
+        }
+
+        private void observe(MotionEvent event) {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_POINTER_DOWN:
+                    if (event.getPointerCount() == 2) {
+                        startedAt = event.getEventTime();
+                        startX = midX(event);
+                        startY = midY(event);
+                        cancelled = false;
+                    } else {
+                        cancelled = true;
+                    }
+                    break;
+
+                case MotionEvent.ACTION_MOVE:
+                    if (startedAt >= 0 && !cancelled && event.getPointerCount() >= 2) {
+                        Activity activity = Utils.getActivity();
+                        float slop = activity == null ? 24f
+                                : ViewConfiguration.get(activity).getScaledTouchSlop() * 2f;
+                        if (Math.abs(midX(event) - startX) > slop || Math.abs(midY(event) - startY) > slop) {
+                            cancelled = true;
+                        }
+                    }
+                    break;
+
+                case MotionEvent.ACTION_POINTER_UP:
+                    if (startedAt >= 0 && !cancelled && event.getPointerCount() == 2
+                            && event.getEventTime() - startedAt >= HOLD_MS) {
+                        float x = midX(event);
+                        float y = midY(event);
+                        startedAt = -1L;
+                        cancelled = true;
+                        View cell = cellAt(x, y);
+                        if (cell != null) {
+                            blockCommenter(cell);
+                        } else {
+                            Logger.printDebug(() -> "Two finger hold landed on no registered comment");
+                        }
+                    }
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    startedAt = -1L;
+                    cancelled = false;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        private static float midX(MotionEvent event) {
+            return (event.getX(0) + event.getX(1)) / 2f;
+        }
+
+        private static float midY(MotionEvent event) {
+            return (event.getY(0) + event.getY(1)) / 2f;
+        }
+    }
+
+    /** @return the registered comment cell under a point in window coordinates, or null. */
+    private static View cellAt(float x, float y) {
+        Activity activity = Utils.getActivity();
+        View decor = activity == null ? null : activity.getWindow().peekDecorView();
+        int[] decorOrigin = new int[2];
+        if (decor != null) {
+            decor.getLocationOnScreen(decorOrigin);
+        }
+        float screenX = x + decorOrigin[0];
+        float screenY = y + decorOrigin[1];
+
+        List<View> cells;
+        synchronized (CELL_COMMENTS) {
+            cells = new ArrayList<>(CELL_COMMENTS.keySet());
+        }
+
+        int[] location = new int[2];
+        for (View cell : cells) {
+            if (cell == null || !cell.isShown()) {
+                continue;
+            }
+            cell.getLocationOnScreen(location);
+            if (screenX >= location[0] && screenX <= location[0] + cell.getWidth()
+                    && screenY >= location[1] && screenY <= location[1] + cell.getHeight()) {
+                return cell;
+            }
+        }
+        return null;
+    }
+
+    private static Activity activityOf(Context context) {
+        while (context != null) {
+            if (context instanceof Activity) {
+                return (Activity) context;
+            }
+            if (!(context instanceof ContextWrapper)) {
+                return null;
+            }
+            context = ((ContextWrapper) context).getBaseContext();
+        }
+        return null;
+    }
+
+    // ---- blocking ----------------------------------------------------------------------
+
+    private static void blockCommenter(View cell) {
+        if (blockInFlight) {
+            return;
+        }
+
+        Object comment;
+        synchronized (CELL_COMMENTS) {
+            comment = CELL_COMMENTS.get(cell);
+        }
+        Object user = comment == null ? null : Reflect.property(comment, "getUser", "user");
+        if (user == null) {
+            Utils.showToastShort("Could not read who posted this comment");
+            return;
+        }
+
+        VideoAuthor author = new VideoAuthor(
+                Reflect.string(user, "getUid", "uid"),
+                Reflect.string(user, "getSecUid", "secUid"),
+                Reflect.firstNonBlank(
+                        Reflect.string(user, "getUniqueId", "uniqueId"),
+                        Reflect.string(user, "getNickname", "nickname")),
+                Reflect.string(comment, "getCid", "cid"));
+        if (!author.isUsable()) {
+            Utils.showToastShort("Could not read who posted this comment");
+            return;
+        }
+
+        blockInFlight = true;
+        cell.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+        BlockAuthorService.block(author, (success, message) -> {
+            blockInFlight = false;
+            if (success) {
+                BlockAuthorOverlay.showUndoBanner("Blocked " + author.label(),
+                        () -> BlockAuthorService.unblock(author, (undone, ignored) -> Utils.showToastShort(
+                                undone ? "Unblocked " + author.label() : "Could not unblock " + author.label())));
+            } else {
+                Utils.showToastLong("Could not block " + author.label()
+                        + (message == null ? "" : ": " + message));
+            }
+        });
+    }
+
+    // ---- keyword filter ----------------------------------------------------------------
+
     private static int filterComments(List<?> comments, List<String> keywords, List<String> users) {
         int removed = 0;
         Iterator<?> iterator = comments.iterator();
@@ -125,7 +369,6 @@ public final class CommentTools {
                     removed++;
                     continue;
                 } catch (UnsupportedOperationException ex) {
-                    // Immutable list: fall through and leave it. Logged once below.
                     Logger.printInfo(() -> "Comment list is immutable; the keyword filter cannot remove from it");
                     return removed;
                 }
@@ -164,6 +407,8 @@ public final class CommentTools {
         return false;
     }
 
+    // ---- model access ------------------------------------------------------------------
+
     /** The bound comment is the manager field whose value answers to {@code getCid}. */
     private static Object findComment(Object manager) throws IllegalAccessException {
         Class<?> type = manager.getClass();
@@ -194,102 +439,6 @@ public final class CommentTools {
             }
         }
         return false;
-    }
-
-    private static void blockCommenter(View cell) {
-        if (blockInFlight) {
-            return;
-        }
-
-        Object comment;
-        synchronized (CELL_COMMENTS) {
-            comment = CELL_COMMENTS.get(cell);
-        }
-        Object user = comment == null ? null : Reflect.property(comment, "getUser", "user");
-        if (user == null) {
-            Utils.showToastShort("Could not read who posted this comment");
-            return;
-        }
-
-        VideoAuthor author = new VideoAuthor(
-                Reflect.string(user, "getUid", "uid"),
-                Reflect.string(user, "getSecUid", "secUid"),
-                Reflect.firstNonBlank(
-                        Reflect.string(user, "getUniqueId", "uniqueId"),
-                        Reflect.string(user, "getNickname", "nickname")),
-                Reflect.string(comment, "getCid", "cid"));
-        if (!author.isUsable()) {
-            Utils.showToastShort("Could not read who posted this comment");
-            return;
-        }
-
-        blockInFlight = true;
-        cell.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
-        BlockAuthorService.block(author, (success, message) -> {
-            blockInFlight = false;
-            if (success) {
-                BlockAuthorOverlay.showUndoBanner("Blocked " + author.label(),
-                        () -> BlockAuthorService.unblock(author, (undone, ignored) -> Utils.showToastShort(
-                                undone ? "Unblocked " + author.label() : "Could not unblock " + author.label())));
-            } else {
-                Utils.showToastLong("Could not block " + author.label()
-                        + (message == null ? "" : ": " + message));
-            }
-        });
-    }
-
-    /**
-     * Fires when two fingers rest on the cell for {@link #HOLD_MS} without moving. Never
-     * consumes an event.
-     */
-    private static final class TwoFingerHold implements View.OnTouchListener {
-        private long startedAt = -1L;
-        private float startX;
-        private float startY;
-        private boolean cancelled;
-
-        @Override
-        public boolean onTouch(View view, MotionEvent event) {
-            switch (event.getActionMasked()) {
-                case MotionEvent.ACTION_POINTER_DOWN:
-                    if (event.getPointerCount() == 2) {
-                        startedAt = event.getEventTime();
-                        startX = event.getX(0) + event.getX(1);
-                        startY = event.getY(0) + event.getY(1);
-                        cancelled = false;
-                    } else {
-                        cancelled = true;
-                    }
-                    break;
-
-                case MotionEvent.ACTION_MOVE:
-                    if (startedAt >= 0 && !cancelled && event.getPointerCount() >= 2) {
-                        float slop = ViewConfiguration.get(view.getContext()).getScaledTouchSlop() * 2f;
-                        float dx = event.getX(0) + event.getX(1) - startX;
-                        float dy = event.getY(0) + event.getY(1) - startY;
-                        if (Math.abs(dx) > slop || Math.abs(dy) > slop) {
-                            cancelled = true;
-                        }
-                    }
-                    break;
-
-                case MotionEvent.ACTION_POINTER_UP:
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-                    if (startedAt >= 0 && !cancelled
-                            && event.getActionMasked() != MotionEvent.ACTION_CANCEL
-                            && event.getEventTime() - startedAt >= HOLD_MS) {
-                        startedAt = -1L;
-                        blockCommenter(view);
-                    }
-                    startedAt = -1L;
-                    break;
-
-                default:
-                    break;
-            }
-            return false;
-        }
     }
 
     private static List<String> entries(String stored) {

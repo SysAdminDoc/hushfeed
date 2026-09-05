@@ -6,6 +6,10 @@
 * **feed-filter:** switches for paid partnerships, AI generated videos, verified accounts, Series and playlist videos
 * **comments:** hide comments by keyword or by account, and block a commenter with a two finger hold
 
+### Bug Fixes
+
+* **comments:** watch the two finger hold at the window rather than on the comment cell, whose clickable children swallowed every touch
+
 ## 0.8.0 (2026-09-05)
 
 ### Features
