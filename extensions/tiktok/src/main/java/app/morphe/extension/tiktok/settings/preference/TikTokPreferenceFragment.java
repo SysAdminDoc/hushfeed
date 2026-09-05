@@ -58,7 +58,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         INTERFACE("Interface", "Promotions, popups, publish dates, and feed controls."),
         COMMENTS("Comments and translation", "Auto translate, quick reactions, and copy options."),
         DOWNLOADS("Downloads", "Path, watermark, and offline videos."),
-        PLAYBACK("Playback", "Video quality."),
+        PLAYBACK("Playback", "Video quality and speed."),
         INBOX("Inbox", "Rows, stories tray, and header controls."),
         SHARE("Share sheet", "Confirm before sending, and hidden people and options."),
         REGION("Region settings", "Country, operator, locale and timezone."),
@@ -320,9 +320,11 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     SettingsStatus.downloadEnabled && Settings.CUSTOM_OFFLINE_VIDEOS.get()
             ));
         }
-        if (SettingsStatus.playbackQualityEnabled) {
+        if (SettingsStatus.playbackQualityEnabled || SettingsStatus.playbackSpeedEnabled) {
             addMenu(screen, Section.PLAYBACK, SettingsMenuPreference.Icon.BEHAVIOR,
-                    countEnabled(!"auto".equals(Settings.PLAYBACK_QUALITY.get())));
+                    countEnabled(SettingsStatus.playbackQualityEnabled && !"auto".equals(Settings.PLAYBACK_QUALITY.get()),
+                            SettingsStatus.playbackSpeedEnabled && Settings.DEFAULT_SPEED_ENABLED.get(),
+                            SettingsStatus.playbackSpeedEnabled && !Settings.CUSTOM_SPEEDS.get().trim().isEmpty()));
         }
         if (SettingsStatus.inboxFilterEnabled
                 || SettingsStatus.hideSuggestedAccountsEnabled

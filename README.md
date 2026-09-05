@@ -97,7 +97,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Hide quick comment reactions` | Hides TikTok's exposed quick emoji row in supported comment inputs. |
 | `Hold-and-slide 2x lock` | Enables TikTok's native hold, slide down, and release gesture for locking playback at 2x speed. |
 | `Open external links directly` | Opens profile and story website links in the system browser instead of TikTok's in-app browser. |
-| `Playback speed` | Enables playback-speed controls for all videos and remembers the selected speed between videos. |
+| `Playback speed` | Remembers the selected speed or starts every new video at a chosen default. The speed menu accepts up to eight choices from 0.5x to 3x, including 2.5x. |
 | `Remember clear display` | Remembers clear display between videos, or enters it automatically after a chosen delay. Tap to restore the controls. |
 | `Resume videos after scrolling` | Restores a video's prior playback position when returning to it in the feed. |
 | `Region spoof` | Matches locale country, timezone and native region getters to the SIM preset while preserving the interface language. Store-region overrides have a separate experimental switch. IP address and server account rules still apply. |
@@ -111,7 +111,11 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 
 <br>
 
-Foldable controls are in App behavior: Settings save immediately. A notification tells you when to restart TikTok.
+Playback has an optional default speed for every new video. A manual choice lasts until you change videos. To add 2.5x, enter it in Speed menu choices and restart TikTok; an empty list restores TikTok's menu.
+
+<img src="assets/playback-speed-settings.png" alt="Default playback speed and custom menu settings" width="300" />
+
+Foldable controls are in App behavior. Settings save immediately. A notification tells you when to restart TikTok.
 
 <img src="assets/foldable-settings.png" alt="Foldable comment settings" width="300" />
 

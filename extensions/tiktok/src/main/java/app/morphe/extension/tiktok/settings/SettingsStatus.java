@@ -19,6 +19,8 @@ public class SettingsStatus {
     public static boolean automaticClearDisplayEnabled;
     public static void enableAutomaticClearDisplay() { automaticClearDisplayEnabled = true; }
     public static boolean playbackQualityEnabled;
+    public static boolean playbackSpeedEnabled;
+    public static void enablePlaybackSpeed() { playbackSpeedEnabled = true; }
     public static void enablePlaybackQuality() { playbackQualityEnabled = true; }
     public static boolean advancedDownloadsEnabled;
     public static void enableAdvancedDownloads() { advancedDownloadsEnabled = true; }

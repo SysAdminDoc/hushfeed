@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Added a default playback speed for each new video and custom speed menu choices through 3x. Manual choices remain active for the current video, and the native menu state follows the player.
+
 * Reject malformed country input and preserve locale scripts and extensions when a legacy variant needs fallback handling.
 
 * Settings that need a restart now save immediately and show a notification instead of a restart dialog.

@@ -11,16 +11,26 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.shared.OnRenderFirstFrameFingerprint
+import app.morphe.patches.tiktok.interaction.cleardisplay.OnRenderFirstFrameBodyFingerprint
+import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import app.morphe.util.cloneMutable
 import app.morphe.util.getReference
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+
+private const val EXTENSION = "Lapp/morphe/extension/tiktok/speed/PlaybackSpeedPatch;"
+private const val AWEME = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
 
 @Suppress("unused")
 val playbackSpeedPatch = bytecodePatch(
     name = "Playback speed",
-    description = "Enables playback-speed controls for all videos and remembers the selected speed between videos.",
+    description = "Remembers playback speed or applies a default to each new video, with custom menu choices up to 3x.",
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
@@ -28,10 +38,11 @@ val playbackSpeedPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
-        PlaybackSpeedSelectionBoundaryFingerprint.method.addInstruction(
+        val selection = PlaybackSpeedSelectionBoundaryFingerprint.method
+        check(AccessFlags.STATIC.isSet(selection.accessFlags))
+        selection.addInstruction(
             0,
-            "invoke-static {p0, p3}, " +
-                "Lapp/morphe/extension/tiktok/speed/PlaybackSpeedPatch;->rememberPlaybackSpeed(FLjava/lang/String;)V",
+            "invoke-static/range {p0 .. p3}, $EXTENSION->onSelection(F${AWEME}Ljava/lang/String;Ljava/lang/String;)V",
         )
 
         val controllerSetSpeed = PlayerControllerSetSpeedFingerprint.method
@@ -99,20 +110,83 @@ val playbackSpeedPatch = bytecodePatch(
                 method.addInstructions(
                     index,
                     """
-                        invoke-static {v$speedRegister}, Lapp/morphe/extension/tiktok/speed/PlaybackSpeedPatch;->preserveTransitionSpeed(F)F
+                        invoke-static/range {v$speedRegister .. v$speedRegister}, $EXTENSION->preserveTransitionSpeed(F)F
                         move-result v$speedRegister
                     """,
                 )
             }
         }
 
-        OnRenderFirstFrameFingerprint.method.addInstructions(
+        check(!AccessFlags.STATIC.isSet(transitionReset.accessFlags))
+        transitionReset.addInstruction(0, "invoke-static/range {p1 .. p1}, $EXTENSION->beginVideo($AWEME)V")
+
+        val frame = OnRenderFirstFrameBodyFingerprint.method
+        // Keep native menu highlighting and its same-speed guard aligned with the player.
+        val stateWrites = selection.implementation!!.instructions.takeWhile {
+            !it.opcode.name.startsWith("if-")
+        }.filter { it.opcode == Opcode.SPUT || it.opcode == Opcode.SPUT_OBJECT }
+            .mapNotNull { it.getReference<FieldReference>() }
+            .filter { it.definingClass == selection.definingClass }
+        val currentAwemeField = stateWrites.single { it.type == AWEME }
+        val speedFields = stateWrites.filter { it.type == "F" }.distinctBy { it.toString() }
+        check(speedFields.size == 2)
+        check(mutableClassDefBy(selection.definingClass).fields.filter { field ->
+            stateWrites.any { it.name == field.name }
+        }.all { AccessFlags.PUBLIC.isSet(it.accessFlags) })
+        val awemeGetter = frame.implementation!!.instructions.mapNotNull {
+            it.getReference<MethodReference>()
+        }.filter {
+            it.definingClass == frame.definingClass && it.parameterTypes.isEmpty() && it.returnType == AWEME
+        }.distinctBy { it.toString() }.single()
+        val extension = mutableClassDefBy(EXTENSION)
+        val original = extension.methods.single { it.name == "onFirstFrame" }
+        val bridge = original.cloneMutable(additionalRegisters = 2)
+        extension.methods.remove(original)
+        extension.methods.add(bridge)
+        bridge.addInstructions(0, """
+            check-cast p0, ${frame.definingClass}
+            invoke-virtual/range {p0 .. p0}, $awemeGetter
+            move-result-object v0
+            invoke-static/range {v0 .. v0}, $EXTENSION->getPlaybackSpeedForVideo($AWEME)F
+            move-result v1
+            sput-object v0, $currentAwemeField
+            ${speedFields.joinToString("\n") { "sput v1, $it" }}
+            move-object/from16 v0, p0
+            invoke-virtual/range {v0 .. v1}, $controllerSetSpeed
+            return-void
+        """)
+
+        OnRenderFirstFrameFingerprint.method.addInstruction(
             0,
-            """
-                invoke-static {}, Lapp/morphe/extension/tiktok/speed/PlaybackSpeedPatch;->getPlaybackSpeed()F
-                move-result v0
-                invoke-virtual {p0, v0}, Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;->setSpeed(F)V
-            """,
+            "invoke-static/range {p0 .. p0}, $EXTENSION->onFirstFrame(Ljava/lang/Object;)V",
         )
+
+        // Resolve the menu's lazy Float-list factory from its own constructor references.
+        val menuClass = mutableClassDefBy(PlaybackSpeedMenuFingerprint.method.definingClass)
+        val factoryOwners = menuClass.methods.filter { it.name == "<init>" }.flatMap { method ->
+            method.implementation!!.instructions.mapNotNull { it.getReference<MethodReference>() }
+        }.filter {
+            it.parameterTypes == listOf("I") && it.returnType == it.definingClass &&
+                it.definingClass.startsWith("Lkotlin/jvm/internal/")
+        }.map { it.definingClass }.distinct()
+        val expected = listOf(0.5f, 1f, 1.5f, 2f, 3f).map { it.toRawBits() }
+        val factories = factoryOwners.flatMap { mutableClassDefBy(it).methods }.filter { method ->
+            method.returnType == "Ljava/lang/Object;" && AccessFlags.STATIC.isSet(method.accessFlags) &&
+                method.implementation?.instructions?.filterIsInstance<NarrowLiteralInstruction>()
+                    ?.map { it.narrowLiteral }?.containsAll(expected) == true
+        }
+        val factory = factories.singleOrNull() ?: throw PatchException(
+            "Playback speed: expected one menu list factory, found ${factories.size}.")
+        val returns = factory.implementation!!.instructions.withIndex().filter { it.value.opcode == Opcode.RETURN_OBJECT }
+        check(returns.isNotEmpty())
+        returns.asReversed().forEach { (index, instruction) ->
+            val register = (instruction as OneRegisterInstruction).registerA
+            factory.addInstructions(index, """
+                invoke-static/range {v$register .. v$register}, $EXTENSION->menuSpeeds(Ljava/lang/Object;)Ljava/lang/Object;
+                move-result-object v$register
+            """)
+        }
+        SettingsStatusLoadFingerprint.method.addInstruction(0,
+            "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enablePlaybackSpeed()V")
     }
 }

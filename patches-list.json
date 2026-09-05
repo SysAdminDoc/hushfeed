@@ -1248,7 +1248,7 @@
     },
     {
       "name": "Playback speed",
-      "description": "Enables playback-speed controls for all videos and remembers the selected speed between videos.",
+      "description": "Remembers playback speed or applies a default to each new video, with custom menu choices up to 3x.",
       "use": true,
       "dependencies": [
         "BytecodePatch"

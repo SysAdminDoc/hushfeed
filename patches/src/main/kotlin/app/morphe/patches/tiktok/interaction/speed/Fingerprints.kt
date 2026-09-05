@@ -29,6 +29,12 @@ internal object PlayerControllerSetSpeedFingerprint : Fingerprint(
     parameters = listOf("F"),
 )
 
+internal object PlaybackSpeedMenuFingerprint : Fingerprint(
+    returnType = "V",
+    parameters = listOf("Lcom/ss/android/ugc/aweme/share/base/model/BaseSharePackage;"),
+    strings = listOf("is_highlight_fast_speed"),
+)
+
 internal object SetSpeedFingerprint : Fingerprint(
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
     returnType = "Ljava/lang/Object;",
@@ -51,4 +57,3 @@ internal object LongPressSpeedUpLockFingerprint : Fingerprint(
     parameters = emptyList(),
     strings = listOf("long_press_speed_up_lock"),
 )
-
