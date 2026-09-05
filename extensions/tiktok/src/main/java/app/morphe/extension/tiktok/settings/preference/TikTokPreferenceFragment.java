@@ -39,6 +39,7 @@ import app.morphe.extension.tiktok.settings.preference.categories.DownloadsPrefe
 import app.morphe.extension.tiktok.settings.preference.categories.ExtensionPreferenceCategory;
 import app.morphe.extension.tiktok.settings.preference.categories.FeedFilterPreferenceCategory;
 import app.morphe.extension.tiktok.settings.preference.categories.FeedNavigationPreferenceCategory;
+import app.morphe.extension.tiktok.settings.preference.categories.InboxPreferenceCategory;
 import app.morphe.extension.tiktok.settings.preference.categories.InterfacePreferenceCategory;
 import app.morphe.extension.tiktok.settings.preference.categories.SimSpoofPreferenceCategory;
 
@@ -55,6 +56,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         INTERFACE("Interface", "Promotions, popups, and publish dates."),
         COMMENTS("Comments and translation", "Auto translate, quick reactions, and copy options."),
         DOWNLOADS("Downloads", "Path, watermark, and offline videos."),
+        INBOX("Inbox", "Rows, stories tray, and header controls."),
         REGION("Bypass regional restriction", "SIM info, country, and operator."),
         BEHAVIOR("App behavior", "Sharing, playback, and gestures."),
         DIAGNOSTICS("Diagnostics", "Logging, crash capture, and report export.");
@@ -285,6 +287,22 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     Settings.CUSTOM_OFFLINE_VIDEOS.get()
             ));
         }
+        if (SettingsStatus.inboxFilterEnabled) {
+            addMenu(screen, Section.INBOX, SettingsMenuPreference.Icon.LAYOUT, countEnabled(
+                    Settings.HIDE_INBOX_STORIES.get(),
+                    Settings.HIDE_INBOX_NEW_FOLLOWERS.get(),
+                    Settings.HIDE_INBOX_ACTIVITY.get(),
+                    Settings.HIDE_INBOX_ARCHIVE.get(),
+                    Settings.HIDE_INBOX_TAKO.get(),
+                    Settings.HIDE_INBOX_SHOP.get(),
+                    Settings.HIDE_INBOX_SUGGESTED_ACCOUNTS.get(),
+                    Settings.HIDE_INBOX_MESSAGE_REQUESTS.get(),
+                    Settings.HIDE_INBOX_CONVERSATIONS.get(),
+                    Settings.HIDE_INBOX_ADD_PEOPLE.get(),
+                    Settings.HIDE_INBOX_SEARCH.get(),
+                    Settings.HIDE_INBOX_ACTIVITY_STATUS.get()
+            ));
+        }
         if (SettingsStatus.simSpoofEnabled) {
             addMenu(screen, Section.REGION, SettingsMenuPreference.Icon.REGION, countEnabled(
                     Settings.SIM_SPOOF.get()
@@ -356,6 +374,9 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                 break;
             case DOWNLOADS:
                 category = new DownloadsPreferenceCategory(context, screen);
+                break;
+            case INBOX:
+                category = new InboxPreferenceCategory(context, screen);
                 break;
             case REGION:
                 category = new SimSpoofPreferenceCategory(context, screen);

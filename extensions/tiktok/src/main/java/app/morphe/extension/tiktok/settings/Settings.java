@@ -126,6 +126,24 @@ public class Settings extends BaseSettings {
             new BooleanSetting("block_author_button", FALSE, true);
     public static final StringSetting BLOCK_AUTHOR_BUTTON_POSITION =
             new StringSetting("block_author_button_position", "");
+    public static final BooleanSetting HIDE_INBOX_STORIES = new BooleanSetting("hide_inbox_stories", FALSE);
+    public static final BooleanSetting HIDE_INBOX_NEW_FOLLOWERS = new BooleanSetting("hide_inbox_new_followers", FALSE);
+    public static final BooleanSetting HIDE_INBOX_ACTIVITY = new BooleanSetting("hide_inbox_activity", FALSE);
+    public static final BooleanSetting HIDE_INBOX_ARCHIVE = new BooleanSetting("hide_inbox_archive", FALSE);
+    public static final BooleanSetting HIDE_INBOX_TAKO = new BooleanSetting("hide_inbox_tako", FALSE);
+    public static final BooleanSetting HIDE_INBOX_SHOP = new BooleanSetting("hide_inbox_shop", FALSE);
+    public static final BooleanSetting HIDE_INBOX_SUGGESTED_ACCOUNTS =
+            new BooleanSetting("hide_inbox_suggested_accounts", FALSE);
+    public static final BooleanSetting HIDE_INBOX_MESSAGE_REQUESTS =
+            new BooleanSetting("hide_inbox_message_requests", FALSE);
+    public static final BooleanSetting HIDE_INBOX_CONVERSATIONS =
+            new BooleanSetting("hide_inbox_conversations", FALSE);
+    public static final BooleanSetting HIDE_INBOX_ADD_PEOPLE = new BooleanSetting("hide_inbox_add_people", FALSE);
+    public static final BooleanSetting HIDE_INBOX_SEARCH = new BooleanSetting("hide_inbox_search", FALSE);
+    public static final BooleanSetting HIDE_INBOX_ACTIVITY_STATUS =
+            new BooleanSetting("hide_inbox_activity_status", FALSE);
+    public static final StringSetting HIDE_INBOX_CUSTOM_TITLES =
+            new StringSetting("hide_inbox_custom_titles", "");
     public static final BooleanSetting DISABLE_LONG_PRESS_QUICK_SHARE =
             new BooleanSetting("disable_long_press_quick_share", FALSE);
     public static final BooleanSetting DISABLE_LONG_PRESS_REPOST =

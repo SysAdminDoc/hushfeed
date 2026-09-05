@@ -27,6 +27,7 @@ public class SettingsStatus {
     public static boolean alwaysShowPublishDateEnabled = false;
     public static boolean diagnosticsEnabled = false;
     public static boolean blockAuthorEnabled = false;
+    public static boolean inboxFilterEnabled = false;
 
     public static void enableFeedFilter() {
         feedFilterEnabled = true;
@@ -110,6 +111,10 @@ public class SettingsStatus {
 
     public static void enableBlockAuthor() {
         blockAuthorEnabled = true;
+    }
+
+    public static void enableInboxFilter() {
+        inboxFilterEnabled = true;
     }
 
     public static void load() {
