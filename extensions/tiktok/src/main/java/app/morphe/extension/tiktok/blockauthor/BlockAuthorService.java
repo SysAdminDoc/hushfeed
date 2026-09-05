@@ -7,39 +7,55 @@ package app.morphe.extension.tiktok.blockauthor;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 
-import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Modifier;
 
 /**
  * Performs the block and unblock calls.
  *
- * The request goes through TikTok's own Retrofit stack rather than a hand rolled HTTP
- * call, so the app applies its usual request signing. The service interface and method
- * are discovered at patch time (see {@link BlockApiDescriptors}); the arguments are
- * matched at runtime by reading the {@code @Query} names off the interface method, which
- * avoids depending on the parameter order of any one build.
+ * TikTok exposes its block endpoint through {@code BlockApi}, whose names survive
+ * obfuscation:
+ *
+ * <pre>
+ * public final class BlockApi {
+ *     public static final BlockService LIZ = ... .create(BlockService.class);
+ * }
+ *
+ * public interface BlockApi$BlockService {
+ *     &#64;GET("/aweme/v1/user/block/")
+ *     Call&lt;BlockStruct&gt; block(&#64;Query("user_id") String userId,
+ *                             &#64;Query("sec_user_id") String secUserId,
+ *                             &#64;Query("block_type") int blockType,
+ *                             &#64;Query("source") int source);
+ * }
+ * </pre>
+ *
+ * Reusing the app's own service instance means the request is signed and routed exactly
+ * as TikTok's own block action is. Only the static field holding the service is
+ * obfuscated, so it is located by type rather than by name.
  */
 public final class BlockAuthorService {
+    private static final String BLOCK_API = "com.ss.android.ugc.aweme.profile.api.BlockApi";
+    private static final String BLOCK_SERVICE = BLOCK_API + "$BlockService";
+
     private static final int BLOCK = 1;
     private static final int UNBLOCK = 0;
 
-    /** ByteDance's Retrofit factory. Kept unobfuscated in TikTok builds. */
-    private static final String RETROFIT_UTILS = "com.bytedance.ttnet.utils.RetrofitUtils";
+    /**
+     * The {@code source} argument. TikTok passes an origin code that only affects its own
+     * analytics; zero is the unspecified value.
+     */
+    private static final int SOURCE_UNSPECIFIED = 0;
 
-    /** Query parameter names the block endpoint understands. */
-    private static final String QUERY_USER_ID = "user_id";
-    private static final String QUERY_SEC_USER_ID = "sec_user_id";
-    private static final String QUERY_BLOCK_TYPE = "block_type";
-    private static final String QUERY_SOURCE = "source";
-
-    private static final Map<String, Object> SERVICE_CACHE = new HashMap<>();
+    private static volatile Object cachedService;
+    private static volatile Method cachedBlockMethod;
 
     private BlockAuthorService() {
+    }
+
+    interface Callback {
+        void onResult(boolean success, String message);
     }
 
     /** Blocks {@code author}. Runs on a background thread. */
@@ -52,20 +68,16 @@ public final class BlockAuthorService {
         submit(author, UNBLOCK, callback);
     }
 
-    interface Callback {
-        void onResult(boolean success, String message);
-    }
-
     private static void submit(VideoAuthor author, int blockType, Callback callback) {
         Utils.runOnBackgroundThread(() -> {
             boolean success = false;
-            String message;
+            String message = null;
 
             try {
                 success = execute(author, blockType);
-                message = success
-                        ? null
-                        : "TikTok rejected the request";
+                if (!success) {
+                    message = "TikTok rejected the request";
+                }
             } catch (UnsupportedOperationException ex) {
                 message = ex.getMessage();
                 Logger.printInfo(() -> "Block endpoint unavailable: " + ex.getMessage());
@@ -81,175 +93,73 @@ public final class BlockAuthorService {
     }
 
     private static boolean execute(VideoAuthor author, int blockType) throws Exception {
-        if (!BlockApiDescriptors.isResolved()) {
-            throw new UnsupportedOperationException(
-                    "The block endpoint was not found in this TikTok build");
-        }
+        Method block = blockMethod();
+        Object service = service();
 
-        Class<?> serviceInterface = Class.forName(BlockApiDescriptors.serviceClassName());
-        Method endpoint = findEndpoint(serviceInterface);
-        if (endpoint == null) {
-            throw new UnsupportedOperationException("The block endpoint signature changed");
-        }
+        // The endpoint accepts either identifier and ignores an empty one.
+        String uid = author.uid == null ? "" : author.uid;
+        String secUid = author.secUid == null ? "" : author.secUid;
 
-        Object service = serviceFor(serviceInterface);
-        if (service == null) {
-            throw new UnsupportedOperationException("Could not create the block API service");
-        }
+        Logger.printDebug(() -> "Sending block_type=" + blockType + " for " + author.label());
 
-        Object[] arguments = buildArguments(endpoint, author, blockType);
-        endpoint.setAccessible(true);
-        Object response = endpoint.invoke(service, arguments);
-
-        return awaitResult(response);
-    }
-
-    private static Method findEndpoint(Class<?> serviceInterface) {
-        String name = BlockApiDescriptors.methodName();
-        List<String> parameterTypes = BlockApiDescriptors.parameterTypes();
-
-        Method fallback = null;
-        for (Method method : serviceInterface.getDeclaredMethods()) {
-            if (!method.getName().equals(name)) {
-                continue;
-            }
-            if (fallback == null) {
-                fallback = method;
-            }
-            if (matchesParameters(method, parameterTypes)) {
-                return method;
-            }
-        }
-        return fallback;
-    }
-
-    private static boolean matchesParameters(Method method, List<String> expected) {
-        Class<?>[] actual = method.getParameterTypes();
-        if (actual.length != expected.size()) {
-            return false;
-        }
-        for (int index = 0; index < actual.length; index++) {
-            if (!actual[index].getName().equals(expected.get(index))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Fills the endpoint arguments by query name, so a build that reorders or adds
-     * parameters still gets a well formed request. Anything unrecognised is left at its
-     * type default, which TikTok treats as "not supplied".
-     */
-    private static Object[] buildArguments(Method endpoint, VideoAuthor author, int blockType) {
-        Class<?>[] parameterTypes = endpoint.getParameterTypes();
-        Annotation[][] parameterAnnotations = endpoint.getParameterAnnotations();
-        Object[] arguments = new Object[parameterTypes.length];
-
-        Map<String, Object> byQueryName = new LinkedHashMap<>();
-        byQueryName.put(QUERY_USER_ID, author.uid);
-        byQueryName.put(QUERY_SEC_USER_ID, author.secUid);
-        byQueryName.put(QUERY_BLOCK_TYPE, blockType);
-        byQueryName.put(QUERY_SOURCE, 0);
-
-        for (int index = 0; index < parameterTypes.length; index++) {
-            String queryName = queryNameOf(parameterAnnotations[index]);
-            Object value = queryName == null ? null : byQueryName.get(queryName);
-            arguments[index] = coerce(value, parameterTypes[index]);
-        }
-
-        Logger.printDebug(() -> "Block request " + endpoint.getName()
-                + " path=" + BlockApiDescriptors.endpointPath()
-                + " args=" + Arrays.toString(arguments));
-
-        return arguments;
-    }
-
-    /** Reads the value of a Retrofit {@code @Query} or {@code @Field} parameter annotation. */
-    private static String queryNameOf(Annotation[] annotations) {
-        for (Annotation annotation : annotations) {
-            String type = annotation.annotationType().getName();
-            if (!type.endsWith(".Query") && !type.endsWith(".Field")) {
-                continue;
-            }
-            Object value = Reflect.invoke(annotation, "value");
-            if (value instanceof String) {
-                return (String) value;
-            }
-        }
-        return null;
-    }
-
-    private static Object coerce(Object value, Class<?> type) {
-        if (type == int.class || type == Integer.class) {
-            int number = value instanceof Number ? ((Number) value).intValue() : 0;
-            return number;
-        }
-        if (type == long.class || type == Long.class) {
-            return value instanceof Number ? ((Number) value).longValue() : 0L;
-        }
-        if (type == boolean.class || type == Boolean.class) {
-            return Boolean.TRUE.equals(value);
-        }
-        if (type == String.class) {
-            return value instanceof String ? value : "";
-        }
-        return null;
-    }
-
-    private static Object serviceFor(Class<?> serviceInterface) throws Exception {
-        synchronized (SERVICE_CACHE) {
-            Object cached = SERVICE_CACHE.get(serviceInterface.getName());
-            if (cached != null) {
-                return cached;
-            }
-        }
-
-        Class<?> retrofitUtils = Class.forName(RETROFIT_UTILS);
-        Method createService = null;
-        for (Method method : retrofitUtils.getDeclaredMethods()) {
-            Class<?>[] parameters = method.getParameterTypes();
-            if (parameters.length == 2
-                    && parameters[0] == String.class
-                    && parameters[1] == Class.class) {
-                createService = method;
-                break;
-            }
-        }
-        if (createService == null) {
-            throw new UnsupportedOperationException("Could not find the Retrofit service factory");
-        }
-
-        createService.setAccessible(true);
-        Object service = createService.invoke(null, ApiHost.baseUrl(), serviceInterface);
-
-        if (service != null) {
-            synchronized (SERVICE_CACHE) {
-                SERVICE_CACHE.put(serviceInterface.getName(), service);
-            }
-        }
-        return service;
-    }
-
-    /**
-     * Resolves the response. The endpoint returns either a parsed model or one of
-     * ByteDance's call wrappers, so the wrapper is executed when present.
-     */
-    private static boolean awaitResult(Object response) {
-        if (response == null) {
+        Object call = block.invoke(service, uid, secUid, blockType, SOURCE_UNSPECIFIED);
+        if (call == null) {
             return false;
         }
 
-        Object executed = Reflect.invoke(response, "execute");
-        Object body = executed != null ? Reflect.invoke(executed, "body") : response;
-        Object payload = body != null ? body : executed;
+        // Mirrors TikTok's own call site: execute synchronously, and treat a request that
+        // returns without throwing as accepted.
+        Method execute = call.getClass().getMethod("execute");
+        execute.setAccessible(true);
+        Object response = execute.invoke(call);
 
-        Object statusCode = Reflect.property(payload, "getStatusCode", "status_code");
-        if (statusCode instanceof Number) {
-            return ((Number) statusCode).intValue() == 0;
+        return response != null;
+    }
+
+    private static Method blockMethod() throws Exception {
+        Method cached = cachedBlockMethod;
+        if (cached != null) {
+            return cached;
         }
 
-        // No status field to read: a response that did not throw is treated as accepted.
-        return true;
+        Class<?> serviceInterface = Class.forName(BLOCK_SERVICE);
+        Method block = serviceInterface.getMethod(
+                "block", String.class, String.class, int.class, int.class);
+        block.setAccessible(true);
+
+        cachedBlockMethod = block;
+        return block;
+    }
+
+    /**
+     * Reads the service instance out of {@code BlockApi}. The field name is obfuscated and
+     * changes between builds, so it is found by its declared type instead.
+     */
+    private static Object service() throws Exception {
+        Object cached = cachedService;
+        if (cached != null) {
+            return cached;
+        }
+
+        Class<?> blockApi = Class.forName(BLOCK_API);
+        Class<?> serviceInterface = Class.forName(BLOCK_SERVICE);
+
+        for (Field field : blockApi.getDeclaredFields()) {
+            if (!Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+            if (!serviceInterface.isAssignableFrom(field.getType())) {
+                continue;
+            }
+
+            field.setAccessible(true);
+            Object service = field.get(null);
+            if (service != null) {
+                cachedService = service;
+                return service;
+            }
+        }
+
+        throw new UnsupportedOperationException("Could not read TikTok's block service");
     }
 }
