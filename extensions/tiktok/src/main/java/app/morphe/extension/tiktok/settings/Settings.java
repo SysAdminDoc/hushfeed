@@ -150,6 +150,7 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting DEFAULT_SPEED_ENABLED = new BooleanSetting("default_speed_enabled", FALSE);
     public static final StringSetting DEFAULT_SPEED = new StringSetting("default_speed", "1.5");
     public static final StringSetting CUSTOM_SPEEDS = new StringSetting("custom_speeds", "", true);
+    public static final BooleanSetting AUTO_ADVANCE = new BooleanSetting("auto_advance", FALSE, true);
     public static final BooleanSetting ENABLE_LONG_PRESS_SPEED_LOCK = new BooleanSetting("enable_long_press_speed_lock", FALSE, true);
     public static final BooleanSetting NOT_INTERESTED_BUTTON = new BooleanSetting("not_interested_button", FALSE);
     public static final BooleanSetting BLOCK_AUTHOR_BUTTON =

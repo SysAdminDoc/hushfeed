@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Added persistent automatic video advance using TikTok's native completion handler, with pause and dialog checks preserved. Disabling the option stops the scrolling it started.
+
 * Added a default playback speed for each new video and custom speed menu choices through 3x. Manual choices remain active for the current video, and the native menu state follows the player.
 
 * Reject malformed country input and preserve locale scripts and extensions when a legacy variant needs fallback handling.

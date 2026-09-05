@@ -21,6 +21,8 @@ public class SettingsStatus {
     public static boolean playbackQualityEnabled;
     public static boolean playbackSpeedEnabled;
     public static void enablePlaybackSpeed() { playbackSpeedEnabled = true; }
+    public static boolean autoAdvanceEnabled;
+    public static void enableAutoAdvance() { autoAdvanceEnabled = true; }
     public static void enablePlaybackQuality() { playbackQualityEnabled = true; }
     public static boolean advancedDownloadsEnabled;
     public static void enableAdvancedDownloads() { advancedDownloadsEnabled = true; }

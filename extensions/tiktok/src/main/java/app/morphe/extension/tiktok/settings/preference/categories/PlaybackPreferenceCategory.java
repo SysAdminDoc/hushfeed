@@ -18,10 +18,15 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
     }
 
     @Override public boolean getSettingsStatus() {
-        return SettingsStatus.playbackQualityEnabled || SettingsStatus.playbackSpeedEnabled;
+        return SettingsStatus.playbackQualityEnabled || SettingsStatus.playbackSpeedEnabled || SettingsStatus.autoAdvanceEnabled;
     }
 
     @Override public void addPreferences(Context context) {
+        if (SettingsStatus.autoAdvanceEnabled) {
+            addPreference(new TogglePreference(context, "Advance when a video ends",
+                    "Keep automatic advance enabled. Pauses and open dialogs still stop scrolling. Restart after enabling it; use this switch to turn it off.",
+                    Settings.AUTO_ADVANCE));
+        }
         if (SettingsStatus.playbackSpeedEnabled) {
             addPreference(new TogglePreference(context, "Use a default playback speed",
                     "Start each new video at your default. A manual choice lasts until the video changes.",

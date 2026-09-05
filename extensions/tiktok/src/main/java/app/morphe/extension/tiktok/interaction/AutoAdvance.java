@@ -1,0 +1,92 @@
+package app.morphe.extension.tiktok.interaction;
+
+import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.View;
+import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.settings.Setting;
+import app.morphe.extension.tiktok.blockauthor.Reflect;
+import app.morphe.extension.tiktok.settings.Settings;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.function.Supplier;
+
+public final class AutoAdvance {
+    private static final Handler MAIN = new Handler(Looper.getMainLooper());
+    private static final Map<Object, Control> CONTROLS = new WeakHashMap<>();
+    private static boolean observing;
+    private static final SharedPreferences.OnSharedPreferenceChangeListener PREFERENCES = (preferences, key) -> {
+        if (key == null || Settings.AUTO_ADVANCE.key.equals(key)) MAIN.post(() -> {
+            for (Object component : new ArrayList<>(CONTROLS.keySet())) update(component);
+        });
+    };
+    private AutoAdvance() { }
+
+    public static boolean available(boolean nativeValue) { return Settings.AUTO_ADVANCE.get() || nativeValue; }
+
+    public static void onView(Object component, View view) {
+        if (Looper.myLooper() != Looper.getMainLooper() || component == null || view == null) return;
+        if (!observing) {
+            Setting.preferences.preferences.registerOnSharedPreferenceChangeListener(PREFERENCES);
+            observing = true;
+        }
+        Control next = new Control(view);
+        Control previous = CONTROLS.put(component, next);
+        next.owned = previous != null && previous.owned;
+        onResume(component);
+    }
+
+    public static void onResume(Object component) {
+        WeakReference<Object> owner = new WeakReference<>(component);
+        MAIN.post(() -> update(owner.get()));
+    }
+
+    public static void beforeCompletion(Object component, String completedId) {
+        if (Looper.myLooper() != Looper.getMainLooper() || completedId == null) return;
+        String current = Reflect.string(readAweme(component), "getAid", "aid");
+        if (completedId.equals(current)) update(component);
+    }
+
+    public static void onDestroy(Object component) { CONTROLS.remove(component); }
+
+    private static void update(Object component) {
+        Control control = CONTROLS.get(component);
+        if (control == null) return;
+        try {
+            control.update(() -> readState(component), () -> start(component), () -> stop(component));
+        } catch (RuntimeException error) {
+            Logger.printException(() -> "Could not update automatic advance", error);
+        }
+    }
+
+    static final class Control {
+        final WeakReference<View> view;
+        boolean owned;
+        Control(View view) { this.view = new WeakReference<>(view); }
+
+        void update(Supplier<Object> state, Runnable start, Runnable stop) {
+            if (!Settings.AUTO_ADVANCE.get()) {
+                if (owned) { stop.run(); owned = false; }
+                return;
+            }
+            View live = view.get();
+            if (live == null || !live.isAttachedToWindow() || !live.isShown() || !live.hasWindowFocus()) return;
+            if (!named(state.get(), "AUTO_SCROLL_STATE_STOP")) return;
+            start.run();
+            owned = !named(state.get(), "AUTO_SCROLL_STATE_STOP");
+        }
+    }
+
+    private static boolean named(Object state, String name) {
+        return state instanceof Enum<?> && ((Enum<?>) state).name().equals(name);
+    }
+
+    // Replaced with native calls when the patch is applied.
+    private static Object readAweme(Object component) { return null; }
+    private static Object readState(Object component) { return null; }
+    private static void start(Object component) { }
+    private static void stop(Object component) { }
+}

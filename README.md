@@ -51,6 +51,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 
 | Patch | Description |
 |---|---|
+| `Automatic video advance` | Keeps native automatic advance enabled. TikTok still checks pauses, dialogs, gestures and whether another video is available. Turn it off in Playback to stop advance started by this option. |
 | `Foldable split comment view` | Enables comments beside the video from a configurable window width (600 dp by default). Off by default, with multi-window and picture-in-picture restrictions preserved. Restart after changing its settings or unfolding if TikTok keeps the old layout. |
 | `Subtitle tools` | Saves captions as SRT files beside downloaded videos. Choose original, device or all available languages, adjust caption size and background, and keep the current caption visible in clear display. |
 | `Playback quality` | Chooses the lowest, highest or a target video quality for regular and adaptive playback. Download quality has its own setting. |
@@ -114,6 +115,10 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 Playback has an optional default speed for every new video. A manual choice lasts until you change videos. To add 2.5x, enter it in Speed menu choices and restart TikTok; an empty list restores TikTok's menu.
 
 <img src="assets/playback-speed-settings.png" alt="Default playback speed and custom menu settings" width="300" />
+
+Select `Automatic video advance` in the patcher, then enable Advance when a video ends in Playback and restart. The option re-enables native auto-scroll if TikTok turns it off. Use the Playback switch to disable it.
+
+<img src="assets/auto-advance-settings.png" alt="Automatic advance and playback settings" width="300" />
 
 Foldable controls are in App behavior. Settings save immediately. A notification tells you when to restart TikTok.
 
