@@ -113,6 +113,24 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
         ));
         addPreference(new TogglePreference(
                 context,
+                "Hide the playlist bar",
+                "Hide the playlist bar along the bottom of videos that belong to a series.",
+                Settings.HIDE_PLAYLIST_BAR
+        ));
+        addPreference(new TogglePreference(
+                context,
+                "Hide the event badge",
+                "Hide the floating promotional badge over the feed.",
+                Settings.HIDE_EVENT_BADGE
+        ));
+        addPreference(new TogglePreference(
+                context,
+                "Hide inserted cards",
+                "Hide the friend recommendation card and the other cards TikTok slots between videos.",
+                Settings.HIDE_INSERTED_CARDS
+        ));
+        addPreference(new TogglePreference(
+                context,
                 "Filter offline fallback videos",
                 "Also apply these filters to downloaded videos TikTok uses when the feed cannot load enough new items.",
                 Settings.FILTER_OFFLINE_FALLBACK_VIDEOS

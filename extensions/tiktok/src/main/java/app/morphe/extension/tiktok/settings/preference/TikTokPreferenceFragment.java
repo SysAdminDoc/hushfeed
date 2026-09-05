@@ -253,7 +253,10 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     Settings.HIDE_SHOP.get(),
                     Settings.HIDE_LIVE.get(),
                     Settings.HIDE_STORY.get(),
-                    Settings.HIDE_IMAGE.get()
+                    Settings.HIDE_IMAGE.get(),
+                    Settings.HIDE_PLAYLIST_BAR.get(),
+                    Settings.HIDE_EVENT_BADGE.get(),
+                    Settings.HIDE_INSERTED_CARDS.get()
             ));
         }
         if (SettingsStatus.feedNavigationEnabled) {

@@ -65,18 +65,6 @@ with anchors present first, then adaptations, then new builds.
 
 ### P1
 
-- [ ] P1 - Port hxreborn's five feed card filters
-  Why: friend recommendation cards (#132), bulletin and inserted cards (aweme type 105), in-feed
-  playlist bar, floating event badge, and scrolling past countdown-locked short-drama ads.
-  Evidence: others/hxreborn_hxreborn-tiktok-patches feedfilter/FeedFilterPatch.kt (+75 over ours),
-  extension feedfilter/{CardInsertFilter,DramaBlockingAdFilter,EventBadgeFilter,
-  FriendRecommendationFilter,PlaylistBarFilter}.java; anchors InteractPlayListBottomBarAssem,
-  "friend_recommend_card", "feedDynamicComponentLoadSuccess", DramaBlockingAdServiceImpl,
-  specact/SpecActServiceImpl present.
-  Touches: FeedFilterPatch.kt, Fingerprints.kt, FeedItemsFilter.java CONTENT_FILTERS,
-  Settings.java (+3), FeedFilterPreferenceCategory (+3).
-  Acceptance: each switch removes its card type; the drama ad no longer locks scrolling.
-  Complexity: M
 - [ ] P1 - Upgrade the Morphe patcher pin from 1.5.1 to 1.12.0
   Why: unlocks typed options (colour picker for the theme, sliders), PatchAvailability, and the
   Kotlin context-parameter syntax; the manager on the phone already ships 1.12.x and refuses

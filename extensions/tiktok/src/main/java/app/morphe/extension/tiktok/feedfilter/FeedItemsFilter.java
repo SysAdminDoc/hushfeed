@@ -32,7 +32,8 @@ public final class FeedItemsFilter {
         new ContentMarkerFilters.AiGeneratedFilter(),
         new ContentMarkerFilters.VerifiedFilter(),
         new ContentMarkerFilters.SeriesFilter(),
-        new ContentMarkerFilters.PlaylistFilter()
+        new ContentMarkerFilters.PlaylistFilter(),
+        new CardFilters.InsertedCardFilter()
     );
     private static final List<IFilter> RANGE_FILTERS = List.of(
         new ViewCountFilter(),

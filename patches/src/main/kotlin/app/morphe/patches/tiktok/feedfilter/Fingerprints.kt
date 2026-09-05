@@ -314,3 +314,46 @@ internal object TakoAiFeedButtonBindFingerprint : Fingerprint(
     returnType = "V",
     parameters = listOf("Landroid/view/View;"),
 )
+
+
+/** The playlist bar along the bottom of a video that belongs to a series. */
+internal object PlaylistBottomBarAvailableFingerprint : Fingerprint(
+    definingClass = "/InteractPlayListBottomBarAssem;",
+    returnType = "Z",
+    parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"),
+)
+
+/** Answers whether an item is a short drama advert that locks scrolling until it ends. */
+internal object DramaBlockingAdFingerprint : Fingerprint(
+    definingClass = "Lcom/ss/android/ugc/aweme/impl/DramaBlockingAdServiceImpl;",
+    returnType = "Z",
+    parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
+)
+
+/** Attaches the floating promotional event badge to the feed. */
+internal object SpecActTouchpointAttachFingerprint : Fingerprint(
+    definingClass = "/specact/SpecActServiceImpl;",
+    returnType = "V",
+    parameters = listOf("Landroid/view/ViewGroup;", "Landroidx/fragment/app/Fragment;"),
+)
+
+/** Builds the friend recommendation card; a null result is the app's own "nothing to insert". */
+internal object RecUserCardInsertFingerprint : Fingerprint(
+    returnType = "Lkotlin/Pair;",
+    parameters = listOf("I", "Ljava/util/List;", "Ljava/lang/String;", "Lkotlin/jvm/functions/Function0;"),
+    strings = listOf("friend_recommend_card"),
+)
+
+/** Loads the Lynx view behind an inserted card, which happens before any list filter runs. */
+internal object FeedLynxCardLoadFingerprint : Fingerprint(
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+    returnType = "Z",
+    parameters = listOf(
+        "Landroid/content/Context;",
+        "Ljava/lang/String;",
+        "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+        "Ljava/lang/String;",
+        "L",
+    ),
+    strings = listOf("feedDynamicComponentLoadSuccess"),
+)

@@ -13,6 +13,10 @@ public class Aweme {
         throw new UnsupportedOperationException("Stub");
     }
 
+    public int getAwemeType() {
+        throw new UnsupportedOperationException("Stub");
+    }
+
     public boolean isAd() {
         throw new UnsupportedOperationException("Stub");
     }

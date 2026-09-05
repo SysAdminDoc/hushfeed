@@ -18,6 +18,7 @@ import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint.method
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.getReference
+import app.morphe.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -27,6 +28,7 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/feedfilter/FeedItemsFilter;"
 private const val TAKO_AI_FILTER_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/feedfilter/TakoAiFilter;"
+private const val CARD_FILTERS_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/feedfilter/CardFilters;"
 
 @Suppress("unused")
 val feedFilterPatch = bytecodePatch(
@@ -276,6 +278,73 @@ val feedFilterPatch = bytecodePatch(
         TakoAiFeedButtonBindFingerprint.method.addInstructions(
             2,
             "invoke-static {p1}, $TAKO_AI_FILTER_CLASS_DESCRIPTOR->hideBoundFeedButtonView(Landroid/view/View;)V",
+        )
+
+        // Things TikTok slots into the feed that never arrive as ordinary items, so they
+        // are stopped where they are built. Each is optional: a build without the surface
+        // simply skips it.
+        PlaylistBottomBarAvailableFingerprint.method.addInstructions(
+            0,
+            """
+                invoke-static {}, $CARD_FILTERS_CLASS_DESCRIPTOR->shouldHidePlaylistBar()Z
+                move-result v0
+                if-eqz v0, :morphe_show_playlist_bar
+                const/4 v0, 0x0
+                return v0
+                :morphe_show_playlist_bar
+                nop
+            """,
+        )
+
+        // Null is the app's own "no recommended users to insert" result.
+        RecUserCardInsertFingerprint.method.addInstructions(
+            0,
+            """
+                invoke-static {}, $CARD_FILTERS_CLASS_DESCRIPTOR->shouldHideInsertedCards()Z
+                move-result v0
+                if-eqz v0, :morphe_insert_rec_user_card
+                const/4 v0, 0x0
+                return-object v0
+                :morphe_insert_rec_user_card
+                nop
+            """,
+        )
+
+        FeedLynxCardLoadFingerprint.method.addInstructions(
+            0,
+            """
+                invoke-static {}, $CARD_FILTERS_CLASS_DESCRIPTOR->shouldHideInsertedCards()Z
+                move-result v0
+                if-eqz v0, :morphe_load_feed_card
+                const/4 v0, 0x0
+                return v0
+                :morphe_load_feed_card
+                nop
+            """,
+        )
+
+        DramaBlockingAdFingerprint.method.apply {
+            val dramaReturnIndex = indexOfFirstInstructionOrThrow { opcode == Opcode.RETURN }
+            val dramaRegister = getInstruction<OneRegisterInstruction>(dramaReturnIndex).registerA
+            addInstructions(
+                dramaReturnIndex,
+                """
+                    invoke-static {v$dramaRegister}, $CARD_FILTERS_CLASS_DESCRIPTOR->shouldBlockForDramaAd(Z)Z
+                    move-result v$dramaRegister
+                """,
+            )
+        }
+
+        SpecActTouchpointAttachFingerprint.method.addInstructions(
+            0,
+            """
+                invoke-static {}, $CARD_FILTERS_CLASS_DESCRIPTOR->shouldHideEventBadge()Z
+                move-result v0
+                if-eqz v0, :morphe_attach_event_badge
+                return-void
+                :morphe_attach_event_badge
+                nop
+            """,
         )
     }
 }
