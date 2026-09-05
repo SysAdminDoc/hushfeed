@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-GPLv3-blue.svg" /></a>
-  <a href="CHANGELOG.md"><img alt="version" src="https://img.shields.io/badge/version-0.11.0-6f42c1.svg" /></a>
+  <a href="CHANGELOG.md"><img alt="version" src="https://img.shields.io/badge/version-0.12.0-6f42c1.svg" /></a>
   <a href="https://github.com/MorpheApp/morphe-cli"><img alt="source" src="https://img.shields.io/badge/source-Morphe-00b894.svg" /></a>
   <a href="https://www.android.com/"><img alt="platform" src="https://img.shields.io/badge/platform-Android-3ddc84.svg" /></a>
   <a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/"><img alt="TikTok 46.2.3" src="https://img.shields.io/badge/TikTok-46.2.3-ff0050.svg" /></a>
@@ -18,7 +18,7 @@ This is a private working copy of [icysymmetra/tiktok-patches-for-morphe](https:
 
 - `Block author button`: one tap blocks whoever posted the current video, with an undo banner. Long press the button to move it. A second button blocks the current sound.
 - `Hide inbox items`: a switch for every row and header control on the Inbox tab, plus a Clear all control for suggested accounts.
-- `Comment tools`: hide comments by keyword or by account, and block a commenter with one tap on the button beside their comment.
+- `Comment tools`: hide comments by keyword or by account, and block a commenter with the thumbs down on their comment.
 - `Hide video overlays`: switches for the "Search this image" prompt and the top left Live entrance.
 - `Share sheet tools`: a second tap is needed before a video goes to a friend, and people or share options can be hidden by name, or the whole Send to row.
 - Feed filter switches for paid partnerships, AI generated videos, verified accounts, Series and playlist videos, and a sound blocklist.
@@ -41,7 +41,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 |---|---|
 | `Always show publish date` | Keeps the video's publish date visible in its author information. |
 | `Block author button` | Adds a button to the video player that blocks the account that posted the current video in one tap, with an undo banner. Long press it to move it. A second button blocks the current sound. |
-| `Comment tools` | Hides comments containing chosen words or from chosen accounts, and puts a one tap block button beside each comment. |
+| `Comment tools` | Hides comments containing chosen words or from chosen accounts, and turns the thumbs down on each comment into a block button. |
 | `Copy comments without username` | Copies only the comment text without including the creator's username. |
 | `Custom offline videos limit` | Adds a custom entry to TikTok's offline videos menu with a configurable limit from 1 to 1000 videos. Values outside the range use the nearest valid limit. |
 | `Disable login requirement` | Removes TikTok's mandatory login gate from supported flows. |

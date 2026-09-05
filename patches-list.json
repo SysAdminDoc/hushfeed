@@ -1,5 +1,5 @@
 {
-  "version": "v0.11.0",
+  "version": "v0.12.0",
   "appNames": {
     "com.zhiliaoapp.musically": "TikTok"
   },
@@ -62,7 +62,7 @@
     },
     {
       "name": "Comment tools",
-      "description": "Hides comments that contain chosen words or come from chosen accounts, and puts a one tap block button beside each comment. Supports TikTok 46.2.3.",
+      "description": "Hides comments that contain chosen words or come from chosen accounts, and turns the thumbs down on each comment into a block button. Supports TikTok 46.2.3.",
       "use": false,
       "dependencies": [
         "BytecodePatch"

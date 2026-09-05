@@ -70,9 +70,10 @@ public class CommentsPreferenceCategory extends ConditionalPreferenceCategory {
             ));
             addPreference(new TogglePreference(
                     context,
-                    "Block button on comments",
-                    "Show a small block button beside each comment. One tap blocks the account that "
-                            + "posted it, dims the comment, and offers an undo.",
+                    "Thumbs down blocks the commenter",
+                    "The thumbs down on each comment blocks the account that posted it instead of "
+                            + "disliking. The comment dims, an undo banner follows, and a second tap "
+                            + "unblocks. Takes effect after a restart.",
                     Settings.BLOCK_FROM_COMMENT
             ));
         }

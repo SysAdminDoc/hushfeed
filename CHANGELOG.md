@@ -1,3 +1,9 @@
+## 0.12.0 (2026-09-05)
+
+### Features
+
+* **comments:** the thumbs down on each comment now blocks the commenter instead of disliking. The icon stays, the row dims and the icon tints while the account is blocked, a second tap unblocks, and the overlay block button is gone
+
 ## 0.11.0 (2026-09-05)
 
 ### Features

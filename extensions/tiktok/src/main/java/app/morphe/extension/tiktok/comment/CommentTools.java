@@ -5,16 +5,14 @@
 package app.morphe.extension.tiktok.comment;
 
 import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
-import android.util.TypedValue;
-import android.view.Gravity;
+import android.graphics.PorterDuff;
 import android.view.HapticFeedbackConstants;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.view.ViewTreeObserver;
-import android.widget.FrameLayout;
-import android.widget.TextView;
+import android.widget.ImageView;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
@@ -28,16 +26,18 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
 /**
- * Comment list tools: a keyword filter on loaded comments, and a block button drawn
- * beside each comment that blocks its author in one tap.
+ * Comment list tools: a keyword filter on loaded comments, and TikTok's thumbs down control
+ * on each comment repurposed to block the commenter in one tap.
  *
  * Both entry points are called from the same places the comment translation patch hooks:
  * {@code BaseCommentCell} binding a cell, and the comment list response being handled.
@@ -45,47 +45,34 @@ import java.util.WeakHashMap;
  * 46.2.3 ({@code getText}, {@code getUser}, {@code getCid}, {@code getReplyComments}, and
  * the public {@code items} list), so nothing here depends on an obfuscated name.
  *
- * The button is not added to the comment cell. The cell's layout type and the position of
- * TikTok's own like control are not known, and a child dropped into an unknown layout can
- * land anywhere. Instead one transparent layer is added on top of the window the comments
- * live in, and each visible cell gets a small button positioned over it before every
- * frame. Feedback (the dimmed row and the undo banner) is drawn in that same window,
- * because the comment panel is not always in the activity's window and anything added to
- * the activity's content root then sits underneath it.
- *
- * A cell is bound before it is attached to a window, so at bind time its root view is
- * just the top of a detached subtree (a LinearLayout on 46.2.3). The layer is therefore
- * attached from an attach listener, and only to a root whose parent is the window itself.
+ * The thumbs down is a RelativeLayout ({@code jlk}) holding an icon ({@code m3b}) at the
+ * right end of the comment's action row; both ids were read off a live comment panel. TikTok
+ * drives it with a touch listener installed once per view, the first time the cell binds, so
+ * this class installs its own touch listener after the bind has returned, which replaces
+ * TikTok's and survives every later rebind. The icon stays; a tap now blocks the commenter
+ * (a second tap unblocks), the row dims and the icon tints while the account is blocked, and
+ * an undo banner is drawn in the window the comments live in, because the panel is not
+ * always in the activity's window and anything added to the activity's content root then
+ * sits underneath it.
  */
 public final class CommentTools {
-    private static final String BLOCK_GLYPH = "⊘";
-    private static final String BLOCKED_GLYPH = "✓";
-    private static final int BUTTON_SIZE_DP = 28;
-    private static final int BUTTON_TOP_DP = 6;
-
-    /**
-     * Distance from the cell's right edge to the button's right edge. TikTok's like heart
-     * sits against the right edge on the username row; this parks the button just left
-     * of it.
-     */
-    private static final int BUTTON_RIGHT_INSET_DP = 56;
+    private static final String APP_PACKAGE = "com.zhiliaoapp.musically";
+    private static final String DISLIKE_BUTTON_ID = "jlk";
+    private static final String DISLIKE_ICON_ID = "m3b";
     private static final float BLOCKED_ROW_ALPHA = 0.35f;
+    private static final int BLOCKED_TINT = Color.rgb(254, 44, 85);
 
     /** Comment model bound to each cell view. */
     private static final WeakHashMap<View, Object> CELL_COMMENTS = new WeakHashMap<>();
 
-    /** One button layer per window root the comments have been seen in. */
-    private static final WeakHashMap<View, ButtonLayer> LAYERS = new WeakHashMap<>();
-
-    /** Cells that already have an attach listener, so each gets exactly one. */
-    private static final WeakHashMap<View, Boolean> ATTACH_HOOKED = new WeakHashMap<>();
-
-    private static boolean warnedNoWindowRoot;
-
     /** Accounts blocked this session, by uid, so a recycled cell shows the right state. */
     private static final Set<String> BLOCKED_UIDS = Collections.synchronizedSet(new HashSet<>());
 
+    private static final Map<String, Integer> RESOLVED_IDS = new HashMap<>();
+    private static final DislikeTouchListener DISLIKE_TOUCH = new DislikeTouchListener();
+
     private static volatile boolean blockInFlight;
+    private static boolean warnedNoDislikeControl;
 
     private CommentTools() {
     }
@@ -110,60 +97,13 @@ public final class CommentTools {
                 CELL_COMMENTS.put(itemView, comment);
             }
 
-            attachWhenReady(itemView);
+            // TikTok wires the thumbs down during this same bind, so the takeover runs once
+            // the bind has returned. For a cell that is not attached yet, View.post runs the
+            // work on attach, which is still after the bind.
+            itemView.post(() -> takeOverDislike(itemView));
         } catch (Throwable ex) {
             Logger.printException(() -> "Could not register a comment cell", ex);
         }
-    }
-
-    /**
-     * Binds happen before the cell is attached, and a detached cell's root view is not a
-     * window. Attach the layer now if the cell is already in a window, otherwise once it
-     * gets there. Recycled cells are detached and reattached, so the listener stays on.
-     */
-    private static void attachWhenReady(View cell) {
-        if (cell.isAttachedToWindow()) {
-            attachLayer(cell);
-            return;
-        }
-        synchronized (ATTACH_HOOKED) {
-            if (ATTACH_HOOKED.put(cell, Boolean.TRUE) != null) {
-                return;
-            }
-        }
-        cell.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
-            @Override
-            public void onViewAttachedToWindow(View view) {
-                attachLayer(view);
-            }
-
-            @Override
-            public void onViewDetachedFromWindow(View view) {
-            }
-        });
-    }
-
-    private static void attachLayer(View cell) {
-        try {
-            View root = cell.getRootView();
-            if (!(root instanceof ViewGroup) || !isWindowRoot(root)) {
-                if (!warnedNoWindowRoot) {
-                    warnedNoWindowRoot = true;
-                    Logger.printInfo(() -> "Comment cell root is not a window: "
-                            + (root == null ? "null" : root.getClass().getName()));
-                }
-                return;
-            }
-            layerFor((ViewGroup) root).requestLayoutPass();
-        } catch (Throwable ex) {
-            Logger.printException(() -> "Could not attach the comment block buttons", ex);
-        }
-    }
-
-    /** The window's decor view is the only view whose parent is not itself a view. */
-    private static boolean isWindowRoot(View view) {
-        ViewParent parent = view.getParent();
-        return parent != null && !(parent instanceof View);
     }
 
     /**
@@ -197,158 +137,120 @@ public final class CommentTools {
         }
     }
 
-    // ---- button layer ------------------------------------------------------------------
+    // ---- thumbs down takeover ----------------------------------------------------------
 
-    private static ButtonLayer layerFor(ViewGroup root) {
-        synchronized (LAYERS) {
-            ButtonLayer layer = LAYERS.get(root);
-            if (layer == null) {
-                layer = new ButtonLayer(root);
-                LAYERS.put(root, layer);
-                Logger.printInfo(() -> "Comment block buttons attached to " + root.getClass().getName());
+    private static void takeOverDislike(View cell) {
+        try {
+            View button = cell.findViewById(identifier(cell, DISLIKE_BUTTON_ID));
+            if (button == null) {
+                if (!warnedNoDislikeControl) {
+                    warnedNoDislikeControl = true;
+                    Logger.printInfo(() -> "Comment thumbs down control '" + DISLIKE_BUTTON_ID
+                            + "' not found in this TikTok build");
+                }
+                return;
             }
-            return layer;
+
+            // Replaces TikTok's listener on the control; the icon gets one too so a touch
+            // that lands on it never reaches TikTok's handling either.
+            button.setOnTouchListener(DISLIKE_TOUCH);
+            View icon = cell.findViewById(identifier(cell, DISLIKE_ICON_ID));
+            if (icon != null) {
+                icon.setOnTouchListener(DISLIKE_TOUCH);
+            }
+
+            applyBlockedState(cell);
+        } catch (Throwable ex) {
+            Logger.printException(() -> "Could not take over the comment thumbs down", ex);
         }
     }
 
     /**
-     * A transparent full-window layer holding one button per visible comment cell.
-     * It is not clickable itself, so touches on empty parts of it fall through to
-     * TikTok; only the buttons take a tap.
+     * Swallows every touch on the thumbs down so TikTok's dislike never fires, and turns a
+     * clean tap into a block. A drag is left to the list (the RecyclerView intercepts it
+     * before the control sees more than the first events).
      */
-    private static final class ButtonLayer implements ViewTreeObserver.OnPreDrawListener {
-        private final ViewGroup root;
-        private final FrameLayout layer;
-        private final WeakHashMap<View, TextView> buttons = new WeakHashMap<>();
-        private final int size;
-        private final int topInset;
-        private final int rightInset;
-
-        ButtonLayer(ViewGroup root) {
-            this.root = root;
-            float density = root.getResources().getDisplayMetrics().density;
-            size = Math.round(BUTTON_SIZE_DP * density);
-            topInset = Math.round(BUTTON_TOP_DP * density);
-            rightInset = Math.round(BUTTON_RIGHT_INSET_DP * density);
-
-            layer = new FrameLayout(root.getContext());
-            layer.setClickable(false);
-            layer.setFocusable(false);
-            root.addView(layer, new ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            root.getViewTreeObserver().addOnPreDrawListener(this);
-        }
-
-        void requestLayoutPass() {
-            layer.invalidate();
-        }
+    private static final class DislikeTouchListener implements View.OnTouchListener {
+        private float downX;
+        private float downY;
+        private boolean moved;
 
         @Override
-        public boolean onPreDraw() {
-            try {
-                place();
-            } catch (Throwable ex) {
-                Logger.printException(() -> "Comment block buttons failed to place", ex);
-            }
-            return true;
-        }
-
-        private void place() {
-            // The layer must stay the top child so buttons draw over the list.
-            if (layer.getParent() == root && root.getChildAt(root.getChildCount() - 1) != layer) {
-                root.removeView(layer);
-                root.addView(layer);
-            }
-
-            List<View> cells;
-            synchronized (CELL_COMMENTS) {
-                cells = new ArrayList<>(CELL_COMMENTS.keySet());
-            }
-
-            int[] layerOrigin = new int[2];
-            layer.getLocationInWindow(layerOrigin);
-            int[] location = new int[2];
-            Set<View> live = new HashSet<>();
-
-            for (View cell : cells) {
-                if (cell == null || !cell.isAttachedToWindow() || cell.getRootView() != root
-                        || !cell.isShown() || cell.getWidth() == 0) {
-                    continue;
-                }
-                Object comment;
-                synchronized (CELL_COMMENTS) {
-                    comment = CELL_COMMENTS.get(cell);
-                }
-                if (comment == null) {
-                    continue;
-                }
-                live.add(cell);
-
-                TextView button = buttons.get(cell);
-                if (button == null) {
-                    button = createButton(cell);
-                    buttons.put(cell, button);
-                    layer.addView(button, new FrameLayout.LayoutParams(size, size));
-                }
-
-                cell.getLocationInWindow(location);
-                int left = location[0] - layerOrigin[0] + cell.getWidth() - rightInset - size;
-                int top = location[1] - layerOrigin[1] + topInset;
-                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) button.getLayoutParams();
-                if (params.leftMargin != left || params.topMargin != top) {
-                    params.leftMargin = Math.max(0, left);
-                    params.topMargin = Math.max(0, top);
-                    button.setLayoutParams(params);
-                }
-
-                boolean blocked = isBlocked(comment);
-                applyState(cell, button, blocked);
-                if (button.getVisibility() != View.VISIBLE) {
-                    button.setVisibility(View.VISIBLE);
-                }
-            }
-
-            // Hide buttons whose cells scrolled away or were recycled into something else.
-            for (View cell : new ArrayList<>(buttons.keySet())) {
-                if (!live.contains(cell)) {
-                    TextView button = buttons.get(cell);
-                    if (button != null && button.getVisibility() != View.GONE) {
-                        button.setVisibility(View.GONE);
+        public boolean onTouch(View view, MotionEvent event) {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    downX = event.getX();
+                    downY = event.getY();
+                    moved = false;
+                    return true;
+                case MotionEvent.ACTION_MOVE:
+                    if (!moved) {
+                        int slop = ViewConfiguration.get(view.getContext()).getScaledTouchSlop();
+                        moved = Math.abs(event.getX() - downX) > slop
+                                || Math.abs(event.getY() - downY) > slop;
                     }
+                    return true;
+                case MotionEvent.ACTION_CANCEL:
+                    moved = true;
+                    return true;
+                case MotionEvent.ACTION_UP:
+                    if (!moved) {
+                        onDislikeTapped(view);
+                    }
+                    return true;
+                default:
+                    return true;
+            }
+        }
+    }
+
+    private static void onDislikeTapped(View touched) {
+        try {
+            View cell = cellOf(touched);
+            if (cell == null) {
+                Utils.showToastShort("Could not read who posted this comment");
+                return;
+            }
+            toggleBlock(cell);
+        } catch (Throwable ex) {
+            Logger.printException(() -> "Comment block tap failed", ex);
+        }
+    }
+
+    /** The registered cell is the nearest ancestor of the control that was bound to a comment. */
+    private static View cellOf(View view) {
+        View current = view;
+        for (int depth = 0; current != null && depth < 12; depth++) {
+            synchronized (CELL_COMMENTS) {
+                if (CELL_COMMENTS.containsKey(current)) {
+                    return current;
                 }
             }
+            ViewParent parent = current.getParent();
+            current = parent instanceof View ? (View) parent : null;
+        }
+        return null;
+    }
+
+    private static void applyBlockedState(View cell) {
+        Object comment;
+        synchronized (CELL_COMMENTS) {
+            comment = CELL_COMMENTS.get(cell);
+        }
+        boolean blocked = comment != null && isBlocked(comment);
+
+        float alpha = blocked ? BLOCKED_ROW_ALPHA : 1f;
+        if (cell.getAlpha() != alpha) {
+            cell.setAlpha(alpha);
         }
 
-        private TextView createButton(View cell) {
-            TextView button = new TextView(root.getContext());
-            button.setText(BLOCK_GLYPH);
-            button.setTextColor(Color.WHITE);
-            button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
-            button.setGravity(Gravity.CENTER);
-            button.setContentDescription("Block this commenter");
-
-            GradientDrawable background = new GradientDrawable();
-            background.setShape(GradientDrawable.OVAL);
-            background.setColor(Color.argb(170, 0, 0, 0));
-            background.setStroke(Math.round(root.getResources().getDisplayMetrics().density),
-                    Color.argb(110, 255, 255, 255));
-            button.setBackground(background);
-
-            button.setOnClickListener(view -> blockCommenter(cell, root));
-            return button;
-        }
-
-        private void applyState(View cell, TextView button, boolean blocked) {
-            String glyph = blocked ? BLOCKED_GLYPH : BLOCK_GLYPH;
-            if (!glyph.contentEquals(button.getText())) {
-                button.setText(glyph);
-            }
-            if (button.isEnabled() == blocked) {
-                button.setEnabled(!blocked);
-            }
-            float alpha = blocked ? BLOCKED_ROW_ALPHA : 1f;
-            if (cell.getAlpha() != alpha) {
-                cell.setAlpha(alpha);
+        View icon = cell.findViewById(identifier(cell, DISLIKE_ICON_ID));
+        if (icon instanceof ImageView) {
+            ImageView image = (ImageView) icon;
+            if (blocked) {
+                image.setColorFilter(BLOCKED_TINT, PorterDuff.Mode.SRC_IN);
+            } else {
+                image.clearColorFilter();
             }
         }
     }
@@ -365,7 +267,7 @@ public final class CommentTools {
 
     // ---- blocking ----------------------------------------------------------------------
 
-    private static void blockCommenter(View cell, ViewGroup root) {
+    private static void toggleBlock(View cell) {
         if (blockInFlight) {
             return;
         }
@@ -392,8 +294,16 @@ public final class CommentTools {
             return;
         }
 
-        blockInFlight = true;
         cell.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+        if (author.uid != null && BLOCKED_UIDS.contains(author.uid)) {
+            unblock(cell, author);
+        } else {
+            block(cell, author);
+        }
+    }
+
+    private static void block(View cell, VideoAuthor author) {
+        blockInFlight = true;
         BlockAuthorService.block(author, (success, message) -> {
             blockInFlight = false;
             if (!success) {
@@ -405,15 +315,36 @@ public final class CommentTools {
             if (author.uid != null) {
                 BLOCKED_UIDS.add(author.uid);
             }
-            root.invalidate();
-            BlockAuthorOverlay.showUndoBanner(root, "Blocked " + author.label(), () -> {
-                if (author.uid != null) {
-                    BLOCKED_UIDS.remove(author.uid);
-                }
-                root.invalidate();
-                BlockAuthorService.unblock(author, (undone, ignored) -> Utils.showToastShort(
-                        undone ? "Unblocked " + author.label() : "Could not unblock " + author.label()));
-            });
+            // The cell reads its current comment, so a recycled row is never mis-styled.
+            applyBlockedState(cell);
+
+            View root = cell.getRootView();
+            BlockAuthorOverlay.showUndoBanner(root instanceof ViewGroup ? (ViewGroup) root : null,
+                    "Blocked " + author.label(), () -> {
+                        if (author.uid != null) {
+                            BLOCKED_UIDS.remove(author.uid);
+                        }
+                        applyBlockedState(cell);
+                        BlockAuthorService.unblock(author, (undone, ignored) -> Utils.showToastShort(
+                                undone ? "Unblocked " + author.label() : "Could not unblock " + author.label()));
+                    });
+        });
+    }
+
+    private static void unblock(View cell, VideoAuthor author) {
+        blockInFlight = true;
+        BlockAuthorService.unblock(author, (success, message) -> {
+            blockInFlight = false;
+            if (!success) {
+                Utils.showToastLong("Could not unblock " + author.label()
+                        + (message == null ? "" : ": " + message));
+                return;
+            }
+            if (author.uid != null) {
+                BLOCKED_UIDS.remove(author.uid);
+            }
+            applyBlockedState(cell);
+            Utils.showToastShort("Unblocked " + author.label());
         });
     }
 
@@ -504,6 +435,21 @@ public final class CommentTools {
             }
         }
         return false;
+    }
+
+    private static int identifier(View view, String name) {
+        Integer cached = RESOLVED_IDS.get(name);
+        if (cached != null) {
+            return cached;
+        }
+        int id;
+        try {
+            id = view.getResources().getIdentifier(name, "id", APP_PACKAGE);
+        } catch (Throwable ignored) {
+            id = 0;
+        }
+        RESOLVED_IDS.put(name, id);
+        return id;
     }
 
     private static List<String> entries(String stored) {

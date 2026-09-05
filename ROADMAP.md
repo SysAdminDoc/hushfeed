@@ -43,11 +43,11 @@ requests worth building. P0 is broken, P3 is nice to have.
 - [ ] P3 - Localise the five inbox system labels
   Why: they only match in English.
   Where: InboxFilter.matchesSystemLabel
-- [ ] P2 - Verify 0.9.0 to 0.11.0 on device
+- [ ] P2 - Verify 0.9.0 to 0.12.0 on device
   Why: the sound filter, feed switches and comment keyword filter have not run on a device;
-  the comment block button (fixed in 0.11.0), its placement beside the like heart, the visual
-  search hide, the Live entrance hide and the share sheet confirm step have not been seen
-  working. Confirm each once, then remove this item.
+  the thumbs down block (0.12.0), the visual search hide, the Live entrance hide and the share
+  sheet confirm step have not been seen working. The 0.11.0 comment buttons did render (seen
+  in a panel dump). Confirm each once, then remove this item.
   Where: extensions/tiktok/.../feedfilter/SoundFilter.java, ContentMarkerFilters.java,
   comment/CommentTools.java, blockauthor/BlockAuthorOverlay.java
 - [ ] P2 - Replace the fragment back stack guard in FeedVisibility

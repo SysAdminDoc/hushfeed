@@ -33,7 +33,7 @@ private const val COMMENT_LIST_DESCRIPTOR = "Lcom/ss/android/ugc/aweme/comment/m
 val commentToolsPatch = bytecodePatch(
     name = "Comment tools",
     description = "Hides comments that contain chosen words or come from chosen accounts, " +
-        "and puts a one tap block button beside each comment. Supports TikTok 46.2.3.",
+        "and turns the thumbs down on each comment into a block button. Supports TikTok 46.2.3.",
     default = false,
 ) {
     dependsOn(sharedExtensionPatch)
