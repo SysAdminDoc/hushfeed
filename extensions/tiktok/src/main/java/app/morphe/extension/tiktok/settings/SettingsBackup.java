@@ -104,23 +104,35 @@ public final class SettingsBackup {
         } catch (Exception error) {
             throw RestoreException.rejected(error);
         }
-        String previousText = create(false);
-        Snapshot previous = parse(previousText);
-        Map<String, ?> previousPreferences = new LinkedHashMap<>(
-                Setting.preferences.preferences.getAll());
-        if (saveUndo) writeUndo(context, previousText);
+        SettingsOperationJournal.Operation operation = SettingsOperationJournal.acquire(context);
+        boolean closed = false;
         try {
-            apply(next);
-        } catch (Exception error) {
-            try { Setting.saveAll(previous.values); } catch (Exception rollback) { error.addSuppressed(rollback); }
-            try { FeatureGateLabStore.replaceSettings(previous.rules, previous.master, previous.acknowledged); }
-            catch (Exception rollback) { error.addSuppressed(rollback); }
-            boolean rollbackComplete = ordinarySettingsMatch(previousPreferences)
-                    && labSettingsMatch(previous);
-            boolean recoveryAvailable = hasVerifiedUndo(context);
-            throw new RestoreException(error,
-                    rollbackComplete ? Failure.ROLLED_BACK : Failure.RECOVERY_REQUIRED,
-                    rollbackComplete, recoveryAvailable);
+            String previousText = create(false);
+            Snapshot previous = parse(previousText);
+            Map<String, ?> previousPreferences = new LinkedHashMap<>(
+                    Setting.preferences.preferences.getAll());
+            if (saveUndo) writeUndo(context, previousText);
+            operation.recordSettings(previousText, text);
+            try {
+                applyForJournal(next);
+                operation.complete();
+                closed = true;
+            } catch (Exception error) {
+                try { Setting.saveAll(previous.values); } catch (Exception rollback) { error.addSuppressed(rollback); }
+                try { FeatureGateLabStore.replaceSettings(previous.rules, previous.master, previous.acknowledged); }
+                catch (Exception rollback) { error.addSuppressed(rollback); }
+                boolean rollbackComplete = ordinarySettingsMatch(previousPreferences)
+                        && labSettingsMatch(previous);
+                boolean recoveryAvailable = hasVerifiedUndo(context);
+                if (rollbackComplete) operation.complete();
+                else operation.retainForRecovery();
+                closed = true;
+                throw new RestoreException(error,
+                        rollbackComplete ? Failure.ROLLED_BACK : Failure.RECOVERY_REQUIRED,
+                        rollbackComplete, recoveryAvailable);
+            }
+        } finally {
+            if (!closed) operation.abort();
         }
     }
 
@@ -178,9 +190,24 @@ public final class SettingsBackup {
         }
     }
 
-    private static void apply(Snapshot snapshot) throws IOException {
+    static void applyForJournal(Snapshot snapshot) throws IOException {
         Setting.saveAll(snapshot.values);
         FeatureGateLabStore.replaceSettings(snapshot.rules, snapshot.master, snapshot.acknowledged);
+    }
+
+    private static Snapshot parse(String text) throws JSONException, IOException {
+        return parseForJournal(text);
+    }
+
+    static boolean matchesForJournal(Snapshot expected) {
+        try {
+            for (Map.Entry<Setting<?>, Object> entry : expected.values.entrySet()) {
+                if (!Objects.equals(entry.getKey().get(), entry.getValue())) return false;
+            }
+            return labSettingsMatch(expected);
+        } catch (RuntimeException error) {
+            return false;
+        }
     }
 
     private static AtomicFile undoFile(Context context) {
@@ -203,7 +230,7 @@ public final class SettingsBackup {
         if (!text.equals(read(file.openRead()))) throw new IOException("Could not verify the undo copy");
     }
 
-    private static Snapshot parse(String text) throws JSONException, IOException {
+    static Snapshot parseForJournal(String text) throws JSONException, IOException {
         if (text == null || text.getBytes(StandardCharsets.UTF_8).length > MAX_BYTES) throw new IOException("Invalid backup size");
         Settings.REGION_SPOOF.get();
         JSONObject root = SettingsJson.parseObject(text);
@@ -252,7 +279,7 @@ public final class SettingsBackup {
         throw new JSONException("Invalid value for " + key);
     }
 
-    private static final class Snapshot {
+    static final class Snapshot {
         final Map<Setting<?>, Object> values;
         final List<FeatureGateLabStore.Rule> rules;
         final boolean master, acknowledged;

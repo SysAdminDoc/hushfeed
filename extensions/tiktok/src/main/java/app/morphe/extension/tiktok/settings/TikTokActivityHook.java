@@ -57,6 +57,8 @@ public class TikTokActivityHook {
             return false;
         }
 
+        SettingsOperationJournal.initialize(base.getApplicationContext());
+        SettingsOperationJournal.showRecoveryNotice(base);
         SettingsStatus.load();
 
         LinearLayout linearLayout = new LinearLayout(base);
@@ -108,4 +110,3 @@ public class TikTokActivityHook {
         }
     }
 }
-

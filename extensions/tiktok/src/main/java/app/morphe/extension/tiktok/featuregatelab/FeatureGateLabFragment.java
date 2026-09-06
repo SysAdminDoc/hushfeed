@@ -59,6 +59,7 @@ import java.util.zip.GZIPOutputStream;
 
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.tiktok.settings.SettingsOperationJournal;
 import app.morphe.extension.tiktok.settings.preference.SettingsUi;
 
 @SuppressWarnings({"deprecation", "SetTextI18n"})
@@ -137,6 +138,8 @@ public final class FeatureGateLabFragment extends Fragment {
     @Override
     public View onCreateView(android.view.LayoutInflater inflater, ViewGroup container, Bundle state) {
         Context context = getActivity();
+        SettingsOperationJournal.initialize(context == null ? null : context.getApplicationContext());
+        SettingsOperationJournal.showRecoveryNotice(context);
         FeatureGateLabUi.syncTheme(context);
 
         Activity activity = getActivity();

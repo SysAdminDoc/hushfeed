@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Looper;
+import android.util.AtomicFile;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.AppLanguage;
 import app.morphe.extension.shared.settings.BaseSettings;
@@ -14,6 +15,8 @@ import app.morphe.extension.tiktok.featuregatelab.FeatureGateLabStore;
 import app.morphe.extension.tiktok.settings.preference.TikTokPreferenceFragment;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -38,6 +41,10 @@ public class SettingsBackupTest {
         Settings.REGION_SPOOF.get();
         for (Setting<?> setting : Setting.allLoadedSettings()) setting.resetToDefault();
         FeatureGateLabStore.resetAllLabData();
+        AtomicFile journal = new AtomicFile(new File(Utils.getContext().getFilesDir(), SettingsOperationJournal.FILE_NAME));
+        journal.delete();
+        new AtomicFile(new File(Utils.getContext().getFilesDir(), "feature-gate-lab-undo.json")).delete();
+        SettingsOperationJournal.consumeRecoveryNotice();
     }
 
     @Test public void everySwitchAndTypedValuesReturnAfterPreferencesAreCleared() throws Exception {
@@ -262,6 +269,98 @@ public class SettingsBackupTest {
             assertNotNull(FeatureGateLabStore.rule("abmock", "secondary_test", "BOOLEAN"));
         } finally {
             Utils.setContext(app);
+        }
+    }
+
+    @Test public void interruptedSettingsJournalRestoresThePriorStateAfterMixedWrites() throws Exception {
+        var app = Utils.getContext();
+        String before = SettingsBackup.create(false);
+        JSONObject after = new JSONObject(before);
+        after.getJSONObject("settings").put(Settings.REGION_SPOOF.key, true);
+        after.getJSONObject("lab").put("master", true);
+
+        Settings.REGION_SPOOF.save(true);
+        writeJournal("settings", before, after.toString());
+        assertEquals(SettingsOperationJournal.Recovery.RECOVERED_PRIOR,
+                SettingsOperationJournal.initialize(app));
+        assertFalse(Settings.REGION_SPOOF.get());
+        assertFalse(FeatureGateLabStore.masterEnabled());
+        assertFalse(new File(app.getFilesDir(), SettingsOperationJournal.FILE_NAME).isFile());
+    }
+
+    @Test public void committedSettingsJournalIsClearedWithoutRevertingTheCommit() throws Exception {
+        var app = Utils.getContext();
+        String before = SettingsBackup.create(false);
+        Settings.REGION_SPOOF.save(true);
+        FeatureGateLabStore.setMasterEnabled(true);
+        String after = SettingsBackup.create(false);
+        writeJournal("settings", before, after);
+
+        assertEquals(SettingsOperationJournal.Recovery.ALREADY_COMMITTED,
+                SettingsOperationJournal.initialize(app));
+        assertTrue(Settings.REGION_SPOOF.get());
+        assertTrue(FeatureGateLabStore.masterEnabled());
+        assertFalse(new File(app.getFilesDir(), SettingsOperationJournal.FILE_NAME).isFile());
+    }
+
+    @Test public void interruptedLabJournalRestoresPriorRulesAndKeepsTheUndoCopy() throws Exception {
+        var app = Utils.getContext();
+        String before = FeatureGateLabStore.exportSettings().toString();
+        FeatureGateLabStore.saveRule("abmock", "journal_gate", "BOOLEAN", "true", true);
+        String after = FeatureGateLabStore.exportSettings().toString();
+        try (var undo = new FileOutputStream(new File(app.getFilesDir(), "feature-gate-lab-undo.json"))) {
+            undo.write(after.getBytes(StandardCharsets.UTF_8));
+        }
+        FeatureGateLabStore.saveRule("abmock", "journal_gate", "BOOLEAN", "false", true);
+        writeJournal("lab", before, after);
+
+        assertEquals(SettingsOperationJournal.Recovery.RECOVERED_PRIOR,
+                SettingsOperationJournal.initialize(app));
+        assertTrue(FeatureGateLabStore.rules().isEmpty());
+        assertTrue(new File(app.getFilesDir(), "feature-gate-lab-undo.json").isFile());
+        assertFalse(new File(app.getFilesDir(), SettingsOperationJournal.FILE_NAME).isFile());
+    }
+
+    @Test public void malformedSettingsJournalStaysVisibleWithoutChangingValues() throws Exception {
+        var app = Utils.getContext();
+        Settings.REGION_SPOOF.save(true);
+        try (var output = new FileOutputStream(new File(app.getFilesDir(), SettingsOperationJournal.FILE_NAME))) {
+            output.write("{}".getBytes(StandardCharsets.UTF_8));
+        }
+        assertEquals(SettingsOperationJournal.Recovery.MALFORMED,
+                SettingsOperationJournal.initialize(app));
+        assertEquals(SettingsOperationJournal.Recovery.MALFORMED,
+                SettingsOperationJournal.consumeRecoveryNotice());
+        assertEquals(SettingsOperationJournal.Recovery.NONE,
+                SettingsOperationJournal.consumeRecoveryNotice());
+        assertTrue(Settings.REGION_SPOOF.get());
+        new AtomicFile(new File(app.getFilesDir(), SettingsOperationJournal.FILE_NAME)).delete();
+    }
+
+    @Test public void journalIntentIsDurableBeforeASettingsMutationRuns() throws Exception {
+        var app = Utils.getContext();
+        String before = SettingsBackup.create(false);
+        SettingsOperationJournal.Operation operation = SettingsOperationJournal.acquire(app);
+        try {
+            operation.recordSettings(before, before);
+            JSONObject journal = new JSONObject(SettingsBackup.read(new AtomicFile(
+                    new File(app.getFilesDir(), SettingsOperationJournal.FILE_NAME)).openRead()));
+            assertEquals("settings", journal.getString("kind"));
+            assertEquals(before, journal.getString("before"));
+            assertEquals(before, journal.getString("after"));
+        } finally {
+            operation.abort();
+        }
+    }
+
+    private static void writeJournal(String kind, String before, String after) throws Exception {
+        var app = Utils.getContext();
+        JSONObject root = new JSONObject().put("schema", 1).put("kind", kind)
+                .put("before", before).put("after", after);
+        AtomicFile file = new AtomicFile(new File(app.getFilesDir(), SettingsOperationJournal.FILE_NAME));
+        try (var output = file.startWrite()) {
+            output.write(root.toString().getBytes(StandardCharsets.UTF_8));
+            file.finishWrite(output);
         }
     }
 
