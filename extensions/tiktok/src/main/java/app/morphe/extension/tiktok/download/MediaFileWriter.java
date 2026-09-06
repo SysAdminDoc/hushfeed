@@ -59,11 +59,7 @@ final class MediaFileWriter {
         } else {
             File directory = new File(Environment.getExternalStorageDirectory(), path);
             if (!directory.isDirectory() && !directory.mkdirs()) throw new IOException("Could not create download folder");
-            File target = new File(directory, name);
-            int dot = name.lastIndexOf('.'), suffix = 1;
-            while (!target.createNewFile()) {
-                target = new File(directory, name.substring(0, dot) + "_" + (++suffix) + name.substring(dot));
-            }
+            File target = claim(directory, name);
             try (InputStream input = new FileInputStream(source); OutputStream output = new FileOutputStream(target)) {
                 copy(input, output);
             } catch (IOException exception) {
@@ -75,15 +71,45 @@ final class MediaFileWriter {
         }
     }
 
+    /**
+     * An empty file in {@code directory} that nothing else is using, created here so two
+     * saves cannot pick the same name. A second copy of the same sticker becomes name_2,
+     * then name_3, rather than replacing the one already there.
+     */
+    static File claim(File directory, String name) throws IOException {
+        int dot = name.lastIndexOf('.');
+        String stem = dot < 0 ? name : name.substring(0, dot);
+        String extension = dot < 0 ? "" : name.substring(dot);
+        File target = new File(directory, name);
+        int suffix = 1;
+        while (!target.createNewFile()) {
+            if (++suffix > 1000) throw new IOException("Too many files with that name");
+            target = new File(directory, stem + "_" + suffix + extension);
+        }
+        return target;
+    }
+
     static long copy(InputStream input, OutputStream output) throws IOException {
+        return copy(input, output, Long.MAX_VALUE);
+    }
+
+    /**
+     * Copies until the input runs out, or until {@code limit} bytes have gone past. An empty
+     * result is an error: a zero byte file in the gallery looks like a save that worked.
+     */
+    static long copy(InputStream input, OutputStream output, long limit) throws IOException {
         byte[] buffer = new byte[65536];
         long total = 0;
         int count;
         while ((count = input.read(buffer)) != -1) {
-            output.write(buffer, 0, count);
             total += count;
+            if (total > limit) {
+                throw new IOException("That file is larger than " + (limit >> 20) + " MB");
+            }
+            output.write(buffer, 0, count);
         }
         if (total == 0) throw new IOException("Download is empty");
+        output.flush();
         return total;
     }
 }

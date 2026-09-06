@@ -386,7 +386,7 @@ public final class StickerGallerySaver {
             throw new IllegalStateException("Could not create " + directory);
         }
 
-        File outputFile = new File(directory, displayName);
+        File outputFile = MediaFileWriter.claim(directory, displayName);
         try {
             try (OutputStream outputStream = new FileOutputStream(outputFile)) {
                 writePng(bitmap, outputStream);
@@ -413,7 +413,7 @@ public final class StickerGallerySaver {
             throw new IllegalStateException("Could not create " + directory);
         }
 
-        File outputFile = new File(directory, displayName);
+        File outputFile = MediaFileWriter.claim(directory, displayName);
         try {
             try (OutputStream outputStream = new FileOutputStream(outputFile)) {
                 copy(inputStream, outputStream);
@@ -470,7 +470,7 @@ public final class StickerGallerySaver {
         if (!directory.isDirectory() && !directory.mkdirs()) {
             throw new IllegalStateException("Could not create " + directory);
         }
-        File outputFile = new File(directory, displayName);
+        File outputFile = MediaFileWriter.claim(directory, displayName);
         try {
             try (OutputStream output = new FileOutputStream(outputFile)) {
                 AnimatedWebpGifConverter.convert(animatedWebp, output);
@@ -569,17 +569,7 @@ public final class StickerGallerySaver {
     }
 
     private static void copy(InputStream inputStream, OutputStream outputStream) throws Exception {
-        byte[] buffer = new byte[16 * 1024];
-        long total = 0;
-        int read;
-        while ((read = inputStream.read(buffer)) != -1) {
-            total += read;
-            if (total > MAX_STICKER_BYTES) {
-                throw new IOException("Sticker is larger than " + (MAX_STICKER_BYTES >> 20) + " MB");
-            }
-            outputStream.write(buffer, 0, read);
-        }
-        outputStream.flush();
+        MediaFileWriter.copy(inputStream, outputStream, MAX_STICKER_BYTES);
     }
 
     /**

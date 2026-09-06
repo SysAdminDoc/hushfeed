@@ -131,12 +131,7 @@ final class SubtitleDownloads {
                 if (connection.getResponseCode() != 200) throw new IOException("Subtitle server returned " + connection.getResponseCode());
                 if (connection.getContentLengthLong() > 2 * 1024 * 1024) throw new IOException("Subtitle file is too large");
                 try (var input = connection.getInputStream(); var output = new ByteArrayOutputStream()) {
-                    byte[] buffer = new byte[8192];
-                    int count;
-                    while ((count = input.read(buffer)) != -1) {
-                        if (output.size() + count > 2 * 1024 * 1024) throw new IOException("Subtitle file is too large");
-                        output.write(buffer, 0, count);
-                    }
+                    MediaFileWriter.copy(input, output, 2 * 1024 * 1024);
                     return SubtitleFormat.toSrt(new String(output.toByteArray(), StandardCharsets.UTF_8), format);
                 }
             } catch (IOException error) { last = error; }

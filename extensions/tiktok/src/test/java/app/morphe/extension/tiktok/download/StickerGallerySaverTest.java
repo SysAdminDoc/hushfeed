@@ -1,11 +1,14 @@
 package app.morphe.extension.tiktok.download;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import android.view.View;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 import org.junit.Test;
@@ -35,6 +38,57 @@ public class StickerGallerySaverTest {
 
     /** The preview model TikTok binds to the sheet; the source is registered against it. */
     public static final class PreviewModel {
+    }
+
+    /**
+     * Below Android 10 a sticker is written straight to external storage rather than handed
+     * to MediaStore. That path built a File from the display name and opened it, so the
+     * second save of the same sticker replaced the first, and its cleanup deleted whatever
+     * was at that name whether or not this save had put it there.
+     */
+    @Test public void savingTheSameStickerTwiceLeavesTwoFiles() throws Exception {
+        app.morphe.extension.shared.Utils.setContext(RuntimeEnvironment.getApplication());
+        android.graphics.Bitmap sticker =
+                android.graphics.Bitmap.createBitmap(8, 8, android.graphics.Bitmap.Config.ARGB_8888);
+        sticker.eraseColor(android.graphics.Color.RED);
+
+        Method save = StickerGallerySaver.class.getDeclaredMethod(
+                "saveBitmapWithLegacyStorage", android.content.Context.class,
+                android.graphics.Bitmap.class, String.class);
+        save.setAccessible(true);
+
+        java.io.File first = (java.io.File) save.invoke(
+                null, RuntimeEnvironment.getApplication(), sticker, "sticker.png");
+        java.io.File second = (java.io.File) save.invoke(
+                null, RuntimeEnvironment.getApplication(), sticker, "sticker.png");
+
+        assertNotNull(first);
+        assertNotNull(second);
+        assertNotEquals("the second save replaced the first",
+                first.getAbsolutePath(), second.getAbsolutePath());
+        assertTrue("the first file went away", first.isFile());
+        assertTrue("the second file was not written", second.isFile());
+        assertTrue("the first file is empty", first.length() > 0);
+        assertTrue("the second file is empty", second.length() > 0);
+        assertEquals("sticker.png", first.getName());
+        assertEquals("sticker_2.png", second.getName());
+
+        // And a third, so the suffix counts on rather than sticking at _2.
+        java.io.File third = (java.io.File) save.invoke(
+                null, RuntimeEnvironment.getApplication(), sticker, "sticker.png");
+        assertEquals("sticker_3.png", third.getName());
+        assertTrue(first.isFile() && second.isFile() && third.isFile());
+    }
+
+    /** A name with no extension is a name, not a reason to build sticker_2 out of nothing. */
+    @Test public void aNameWithNoExtensionStillGetsItsOwnFile() throws Exception {
+        java.io.File directory = new java.io.File(
+                RuntimeEnvironment.getApplication().getCacheDir(), "claim-test");
+        assertTrue(directory.mkdirs() || directory.isDirectory());
+        assertEquals("sticker", MediaFileWriter.claim(directory, "sticker").getName());
+        assertEquals("sticker_2", MediaFileWriter.claim(directory, "sticker").getName());
+        assertEquals("a.b.png", MediaFileWriter.claim(directory, "a.b.png").getName());
+        assertEquals("a.b_2.png", MediaFileWriter.claim(directory, "a.b.png").getName());
     }
 
     @Test public void aReusedSheetHoldsTheStickerItIsShowingNow() throws Exception {
