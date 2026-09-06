@@ -160,6 +160,16 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                     Settings.ENABLE_LIVE_SEARCH
             ));
         }
+        if (SettingsStatus.duetStitchEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Allow Duet and Stitch anyway",
+                    "Ignore the creator's choice so the Duet and Stitch entries appear. "
+                            + "Everything else the app checks still applies, and whether the "
+                            + "upload is accepted is the server's decision.",
+                    Settings.ALLOW_DUET_AND_STITCH
+            ));
+        }
         if (SettingsStatus.refreshRateEnabled) {
             addPreference(new TogglePreference(
                     context,

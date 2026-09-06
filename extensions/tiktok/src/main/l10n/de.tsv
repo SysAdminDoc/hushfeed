@@ -344,6 +344,8 @@ Add a button beside the block control to send feedback about the current video.	
 Use non-personalized search	Nicht personalisierte Suche verwenden
 Use TikTok's non-personalized search state instead of the saved account choice.	TikToks nicht personalisierten Suchmodus statt der gespeicherten Kontoauswahl verwenden.
 Show Live search	Live-Suche anzeigen
+Allow Duet and Stitch anyway	Duett und Stitch trotzdem erlauben
+Ignore the creator's choice so the Duet and Stitch entries appear. Everything else the app checks still applies, and whether the upload is accepted is the server's decision.	Die Wahl der erstellenden Person übergehen, damit die Einträge Duett und Stitch erscheinen. Alle übrigen Prüfungen der App gelten weiterhin, und ob der Upload angenommen wird, entscheidet der Server.
 Keep the screen's refresh rate	Bildwiederholrate des Bildschirms behalten
 Stop TikTok asking the screen to run at the frame rate of the video it is playing. On a 90 or 120 Hz phone that ask slows the whole app down to the video's rate, scrolling included.	Verhindert, dass TikTok den Bildschirm auf die Bildrate des laufenden Videos herunterregelt. Auf einem 90 oder 120 Hz Telefon bremst diese Anfrage die ganze App auf die Rate des Videos aus, das Scrollen eingeschlossen.
 Show TikTok's search entry in the Live drawer where supported.	TikToks Sucheingang im Live-Bereich anzeigen, wo das unterstützt wird.

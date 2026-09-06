@@ -49,6 +49,8 @@ public class Settings extends BaseSettings {
             new BooleanSetting("fit_video_to_screen", FALSE);
     public static final BooleanSetting UNCAP_REFRESH_RATE =
             new BooleanSetting("uncap_refresh_rate", FALSE);
+    public static final BooleanSetting ALLOW_DUET_AND_STITCH =
+            new BooleanSetting("allow_duet_and_stitch", FALSE);
     public static final BooleanSetting HIDE_FOLLOWER_NOTIFICATIONS =
             new BooleanSetting("hide_follower_notifications", FALSE);
     public static final BooleanSetting HIDE_MESSAGE_STREAKS =

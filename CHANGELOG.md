@@ -1,5 +1,7 @@
 ## Unreleased
 
+* A switch that ignores the creator's Duet and Stitch setting, so the entries appear on videos that closed them. Only that one check is skipped. A photo post still cannot be duetted, a private video still cannot, and the app's other reasons for refusing all still stand. Whether the upload is accepted is the server's call and not something a patch can decide, so treat this as making the button available rather than a promise the post will stay up.
+
 * Videos can be saved without their sound, and the save button can hand the link to a downloader you already use instead of saving anything here. Put that app's package name in the box and the button opens it with the video's link; leave it empty and nothing changes. Saving the sound as its own .m4a still works alongside the muted save, so you can have the picture and the sound in separate files if that is what you wanted.
 
 * A switch to stop TikTok pulling the screen down to the frame rate of the video. When a video starts, the app asks the window to run at that video's rate, so a 30 fps clip puts a 120 Hz phone at 30 Hz for everything, scrolling included. With the switch on the window says it has no preference and the phone decides. It does not raise anything, it only stops the asking.
