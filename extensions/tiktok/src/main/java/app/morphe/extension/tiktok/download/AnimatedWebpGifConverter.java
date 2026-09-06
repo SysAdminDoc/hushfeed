@@ -162,7 +162,8 @@ final class AnimatedWebpGifConverter {
             int yOffset
     ) {
         if (frameWidth <= 0 || frameHeight <= 0 || xOffset < 0 || yOffset < 0
-                || xOffset + frameWidth > canvasWidth || yOffset + frameHeight > canvasHeight) {
+                || (long) xOffset + frameWidth > canvasWidth
+                || (long) yOffset + frameHeight > canvasHeight) {
             throw new IllegalStateException("Animated WebP frame is outside its canvas");
         }
     }

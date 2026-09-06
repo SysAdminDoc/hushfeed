@@ -9,6 +9,7 @@ import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.tiktok.settings.Settings;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
@@ -20,6 +21,8 @@ import java.util.Map;
 
 public final class DownloadFilenameFormatter {
     private static final int MAX_BASENAME_LENGTH = 160;
+    /** What is left of a 255 byte filename once an extension and a collision suffix fit too. */
+    private static final int MAX_BASENAME_BYTES = 200;
     private static final long PENDING_NAME_TTL_MS = 10 * 60 * 1000L;
     private static final Map<String, PendingName> PENDING_NAMES = new LinkedHashMap<String, PendingName>() {
         @Override
@@ -310,8 +313,21 @@ public final class DownloadFilenameFormatter {
         return dot > 0 ? name.substring(0, dot) : name;
     }
 
+    /**
+     * Both bounds a filename has to stay inside. The character count is what the templates
+     * are written against; the byte count is what the filesystem enforces, and 160 characters
+     * of Japanese is 480 bytes of UTF-8, well past the 255 ext4 and f2fs allow. The cut lands
+     * on a code point rather than between the halves of a surrogate pair.
+     */
     private static String trimToLength(String value, int maxLength) {
-        return value.length() <= maxLength ? value : value.substring(0, maxLength).trim();
+        String trimmed = value;
+        if (trimmed.codePointCount(0, trimmed.length()) > maxLength) {
+            trimmed = trimmed.substring(0, trimmed.offsetByCodePoints(0, maxLength));
+        }
+        while (trimmed.getBytes(StandardCharsets.UTF_8).length > MAX_BASENAME_BYTES) {
+            trimmed = trimmed.substring(0, trimmed.offsetByCodePoints(trimmed.length(), -1));
+        }
+        return trimmed.trim();
     }
 
     private static void debug(String message) {

@@ -13,7 +13,14 @@ final class RemoteMedia {
     static String fetch(List<String> urls, File target, boolean image) throws IOException {
         IOException failure = new IOException("No media URL succeeded");
         for (String url : urls) {
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            java.net.URLConnection opened = new URL(url).openConnection();
+            if (!(opened instanceof HttpURLConnection)) {
+                // Not an IOException, so letting this through as a cast would jump out of the
+                // loop and leave every remaining mirror untried.
+                failure.addSuppressed(new IOException("Media URL is not HTTP: " + url));
+                continue;
+            }
+            HttpURLConnection connection = (HttpURLConnection) opened;
             connection.setConnectTimeout(15000);
             connection.setReadTimeout(30000);
             try {
@@ -29,7 +36,9 @@ final class RemoteMedia {
                     if (extension == null) throw new IOException("Media server returned an unsupported format");
                     long count;
                     try (FileOutputStream output = new FileOutputStream(target)) { count = MediaFileWriter.copy(input, output); }
-                    long expected = connection.getContentLength();
+                    // getContentLength is an int and answers -1 past 2 GB, which is exactly
+                    // the size worth checking.
+                    long expected = connection.getContentLengthLong();
                     if (expected >= 0 && count != expected) throw new IOException("Media download is incomplete");
                     return extension;
                 }

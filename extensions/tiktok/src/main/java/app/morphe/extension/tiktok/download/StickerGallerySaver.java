@@ -40,6 +40,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -54,6 +55,8 @@ import java.util.concurrent.Executors;
 @SuppressWarnings("unused")
 public final class StickerGallerySaver {
     private static final String ACTION_LABEL = "Save media";
+    /** A sticker is a few hundred KB. Anything past this is not one. */
+    private static final long MAX_STICKER_BYTES = 24L * 1024 * 1024;
     private static final int CONNECT_TIMEOUT_MS = 15_000;
     private static final int READ_TIMEOUT_MS = 20_000;
 
@@ -566,13 +569,23 @@ public final class StickerGallerySaver {
 
     private static void copy(InputStream inputStream, OutputStream outputStream) throws Exception {
         byte[] buffer = new byte[16 * 1024];
+        long total = 0;
         int read;
         while ((read = inputStream.read(buffer)) != -1) {
+            total += read;
+            if (total > MAX_STICKER_BYTES) {
+                throw new IOException("Sticker is larger than " + (MAX_STICKER_BYTES >> 20) + " MB");
+            }
             outputStream.write(buffer, 0, read);
         }
         outputStream.flush();
     }
 
+    /**
+     * The whole sticker in memory, which is what the animated converters need. The cap is the
+     * reason this is safe to do: the URL is server supplied and a body with no end to it would
+     * otherwise be read until the process runs out of heap.
+     */
     private static byte[] readFully(InputStream inputStream) throws Exception {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         copy(inputStream, output);

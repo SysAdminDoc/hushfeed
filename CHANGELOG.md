@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Four bounds on what a download will accept from the server. A sticker is read with a ceiling instead of until the phone runs out of memory, a mirror that is not an HTTP address is skipped rather than abandoning the ones after it, a file over 2 GB has its length checked properly, and a filename built from a very long name is cut to what a filesystem takes without splitting a character in half.
+
 * Handing a video's link to another downloader now strips the tracking from it, the same way sharing a link does. TikTok's own link carries parameters that say who sent it, and those were going out with the hand-off even with Sanitize sharing links turned on.
 
 * The Friends tab gets filtered like the rest of the feed. It arrives as its own kind of response, so none of the existing hooks ever saw it and sponsored posts kept turning up there with every filter switched on. Ads, and LIVE cards when you have livestreams hidden, are dropped from it now.

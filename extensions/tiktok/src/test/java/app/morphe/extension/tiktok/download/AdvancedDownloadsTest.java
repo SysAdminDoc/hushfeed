@@ -462,6 +462,29 @@ public class AdvancedDownloadsTest {
         }
     }
 
+    @Test public void aVeryLongCreatorNameStaysInsideWhatTheFilesystemTakes() {
+        // 160 Japanese characters is 480 bytes of UTF-8, well past the 255 a filesystem takes,
+        // and cutting at a fixed index can land between the halves of a surrogate pair.
+        String longHandle = "\u3042".repeat(200);
+        String withEmoji = "\uD83C\uDF0D".repeat(120);
+
+        for (String handle : new String[]{longHandle, withEmoji}) {
+            String name = DownloadFilenameFormatter.formatProfilePictureName(handle);
+            assertTrue("the name must fit a filesystem: " + name.length() + " bytes",
+                    name.getBytes(java.nio.charset.StandardCharsets.UTF_8).length <= 255);
+            for (int index = 0; index < name.length(); index++) {
+                assertFalse("a surrogate was cut in half",
+                        Character.isHighSurrogate(name.charAt(index))
+                                && (index + 1 == name.length()
+                                    || !Character.isLowSurrogate(name.charAt(index + 1))));
+            }
+        }
+
+        // An ordinary handle is untouched.
+        assertEquals("dancer_profile.jpg",
+                DownloadFilenameFormatter.formatProfilePictureName("dancer"));
+    }
+
     @Test public void advancedPatchAloneShowsItsOwnOptions() throws Exception {
         try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
             var activity = controller.get();
