@@ -118,6 +118,7 @@
     <string name="mtp_4eb604d9">Comma separated words or phrases. Matching captions are skipped. Case doesn\'t matter.</string>
     <string name="mtp_50a0fce9">Keep long-pressing Share from opening TikTok\'s quick-share interaction.</string>
     <string name="mtp_50c3929b">Days to remember a video. Zero removes the age limit. History keeps at most 10,000 videos.</string>
+    <string name="mtp_51327e7a">Show the handle instead of the name</string>
     <string name="mtp_51bac044">Cancel</string>
     <string name="mtp_51edfe45">Save every photo in the post directly from its source URL, without rendering it again.</string>
     <string name="mtp_52081bab">Hide the row of story avatars across the top of the Inbox.</string>
@@ -344,6 +345,7 @@
     <string name="mtp_f0f7e61d">Start each new video at your default. A manual choice lasts until the video changes.</string>
     <string name="mtp_f2875f6d">Confirm before following</string>
     <string name="mtp_f28d96a3">Hide the friend recommendation card and the other cards TikTok slots between videos.</string>
+    <string name="mtp_f3515316">Show @username beside a video instead of the display name the creator chose.</string>
     <string name="mtp_f49efa06">Tap the like heart twice within four seconds. Removing a like stays immediate.</string>
     <string name="mtp_f55495e0">Save</string>
     <string name="mtp_f577041a">Hide people and options by name</string>

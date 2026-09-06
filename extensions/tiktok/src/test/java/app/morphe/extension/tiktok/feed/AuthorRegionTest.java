@@ -72,12 +72,12 @@ public class AuthorRegionTest {
         TextView name = AuthorRegion.findName(row);
         assertSame(row.getChildAt(0), name);
 
-        AuthorRegion.decorate(name, "US");
+        AuthorRegion.decorate(name, null, "US");
         assertEquals("My path forward · US", name.getText().toString());
 
         // Every layout pass runs this, so it must not keep appending.
-        AuthorRegion.decorate(name, "US");
-        AuthorRegion.decorate(name, "US");
+        AuthorRegion.decorate(name, null, "US");
+        AuthorRegion.decorate(name, null, "US");
         assertEquals("My path forward · US", name.getText().toString());
 
         // Switching the option off, or leaving the feed, puts the name back.
@@ -95,19 +95,19 @@ public class AuthorRegionTest {
         LinearLayout row = feedRow("My path forward");
         TextView name = AuthorRegion.findName(row);
 
-        AuthorRegion.decorate(name, null);
+        AuthorRegion.decorate(name, null, null);
         assertEquals("My path forward", name.getText().toString());
     }
 
     @Test
     public void movingToAnotherVideoDecoratesTheNewNameAndReleasesTheOld() {
         TextView first = AuthorRegion.findName(feedRow("first creator"));
-        AuthorRegion.decorate(first, "US");
+        AuthorRegion.decorate(first, null, "US");
         assertEquals("first creator · US", first.getText().toString());
 
         // TikTok rebinds the row for the next video before this runs again.
         TextView second = AuthorRegion.findName(feedRow("second creator"));
-        AuthorRegion.decorate(second, "GB");
+        AuthorRegion.decorate(second, null, "GB");
         assertEquals("second creator · GB", second.getText().toString());
         assertEquals("first creator", first.getText().toString());
     }
@@ -119,9 +119,9 @@ public class AuthorRegionTest {
         LinearLayout row = feedRow("alice");
         TextView name = AuthorRegion.findName(row);
 
-        AuthorRegion.decorate(name, "US");
-        AuthorRegion.decorate(name, "GB");
-        AuthorRegion.decorate(name, "DE");
+        AuthorRegion.decorate(name, null, "US");
+        AuthorRegion.decorate(name, null, "GB");
+        AuthorRegion.decorate(name, null, "DE");
         assertEquals("alice · DE", name.getText().toString());
 
         AuthorRegion.restore();
@@ -132,13 +132,55 @@ public class AuthorRegionTest {
     public void aRebuiltRowWhoseNameExtendsTheOldOneIsLeftAlone() {
         LinearLayout row = feedRow("Sam");
         TextView name = AuthorRegion.findName(row);
-        AuthorRegion.decorate(name, "US");
+        AuthorRegion.decorate(name, null, "US");
         assertEquals("Sam · US", name.getText().toString());
 
         // TikTok rebinds the recycled row to a creator whose name starts with the old one.
         name.setText("Sam Smith");
         AuthorRegion.restore();
         assertEquals("Sam Smith", name.getText().toString());
+    }
+
+    @Test
+    public void theHandleReplacesTheDisplayName() {
+        LinearLayout row = feedRow("Sam Smith");
+        TextView name = AuthorRegion.findName(row);
+
+        AuthorRegion.decorate(name, "samsmith", null);
+        assertEquals("@samsmith", name.getText().toString());
+
+        // Every layout pass runs this, so it must settle.
+        AuthorRegion.decorate(name, "samsmith", null);
+        assertEquals("@samsmith", name.getText().toString());
+
+        AuthorRegion.restore();
+        assertEquals("Sam Smith", name.getText().toString());
+    }
+
+    @Test
+    public void bothSwitchesTogetherGiveTheHandleAndTheCountry() {
+        LinearLayout row = feedRow("Sam Smith");
+        TextView name = AuthorRegion.findName(row);
+
+        AuthorRegion.decorate(name, "samsmith", "US");
+        assertEquals("@samsmith · US", name.getText().toString());
+
+        AuthorRegion.restore();
+        assertEquals("Sam Smith", name.getText().toString());
+    }
+
+    @Test
+    public void aRecycledRowTakesTheNextCreatorsHandle() {
+        // The feed rebinds the same TextView for the next video.
+        LinearLayout row = feedRow("alice");
+        TextView name = AuthorRegion.findName(row);
+
+        AuthorRegion.decorate(name, "alice_v", "US");
+        AuthorRegion.decorate(name, "bob_v", "GB");
+        assertEquals("@bob_v · GB", name.getText().toString());
+
+        AuthorRegion.restore();
+        assertEquals("alice", name.getText().toString());
     }
 
     @Test
@@ -149,7 +191,7 @@ public class AuthorRegionTest {
         styled.setSpan(new StyleSpan(Typeface.BOLD), 0, 5, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         name.setText(styled);
 
-        AuthorRegion.decorate(name, "US");
+        AuthorRegion.decorate(name, null, "US");
 
         assertEquals("alice · US", name.getText().toString());
         CharSequence decorated = name.getText();

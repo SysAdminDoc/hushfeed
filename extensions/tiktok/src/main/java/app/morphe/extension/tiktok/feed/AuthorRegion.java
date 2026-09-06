@@ -57,6 +57,9 @@ public final class AuthorRegion {
     private static WeakReference<Object> regionAweme = new WeakReference<>(null);
     private static String regionValue;
 
+    private static WeakReference<Object> handleAweme = new WeakReference<>(null);
+    private static String handleValue;
+
     private AuthorRegion() {
     }
 
@@ -105,20 +108,23 @@ public final class AuthorRegion {
                 return;
             }
 
-            if (!Settings.SHOW_AUTHOR_REGION.get() || !FeedVisibility.isOnFeed(activity)) {
+            boolean wantsRegion = Settings.SHOW_AUTHOR_REGION.get();
+            boolean wantsHandle = Settings.SHOW_AUTHOR_HANDLE.get();
+            if ((!wantsRegion && !wantsHandle) || !FeedVisibility.isOnFeed(activity)) {
                 restore();
                 return;
             }
 
-            // Resolving the region first keeps the view tree search off the layout path
-            // for every video that has no country to show.
-            String region = region();
-            if (region == null) {
+            // Resolving the text first keeps the view tree search off the layout path for
+            // every video that has nothing to show.
+            String region = wantsRegion ? region() : null;
+            String handle = wantsHandle ? handle() : null;
+            if (region == null && handle == null) {
                 restore();
                 return;
             }
 
-            decorate(findName(activity.findViewById(android.R.id.content)), region);
+            decorate(findName(activity.findViewById(android.R.id.content)), handle, region);
         } catch (Throwable ex) {
             Logger.printException(() -> "Could not show the author region", ex);
         }
@@ -142,38 +148,57 @@ public final class AuthorRegion {
     }
 
     /**
-     * Appends the country once. TikTok rewrites the row's text on every bind, so whatever
-     * is read here is its own text unless this already ran against the same view.
+     * Writes the row once. The handle replaces the display name; the country is appended
+     * after whichever of the two is showing. TikTok rewrites the row's text on every bind,
+     * so whatever is read here is its own text unless this already ran against the view.
      */
-    static void decorate(TextView name, String region) {
-        if (name == null || region == null) {
+    static void decorate(TextView name, String handle, String region) {
+        if (name == null || (handle == null && region == null)) {
             restore();
             return;
         }
 
-        String suffix = SEPARATOR + region;
         CharSequence current = name.getText();
-        if (name == decoratedName.get() && current != null && current.toString().endsWith(suffix)) {
-            // Already carrying this country. Every layout pass lands here.
-            return;
+        CharSequence written = decoratedText;
+        boolean ours = name == decoratedName.get() && current != null && written != null
+                && current.toString().equals(written.toString());
+
+        if (ours) {
+            CharSequence settled = build(originalName, handle, region);
+            if (settled != null && settled.toString().equals(current.toString())) {
+                // Already saying this. Every layout pass lands here.
+                return;
+            }
         }
 
-        // Put back whatever was decorated before, then read the name again: on a video
-        // change the text read a moment ago was the previous country's, and appending to
-        // that is how a row ends up reading "creator - US - GB".
+        // Put back whatever was written before, then read the name again: on a video
+        // change the text read a moment ago belonged to the previous video, and building
+        // on that is how a row ends up reading "creator - US - GB".
         restore();
 
         CharSequence text = name.getText();
-        if (text == null) {
+        CharSequence updated = build(text, handle, region);
+        if (text == null || updated == null || updated.toString().equals(text.toString())) {
             return;
         }
 
-        // concat rather than string addition, so a styled name keeps its spans.
-        CharSequence updated = TextUtils.concat(text, suffix);
         decoratedName = new WeakReference<>(name);
         originalName = text;
         decoratedText = updated;
         name.setText(updated);
+    }
+
+    /**
+     * What the row should say. The handle replaces the display name outright; the country
+     * follows whichever of the two is showing. concat rather than string addition, so a
+     * styled name keeps its spans.
+     */
+    private static CharSequence build(CharSequence original, String handle, String region) {
+        if (original == null) {
+            return null;
+        }
+        CharSequence text = handle == null ? original : "@" + handle;
+        return region == null ? text : TextUtils.concat(text, SEPARATOR + region);
     }
 
     /** Lets a test drive the ids the activity's resources would otherwise supply. */
@@ -199,6 +224,26 @@ public final class AuthorRegion {
         regionValue = trimmed == null || trimmed.isEmpty() ? null : trimmed.toUpperCase(Locale.ROOT);
         regionAweme = new WeakReference<>(aweme);
         return regionValue;
+    }
+
+    /** The creator's @name for the current video, without the at sign. */
+    private static String handle() {
+        Object aweme = CurrentVideoAuthor.getAweme();
+        if (aweme == null) {
+            handleAweme = new WeakReference<>(null);
+            handleValue = null;
+            return null;
+        }
+        if (aweme == handleAweme.get()) {
+            return handleValue;
+        }
+
+        Object author = Reflect.property(aweme, "getAuthor", "author");
+        String unique = Reflect.string(author, "getUniqueId", "uniqueId");
+        String trimmed = unique == null ? null : unique.trim();
+        handleValue = trimmed == null || trimmed.isEmpty() ? null : trimmed;
+        handleAweme = new WeakReference<>(aweme);
+        return handleValue;
     }
 
     static void restore() {

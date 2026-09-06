@@ -111,6 +111,12 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
                     "Show the country a video was posted from next to the creator's name.",
                     Settings.SHOW_AUTHOR_REGION
             ));
+            addPreference(new TogglePreference(
+                    context,
+                    "Show the handle instead of the name",
+                    "Show @username beside a video instead of the display name the creator chose.",
+                    Settings.SHOW_AUTHOR_HANDLE
+            ));
         }
         if (SettingsStatus.videoOverlaysEnabled) {
             addPreference(new TogglePreference(

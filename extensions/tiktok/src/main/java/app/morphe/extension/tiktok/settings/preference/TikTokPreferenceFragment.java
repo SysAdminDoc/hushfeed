@@ -314,6 +314,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     SettingsStatus.confirmInteractionsEnabled && Settings.CONFIRM_LIKE.get(),
                     SettingsStatus.sensitiveWarningsEnabled && Settings.HIDE_SENSITIVE_WARNINGS.get(),
                     SettingsStatus.authorRegionEnabled && Settings.SHOW_AUTHOR_REGION.get(),
+                    SettingsStatus.authorRegionEnabled && Settings.SHOW_AUTHOR_HANDLE.get(),
                     SettingsStatus.videoOverlaysEnabled && Settings.HIDE_FEED_CAPTION.get(),
                     SettingsStatus.videoOverlaysEnabled && Settings.HIDE_FEED_MUSIC.get(),
                     SettingsStatus.videoOverlaysEnabled && Settings.HIDE_FEED_ACTION_BAR.get(),

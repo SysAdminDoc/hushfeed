@@ -236,6 +236,8 @@
     <string name="mtp_50a0fce9">Verhindern, dass langes Drücken auf „Teilen“ TikToks schnelles Teilen öffnet.</string>
     <!-- Days to remember a video. Zero removes the age limit. History keeps at most 10,000 videos. -->
     <string name="mtp_50c3929b">Tage, die ein Video gemerkt wird. Null hebt die Altersgrenze auf. Der Verlauf behält höchstens 10.000 Videos.</string>
+    <!-- Show the handle instead of the name -->
+    <string name="mtp_51327e7a">@Namen statt Anzeigenamen zeigen</string>
     <!-- Cancel -->
     <string name="mtp_51bac044">Abbrechen</string>
     <!-- Save every photo in the post directly from its source URL, without rendering it again. -->
@@ -688,6 +690,8 @@
     <string name="mtp_f2875f6d">Vor dem Folgen bestätigen</string>
     <!-- Hide the friend recommendation card and the other cards TikTok slots between videos. -->
     <string name="mtp_f28d96a3">Die Freundesvorschlagskarte und die anderen Karten ausblenden, die TikTok zwischen Videos einschiebt.</string>
+    <!-- Show @username beside a video instead of the display name the creator chose. -->
+    <string name="mtp_f3515316">Zeigt @Benutzername neben einem Video statt des Anzeigenamens, den die Person gewählt hat.</string>
     <!-- Tap the like heart twice within four seconds. Removing a like stays immediate. -->
     <string name="mtp_f49efa06">Tippe das Like-Herz innerhalb von vier Sekunden zweimal an. Das Entfernen eines Likes bleibt sofort.</string>
     <!-- Save -->
