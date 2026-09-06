@@ -37,6 +37,7 @@
     <string name="mtp_14e1145a">Hide the Tako AI feed bubble above the profile button.</string>
     <string name="mtp_1544e17c">Enable diagnostic logging</string>
     <string name="mtp_154a9bbd">Confirm before liking</string>
+    <string name="mtp_159119d0">Hide the music disc</string>
     <string name="mtp_15ce49f6">sp</string>
     <string name="mtp_1617dca9">Hide Tako AI</string>
     <string name="mtp_16bdc046">Hide CAPTCHA popups</string>
@@ -55,6 +56,7 @@
     <string name="mtp_229ff09b">Video download quality</string>
     <string name="mtp_22f8d1a0">Add a button beside the block control to send feedback about the current video.</string>
     <string name="mtp_23085188">Feed navigation</string>
+    <string name="mtp_231f07e5">Hide the like button</string>
     <string name="mtp_2470de02">Clear</string>
     <string name="mtp_2586a1b2">Source code and releases</string>
     <string name="mtp_25b18284">Could not open settings section</string>
@@ -111,13 +113,16 @@
     <string name="mtp_481c2c5e">Window width needed to enable the layout. Restart after changing.</string>
     <string name="mtp_482cfe09">Photo destination</string>
     <string name="mtp_4844952c">Black</string>
+    <string name="mtp_48c563a4">Hide the speech bubble and its count in the right column.</string>
     <string name="mtp_4b6647b0">Resume videos after scrolling</string>
     <string name="mtp_4be0d7d6">Ghost mode</string>
     <string name="mtp_4d374f53">Hide sharing apps</string>
     <string name="mtp_4d498233">Photo filename</string>
     <string name="mtp_4eb604d9">Comma separated words or phrases. Matching captions are skipped. Case doesn\'t matter.</string>
+    <string name="mtp_4eeb97bd">Hide the favourite button</string>
     <string name="mtp_50a0fce9">Keep long-pressing Share from opening TikTok\'s quick-share interaction.</string>
     <string name="mtp_50c3929b">Days to remember a video. Zero removes the age limit. History keeps at most 10,000 videos.</string>
+    <string name="mtp_50f87684">Hide the share button</string>
     <string name="mtp_51327e7a">Show the handle instead of the name</string>
     <string name="mtp_51bac044">Cancel</string>
     <string name="mtp_51edfe45">Save every photo in the post directly from its source URL, without rendering it again.</string>
@@ -184,6 +189,7 @@
     <string name="mtp_81d49b36">Hide tabs TikTok adds later unless you allow them.</string>
     <string name="mtp_82887b09">Not interested button</string>
     <string name="mtp_83006131">Caption background</string>
+    <string name="mtp_8357da97">Hide the comments button</string>
     <string name="mtp_83cb0298">People, shortcuts and sending controls</string>
     <string name="mtp_844cf862">Operator name</string>
     <string name="mtp_84bc2c9c">Filter offline fallback videos</string>
@@ -239,6 +245,7 @@
     <string name="mtp_a80b24b3">Hide bottom tabs TikTok adds later unless you allow them.</string>
     <string name="mtp_a83cdea6">Hide verified accounts</string>
     <string name="mtp_a99a545c">About Hushfeed</string>
+    <string name="mtp_aa942864">Hide the bookmark and its count in the right column.</string>
     <string name="mtp_ab42d099">Maximum views per like</string>
     <string name="mtp_ac461220">Comma separated account handles or user ids. These accounts are always skipped.</string>
     <string name="mtp_ad24fc00">Hide image video from feed.</string>
@@ -277,6 +284,7 @@
     <string name="mtp_c62af816">Hide the music line</string>
     <string name="mtp_c6ab25cc">%s on</string>
     <string name="mtp_c719c108">Show TikTok\'s search entry in the Live drawer where supported.</string>
+    <string name="mtp_c7507a45">Hide the spinning record at the bottom of the right column.</string>
     <string name="mtp_c7903c14">Hide videos that belong to a paid Series.</string>
     <string name="mtp_c7bbb260">Hide the description under the creator\'s name on the feed.</string>
     <string name="mtp_c7c15a60">Keep automatic advance enabled. Pauses and open dialogs still stop scrolling. Restart after enabling it; use this switch to turn it off.</string>
@@ -285,6 +293,7 @@
     <string name="mtp_c9822616">Downloads</string>
     <string name="mtp_ca39d625">Add a block button to the video player that blocks the account that posted the current video in one tap. An undo action is shown after each block.</string>
     <string name="mtp_ca99e6ad">Filter comments by keyword</string>
+    <string name="mtp_cd086375">Hide the avatar and follow button</string>
     <string name="mtp_cd3a25cd">Skip videos marked as using promotional music.</string>
     <string name="mtp_cdb09fad">Copy a quick report or save the full report as a file.</string>
     <string name="mtp_cdfc6e09">Back</string>
@@ -300,6 +309,7 @@
     <string name="mtp_d2c0aec0">Close</string>
     <string name="mtp_d3ec8f59">Long press</string>
     <string name="mtp_d540292a">Disable long-press quick share</string>
+    <string name="mtp_d5a602a8">Hide the creator\'s picture and the plus button at the top of the right column.</string>
     <string name="mtp_d5d0cc9a">Maximum</string>
     <string name="mtp_d6232cd5">Minimum</string>
     <string name="mtp_d7e70141">Sharing, playback, and gestures.</string>
@@ -318,6 +328,7 @@
     <string name="mtp_e1779296">Hide image video</string>
     <string name="mtp_e22b29c7">Hide the Archive row.</string>
     <string name="mtp_e263a49d">Remove the actions row from the share sheet.</string>
+    <string name="mtp_e3295d0d">Hide the arrow and its count in the right column.</string>
     <string name="mtp_e3515af9">Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working.</string>
     <string name="mtp_e462ae24">Sticker destination</string>
     <string name="mtp_e4734450">Save the latest available TikTok crash report for diagnostic export.</string>
@@ -364,6 +375,7 @@
     <string name="mtp_fac17af0">Restore defaults immediately. Your current settings are kept for Undo.</string>
     <string name="mtp_fb6c8ed4">Backups and troubleshooting</string>
     <string name="mtp_fb91d6b3">Automatic</string>
+    <string name="mtp_fbe5ed2a">Hide the heart and its count in the right column.</string>
     <string name="mtp_fc01767d">The minimum or maximum likes of a video to show.</string>
     <string name="mtp_fcf580da">Stop TikTok reporting that you viewed a story or a profile, that you are typing. Online status is unchanged. It cannot undo what the server has already recorded.</string>
     <string name="mtp_fd2d372a">Copy report</string>

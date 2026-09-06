@@ -140,6 +140,42 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
             ));
             addPreference(new TogglePreference(
                     context,
+                    "Hide the avatar and follow button",
+                    "Hide the creator's picture and the plus button at the top of the right column.",
+                    Settings.HIDE_RAIL_FOLLOW
+            ));
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide the like button",
+                    "Hide the heart and its count in the right column.",
+                    Settings.HIDE_RAIL_LIKE
+            ));
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide the comments button",
+                    "Hide the speech bubble and its count in the right column.",
+                    Settings.HIDE_RAIL_COMMENTS
+            ));
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide the favourite button",
+                    "Hide the bookmark and its count in the right column.",
+                    Settings.HIDE_RAIL_FAVOURITE
+            ));
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide the music disc",
+                    "Hide the spinning record at the bottom of the right column.",
+                    Settings.HIDE_RAIL_MUSIC
+            ));
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide the share button",
+                    "Hide the arrow and its count in the right column.",
+                    Settings.HIDE_RAIL_SHARE
+            ));
+            addPreference(new TogglePreference(
+                    context,
                     "Hide surveys",
                     "Hide the question cards TikTok slides over a video near its end.",
                     Settings.HIDE_FEED_SURVEYS

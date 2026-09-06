@@ -74,6 +74,8 @@
     <string name="mtp_1544e17c">Diagnoseprotokoll einschalten</string>
     <!-- Confirm before liking -->
     <string name="mtp_154a9bbd">Vor dem Liken bestätigen</string>
+    <!-- Hide the music disc -->
+    <string name="mtp_159119d0">Musikplatte ausblenden</string>
     <!-- sp -->
     <string name="mtp_15ce49f6">sp</string>
     <!-- Hide Tako AI -->
@@ -110,6 +112,8 @@
     <string name="mtp_22f8d1a0">Neben der Blockieren-Schaltfläche eine Schaltfläche hinzufügen, um Feedback zum aktuellen Video zu senden.</string>
     <!-- Feed navigation -->
     <string name="mtp_23085188">Feed-Navigation</string>
+    <!-- Hide the like button -->
+    <string name="mtp_231f07e5">Like-Button ausblenden</string>
     <!-- Clear -->
     <string name="mtp_2470de02">Löschen</string>
     <!-- Source code and releases -->
@@ -222,6 +226,8 @@
     <string name="mtp_482cfe09">Speicherort für Fotos</string>
     <!-- Black -->
     <string name="mtp_4844952c">Schwarz</string>
+    <!-- Hide the speech bubble and its count in the right column. -->
+    <string name="mtp_48c563a4">Sprechblase und Zähler in der rechten Spalte ausblenden</string>
     <!-- Resume videos after scrolling -->
     <string name="mtp_4b6647b0">Videos nach dem Scrollen fortsetzen</string>
     <!-- Ghost mode -->
@@ -232,10 +238,14 @@
     <string name="mtp_4d498233">Dateiname für Fotos</string>
     <!-- Comma separated words or phrases. Matching captions are skipped. Case doesn't matter. -->
     <string name="mtp_4eb604d9">Wörter oder Ausdrücke, durch Kommas getrennt. Passende Beschreibungen werden übersprungen. Groß- und Kleinschreibung spielt keine Rolle.</string>
+    <!-- Hide the favourite button -->
+    <string name="mtp_4eeb97bd">Favoriten-Button ausblenden</string>
     <!-- Keep long-pressing Share from opening TikTok's quick-share interaction. -->
     <string name="mtp_50a0fce9">Verhindern, dass langes Drücken auf „Teilen“ TikToks schnelles Teilen öffnet.</string>
     <!-- Days to remember a video. Zero removes the age limit. History keeps at most 10,000 videos. -->
     <string name="mtp_50c3929b">Tage, die ein Video gemerkt wird. Null hebt die Altersgrenze auf. Der Verlauf behält höchstens 10.000 Videos.</string>
+    <!-- Hide the share button -->
+    <string name="mtp_50f87684">Teilen-Button ausblenden</string>
     <!-- Show the handle instead of the name -->
     <string name="mtp_51327e7a">@Namen statt Anzeigenamen zeigen</string>
     <!-- Cancel -->
@@ -368,6 +378,8 @@
     <string name="mtp_82887b09">Schaltfläche „Kein Interesse“</string>
     <!-- Caption background -->
     <string name="mtp_83006131">Untertitel-Hintergrund</string>
+    <!-- Hide the comments button -->
+    <string name="mtp_8357da97">Kommentar-Button ausblenden</string>
     <!-- People, shortcuts and sending controls -->
     <string name="mtp_83cb0298">Kontakte, Verknüpfungen und Versandoptionen</string>
     <!-- Operator name -->
@@ -478,6 +490,8 @@
     <string name="mtp_a83cdea6">Verifizierte Konten ausblenden</string>
     <!-- About Hushfeed -->
     <string name="mtp_a99a545c">Über Hushfeed</string>
+    <!-- Hide the bookmark and its count in the right column. -->
+    <string name="mtp_aa942864">Lesezeichen und Zähler in der rechten Spalte ausblenden</string>
     <!-- Maximum views per like -->
     <string name="mtp_ab42d099">Maximale Aufrufe pro Like</string>
     <!-- Comma separated account handles or user ids. These accounts are always skipped. -->
@@ -554,6 +568,8 @@
     <string name="mtp_c6ab25cc">%s aktiv</string>
     <!-- Show TikTok's search entry in the Live drawer where supported. -->
     <string name="mtp_c719c108">TikToks Sucheingang im Live-Bereich anzeigen, wo das unterstützt wird.</string>
+    <!-- Hide the spinning record at the bottom of the right column. -->
+    <string name="mtp_c7507a45">Drehende Platte unten in der rechten Spalte ausblenden</string>
     <!-- Hide videos that belong to a paid Series. -->
     <string name="mtp_c7903c14">Videos ausblenden, die zu einer bezahlten Serie gehören.</string>
     <!-- Hide the description under the creator's name on the feed. -->
@@ -570,6 +586,8 @@
     <string name="mtp_ca39d625">Dem Videoplayer eine Schaltfläche hinzufügen, die das Konto hinter dem aktuellen Video mit einem Tippen blockiert. Nach jeder Blockierung wird eine Rückgängig-Aktion angezeigt.</string>
     <!-- Filter comments by keyword -->
     <string name="mtp_ca99e6ad">Kommentare nach Stichwort filtern</string>
+    <!-- Hide the avatar and follow button -->
+    <string name="mtp_cd086375">Bild und Folgen-Button ausblenden</string>
     <!-- Skip videos marked as using promotional music. -->
     <string name="mtp_cd3a25cd">Videos überspringen, die als Videos mit Werbemusik gekennzeichnet sind.</string>
     <!-- Copy a quick report or save the full report as a file. -->
@@ -600,6 +618,8 @@
     <string name="mtp_d3ec8f59">Langes Drücken</string>
     <!-- Disable long-press quick share -->
     <string name="mtp_d540292a">Schnelles Teilen bei langem Drücken abschalten</string>
+    <!-- Hide the creator's picture and the plus button at the top of the right column. -->
+    <string name="mtp_d5a602a8">Bild und Plus-Button oben in der rechten Spalte ausblenden</string>
     <!-- Maximum -->
     <string name="mtp_d5d0cc9a">Maximum</string>
     <!-- Minimum -->
@@ -636,6 +656,8 @@
     <string name="mtp_e22b29c7">Die Zeile „Archiv“ ausblenden.</string>
     <!-- Remove the actions row from the share sheet. -->
     <string name="mtp_e263a49d">Die Aktionszeile aus dem Teilen-Menü entfernen.</string>
+    <!-- Hide the arrow and its count in the right column. -->
+    <string name="mtp_e3295d0d">Pfeil und Zähler in der rechten Spalte ausblenden</string>
     <!-- Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working. -->
     <string name="mtp_e3515af9">Hushfeed hat ein TikTok-Rätsel ausgeblendet. Schalte Rätsel-Dialoge ausblenden aus, wenn etwas nicht mehr funktioniert.</string>
     <!-- Sticker destination -->
@@ -728,6 +750,8 @@
     <string name="mtp_fb6c8ed4">Sicherungen und Fehlerdiagnose</string>
     <!-- Automatic -->
     <string name="mtp_fb91d6b3">Automatisch</string>
+    <!-- Hide the heart and its count in the right column. -->
+    <string name="mtp_fbe5ed2a">Herz und Zähler in der rechten Spalte ausblenden</string>
     <!-- The minimum or maximum likes of a video to show. -->
     <string name="mtp_fc01767d">Die Mindest- oder Höchstzahl an Likes, die ein Video zum Anzeigen haben darf.</string>
     <!-- Stop TikTok reporting that you viewed a story or a profile, that you are typing. Online status is unchanged. It cannot undo what the server has already recorded. -->

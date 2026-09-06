@@ -157,6 +157,62 @@ public class VideoOverlayHiderTest {
     }
 
     @Test
+    public void eachRailButtonHasItsOwnSwitchInEveryCell() {
+        // The column keeps its six buttons under fixed ids, and the feed keeps the cells on
+        // either side inflated with the same ones.
+        String[] names = {"hvo", "fws", "ehl", "hu9", "p2l", "v9o"};
+        int[] ids = new int[names.length];
+        for (int i = 0; i < names.length; i++) {
+            ids[i] = 0x7f0a0100 + i;
+            VideoOverlayHider.resolveForTests(names[i], ids[i]);
+        }
+        var switches = new app.morphe.extension.shared.settings.BooleanSetting[]{
+                Settings.HIDE_RAIL_FOLLOW, Settings.HIDE_RAIL_LIKE, Settings.HIDE_RAIL_COMMENTS,
+                Settings.HIDE_RAIL_FAVOURITE, Settings.HIDE_RAIL_MUSIC, Settings.HIDE_RAIL_SHARE,
+        };
+
+        try (var controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            Utils.setContext(activity);
+            LinearLayout root = new LinearLayout(activity);
+            View[][] buttons = new View[2][names.length];
+            for (int cell = 0; cell < 2; cell++) {
+                LinearLayout column = new LinearLayout(activity);
+                for (int i = 0; i < names.length; i++) {
+                    buttons[cell][i] = new View(activity);
+                    buttons[cell][i].setId(ids[i]);
+                    column.addView(buttons[cell][i]);
+                }
+                root.addView(column);
+            }
+            activity.setContentView(root);
+
+            for (var setting : switches) setting.save(false);
+
+            for (int target = 0; target < names.length; target++) {
+                switches[target].save(true);
+                VideoOverlayHider.applyTo(activity);
+                for (int cell = 0; cell < 2; cell++) {
+                    for (int i = 0; i < names.length; i++) {
+                        assertEquals(names[i] + " in cell " + cell,
+                                i == target ? View.GONE : View.VISIBLE,
+                                buttons[cell][i].getVisibility());
+                    }
+                }
+                switches[target].save(false);
+            }
+
+            // Everything off puts every button back.
+            VideoOverlayHider.applyTo(activity);
+            for (int cell = 0; cell < 2; cell++) {
+                for (int i = 0; i < names.length; i++) {
+                    assertEquals(names[i], View.VISIBLE, buttons[cell][i].getVisibility());
+                }
+            }
+        }
+    }
+
+    @Test
     public void clearDisplayKeepsTheTabStripAwayUntilItEnds() {
         int tabStripId = 0x7f0a0011;
         VideoOverlayHider.resolveForTests("twc", tabStripId);

@@ -40,6 +40,8 @@ import java.util.Map;
  *   id/ezp                the root of every feed survey card; the cell's survey ViewStubs
  *                         carry no inflatedId, so the card keeps its own layout id
  *   id/twc                the strip across the top holding For You, Following and the rest
+ *   id/hvo id/fws id/ehl  the six id/eoh buttons inside id/kzj, in order: avatar and
+ *   id/hu9 id/p2l id/v9o  follow, like, comments, favourite, music disc, share
  * </pre>
  * The first two belong to TikTok's search dynamic feature module, so they resolve under
  * that module's package name rather than the app's. Views are re-hidden on every layout
@@ -57,6 +59,8 @@ public final class VideoOverlayHider {
     private static final String ACTION_BAR_ID = "kzj";
     private static final String SURVEY_ID = "ezp";
     private static final String TAB_STRIP_ID = "twc";
+    /** The six buttons inside the action column, in the order they are stacked. */
+    private static final String[] RAIL_BUTTON_IDS = {"hvo", "fws", "ehl", "hu9", "p2l", "v9o"};
 
     private static final int LEGACY_STATUS_BAR_FLAGS = View.SYSTEM_UI_FLAG_FULLSCREEN
             | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -155,16 +159,31 @@ public final class VideoOverlayHider {
             // the first swipe. Following the clear state here keeps it away until the tap
             // that ends clear mode, which is what the mode is for.
             boolean tabStrip = Settings.CLEAR_DISPLAY.get();
-            if (caption || music || actionBar || surveys || tabStrip || !HIDDEN_HERE.isEmpty()) {
+            boolean[] rail = railButtonsWanted();
+            boolean anyRail = false;
+            for (boolean one : rail) {
+                anyRail |= one;
+            }
+            if (caption || music || actionBar || surveys || tabStrip || anyRail
+                    || !HIDDEN_HERE.isEmpty()) {
                 ViewGroup root = activity.findViewById(android.R.id.content);
-                int[] ids = {
-                        identifier(activity, APP_PACKAGE, CAPTION_ID),
-                        identifier(activity, APP_PACKAGE, MUSIC_ID),
-                        identifier(activity, APP_PACKAGE, ACTION_BAR_ID),
-                        identifier(activity, APP_PACKAGE, SURVEY_ID),
-                        identifier(activity, APP_PACKAGE, TAB_STRIP_ID),
-                };
-                boolean[] hidden = {caption, music, actionBar, surveys, tabStrip};
+                int[] ids = new int[5 + RAIL_BUTTON_IDS.length];
+                boolean[] hidden = new boolean[ids.length];
+                ids[0] = identifier(activity, APP_PACKAGE, CAPTION_ID);
+                ids[1] = identifier(activity, APP_PACKAGE, MUSIC_ID);
+                ids[2] = identifier(activity, APP_PACKAGE, ACTION_BAR_ID);
+                ids[3] = identifier(activity, APP_PACKAGE, SURVEY_ID);
+                ids[4] = identifier(activity, APP_PACKAGE, TAB_STRIP_ID);
+                hidden[0] = caption;
+                hidden[1] = music;
+                hidden[2] = actionBar;
+                hidden[3] = surveys;
+                hidden[4] = tabStrip;
+                for (int i = 0; i < RAIL_BUTTON_IDS.length; i++) {
+                    ids[5 + i] = identifier(activity, APP_PACKAGE, RAIL_BUTTON_IDS[i]);
+                    hidden[5 + i] = rail[i];
+                }
+
                 List<List<View>> found = viewsWithIds(root, ids);
                 for (int i = 0; i < ids.length; i++) {
                     for (View view : found.get(i)) {
@@ -177,6 +196,18 @@ public final class VideoOverlayHider {
         } catch (Throwable ex) {
             Logger.printException(() -> "Video overlay hider failed", ex);
         }
+    }
+
+    /** One flag per button in {@link #RAIL_BUTTON_IDS}, in the same order. */
+    static boolean[] railButtonsWanted() {
+        return new boolean[]{
+                Settings.HIDE_RAIL_FOLLOW.get(),
+                Settings.HIDE_RAIL_LIKE.get(),
+                Settings.HIDE_RAIL_COMMENTS.get(),
+                Settings.HIDE_RAIL_FAVOURITE.get(),
+                Settings.HIDE_RAIL_MUSIC.get(),
+                Settings.HIDE_RAIL_SHARE.get(),
+        };
     }
 
     private static void hide(Activity activity, String packageName, String name) {
