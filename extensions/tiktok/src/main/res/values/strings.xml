@@ -266,6 +266,7 @@
     <string name="mtp_c0bfb038">Min/Max views</string>
     <string name="mtp_c137325a">Blocked sound ids</string>
     <string name="mtp_c152d9c7">For You</string>
+    <string name="mtp_c15c6726">TikTok refused the follow: %1$s</string>
     <string name="mtp_c1652cc3">Hide activity</string>
     <string name="mtp_c2b2c4eb">Hide story from feed.</string>
     <string name="mtp_c4bd9416">Back up settings</string>
@@ -319,6 +320,7 @@
     <string name="mtp_e4828489">Hide feed follow button</string>
     <string name="mtp_e51b58aa">Hide livestreams</string>
     <string name="mtp_e60a17b2">Automatically translates loaded comment batches using TikTok\'s translation system.</string>
+    <string name="mtp_e68cd348">code %1$s</string>
     <string name="mtp_e72346b1">Open comments</string>
     <string name="mtp_e7add950">Show where a video was posted</string>
     <string name="mtp_e7e449c8">Settings saved. Restart TikTok to apply all changes.</string>
@@ -330,6 +332,7 @@
     <string name="mtp_ebe4fc66">days</string>
     <string name="mtp_ebfa9514">Keep holding Like from opening TikTok\'s repost action.</string>
     <string name="mtp_ec31672e">Custom SIM details</string>
+    <string name="mtp_eced77e7">A hidden puzzle may be the cause.</string>
     <string name="mtp_edc735f7">Hide the add people icon in the Inbox header.</string>
     <string name="mtp_edfabd68">Feature Gate Lab</string>
     <string name="mtp_efaa1484">Always show publish date</string>

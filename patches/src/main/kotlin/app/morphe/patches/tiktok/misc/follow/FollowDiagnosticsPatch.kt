@@ -32,9 +32,11 @@ private data class FollowCallPatch(
 )
 
 @Suppress("unused")
-private val followDiagnosticsPatch = bytecodePatch(
+val followDiagnosticsPatch = bytecodePatch(
     name = "Follow diagnostics",
-    description = "Adds debug-only logs around TikTok follow requests to help diagnose follow actions that do not persist. Supports TikTok 46.2.3.",
+    description = "Reads what the server said about a follow. A follow TikTok turns down comes " +
+        "back looking like a success, so this reports the refusal and its reason once per session " +
+        "and, with diagnostic logging on, writes the whole exchange to the report. Supports TikTok 46.2.3.",
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)

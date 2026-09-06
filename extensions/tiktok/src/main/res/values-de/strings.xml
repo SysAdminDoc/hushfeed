@@ -532,6 +532,8 @@
     <string name="mtp_c137325a">Gesperrte Sound-IDs</string>
     <!-- For You -->
     <string name="mtp_c152d9c7">Für dich</string>
+    <!-- TikTok refused the follow: %1$s -->
+    <string name="mtp_c15c6726">TikTok hat das Folgen abgelehnt: %1$s</string>
     <!-- Hide activity -->
     <string name="mtp_c1652cc3">Aktivität ausblenden</string>
     <!-- Hide story from feed. -->
@@ -638,6 +640,8 @@
     <string name="mtp_e51b58aa">Livestreams ausblenden</string>
     <!-- Automatically translates loaded comment batches using TikTok's translation system. -->
     <string name="mtp_e60a17b2">Übersetzt geladene Kommentare automatisch über TikToks Übersetzungssystem.</string>
+    <!-- code %1$s -->
+    <string name="mtp_e68cd348">Code %1$s</string>
     <!-- Open comments -->
     <string name="mtp_e72346b1">Kommentare öffnen</string>
     <!-- Show where a video was posted -->
@@ -660,6 +664,8 @@
     <string name="mtp_ebfa9514">Verhindern, dass Halten von „Gefällt mir“ TikToks Repost-Aktion öffnet.</string>
     <!-- Custom SIM details -->
     <string name="mtp_ec31672e">Eigene SIM-Angaben</string>
+    <!-- A hidden puzzle may be the cause. -->
+    <string name="mtp_eced77e7">Ein ausgeblendetes Rätsel kann die Ursache sein.</string>
     <!-- Hide the add people icon in the Inbox header. -->
     <string name="mtp_edc735f7">Das Symbol zum Hinzufügen von Personen in der Kopfzeile des Posteingangs ausblenden.</string>
     <!-- Feature Gate Lab -->

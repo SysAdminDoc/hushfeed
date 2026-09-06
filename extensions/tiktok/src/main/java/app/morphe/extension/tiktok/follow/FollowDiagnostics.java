@@ -13,7 +13,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.BaseSettings;
+import app.morphe.extension.tiktok.featurecontrols.CaptchaGate;
+import app.morphe.extension.tiktok.settings.L10n;
 import app.morphe.extension.tiktok.settings.Settings;
 
 @SuppressWarnings("unused")
@@ -46,6 +49,9 @@ public final class FollowDiagnostics {
         String bodyFollowStatus = "unknown";
         String bodyFollowerStatus = "unknown";
         String bodyIsFollowSuccess = "unknown";
+        String statusCode = FollowVerdict.UNKNOWN;
+        String statusMsg = FollowVerdict.UNKNOWN;
+        String riskCheck = "none";
         final long createdAtMs = System.currentTimeMillis();
 
         FollowRequestContext(int id, String path) {
@@ -79,6 +85,7 @@ public final class FollowDiagnostics {
     }
 
     private static volatile FollowRequestContext recentDirectContext;
+    private static volatile boolean warnedAboutRefusedFollow;
 
     public static void logSimpleFollowRequest(int action, String uid, String secUid) {
         if (!shouldLog()) return;
@@ -283,9 +290,14 @@ public final class FollowDiagnostics {
     public static void logParsedResponse(Object request, Object response) {
         String followPath = followPath(request);
         if (followPath != null) {
-            if (!reserveNetworkEvent()) return;
             final String finalPath = followPath;
             FollowRequestContext context = contextForRequest(request, finalPath);
+            // The verdict is read whether or not logging is on: a refused follow is the
+            // thing users report, and it looks like nothing happened at all.
+            readServerVerdict(response, context);
+            warnAboutRefusedFollowOnce(context);
+
+            if (!reserveNetworkEvent()) return;
             followReadbackWindowUntil = System.currentTimeMillis() + READBACK_WINDOW_MS;
             activeReadbackContext = context;
 
@@ -414,24 +426,76 @@ public final class FollowDiagnostics {
                 + " errorCode=" + invokeValue(followStatus, "getErrorCode");
     }
 
-    private static String describeParsedResponse(Object response, FollowRequestContext context) {
-        if (response == null) return "response=null";
+    /**
+     * Fills the context with what the server actually said. A refused follow comes back as an
+     * ordinary success carrying a status code in the body, so this reads that code and message
+     * and notes whether a risk check was hidden just before it.
+     */
+    private static void readServerVerdict(Object response, FollowRequestContext context) {
+        if (response == null) return;
 
         Object body = readField(response, "LIZIZ");
-        Object rawResponse = readField(response, "LIZ");
         context.responseSuccess = invokeValue(response, "LIZJ");
         context.responseCode = invokeValue(response, "LIZ");
         context.bodyFollowStatus = describeSimpleValue(firstPresentValue(body, "getFollowStatus", "followStatus"));
         context.bodyFollowerStatus = describeSimpleValue(firstPresentValue(body, "getFollowerStatus", "followerStatus"));
         context.bodyIsFollowSuccess = describeSimpleValue(firstPresentValue(body, "isFollowSuccess", "getFollowSuccess", "isFollow_success", "isFollowSuccess"));
 
+        FollowVerdict verdict = FollowVerdict.of(body);
+        context.statusCode = verdict.statusCode;
+        context.statusMsg = safeShort(verdict.statusMsg);
+
+        String suppressed = CaptchaGate.recentlySuppressedCheckId();
+        context.riskCheck = suppressed == null ? "none" : safeShort(suppressed);
+    }
+
+    private static String describeParsedResponse(Object response, FollowRequestContext context) {
+        if (response == null) return "response=null";
+
+        Object body = readField(response, "LIZIZ");
+        Object rawResponse = readField(response, "LIZ");
+
         return "responseClass=" + response.getClass().getName()
                 + " responseSuccess=" + context.responseSuccess
                 + " responseCode=" + context.responseCode
+                + " status_code=" + context.statusCode
+                + " status_msg=" + context.statusMsg
+                + " riskCheck=" + context.riskCheck
                 + " bodyClass=" + className(body)
                 + " bodyFields=" + describeObjectFields(body)
                 + " rawClass=" + className(rawResponse)
                 + " rawFields=" + describeObjectFields(rawResponse);
+    }
+
+    /** True only when the server said no in a way that cannot be read as anything else. */
+    private static boolean followWasRefused(FollowRequestContext context) {
+        boolean refusedByCode = !FollowVerdict.UNKNOWN.equals(context.statusCode)
+                && !"0".equals(context.statusCode);
+        return refusedByCode || "false".equals(context.bodyIsFollowSuccess);
+    }
+
+    /**
+     * A refused follow leaves the button looking as though it worked, so the first one of a
+     * session says what happened. Once only: the same refusal repeats on every retry.
+     */
+    private static void warnAboutRefusedFollowOnce(FollowRequestContext context) {
+        if (warnedAboutRefusedFollow || !followWasRefused(context)) return;
+        warnedAboutRefusedFollow = true;
+
+        String reason = FollowVerdict.UNKNOWN.equals(context.statusMsg)
+                ? L10n.f("code %1$s", context.statusCode)
+                : context.statusMsg;
+        String message = L10n.f("TikTok refused the follow: %1$s", reason);
+        if (!"none".equals(context.riskCheck)) {
+            message += " " + L10n.t("A hidden puzzle may be the cause.");
+        }
+        Utils.showToastLong(message);
+        Logger.printInfo(() -> "[Morphe TikTok FollowProbe] refused"
+                + " " + context.summary()
+                + " path=" + context.path
+                + " status_code=" + context.statusCode
+                + " status_msg=" + context.statusMsg
+                + " riskCheck=" + context.riskCheck);
     }
 
     private static String describeReadbackResponse(Object response, FollowRequestContext context) {
@@ -673,7 +737,7 @@ public final class FollowDiagnostics {
         if (context == null) return "unknown";
         if (!"true".equals(context.responseSuccess)) return "response_not_success";
         if (!"200".equals(context.responseCode)) return "http_" + safeShort(context.responseCode);
-        if ("false".equals(context.bodyIsFollowSuccess)) return "body_follow_success_false";
+        if (followWasRefused(context)) return "server_refused_" + context.statusCode;
         if ("unknown".equals(context.bodyFollowStatus) || "null".equals(context.bodyFollowStatus)) return "body_missing_follow_status";
         return "server_accept_" + context.bodyFollowStatus;
     }

@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Follow diagnostics ships. The patch was in the tree but hidden, so nothing built it, which is why nobody could attribute a follow that quietly failed. It now reads the server's `status_code` and `status_msg` off the answer, says once per session when TikTok refused a follow and why, notes whether a puzzle was hidden just before, and writes the whole exchange to the diagnostic report when logging is on.
+
 * Hide CAPTCHA popups no longer hides a puzzle the server raised over a follow, like, comment, repost or story action. Those puzzles gate the action behind them, so hiding one made the action fail with nothing on screen. Every risk check is now classified by the request it belongs to, in one place shared by all five hooks, and a hidden check is logged with its id and says so once per session.
 
 ## 0.16.0 (2026-09-06)
