@@ -31,7 +31,8 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
                 || SettingsStatus.hideFeedLiveButtonEnabled
                 || SettingsStatus.hideFeedSearchButtonEnabled
                 || SettingsStatus.hideFeedFollowButtonEnabled
-                || SettingsStatus.hideFeedSaveButtonEnabled;
+                || SettingsStatus.hideFeedSaveButtonEnabled
+                || SettingsStatus.hideSearchSuggestionsEnabled;
     }
 
     @Override

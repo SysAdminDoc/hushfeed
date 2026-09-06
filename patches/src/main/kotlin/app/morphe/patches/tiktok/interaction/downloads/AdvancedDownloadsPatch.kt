@@ -4,7 +4,6 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
@@ -56,8 +55,10 @@ private object StoryPlayAreaViewFingerprint : Fingerprint(
 )
 
 /**
- * The play area is handed the story it is about to show. Two methods take that shape and the
- * names are obfuscated, so both are hooked: whichever runs, the story is recorded.
+ * The play area is handed a story and the position it belongs to. Two methods take that shape,
+ * both obfuscated, and both are hooked. The component is passed along with the story because the
+ * viewer binds the pages either side of the one on screen: without knowing which play area was
+ * told, a press would save whichever story was bound last.
  */
 private object StoryPlayAreaBindFingerprint : Fingerprint(
     definingClass = STORY_PLAY_AREA,
@@ -114,20 +115,19 @@ val advancedDownloadsPatch = bytecodePatch(
 
         StoryPlayAreaViewFingerprint.method.addInstruction(
             0,
-            "invoke-static/range { p1 .. p1 }, ${EXTENSION}StoryDownloads;->" +
-                "attachPlayArea(Landroid/view/View;)V",
+            "invoke-static/range { p0 .. p1 }, ${EXTENSION}StoryDownloads;->" +
+                "attachPlayArea(Ljava/lang/Object;Landroid/view/View;)V",
         )
-        val storyBinds = StoryPlayAreaBindFingerprint.matchAll()
+        StoryPlayAreaBindFingerprint.matchAll()
             .map { it.method }
             .filter { it.implementation != null }
-        if (storyBinds.isEmpty()) throw PatchException("Advanced downloads: no story bind to record from.")
-        storyBinds.forEach { method ->
-            method.addInstruction(
-                0,
-                "invoke-static/range { p2 .. p2 }, ${EXTENSION}StoryDownloads;->" +
-                    "recordStory(Ljava/lang/Object;)V",
-            )
-        }
+            .forEach { method ->
+                method.addInstruction(
+                    0,
+                    "invoke-static/range { p0 .. p2 }, ${EXTENSION}StoryDownloads;->" +
+                        "recordStory(Ljava/lang/Object;ILjava/lang/Object;)V",
+                )
+            }
 
         SettingsStatusLoadFingerprint.method.addInstruction(0,
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableAdvancedDownloads()V")

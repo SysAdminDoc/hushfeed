@@ -1,5 +1,5 @@
 {
-  "version": "v0.17.0",
+  "version": "v0.18.0",
   "appNames": {
     "com.zhiliaoapp.musically": "TikTok"
   },
@@ -1192,7 +1192,7 @@
     },
     {
       "name": "Hide search suggestions",
-      "description": "Hides the suggested searches TikTok offers on the search page before you type. Your own search history is left alone. Supports TikTok 46.2.3.",
+      "description": "Hides the suggested searches TikTok offers on the search page before you type, and stops the page asking for them. Your own search history is left alone. Supports TikTok 46.2.3.",
       "use": false,
       "dependencies": [
         "BytecodePatch"

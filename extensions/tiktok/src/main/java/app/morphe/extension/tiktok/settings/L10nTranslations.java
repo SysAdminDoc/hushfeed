@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(856);
+        Map<String, String> table = new HashMap<>(860);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -730,6 +730,8 @@ public final class L10nTranslations {
                 "Den neuesten verfügbaren TikTok-Absturzbericht für den Diagnose-Export speichern.");
         table.put("Save the sound as well",
                 "Ton ebenfalls speichern");
+        table.put("Saved %1$s of %2$s photos before the story failed",
+                "%1$s von %2$s Fotos gespeichert, dann ist die Story fehlgeschlagen");
         table.put("Saving the story",
                 "Story wird gespeichert");
         table.put("Search and override gate flags",
@@ -790,11 +792,11 @@ public final class L10nTranslations {
                 "Aufgezeichnete LIVE-Übertragungen im Feed überspringen.");
         table.put("Skip videos marked as using promotional music.",
                 "Videos überspringen, die als Videos mit Werbemusik gekennzeichnet sind.");
-        table.put("Skip videos that use a sound blocked with the player's sound button, or named below.",
-                "Videos überspringen, deren Sound über die Sound-Taste im Player gesperrt wurde oder unten aufgeführt ist.");
     }
 
     private static void fillDe6(Map<String, String> table) {
+        table.put("Skip videos that use a sound blocked with the player's sound button, or named below.",
+                "Videos überspringen, deren Sound über die Sound-Taste im Player gesperrt wurde oder unten aufgeführt ist.");
         table.put("Source code and releases",
                 "Quellcode und Versionen");
         table.put("Speed menu choices",
@@ -821,6 +823,8 @@ public final class L10nTranslations {
                 "Videoschleife beenden");
         table.put("Stop videos at the end instead of replaying them.",
                 "Videos am Ende anhalten, statt sie zu wiederholen.");
+        table.put("Storage permission is needed to save a story",
+                "Zum Speichern einer Story wird die Speicherberechtigung gebraucht");
         table.put("Story saved to %1$s",
                 "Story gespeichert unter %1$s");
         table.put("Subtitle language",
@@ -911,13 +915,13 @@ public final class L10nTranslations {
                 "Wartezeit, bevor die Bedienelemente ausgeblendet werden.");
         table.put("WebP, exactly as TikTok sent it",
                 "WebP, genau so wie TikTok es geschickt hat");
+    }
+
+    private static void fillDe7(Map<String, String> table) {
         table.put("Window width needed to enable the layout. Restart after changing.",
                 "Fensterbreite, ab der das Layout aktiv wird. Nach dem Ändern neu starten.");
         table.put("Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.",
                 "Den Ton des Videos daneben als .m4a speichern. Ab Android 10 wird Audio getrennt abgelegt, also landet die Datei unter Music im Ordner mit dem Namen deines Videoordners.");
-    }
-
-    private static void fillDe7(Map<String, String> table) {
         table.put("YOUR EXPERIENCE",
                 "DEIN TIKTOK");
         table.put("code %1$s",
@@ -937,7 +941,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(856);
+        Map<String, String> table = new HashMap<>(860);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1623,6 +1627,8 @@ public final class L10nTranslations {
                 "Simpan laporan mogok TikTok terbaru yang tersedia untuk diekspor sebagai diagnostik.");
         table.put("Save the sound as well",
                 "Simpan suaranya juga");
+        table.put("Saved %1$s of %2$s photos before the story failed",
+                "%1$s dari %2$s foto tersimpan sebelum Story gagal");
         table.put("Saving the story",
                 "Menyimpan Story");
         table.put("Search and override gate flags",
@@ -1683,11 +1689,11 @@ public final class L10nTranslations {
                 "Lewati rekaman siaran LIVE di feed.");
         table.put("Skip videos marked as using promotional music.",
                 "Lewati video yang ditandai memakai musik promosi.");
-        table.put("Skip videos that use a sound blocked with the player's sound button, or named below.",
-                "Lewati video yang memakai suara yang diblokir lewat tombol suara di pemutar, atau yang namanya ada di bawah.");
     }
 
     private static void fillIn6(Map<String, String> table) {
+        table.put("Skip videos that use a sound blocked with the player's sound button, or named below.",
+                "Lewati video yang memakai suara yang diblokir lewat tombol suara di pemutar, atau yang namanya ada di bawah.");
         table.put("Source code and releases",
                 "Kode sumber dan rilis");
         table.put("Speed menu choices",
@@ -1714,6 +1720,8 @@ public final class L10nTranslations {
                 "Hentikan pengulangan video");
         table.put("Stop videos at the end instead of replaying them.",
                 "Hentikan video di akhir, bukan memutarnya ulang.");
+        table.put("Storage permission is needed to save a story",
+                "Izin penyimpanan dibutuhkan untuk menyimpan Story");
         table.put("Story saved to %1$s",
                 "Story disimpan ke %1$s");
         table.put("Subtitle language",
@@ -1804,13 +1812,13 @@ public final class L10nTranslations {
                 "Tunggu sebelum kontrol disembunyikan.");
         table.put("WebP, exactly as TikTok sent it",
                 "WebP, persis seperti yang dikirim TikTok");
+    }
+
+    private static void fillIn7(Map<String, String> table) {
         table.put("Window width needed to enable the layout. Restart after changing.",
                 "Lebar jendela yang dibutuhkan agar tata letak ini aktif. Mulai ulang setelah mengubahnya.");
         table.put("Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.",
                 "Simpan suara video di sebelahnya sebagai .m4a. Android 10 ke atas menyimpan audio secara terpisah, jadi berkasnya masuk ke Music dengan nama folder yang sama seperti folder videomu.");
-    }
-
-    private static void fillIn7(Map<String, String> table) {
         table.put("YOUR EXPERIENCE",
                 "PENGALAMANMU");
         table.put("code %1$s",

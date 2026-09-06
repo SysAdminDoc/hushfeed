@@ -84,13 +84,21 @@ public class ShareUrlSanitizerTest {
         assertEquals("", ShareUrlSanitizer.domain("not a host"));
         assertEquals("", ShareUrlSanitizer.domain("localhost"));
         assertEquals("", ShareUrlSanitizer.domain("vxtiktok.com:8443"));
+        // A query or a fragment in the box would push the rest of the link out of the path and
+        // leave the front page of the host behind, so neither is a host.
+        assertEquals("", ShareUrlSanitizer.domain("vxtiktok.com?a=1"));
+        assertEquals("", ShareUrlSanitizer.domain("vxtiktok.com#x"));
+        assertEquals("", ShareUrlSanitizer.domain("vx\ttiktok.com"));
+        assertEquals("", ShareUrlSanitizer.domain("vx@tiktok.com"));
     }
 
     @Test
     public void anUnusableSettingLeavesTheLinkAsItWas() {
         Utils.setContext(RuntimeEnvironment.getApplication());
-        Settings.CUSTOM_SHARE_DOMAIN.save("not a host");
-        assertEquals("https://www.tiktok.com/@dancer/video/7712345",
-                ShareUrlSanitizer.withCustomDomain("https://www.tiktok.com/@dancer/video/7712345"));
+        for (String unusable : new String[]{"not a host", "vxtiktok.com?a=1", "vxtiktok.com#x", ""}) {
+            Settings.CUSTOM_SHARE_DOMAIN.save(unusable);
+            assertEquals("https://www.tiktok.com/@dancer/video/7712345",
+                    ShareUrlSanitizer.withCustomDomain("https://www.tiktok.com/@dancer/video/7712345"));
+        }
     }
 }

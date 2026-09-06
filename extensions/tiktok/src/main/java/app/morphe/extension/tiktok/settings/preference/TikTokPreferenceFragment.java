@@ -32,6 +32,7 @@ import app.morphe.extension.shared.settings.preference.AbstractPreferenceFragmen
 import app.morphe.extension.tiktok.featuregatelab.FeatureGateLabFragment;
 import app.morphe.extension.tiktok.featuregatelab.FeatureGateLabRuntime;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.share.ShareUrlSanitizer;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.categories.CommentsPreferenceCategory;
 import app.morphe.extension.tiktok.settings.preference.categories.DebugPreferenceCategory;
@@ -301,7 +302,8 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                 || SettingsStatus.hideFeedLiveButtonEnabled
                 || SettingsStatus.hideFeedSearchButtonEnabled
                 || SettingsStatus.hideFeedFollowButtonEnabled
-                || SettingsStatus.hideFeedSaveButtonEnabled) {
+                || SettingsStatus.hideFeedSaveButtonEnabled
+                || SettingsStatus.hideSearchSuggestionsEnabled) {
             addMenu(screen, Section.INTERFACE, SettingsMenuPreference.Icon.LAYOUT, countEnabled(
                     SettingsStatus.subtitleToolsEnabled && Settings.CAPTION_TEXT_SIZE.get() > 0,
                     SettingsStatus.subtitleToolsEnabled && !"default".equals(Settings.CAPTION_BACKGROUND.get()),
@@ -325,6 +327,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     SettingsStatus.videoOverlaysEnabled && Settings.HIDE_RAIL_FAVOURITE.get(),
                     SettingsStatus.videoOverlaysEnabled && Settings.HIDE_RAIL_MUSIC.get(),
                     SettingsStatus.videoOverlaysEnabled && Settings.HIDE_RAIL_SHARE.get(),
+                    SettingsStatus.hideSearchSuggestionsEnabled && Settings.HIDE_SEARCH_SUGGESTIONS.get(),
                     SettingsStatus.videoOverlaysEnabled && Settings.HIDE_RAIL_COUNTS.get(),
                     SettingsStatus.videoOverlaysEnabled && Settings.HIDE_STATUS_BAR.get(),
                     SettingsStatus.videoOverlaysEnabled && Settings.HIDE_VISUAL_SEARCH.get(),
@@ -585,6 +588,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                 SettingsStatus.blockAuthorEnabled && Settings.BLOCK_AUTHOR_BUTTON.get(),
                 SettingsStatus.notInterestedEnabled && Settings.NOT_INTERESTED_BUTTON.get(),
                 BaseSettings.SANITIZE_SHARING_LINKS.get(),
+                !ShareUrlSanitizer.domain(Settings.CUSTOM_SHARE_DOMAIN.get()).isEmpty(),
                 Settings.SHOW_SEEKBAR.get()
         );
         if (SettingsStatus.externalBrowserEnabled && Settings.OPEN_EXTERNAL_LINKS.get()) {

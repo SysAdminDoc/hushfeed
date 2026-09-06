@@ -57,7 +57,7 @@ public final class ShareUrlSanitizer {
     }
 
     /** The setting as a bare host: a scheme, a path or stray spaces around it are all allowed. */
-    static String domain(String configured) {
+    public static String domain(String configured) {
         if (configured == null) return "";
         String host = configured.trim();
         int scheme = host.indexOf("://");
@@ -65,10 +65,17 @@ public final class ShareUrlSanitizer {
         int slash = host.indexOf('/');
         if (slash >= 0) host = host.substring(0, slash);
         host = host.trim();
-        // A host is the only thing that can go here; anything with a space or a colon in it is
-        // not one, and writing it into a link would make the link unusable rather than private.
-        if (host.isEmpty() || host.indexOf(' ') >= 0 || host.indexOf(':') >= 0 || host.indexOf('.') < 0) {
-            return "";
+        // A host is the only thing that can go here. Anything else written into a link sends it
+        // somewhere it should not go: a "?" or a "#" in the box would push the rest of the link
+        // into a query or a fragment, leaving the front page of the host behind.
+        if (host.isEmpty() || host.indexOf('.') < 0) return "";
+        for (int at = 0; at < host.length(); at++) {
+            char character = host.charAt(at);
+            boolean allowed = (character >= 'a' && character <= 'z')
+                    || (character >= 'A' && character <= 'Z')
+                    || (character >= '0' && character <= '9')
+                    || character == '.' || character == '-';
+            if (!allowed) return "";
         }
         return host;
     }

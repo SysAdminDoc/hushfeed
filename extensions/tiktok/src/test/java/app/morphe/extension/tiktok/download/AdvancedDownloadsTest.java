@@ -306,16 +306,66 @@ public class AdvancedDownloadsTest {
         assertTrue(VideoDownloads.sourceUrls(new Object()).isEmpty());
     }
 
-    @Test public void theRecordedStoryIsTheLastOneBound() {
-        Post first = new Post(List.of(new Photo("https://example.com/one")));
-        Post second = new Post(List.of(new Photo("https://example.com/two")));
-        StoryDownloads.recordStory(first);
-        assertSame(first, StoryDownloads.recordedStory());
-        StoryDownloads.recordStory(second);
-        assertSame(second, StoryDownloads.recordedStory());
-        // A bind with nothing in it leaves the story that is showing alone.
-        StoryDownloads.recordStory(null);
-        assertSame(second, StoryDownloads.recordedStory());
+    @Test public void eachStoryStaysWithThePlayAreaThatBoundIt() {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            SettingsStatus.advancedDownloadsEnabled = true;
+            Settings.SAVE_STORY.save(true);
+
+            // The viewer binds the pages either side of the one on screen, so two play areas are
+            // live at once and each has to keep its own story.
+            Object showing = new Object(), neighbour = new Object();
+            android.view.View onScreen = new android.view.View(activity);
+            android.view.View offScreen = new android.view.View(activity);
+            StoryDownloads.attachPlayArea(showing, onScreen);
+            StoryDownloads.attachPlayArea(neighbour, offScreen);
+
+            Post first = new Post(List.of(new Photo("https://example.com/one")));
+            Post second = new Post(List.of(new Photo("https://example.com/two")));
+            StoryDownloads.recordStory(showing, 3, first);
+            StoryDownloads.recordStory(neighbour, 4, second);
+            // Binding the neighbour last must not change what the story on screen is.
+            assertSame(first, StoryDownloads.storyFor(onScreen));
+            assertSame(second, StoryDownloads.storyFor(offScreen));
+
+            // A bind with nothing in it leaves the story that play area is showing alone.
+            StoryDownloads.recordStory(showing, 3, null);
+            StoryDownloads.recordStory(null, 3, second);
+            assertSame(first, StoryDownloads.storyFor(onScreen));
+            // A view no play area claimed has no story, rather than somebody else's.
+            assertNull(StoryDownloads.storyFor(new android.view.View(activity)));
+        } finally {
+            Settings.SAVE_STORY.save(false);
+        }
+    }
+
+    @Test public void theStoryGestureIsOnlyTakenWhenItIsAskedFor() {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            SettingsStatus.advancedDownloadsEnabled = true;
+
+            // Off: TikTok's own press and hold is left exactly as it was.
+            Settings.SAVE_STORY.save(false);
+            android.view.View view = new android.view.View(activity);
+            boolean[] tikTokSawIt = {false};
+            view.setOnLongClickListener(anchor -> tikTokSawIt[0] = true);
+            StoryDownloads.attachPlayArea(new Object(), view);
+            assertTrue(view.performLongClick());
+            assertTrue("TikTok's own listener still runs", tikTokSawIt[0]);
+
+            // On: the press is ours, and with no story bound it says so rather than saving.
+            Settings.SAVE_STORY.save(true);
+            Object component = new Object();
+            android.view.View ours = new android.view.View(activity);
+            StoryDownloads.attachPlayArea(component, ours);
+            org.robolectric.shadows.ShadowToast.reset();
+            assertTrue(ours.performLongClick());
+            assertEquals(1, org.robolectric.shadows.ShadowToast.shownToastCount());
+        } finally {
+            Settings.SAVE_STORY.save(false);
+        }
     }
 
     @Test public void theProfilePictureTakesTheLargestSizeThatIsThere() {
