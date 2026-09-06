@@ -32,7 +32,9 @@ final class VideoDownloads {
         List<SubtitleDownloads.Track> captions = SettingsStatus.subtitleToolsEnabled && Settings.DOWNLOAD_SUBTITLES.get()
                 ? SubtitleDownloads.tracks(video, Settings.SUBTITLE_LANGUAGE.get(), Locale.getDefault()) : Collections.emptyList();
         String quality = Settings.DOWNLOAD_VIDEO_QUALITY.get();
-        if (captions.isEmpty() && "auto".equals(quality)) return false;
+        // Automatic with nothing else asked for is TikTok's own download, which already does
+        // the right thing. Taking the sound off is a reason to take it over.
+        if (captions.isEmpty() && "auto".equals(quality) && !Settings.DOWNLOAD_WITHOUT_SOUND.get()) return false;
         Object rates = Reflect.readField(video, "bitRate");
         Object selected = rates instanceof List<?> ? QualitySelector.choose((List<?>) rates, "auto".equals(quality) ? "highest" : quality) : null;
         if (selected == null && captions.isEmpty()) return false;
@@ -62,8 +64,11 @@ final class VideoDownloads {
             Logger.printException(() -> "Could not work out the download name", exception);
             return false;
         }
+        boolean muted = Settings.DOWNLOAD_WITHOUT_SOUND.get();
         if (!ACTIVE.add(id)) return true;
-        Utils.showToastShort(captions.isEmpty() ? "Saving the selected video quality" : "Saving video and subtitles to " + path);
+        Utils.showToastShort(captions.isEmpty()
+                ? (muted ? "Saving the selected video quality without sound" : "Saving the selected video quality")
+                : "Saving video and subtitles to " + path);
         WORKER.execute(() -> {
             List<File> temporary = new ArrayList<>();
             try {
@@ -71,10 +76,19 @@ final class VideoDownloads {
                 RemoteMedia.fetch(videoUrls, picture, false);
                 File result = picture, sound = null;
                 if (dash) {
+                    // The sound is a separate stream here, so it is fetched either way: the
+                    // muted save just does not put it back, and Save the sound as well still
+                    // has something to write.
                     sound = temp(app, temporary);
                     RemoteMedia.fetch(audioUrls, sound, false);
+                    if (!muted) {
+                        result = temp(app, temporary);
+                        TrackMuxer.combine(picture, sound, result);
+                    }
+                } else if (muted) {
+                    // One file with both tracks in it, so the picture is copied out on its own.
                     result = temp(app, temporary);
-                    TrackMuxer.combine(picture, sound, result);
+                    TrackMuxer.videoOnly(picture, result);
                 }
                 String savedName = MediaFileWriter.publish(app, result, name, "video/mp4", path, true);
                 // The sound is already on disk: the separate stream when the video has one,

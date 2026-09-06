@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Videos can be saved without their sound, and the save button can hand the link to a downloader you already use instead of saving anything here. Put that app's package name in the box and the button opens it with the video's link; leave it empty and nothing changes. Saving the sound as its own .m4a still works alongside the muted save, so you can have the picture and the sound in separate files if that is what you wanted.
+
 * A switch to stop TikTok pulling the screen down to the frame rate of the video. When a video starts, the app asks the window to run at that video's rate, so a 30 fps clip puts a 120 Hz phone at 30 Hz for everything, scrolling included. With the switch on the window says it has no preference and the phone decides. It does not raise anything, it only stops the asking.
 
 * Review pass over the three new switches. The edge seek was moving whatever the player last reported, which after scrolling on to a photo post is the video before it, so a press did nothing visible and swallowed TikTok's own hold as well: the seek now names the video it means. Its zones were also measured across the display rather than across TikTok's window, which in a side by side split view made the whole screen a forward-seek. A video fitted to the screen says it sits in the middle, because one large enough to fill did not have to. Fitting also measures the window TikTok has rather than the whole display, which is the case the switch exists for.

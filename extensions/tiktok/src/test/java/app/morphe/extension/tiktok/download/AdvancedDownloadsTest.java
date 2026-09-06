@@ -197,6 +197,23 @@ public class AdvancedDownloadsTest {
         } finally { assertTrue(media.delete()); assertTrue(output.delete()); }
     }
 
+    @Test public void thePictureIsCopiedOnItsOwnAndAPictureIsRequired() throws Exception {
+        File media = File.createTempFile("muted-source", ".mp4"), output = File.createTempFile("muted-result", ".mp4");
+        try {
+            var source = org.robolectric.shadows.util.DataSource.toDataSource(media.getAbsolutePath());
+            org.robolectric.shadows.ShadowMediaExtractor.addTrack(source,
+                    android.media.MediaFormat.createAudioFormat("audio/mp4a-latm", 44100, 2), new byte[]{7, 8, 9});
+            // Sound and no picture is not a video, and that has to say so rather than leaving
+            // an empty file behind.
+            assertThrows(java.io.IOException.class, () -> TrackMuxer.videoOnly(media, output));
+            org.robolectric.shadows.ShadowMediaExtractor.addTrack(source,
+                    android.media.MediaFormat.createVideoFormat("video/avc", 1080, 1920), new byte[]{1, 2, 3});
+            TrackMuxer.videoOnly(media, output);
+            // Only the picture is written: the sound stays behind.
+            assertArrayEquals(new byte[]{1, 2, 3}, Files.readAllBytes(output.toPath()));
+        } finally { assertTrue(media.delete()); assertTrue(output.delete()); }
+    }
+
     @Test public void theSoundTakesTheVideoNameWithAnAudioExtension() {
         Utils.setContext(RuntimeEnvironment.getApplication());
         Settings.DOWNLOAD_VIDEO_FILENAME_TEMPLATE.save("{creator}-{video_id}");

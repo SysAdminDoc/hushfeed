@@ -54,6 +54,15 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
                     Settings.SAVE_STORY));
             addPreference(new TogglePreference(context, "Save the sound as well",
                     "Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.", Settings.DOWNLOAD_AUDIO_TRACK));
+            addPreference(new TogglePreference(context, "Save videos without sound",
+                    "Leave the sound out of the saved video. Save the sound as well still writes "
+                            + "the .m4a beside it if you want both.", Settings.DOWNLOAD_WITHOUT_SOUND));
+            addPreference(new app.morphe.extension.tiktok.settings.preference.InputTextPreference(
+                    context,
+                    "Send links to another app",
+                    "An app's package name, like com.dv.adm. The save button sends the video's "
+                            + "link there instead of saving it here. Leave it empty to save here.",
+                    Settings.EXTERNAL_DOWNLOADER_PACKAGE));
         }
         addPreference(new DownloadPathPreference(
                 context,

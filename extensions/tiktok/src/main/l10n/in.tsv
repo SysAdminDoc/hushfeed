@@ -418,6 +418,10 @@ Seen video history cleared. Tap again to put it back.	Riwayat video yang sudah d
 Seen video history put back	Riwayat video yang sudah ditonton dikembalikan
 There was nothing to put back	Tidak ada yang bisa dikembalikan
 Save the sound as well	Simpan suaranya juga
+Save videos without sound	Simpan video tanpa suara
+Leave the sound out of the saved video. Save the sound as well still writes the .m4a beside it if you want both.	Hilangkan suara dari video yang disimpan. Simpan suaranya juga tetap menulis berkas .m4a di sebelahnya kalau kamu mau keduanya.
+Send links to another app	Kirim tautan ke aplikasi lain
+An app's package name, like com.dv.adm. The save button sends the video's link there instead of saving it here. Leave it empty to save here.	Nama paket sebuah aplikasi, misalnya com.dv.adm. Tombol simpan mengirim tautan video ke sana, bukan menyimpannya di sini. Kosongkan untuk menyimpan di sini.
 Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.	Simpan suara video di sebelahnya sebagai .m4a. Android 10 ke atas menyimpan audio secara terpisah, jadi berkasnya masuk ke Music dengan nama folder yang sama seperti folder videomu.
 Animated sticker format	Format stiker animasi
 Video (MP4)	Video (MP4)

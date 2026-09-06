@@ -359,6 +359,9 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     SettingsStatus.advancedDownloadsEnabled && !"auto".equals(Settings.DOWNLOAD_VIDEO_QUALITY.get()),
                     SettingsStatus.advancedDownloadsEnabled && Settings.DOWNLOAD_ORIGINAL_PHOTOS.get(),
                     SettingsStatus.advancedDownloadsEnabled && Settings.DOWNLOAD_AUDIO_TRACK.get(),
+                    SettingsStatus.advancedDownloadsEnabled && Settings.DOWNLOAD_WITHOUT_SOUND.get(),
+                    SettingsStatus.advancedDownloadsEnabled
+                            && !Settings.EXTERNAL_DOWNLOADER_PACKAGE.get().trim().isEmpty(),
                     SettingsStatus.advancedDownloadsEnabled && Settings.SAVE_PROFILE_PICTURE.get(),
                     SettingsStatus.advancedDownloadsEnabled && Settings.SAVE_STORY.get(),
                     SettingsStatus.downloadEnabled && Settings.DOWNLOAD_WATERMARK.get(),

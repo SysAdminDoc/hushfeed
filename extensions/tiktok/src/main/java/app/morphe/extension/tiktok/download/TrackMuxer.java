@@ -53,6 +53,25 @@ final class TrackMuxer {
         if (output.length() == 0) throw new IOException("Audio muxer wrote an empty file");
     }
 
+    /** Copies just the picture, which is a download of a video with the sound left out. */
+    static void videoOnly(File source, File output) throws IOException {
+        MediaExtractor picture = new MediaExtractor();
+        MediaMuxer muxer = null;
+        try {
+            picture.setDataSource(source.getAbsolutePath());
+            MediaFormat videoFormat = select(picture, "video/");
+            muxer = new MediaMuxer(output.getAbsolutePath(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+            int videoTrack = muxer.addTrack(videoFormat);
+            muxer.start();
+            copy(picture, muxer, videoTrack);
+            muxer.stop();
+        } finally {
+            picture.release();
+            if (muxer != null) muxer.release();
+        }
+        if (output.length() == 0) throw new IOException("Video muxer wrote an empty file");
+    }
+
     private static MediaFormat select(MediaExtractor extractor, String prefix) throws IOException {
         for (int i = 0; i < extractor.getTrackCount(); i++) {
             MediaFormat format = extractor.getTrackFormat(i);

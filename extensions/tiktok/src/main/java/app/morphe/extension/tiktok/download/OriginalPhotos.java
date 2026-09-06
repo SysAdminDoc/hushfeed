@@ -21,6 +21,8 @@ public final class OriginalPhotos {
     private OriginalPhotos() {}
 
     public static boolean start(Object aweme, Context context) {
+        // Handing the link to another app replaces the save, so it comes before all of it.
+        if (ExternalDownloader.handOff(aweme, context)) return true;
         if (VideoDownloads.start(aweme, context)) return true;
         // Nothing here is handling the video, so the sound has to fetch its own bytes. When
         // the quality download above took it, it saved the sound from what it already had.
