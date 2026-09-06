@@ -53,7 +53,7 @@ final class SubtitleDownloads {
             Track old = languages.get(identity);
             String language = old == null ? label.replaceAll("[^\\p{L}\\p{N}-]", "") : old.language;
             if (old == null) {
-                if (language.isEmpty()) language = "und";
+                if (isBlankLanguage(language)) language = "und";
                 String stem = language.substring(0, language.offsetByCodePoints(0, Math.min(48, language.codePointCount(0, language.length()))));
                 language = stem;
                 for (int suffix = 2; !filenames.add(language); suffix++) language = stem + "-" + suffix;
@@ -66,13 +66,31 @@ final class SubtitleDownloads {
         if (result.isEmpty() || "all".equals(choice)) return result;
         if ("device".equals(choice)) {
             for (Track track : result) if (track.language.equalsIgnoreCase(locale.toLanguageTag())) return List.of(track);
-            for (Track track : result) if (track.language.split("-")[0].equals(locale.getLanguage())) return List.of(track);
+            for (Track track : result) if (primaryLanguage(track.language).equals(locale.getLanguage())) return List.of(track);
         }
         for (Track track : result) if (track.original) return List.of(track);
         return List.of(result.get(0));
     }
 
     private static int priority(String format) { return "srt".equals(format) ? 0 : (format.contains("vtt") ? 1 : 2); }
+
+    /** A language tag with nothing but separators left in it names no language. */
+    private static boolean isBlankLanguage(String language) {
+        for (int index = 0; index < language.length(); index++) {
+            if (language.charAt(index) != '-') return false;
+        }
+        return true;
+    }
+
+    /**
+     * The part before the first separator, which is the language itself. Not a split: Java
+     * drops trailing empty parts, so splitting a tag that is all separators gives no parts at
+     * all and asking for the first one throws.
+     */
+    private static String primaryLanguage(String language) {
+        int dash = language.indexOf('-');
+        return dash < 0 ? language : language.substring(0, dash);
+    }
 
     static String pairedPath(String videoPath) {
         if (Build.VERSION.SDK_INT < 29) return videoPath;

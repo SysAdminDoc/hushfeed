@@ -51,6 +51,21 @@ public class SubtitleDownloadsTest {
         assertThrows(IOException.class, () -> SubtitleFormat.toSrt("1\n00:00:05,000 --> 00:00:02,000\nBackwards", "srt"));
         assertThrows(IOException.class, () -> SubtitleFormat.toSrt("<html>Expired URL</html>", "vtt"));
     }
+    @Test public void aCaptionNamingNoLanguageDoesNotSinkTheSave() {
+        // The language arrives as free text and is cleaned to letters, digits and dashes, so
+        // "_" comes out as a lone dash: not empty, so it used to skip the "und" fallback, and
+        // Java gives no parts at all when it splits a string that is only separators.
+        Video video = new Video(new Track("_", "srt", false), new Track("en", "srt", true));
+        var device = SubtitleDownloads.tracks(video, "device", Locale.US);
+        assertEquals(1, device.size());
+        assertEquals("en", device.get(0).language);
+
+        // On its own it still saves, under the name the app uses for an unknown language.
+        var alone = SubtitleDownloads.tracks(new Video(new Track("_", "srt", false)), "device", Locale.US);
+        assertEquals(1, alone.size());
+        assertEquals("und", alone.get(0).language);
+    }
+
     @Test public void selectsLanguageAndDeduplicatesFormatsWithoutMutatingMetadata() {
         Video video = new Video(new Track("fr", "webvtt", true), new Track("de-DE", "creator_caption", false), new Track("de-DE", "srt", false));
         assertEquals("fr", SubtitleDownloads.tracks(video, "original", Locale.GERMANY).get(0).language);
