@@ -1,5 +1,7 @@
 ## 0.14.1 (2026-09-05)
 
+* New Show author region patch puts the country a video was posted from next to the creator's name on the feed. Off by default.
+
 * Not interested, the follow and like confirmations, double tap to open comments and subtitle tracking keep working when the block button is switched off. They all read which video is on screen, and that reading was tied to the block button's own switch.
 
 * The block button now blocks the creator of the video you are watching. It was following the feed's prefetch instead, so it usually targeted the account one video ahead. The same fix reaches Not interested, the follow and like confirmations, double tap to open comments, the sound button and caption tracking, which all read the same thing.

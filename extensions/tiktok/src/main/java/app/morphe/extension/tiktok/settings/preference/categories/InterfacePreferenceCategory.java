@@ -26,6 +26,7 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
                 || SettingsStatus.promotionalBannersEnabled
                 || SettingsStatus.alwaysShowPublishDateEnabled
                 || SettingsStatus.videoOverlaysEnabled
+                || SettingsStatus.authorRegionEnabled
                 || SettingsStatus.hideFeedLiveButtonEnabled
                 || SettingsStatus.hideFeedSearchButtonEnabled
                 || SettingsStatus.hideFeedFollowButtonEnabled
@@ -86,6 +87,14 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
                     "Always show publish date",
                     "Always show the publish date in video author information. Requires restart.",
                     Settings.ALWAYS_SHOW_PUBLISH_DATE
+            ));
+        }
+        if (SettingsStatus.authorRegionEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Show where a video was posted",
+                    "Show the country a video was posted from next to the creator's name.",
+                    Settings.SHOW_AUTHOR_REGION
             ));
         }
         if (SettingsStatus.videoOverlaysEnabled) {

@@ -1500,6 +1500,35 @@
       "options": []
     },
     {
+      "name": "Show author region",
+      "description": "Adds an option to show the country a video was posted from next to the creator's name on the feed. Supports TikTok 46.2.3.",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Show seekbar",
       "description": "Shows TikTok's native video seekbar where it would normally be hidden.",
       "use": true,

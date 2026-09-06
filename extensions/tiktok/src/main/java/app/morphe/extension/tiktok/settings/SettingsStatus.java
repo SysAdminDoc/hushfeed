@@ -51,6 +51,7 @@ public class SettingsStatus {
     public static boolean alwaysShowPublishDateEnabled = false;
     public static boolean diagnosticsEnabled = false;
     public static boolean blockAuthorEnabled = false;
+    public static boolean authorRegionEnabled = false;
     public static boolean notInterestedEnabled = false;
 
     public static void enableNotInterested() {
@@ -149,6 +150,10 @@ public class SettingsStatus {
 
     public static void enableDiagnostics() {
         diagnosticsEnabled = true;
+    }
+
+    public static void enableAuthorRegion() {
+        authorRegionEnabled = true;
     }
 
     public static void enableBlockAuthor() {
