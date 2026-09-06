@@ -49,13 +49,17 @@ public class IntegerSetting extends Setting<Integer> {
      */
     public IntegerSetting withRange(int min, int max) {
         if (min > max) throw new IllegalArgumentException(key + ": " + min + " is above " + max);
-        minimum = min;
-        maximum = max;
         // A default outside its own range would mean the setting could never rest at it.
         if (defaultValue < min || defaultValue > max) {
             throw new IllegalArgumentException(key + ": default " + defaultValue
                     + " is outside " + min + " to " + max);
         }
+        minimum = min;
+        maximum = max;
+        // The value on disk was read during construction, before this range existed, so
+        // this is the first and only chance to bring it inside. It could have been written
+        // by a backup file, or by a build from before the range was declared.
+        value = coerce(value);
         return this;
     }
 
@@ -79,9 +83,10 @@ public class IntegerSetting extends Setting<Integer> {
 
     @Override
     protected void load() {
-        // Coerced on the way in as well: a value saved before the range existed is already
-        // sitting on disk, and nothing else would ever bring it back inside.
-        value = coerce(preferences.getIntegerString(key, defaultValue));
+        // Not coerced here. This runs from Setting's constructor, which is before this
+        // class's own fields are assigned, so minimum and maximum are still zero and a
+        // clamp would turn every value into zero. withRange does it instead.
+        value = preferences.getIntegerString(key, defaultValue);
     }
 
     @Override

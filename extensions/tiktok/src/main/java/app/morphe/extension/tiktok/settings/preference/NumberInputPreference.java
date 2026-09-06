@@ -19,6 +19,7 @@ import app.morphe.extension.tiktok.Utils;
 @SuppressWarnings("deprecation")
 public class NumberInputPreference extends EditTextPreference {
     private final String baseSummary;
+    private final IntegerSetting setting;
     private final int minValue;
     private final int maxValue;
     private final String unit;
@@ -41,6 +42,7 @@ public class NumberInputPreference extends EditTextPreference {
         }
         this.unit = unit;
         this.baseSummary = summary;
+        this.setting = setting;
         this.minValue = setting.minimum();
         this.maxValue = setting.maximum();
         setTitle(title);
@@ -148,7 +150,10 @@ public class NumberInputPreference extends EditTextPreference {
         try {
             return clamp(Integer.parseInt(value.trim()));
         } catch (Exception ignored) {
-            return minValue;
+            // An empty or unreadable box is not a request for the smallest value. For
+            // several of these settings the smallest value means off, so falling to it
+            // would quietly turn a feature off because somebody cleared the field.
+            return clamp(setting.get());
         }
     }
 
