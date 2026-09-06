@@ -203,6 +203,7 @@
     <string name="mtp_86dc08f0">Links, privacy and player tools</string>
     <string name="mtp_87263e90">Hide floating promotions</string>
     <string name="mtp_87691ace">Hidden commenters</string>
+    <string name="mtp_897bb5f9">Comma separated country codes. Videos posted from these are hidden, whatever the list above says.</string>
     <string name="mtp_899a0b24">Match locale and timezone to country</string>
     <string name="mtp_8aab1358">Hide activity status</string>
     <string name="mtp_8aedd8db">No preset selected</string>
@@ -259,6 +260,7 @@
     <string name="mtp_af86ae2d">Arrange your feed and bottom tabs</string>
     <string name="mtp_afb994a9">Stop feature gate recording</string>
     <string name="mtp_affe5c75">Copy only the comment text when using TikTok\'s copy comment action.</string>
+    <string name="mtp_b015a666">Comma separated country codes, like GB, IE. Videos posted from anywhere else are hidden. Leave empty for all countries.</string>
     <string name="mtp_b0234035">The minimum or maximum shares of a video to show.</string>
     <string name="mtp_b0662ffd">Disable analytics and tracking</string>
     <string name="mtp_b0708c1d">Hide the spinning music cover and the track name beside the caption.</string>
@@ -272,6 +274,7 @@
     <string name="mtp_b6056e7e">Interface</string>
     <string name="mtp_b743b5ea">Block new bottom tabs</string>
     <string name="mtp_b7ff8d52">Hide promotional music</string>
+    <string name="mtp_b95c006e">Only from these countries</string>
     <string name="mtp_ba1d8456">Hide stories tray</string>
     <string name="mtp_bb4e12c5">Dark</string>
     <string name="mtp_bcde0ba2">TikTok default (2x hold, quick share)</string>
@@ -350,6 +353,7 @@
     <string name="mtp_e9e9b645">Use non-personalized search</string>
     <string name="mtp_ea19dece">Speed menu choices</string>
     <string name="mtp_eb3afb71">Hide the Live button in the top left corner of the feed.</string>
+    <string name="mtp_eb86bdfa">Never from these countries</string>
     <string name="mtp_eb898add">Sanitize sharing links</string>
     <string name="mtp_ebe4fc66">days</string>
     <string name="mtp_ebfa9514">Keep holding Like from opening TikTok\'s repost action.</string>

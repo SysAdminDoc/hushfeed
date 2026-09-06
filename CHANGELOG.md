@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Two more feed filter lists: only from these countries, and never from these countries. They read the same value the author row shows, and a video TikTok sends without one is always kept.
+
 * A blocked creator entry between slashes, like /^news_/, is a pattern instead of one handle. It is matched against the @name and the display name, and a pattern that will not compile is dropped and said once rather than quietly doing nothing.
 
 * Feed filter takes ranges for comments, favourites and shares as well as views and likes. They read the same statistics the app already sends with every video.

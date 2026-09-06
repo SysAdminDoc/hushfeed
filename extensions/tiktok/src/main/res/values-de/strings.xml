@@ -406,6 +406,8 @@
     <string name="mtp_87263e90">Schwebende Werbeaktionen ausblenden</string>
     <!-- Hidden commenters -->
     <string name="mtp_87691ace">Ausgeblendete Kommentierende</string>
+    <!-- Comma separated country codes. Videos posted from these are hidden, whatever the list above says. -->
+    <string name="mtp_897bb5f9">Kommagetrennte Ländercodes. Videos von dort werden ausgeblendet, egal was die Liste darüber sagt.</string>
     <!-- Match locale and timezone to country -->
     <string name="mtp_899a0b24">Sprache und Zeitzone an das Land anpassen</string>
     <!-- Hide activity status -->
@@ -518,6 +520,8 @@
     <string name="mtp_afb994a9">Feature-Gate-Aufzeichnung beenden</string>
     <!-- Copy only the comment text when using TikTok's copy comment action. -->
     <string name="mtp_affe5c75">Beim Kopieren eines Kommentars über TikTok nur den Kommentartext übernehmen.</string>
+    <!-- Comma separated country codes, like GB, IE. Videos posted from anywhere else are hidden. Leave empty for all countries. -->
+    <string name="mtp_b015a666">Kommagetrennte Ländercodes, etwa GB, IE. Videos von überall sonst werden ausgeblendet. Leer lassen für alle Länder.</string>
     <!-- The minimum or maximum shares of a video to show. -->
     <string name="mtp_b0234035">Mindest- oder Höchstzahl an Teilungen, damit ein Video gezeigt wird.</string>
     <!-- Disable analytics and tracking -->
@@ -544,6 +548,8 @@
     <string name="mtp_b743b5ea">Neue untere Tabs blockieren</string>
     <!-- Hide promotional music -->
     <string name="mtp_b7ff8d52">Werbemusik ausblenden</string>
+    <!-- Only from these countries -->
+    <string name="mtp_b95c006e">Nur aus diesen Ländern</string>
     <!-- Hide stories tray -->
     <string name="mtp_ba1d8456">Story-Leiste ausblenden</string>
     <!-- Dark -->
@@ -700,6 +706,8 @@
     <string name="mtp_ea19dece">Auswahl im Geschwindigkeitsmenü</string>
     <!-- Hide the Live button in the top left corner of the feed. -->
     <string name="mtp_eb3afb71">Die Live-Schaltfläche oben links im Feed ausblenden.</string>
+    <!-- Never from these countries -->
+    <string name="mtp_eb86bdfa">Nie aus diesen Ländern</string>
     <!-- Sanitize sharing links -->
     <string name="mtp_eb898add">Teilen-Links bereinigen</string>
     <!-- days -->
