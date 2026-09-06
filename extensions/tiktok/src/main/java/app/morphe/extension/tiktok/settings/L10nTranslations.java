@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1066);
+        Map<String, String> table = new HashMap<>(1080);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -693,6 +693,8 @@ public final class L10nTranslations {
                 "Keine Sprache passt dazu");
         table.put("No limit",
                 "Keine Grenze");
+        table.put("No matching countries",
+                "Keine passenden Länder");
         table.put("No preset selected",
                 "Keine Vorgabe gewählt");
         table.put("No sound to block on this video",
@@ -791,11 +793,11 @@ public final class L10nTranslations {
                 "Die Freundesreihe oben im Teilen-Menü entfernen.");
         table.put("Remove tracking parameters from shared links.",
                 "Tracking-Parameter aus geteilten Links entfernen.");
-        table.put("Remove watermark",
-                "Wasserzeichen entfernen");
     }
 
     private static void fillDe6(Map<String, String> table) {
+        table.put("Remove watermark",
+                "Wasserzeichen entfernen");
         table.put("Report saved to %1$s",
                 "Bericht gespeichert unter %1$s");
         table.put("Reset settings",
@@ -848,6 +850,8 @@ public final class L10nTranslations {
                 "%1$s Originalfotos werden gespeichert");
         table.put("Saving settings backup",
                 "Einstellungssicherung wird gespeichert");
+        table.put("Saving sticker",
+                "Sticker wird gespeichert");
         table.put("Saving the selected video quality",
                 "Die gewählte Videoqualität wird gespeichert");
         table.put("Saving the selected video quality without sound",
@@ -912,13 +916,13 @@ public final class L10nTranslations {
                 "Fortschrittsleiste anzeigen");
         table.put("Show seekbar thumbnail",
                 "Vorschaubild beim Ziehen");
+    }
+
+    private static void fillDe7(Map<String, String> table) {
         table.put("Show the country a video was posted from next to the creator's name.",
                 "Das Land, aus dem ein Video veröffentlicht wurde, neben dem Namen des Creators anzeigen.");
         table.put("Show the current spoken caption while the other controls are hidden.",
                 "Den aktuell gesprochenen Untertitel anzeigen, während die anderen Bedienelemente ausgeblendet sind.");
-    }
-
-    private static void fillDe7(Map<String, String> table) {
         table.put("Show the handle instead of the name",
                 "@Namen statt Anzeigenamen zeigen");
         table.put("Show the native seekbar on videos where TikTok would normally hide it.",
@@ -957,6 +961,8 @@ public final class L10nTranslations {
                 "Sticker");
         table.put("Sticker destination",
                 "Speicherort für Sticker");
+        table.put("Sticker saved as %1$s",
+                "Sticker als %1$s gespeichert");
         table.put("Still reading the record. Tap again in a moment.",
                 "Der Verlauf wird noch gelesen. Tippe gleich noch einmal.");
         table.put("Still saving the last one",
@@ -999,6 +1005,8 @@ public final class L10nTranslations {
                 "Das ist kein App-Name. Versuche etwas wie com.example.downloader, oder lass das Feld leer, damit weiter in TikTok gespeichert wird.");
         table.put("That settings change did not go through. Nothing was altered.",
                 "Diese Änderung hat nicht geklappt. Es wurde nichts geändert.");
+        table.put("That sticker is in a format Hushfeed cannot read",
+                "Dieser Sticker liegt in einem Format vor, das Hushfeed nicht lesen kann");
         table.put("The destination contains an invalid folder name",
                 "Im Zielpfad steht ein unzulässiger Ordnername");
         table.put("The file picker is not available on this device.",
@@ -1021,12 +1029,19 @@ public final class L10nTranslations {
                 "Der Bericht konnte nicht gespeichert werden.");
         table.put("The sound couldn't be saved.",
                 "Der Sound konnte nicht gespeichert werden.");
+        table.put("The sticker could not be downloaded",
+                "Der Sticker konnte nicht geladen werden");
+        table.put("The sticker could not be saved",
+                "Der Sticker konnte nicht gespeichert werden");
         table.put("The story couldn't be saved.",
                 "Die Story konnte nicht gespeichert werden.");
         table.put("The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks.",
                 "Der Daumen runter an jedem Kommentar blockiert das Konto dahinter, statt zu disliken. Der Kommentar wird blasser, ein Banner bietet den Weg zurück, und ein zweiter Tipp hebt die Blockierung auf.");
         table.put("The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks. Takes effect after a restart.",
                 "Der Daumen runter an jedem Kommentar blockiert das Konto, das ihn geschrieben hat, statt ihn abzulehnen. Der Kommentar wird abgedunkelt, ein Rückgängig-Banner folgt, und ein zweites Tippen hebt die Blockierung auf. Wirkt nach einem Neustart.");
+    }
+
+    private static void fillDe8(Map<String, String> table) {
         table.put("The video couldn't be saved. Try again, or choose Automatic.",
                 "Das Video konnte nicht gespeichert werden. Versuche es noch einmal oder wähle Automatisch.");
         table.put("There was nothing to clear",
@@ -1039,9 +1054,6 @@ public final class L10nTranslations {
                 "Dieses Profilbild lässt sich nicht speichern");
         table.put("This quality isn't available as a complete file, so TikTok's own save runs instead",
                 "Diese Qualität gibt es nicht als vollständige Datei, also speichert TikTok selbst");
-    }
-
-    private static void fillDe8(Map<String, String> table) {
         table.put("This story isn't available to save",
                 "Diese Story lässt sich nicht speichern");
         table.put("This video has no link to send, so TikTok's own save runs instead",
@@ -1142,6 +1154,8 @@ public final class L10nTranslations {
                 "dp");
         table.put("ms",
                 "ms");
+        table.put("or",
+                "oder");
         table.put("sp",
                 "sp");
         table.put("us, gb, jp, ...",
@@ -1151,7 +1165,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1066);
+        Map<String, String> table = new HashMap<>(1080);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1800,6 +1814,8 @@ public final class L10nTranslations {
                 "Tidak ada bahasa yang cocok");
         table.put("No limit",
                 "Tanpa batas");
+        table.put("No matching countries",
+                "Tidak ada negara yang cocok");
         table.put("No preset selected",
                 "Tidak ada praset yang dipilih");
         table.put("No sound to block on this video",
@@ -1898,11 +1914,11 @@ public final class L10nTranslations {
                 "Hapus baris teman dari bagian atas menu bagikan.");
         table.put("Remove tracking parameters from shared links.",
                 "Hapus parameter pelacakan dari tautan yang dibagikan.");
-        table.put("Remove watermark",
-                "Hapus tanda air");
     }
 
     private static void fillIn6(Map<String, String> table) {
+        table.put("Remove watermark",
+                "Hapus tanda air");
         table.put("Report saved to %1$s",
                 "Laporan disimpan di %1$s");
         table.put("Reset settings",
@@ -1955,6 +1971,8 @@ public final class L10nTranslations {
                 "Menyimpan %1$s foto asli");
         table.put("Saving settings backup",
                 "Menyimpan cadangan pengaturan");
+        table.put("Saving sticker",
+                "Menyimpan stiker");
         table.put("Saving the selected video quality",
                 "Menyimpan kualitas video pilihan");
         table.put("Saving the selected video quality without sound",
@@ -2019,13 +2037,13 @@ public final class L10nTranslations {
                 "Tampilkan bilah progres");
         table.put("Show seekbar thumbnail",
                 "Tampilkan pratinjau video di bilah progres");
+    }
+
+    private static void fillIn7(Map<String, String> table) {
         table.put("Show the country a video was posted from next to the creator's name.",
                 "Tampilkan negara asal unggahan video di sebelah nama kreator.");
         table.put("Show the current spoken caption while the other controls are hidden.",
                 "Tampilkan teks ucapan yang sedang berjalan meski kontrol lain disembunyikan.");
-    }
-
-    private static void fillIn7(Map<String, String> table) {
         table.put("Show the handle instead of the name",
                 "Tampilkan nama pengguna, bukan nama tampilan");
         table.put("Show the native seekbar on videos where TikTok would normally hide it.",
@@ -2064,6 +2082,8 @@ public final class L10nTranslations {
                 "Stiker");
         table.put("Sticker destination",
                 "Lokasi simpan stiker");
+        table.put("Sticker saved as %1$s",
+                "Stiker disimpan sebagai %1$s");
         table.put("Still reading the record. Tap again in a moment.",
                 "Catatannya masih dibaca. Ketuk lagi sebentar lagi.");
         table.put("Still saving the last one",
@@ -2106,6 +2126,8 @@ public final class L10nTranslations {
                 "Itu bukan nama aplikasi. Coba seperti com.example.downloader, atau kosongkan saja biar tetap disimpan di TikTok.");
         table.put("That settings change did not go through. Nothing was altered.",
                 "Perubahan itu tidak berhasil. Tidak ada yang diubah.");
+        table.put("That sticker is in a format Hushfeed cannot read",
+                "Stiker itu formatnya tidak bisa dibaca Hushfeed");
         table.put("The destination contains an invalid folder name",
                 "Ada nama folder yang tidak sah di tujuannya");
         table.put("The file picker is not available on this device.",
@@ -2128,12 +2150,19 @@ public final class L10nTranslations {
                 "Laporannya tidak bisa disimpan.");
         table.put("The sound couldn't be saved.",
                 "Suaranya tidak bisa disimpan.");
+        table.put("The sticker could not be downloaded",
+                "Stikernya tidak bisa diunduh");
+        table.put("The sticker could not be saved",
+                "Stikernya tidak bisa disimpan");
         table.put("The story couldn't be saved.",
                 "Story-nya tidak bisa disimpan.");
         table.put("The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks.",
                 "Jempol ke bawah pada tiap komentar memblokir akun penulisnya, bukan memberi dislike. Komentarnya meredup, ada spanduk untuk membatalkan, dan ketukan kedua membuka blokirnya.");
         table.put("The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks. Takes effect after a restart.",
                 "Jempol ke bawah pada tiap komentar memblokir akun yang menulisnya, bukan menandai tidak suka. Komentarnya meredup, muncul spanduk untuk mengurungkan, dan ketukan kedua membuka blokirnya. Berlaku setelah mulai ulang.");
+    }
+
+    private static void fillIn8(Map<String, String> table) {
         table.put("The video couldn't be saved. Try again, or choose Automatic.",
                 "Videonya tidak bisa disimpan. Coba lagi, atau pilih Otomatis.");
         table.put("There was nothing to clear",
@@ -2146,9 +2175,6 @@ public final class L10nTranslations {
                 "Foto profil ini tidak bisa disimpan");
         table.put("This quality isn't available as a complete file, so TikTok's own save runs instead",
                 "Kualitas ini tidak tersedia sebagai berkas utuh, jadi TikTok yang menyimpannya");
-    }
-
-    private static void fillIn8(Map<String, String> table) {
         table.put("This story isn't available to save",
                 "Story ini tidak bisa disimpan");
         table.put("This video has no link to send, so TikTok's own save runs instead",
@@ -2249,6 +2275,8 @@ public final class L10nTranslations {
                 "dp");
         table.put("ms",
                 "ms");
+        table.put("or",
+                "atau");
         table.put("sp",
                 "sp");
         table.put("us, gb, jp, ...",

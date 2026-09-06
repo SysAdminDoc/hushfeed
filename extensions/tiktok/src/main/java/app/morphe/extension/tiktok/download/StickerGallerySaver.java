@@ -31,6 +31,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import app.morphe.extension.shared.Logger;
+
+import app.morphe.extension.tiktok.settings.L10n;
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.tiktok.settings.Settings;
 
@@ -189,7 +191,7 @@ public final class StickerGallerySaver {
     private static void saveStickerFromButton(View button, StickerAsset asset) {
         Context context = button.getContext().getApplicationContext();
         button.setEnabled(false);
-        toast(context, "Saving sticker...");
+        toast(context, L10n.t("Saving sticker"));
 
         SAVE_EXECUTOR.execute(() -> {
             SaveResult result = saveSticker(context, asset);
@@ -219,7 +221,7 @@ public final class StickerGallerySaver {
 
             int responseCode = connection.getResponseCode();
             if (responseCode < 200 || responseCode >= 300) {
-                return SaveResult.failure("Sticker download failed");
+                return SaveResult.failure(L10n.t("The sticker could not be downloaded"));
             }
 
             try (BufferedInputStream inputStream = new BufferedInputStream(connection.getInputStream())) {
@@ -272,7 +274,8 @@ public final class StickerGallerySaver {
                 }
 
                 Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                if (bitmap == null) return SaveResult.failure("Sticker image could not be decoded");
+                if (bitmap == null) return SaveResult.failure(
+                        L10n.t("That sticker is in a format Hushfeed cannot read"));
 
                 try {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -299,7 +302,7 @@ public final class StickerGallerySaver {
             if (BaseSettings.DEBUG.get()) {
                 Logger.printException(() -> "[Morphe Stickers] saveSticker failure", ex);
             }
-            return SaveResult.failure("Sticker save failed");
+            return SaveResult.failure(L10n.t("The sticker could not be saved"));
         } finally {
             if (connection != null) {
                 connection.disconnect();
@@ -1099,7 +1102,8 @@ public final class StickerGallerySaver {
         }
 
         static SaveResult success(String path, String uri, String format) {
-            return new SaveResult(true, "Sticker saved as " + format, path + " (" + uri + ")");
+            return new SaveResult(true, L10n.f("Sticker saved as %1$s", format),
+                    path + " (" + uri + ")");
         }
 
         static SaveResult failure(String message) {

@@ -56,11 +56,11 @@ public final class DownloadDestination {
     public static String allowedRoots(Kind kind) {
         switch (kind) {
             case VIDEO:
-                return "DCIM, Movies, Download, or Documents";
+                return list("DCIM", "Movies", "Download", "Documents");
             case PHOTO:
-                return "DCIM, Pictures, Download, or Documents";
+                return list("DCIM", "Pictures", "Download", "Documents");
             case STICKER:
-                return "DCIM, Download, or Documents";
+                return list("DCIM", "Download", "Documents");
             default:
                 throw new IllegalArgumentException("Unknown destination kind");
         }
@@ -147,6 +147,24 @@ public final class DownloadDestination {
         String normalized = normalize(path);
         int slash = normalized.indexOf('/');
         return canonicalRoot(slash < 0 ? normalized : normalized.substring(0, slash));
+    }
+
+    /**
+     * The folder names joined the way the reader's language joins a list. The names
+     * themselves are what Android calls those folders, so they stay as they are; the word
+     * between the last two is the part that was English inside a translated sentence.
+     */
+    private static String list(String... names) {
+        StringBuilder out = new StringBuilder();
+        for (int index = 0; index < names.length; index++) {
+            if (index == names.length - 1 && index > 0) {
+                out.append(' ').append(L10n.t("or")).append(' ');
+            } else if (index > 0) {
+                out.append(", ");
+            }
+            out.append(names[index]);
+        }
+        return out.toString();
     }
 
     private static String kindLabel(Kind kind) {

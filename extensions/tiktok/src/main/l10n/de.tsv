@@ -315,6 +315,7 @@ No account to block on this video	Bei diesem Video gibt es kein Konto zum Blocki
 No additional languages excluded	Keine weiteren Sprachen ausgeschlossen
 No language matches that	Keine Sprache passt dazu
 No limit	Keine Grenze
+No matching countries	Keine passenden Länder
 No preset selected	Keine Vorgabe gewählt
 No sound to block on this video	Bei diesem Video gibt es keinen Sound zum Blockieren
 No suggested accounts to clear	Es gibt keine Kontovorschläge zum Entfernen
@@ -335,6 +336,7 @@ Open TikTok home feed to detect loaded tabs.	Öffne den TikTok-Startfeed, damit 
 Open TikTok home to detect loaded bottom tabs.	Öffne die TikTok-Startseite, damit geladene untere Tabs erkannt werden.
 Operator MCC/MNC	Netzbetreiber MCC/MNC
 Operator name	Name des Netzbetreibers
+or	oder
 Original language	Originalsprache
 Override SIM details	SIM-Angaben überschreiben
 Override store region (experimental)	Store-Region überschreiben (experimentell)
@@ -388,6 +390,7 @@ Saved %1$s original photos	%1$s Originalfotos gespeichert
 Saved %1$s photos. The rest failed, so try again.	%1$s Fotos gespeichert. Der Rest hat nicht geklappt, versuche es noch einmal.
 Saving %1$s original photos	%1$s Originalfotos werden gespeichert
 Saving settings backup	Einstellungssicherung wird gespeichert
+Saving sticker	Sticker wird gespeichert
 Saving the selected video quality	Die gewählte Videoqualität wird gespeichert
 Saving the selected video quality without sound	Die gewählte Videoqualität wird ohne Ton gespeichert
 Saving the story	Story wird gespeichert
@@ -445,6 +448,7 @@ Start each new video at your default. A manual choice lasts until the video chan
 Start feature gate recording	Feature-Gate-Aufzeichnung starten
 Sticker	Sticker
 Sticker destination	Speicherort für Sticker
+Sticker saved as %1$s	Sticker als %1$s gespeichert
 Still reading the record. Tap again in a moment.	Der Verlauf wird noch gelesen. Tippe gleich noch einmal.
 Still saving the last one	Das letzte wird noch gespeichert
 Stop ByteDance AppLog events, AppsFlyer attribution, explicit Firebase screen reports and crash reporting from being sent. TikTok's own diagnostics go quiet with them.	ByteDance-AppLog-Ereignisse, AppsFlyer-Attribution, explizite Firebase-Bildschirmberichte und Absturzmeldungen nicht mehr senden. TikToks eigene Diagnose verstummt damit ebenfalls.
@@ -466,6 +470,7 @@ That creator pattern is too long to use, so it was skipped: %1$s	Dieses Kreator-
 That creator pattern is too long to use: %1$s	Dieses Kreator-Muster ist zu lang: %1$s
 That is not an app name. Try something like com.example.downloader, or leave the box empty to keep saving in TikTok.	Das ist kein App-Name. Versuche etwas wie com.example.downloader, oder lass das Feld leer, damit weiter in TikTok gespeichert wird.
 That settings change did not go through. Nothing was altered.	Diese Änderung hat nicht geklappt. Es wurde nichts geändert.
+That sticker is in a format Hushfeed cannot read	Dieser Sticker liegt in einem Format vor, das Hushfeed nicht lesen kann
 The destination contains an invalid folder name	Im Zielpfad steht ein unzulässiger Ordnername
 The file picker is not available on this device.	Die Dateiauswahl ist auf diesem Gerät nicht verfügbar.
 The minimum or maximum comments on a video to show.	Mindest- oder Höchstzahl an Kommentaren, damit ein Video gezeigt wird.
@@ -477,6 +482,8 @@ The original photos aren't available, so TikTok's own save runs instead	Die Orig
 The profile picture couldn't be saved.	Das Profilbild konnte nicht gespeichert werden.
 The report could not be saved.	Der Bericht konnte nicht gespeichert werden.
 The sound couldn't be saved.	Der Sound konnte nicht gespeichert werden.
+The sticker could not be downloaded	Der Sticker konnte nicht geladen werden
+The sticker could not be saved	Der Sticker konnte nicht gespeichert werden
 The story couldn't be saved.	Die Story konnte nicht gespeichert werden.
 The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks.	Der Daumen runter an jedem Kommentar blockiert das Konto dahinter, statt zu disliken. Der Kommentar wird blasser, ein Banner bietet den Weg zurück, und ein zweiter Tipp hebt die Blockierung auf.
 The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks. Takes effect after a restart.	Der Daumen runter an jedem Kommentar blockiert das Konto, das ihn geschrieben hat, statt ihn abzulehnen. Der Kommentar wird abgedunkelt, ein Rückgängig-Banner folgt, und ein zweites Tippen hebt die Blockierung auf. Wirkt nach einem Neustart.

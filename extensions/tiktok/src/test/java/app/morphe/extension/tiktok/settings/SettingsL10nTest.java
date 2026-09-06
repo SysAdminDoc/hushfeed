@@ -111,6 +111,17 @@ public class SettingsL10nTest {
                 offenders.isEmpty());
     }
 
+    /**
+     * Anything that puts words on the screen. Any method with "toast" in its name,
+     * however it is spelled, plus the platform call those wrap and the undo banner,
+     * which is a toast in every way that matters to a reader.
+     *
+     * <p>Named this widely on purpose. The first version knew two method names, and a
+     * file with a private toast helper of its own walked past it carrying five English
+     * messages.
+     */
+    private static final String SHOWS_TEXT = "(?:\\b\\w*[Tt]oast\\w*|Toast\\s*\\.\\s*makeText|showUndoBanner)\\s*\\(";
+
     /** Marks every character of a source file as code, inside a literal, or inside a comment. */
     private static final byte CODE = 0, LITERAL = 1, COMMENT = 2;
 
@@ -150,7 +161,7 @@ public class SettingsL10nTest {
         byte[] kind = classify(text);
         java.util.List<String> found = new java.util.ArrayList<>();
         java.util.regex.Matcher call = java.util.regex.Pattern
-                .compile("showToast(?:Short|Long)?\\s*\\(").matcher(text);
+                .compile(SHOWS_TEXT).matcher(text);
         while (call.find()) {
             int open = call.end() - 1;
             if (kind[call.start()] != CODE) continue;

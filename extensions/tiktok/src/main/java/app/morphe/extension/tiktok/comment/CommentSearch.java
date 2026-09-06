@@ -179,7 +179,9 @@ public final class CommentSearch {
         GradientDrawable focused = new GradientDrawable();
         focused.setColor(dark ? 0xFF1B1B21 : 0xFFFFFFFF);
         focused.setCornerRadius(radius);
-        focused.setStroke(stroke * 2, SettingsUi.accent());
+        // Not SettingsUi.accent(): that reads the shared dark mode flag, which is the
+        // one this class stopped trusting two lines up. TikTok's own pink carries on both.
+        focused.setStroke(stroke * 2, dark ? SettingsUi.ACCENT : SettingsUi.LIGHT_ACCENT);
 
         GradientDrawable resting = new GradientDrawable();
         resting.setColor(dark ? 0xFF111115 : 0xFFFFFFFF);

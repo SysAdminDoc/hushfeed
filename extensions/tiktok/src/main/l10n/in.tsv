@@ -315,6 +315,7 @@ No account to block on this video	Tidak ada akun untuk diblokir di video ini
 No additional languages excluded	Tidak ada bahasa tambahan yang dikecualikan
 No language matches that	Tidak ada bahasa yang cocok
 No limit	Tanpa batas
+No matching countries	Tidak ada negara yang cocok
 No preset selected	Tidak ada praset yang dipilih
 No sound to block on this video	Tidak ada suara untuk diblokir di video ini
 No suggested accounts to clear	Tidak ada akun saran yang bisa dihapus
@@ -335,6 +336,7 @@ Open TikTok home feed to detect loaded tabs.	Buka feed beranda TikTok untuk mend
 Open TikTok home to detect loaded bottom tabs.	Buka beranda TikTok untuk mendeteksi tab bawah yang dimuat.
 Operator MCC/MNC	MCC/MNC operator
 Operator name	Nama operator
+or	atau
 Original language	Bahasa asli
 Override SIM details	Timpa detail SIM
 Override store region (experimental)	Timpa wilayah toko (eksperimental)
@@ -388,6 +390,7 @@ Saved %1$s original photos	%1$s foto asli tersimpan
 Saved %1$s photos. The rest failed, so try again.	%1$s foto tersimpan. Sisanya gagal, coba lagi.
 Saving %1$s original photos	Menyimpan %1$s foto asli
 Saving settings backup	Menyimpan cadangan pengaturan
+Saving sticker	Menyimpan stiker
 Saving the selected video quality	Menyimpan kualitas video pilihan
 Saving the selected video quality without sound	Menyimpan kualitas video pilihan tanpa suara
 Saving the story	Menyimpan Story
@@ -445,6 +448,7 @@ Start each new video at your default. A manual choice lasts until the video chan
 Start feature gate recording	Mulai merekam feature gate
 Sticker	Stiker
 Sticker destination	Lokasi simpan stiker
+Sticker saved as %1$s	Stiker disimpan sebagai %1$s
 Still reading the record. Tap again in a moment.	Catatannya masih dibaca. Ketuk lagi sebentar lagi.
 Still saving the last one	Yang sebelumnya masih disimpan
 Stop ByteDance AppLog events, AppsFlyer attribution, explicit Firebase screen reports and crash reporting from being sent. TikTok's own diagnostics go quiet with them.	Hentikan pengiriman peristiwa AppLog ByteDance, atribusi AppsFlyer, laporan layar Firebase, dan laporan mogok. Diagnostik milik TikTok ikut diam bersamanya.
@@ -466,6 +470,7 @@ That creator pattern is too long to use, so it was skipped: %1$s	Pola kreator it
 That creator pattern is too long to use: %1$s	Pola kreator itu terlalu panjang: %1$s
 That is not an app name. Try something like com.example.downloader, or leave the box empty to keep saving in TikTok.	Itu bukan nama aplikasi. Coba seperti com.example.downloader, atau kosongkan saja biar tetap disimpan di TikTok.
 That settings change did not go through. Nothing was altered.	Perubahan itu tidak berhasil. Tidak ada yang diubah.
+That sticker is in a format Hushfeed cannot read	Stiker itu formatnya tidak bisa dibaca Hushfeed
 The destination contains an invalid folder name	Ada nama folder yang tidak sah di tujuannya
 The file picker is not available on this device.	Pemilih berkas tidak tersedia di perangkat ini.
 The minimum or maximum comments on a video to show.	Jumlah komentar minimum atau maksimum agar video ditampilkan.
@@ -477,6 +482,8 @@ The original photos aren't available, so TikTok's own save runs instead	Foto asl
 The profile picture couldn't be saved.	Foto profilnya tidak bisa disimpan.
 The report could not be saved.	Laporannya tidak bisa disimpan.
 The sound couldn't be saved.	Suaranya tidak bisa disimpan.
+The sticker could not be downloaded	Stikernya tidak bisa diunduh
+The sticker could not be saved	Stikernya tidak bisa disimpan
 The story couldn't be saved.	Story-nya tidak bisa disimpan.
 The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks.	Jempol ke bawah pada tiap komentar memblokir akun penulisnya, bukan memberi dislike. Komentarnya meredup, ada spanduk untuk membatalkan, dan ketukan kedua membuka blokirnya.
 The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks. Takes effect after a restart.	Jempol ke bawah pada tiap komentar memblokir akun yang menulisnya, bukan menandai tidak suka. Komentarnya meredup, muncul spanduk untuk mengurungkan, dan ketukan kedua membuka blokirnya. Berlaku setelah mulai ulang.
