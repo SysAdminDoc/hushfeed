@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The Save button on a sticker saves the sticker you are looking at. TikTok reuses the preview sheet for whatever sticker you open next, and the button was holding the one it was built for, so opening a second sticker and saving it could write the first one instead.
+
 * Settings only shows switches for patches you actually selected. Show seekbar and the two sharing-link controls were drawn whatever you picked in the patcher, so a bundle without them offered three switches that did nothing and the App behavior row claimed two were on before you had touched anything. The count beside each section is also more honest now: it was ignoring the mobile-data quality cap and three of the comment switches.
 
 * Crash reports stop carrying addresses and session tokens. The reports TikTok's own crash handler produced were already scrubbed, but the ones from the patch's Java handler were not, and a network exception puts the whole request URL in its message. Those reports go to shared storage and to the clipboard so they can be attached to a bug report, so anything in them travels. Both paths now go through the same scrub.

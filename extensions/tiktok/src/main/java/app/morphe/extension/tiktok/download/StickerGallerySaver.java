@@ -59,7 +59,8 @@ public final class StickerGallerySaver {
 
     private static final ExecutorService SAVE_EXECUTOR = Executors.newSingleThreadExecutor();
     private static final Handler MAIN_HANDLER = new Handler(Looper.getMainLooper());
-    private static final WeakHashMap<View, Boolean> ATTACHED_SHEETS = new WeakHashMap<>();
+    /** The sticker each decorated sheet is currently showing, so a reused sheet saves its own. */
+    private static final WeakHashMap<View, StickerAsset> ATTACHED_SHEETS = new WeakHashMap<>();
     private static final WeakHashMap<Object, Object> STICKER_SOURCES = new WeakHashMap<>();
 
     private StickerGallerySaver() {
@@ -76,16 +77,20 @@ public final class StickerGallerySaver {
         try {
             if (sheetView == null || sheetModel == null) return;
 
-            synchronized (ATTACHED_SHEETS) {
-                if (ATTACHED_SHEETS.containsKey(sheetView)) {
-                    return;
-                }
-            }
-
             StickerAsset asset = findStickerAsset(sheetModel);
             if (asset == null) {
                 debugLog("[Morphe Stickers] no usable sticker URL");
                 return;
+            }
+
+            // The button is added once per sheet, but the sheet is reused for whatever sticker
+            // is opened next, so the sticker behind it is replaced on every bind. Keying only
+            // on the view would leave the button saving the sticker looked at before this one.
+            synchronized (ATTACHED_SHEETS) {
+                if (ATTACHED_SHEETS.containsKey(sheetView)) {
+                    ATTACHED_SHEETS.put(sheetView, asset);
+                    return;
+                }
             }
 
             List<View> actionButtons = findViewsByClassName(sheetView, "X.0GSy", "LX.0GSy", "X.0Daq", "LX.0Daq");
@@ -102,12 +107,12 @@ public final class StickerGallerySaver {
                 return;
             }
 
-            TextView saveImageButton = createActionButton(template, asset);
+            TextView saveImageButton = createActionButton(template, sheetView);
             ViewGroup.LayoutParams layoutParams = cloneLayoutParams(template.getLayoutParams());
             actionParent.addView(saveImageButton, insertIndex, layoutParams);
 
             synchronized (ATTACHED_SHEETS) {
-                ATTACHED_SHEETS.put(sheetView, Boolean.TRUE);
+                ATTACHED_SHEETS.put(sheetView, asset);
             }
 
             debugLog("[Morphe Stickers] attached Save sticker button animated=" + asset.animated
@@ -120,14 +125,26 @@ public final class StickerGallerySaver {
         }
     }
 
-    private static TextView createActionButton(View template, StickerAsset asset) {
+    private static TextView createActionButton(View template, View sheetView) {
         Context context = template.getContext();
         TextView button = new TextView(context);
         button.setText(ACTION_LABEL);
         button.setGravity(Gravity.CENTER);
         button.setSingleLine(true);
         button.setEllipsize(TextUtils.TruncateAt.END);
-        button.setOnClickListener(view -> saveStickerFromButton(view, asset));
+        // Read the sticker when the button is pressed, not when it was built: the sheet the
+        // button lives in gets bound again for the next sticker the reader opens.
+        button.setOnClickListener(view -> {
+            StickerAsset showing;
+            synchronized (ATTACHED_SHEETS) {
+                showing = ATTACHED_SHEETS.get(sheetView);
+            }
+            if (showing == null) {
+                debugLog("[Morphe Stickers] the sheet no longer names a sticker");
+                return;
+            }
+            saveStickerFromButton(view, showing);
+        });
 
         if (template instanceof TextView) {
             TextView textTemplate = (TextView) template;
