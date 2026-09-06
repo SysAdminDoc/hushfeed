@@ -221,9 +221,17 @@ The script writes the string resources the Settings patch adds to TikTok, and th
 ## Supported target
 
 - App: TikTok, the global package `com.zhiliaoapp.musically`
-- Version: [46.2.3](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/)
+- Version: [46.2.3](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/), released 28 July 2026
 
-Only the global package is declared in the compatibility metadata. TikTok changes its internals often, so each release is tied to the exact version it was checked against. Newer builds may patch, but nothing is promised until the fingerprints have been run against them.
+### Why you have to fetch that APK yourself
+
+Google Play only ever serves the newest build it thinks your device can run, so the copy on your phone is almost certainly not 46.2.3, and there is no way to ask Play for an older one. Take the APK from [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/), which serves the exact version, then patch that file rather than the installed app.
+
+### Why that version and not a newer one
+
+Every patch here is tied to code TikTok does not name: the classes and methods are renamed on each build, so a patch finds its place by the shape of the code around it. Those shapes move. 46.2.3 is the build all 63 patches have actually been run against, and the compatibility metadata says so. A newer build may well patch, and the patcher will let you try, but a patch whose anchor moved either fails loudly at patch time or, worse, lands somewhere it should not. TikTok is several minor versions ahead already; checking a newer one means running the whole bundle against it and reading which patches failed, which has not been done yet.
+
+Only the global package is declared in the compatibility metadata.
 
 <br>
 
