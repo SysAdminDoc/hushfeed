@@ -21,6 +21,7 @@ private const val MAIN_ACTIVITY_CLASS = "Lcom/ss/android/ugc/aweme/main/MainActi
 private const val HOST_APPLICATION_CLASS = "Lcom/ss/android/ugc/aweme/app/host/AwemeHostApplication;"
 private const val JATO_INIT_TASK_CLASS = "Lcom/ss/android/ugc/aweme/legoImp/task/JatoInitTask;"
 private const val STORE_REGION_INIT_TASK_CLASS = "Lcom/ss/android/ugc/aweme/legoImp/task/StoreRegionInitTask;"
+private const val MEDIA_CACHE_CLASS = "Lapp/morphe/extension/tiktok/download/MediaCache;"
 
 internal object MainActivityOnCreateFingerprint : Fingerprint(
     definingClass = MAIN_ACTIVITY_CLASS,
@@ -66,6 +67,8 @@ private val hostApplicationInitHook = ExtensionHook(
         } + 1
     },
     contextRegisterResolver = { "p1" },
+    postContextClassDescriptor = MEDIA_CACHE_CLASS,
+    postContextMethodName = "reconcileAsync",
 )
 
 private val jatoInitHook = ExtensionHook(
@@ -86,4 +89,3 @@ val sharedExtensionPatch = sharedExtensionPatch(
     jatoInitHook,
     storeRegionInitHook,
 )
-

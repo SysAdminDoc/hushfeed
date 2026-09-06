@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import app.morphe.extension.shared.Logger;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -42,6 +43,12 @@ final class MediaFileWriter {
             Uri uri = resolver.insert(collection, values);
             if (uri == null) throw new IOException("Could not create gallery entry");
             try {
+                MediaCache.markPending(context, uri);
+            } catch (IOException error) {
+                try { resolver.delete(uri, null, null); } catch (RuntimeException cleanup) { error.addSuppressed(cleanup); }
+                throw error;
+            }
+            try {
                 try (InputStream input = new FileInputStream(source); OutputStream output = resolver.openOutputStream(uri, "w")) {
                     if (output == null) throw new IOException("Could not open gallery entry");
                     copy(input, output);
@@ -55,9 +62,17 @@ final class MediaFileWriter {
                 values.clear();
                 values.put(MediaStore.MediaColumns.IS_PENDING, 0);
                 if (resolver.update(uri, values, null, null) != 1) throw new IOException("Could not publish gallery entry");
+                try {
+                    MediaCache.clearPending(context, uri);
+                } catch (IOException journalError) {
+                    // Reconciliation checks IS_PENDING before deleting a journaled URI, so a
+                    // completed row remains safe if this final cleanup write is interrupted.
+                    Logger.printException(() -> "Could not clear media publication journal", journalError);
+                }
                 return savedName;
             } catch (IOException | RuntimeException exception) {
                 try { resolver.delete(uri, null, null); } catch (RuntimeException cleanup) { exception.addSuppressed(cleanup); }
+                try { MediaCache.clearPending(context, uri); } catch (IOException journalError) { exception.addSuppressed(journalError); }
                 throw exception;
             }
         } else {

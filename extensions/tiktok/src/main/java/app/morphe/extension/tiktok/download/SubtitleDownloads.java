@@ -111,14 +111,14 @@ final class SubtitleDownloads {
                 MediaBudget.check(null);
                 String srt = fetch(track.urls, track.format);
                 MediaBudget.checkDiskSpace(context.getCacheDir(), srt.length() * 2L);
-                temp = File.createTempFile("subtitle-", ".srt", context.getCacheDir());
+                temp = MediaCache.createTempFile(context, "subtitle-", ".srt");
                 try (var output = new FileOutputStream(temp)) { output.write(srt.getBytes(StandardCharsets.UTF_8)); }
                 MediaFileWriter.publish(context, temp, stem + "." + track.language + ".srt", "application/x-subrip", path, false);
                 saved++;
             } catch (IOException | RuntimeException error) {
                 Logger.printException(() -> "Could not save " + track.language + " subtitles", error);
             } finally {
-                if (temp != null && !temp.delete()) Logger.printInfo(() -> "Could not remove temporary subtitle file");
+                if (temp != null && !MediaCache.delete(temp)) Logger.printInfo(() -> "Could not remove temporary subtitle file");
             }
         }
         return saved;

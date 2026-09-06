@@ -129,7 +129,7 @@ final class VideoDownloads {
                     Utils.showToastLong(L10n.t("The video couldn't be saved. Try again, or choose Automatic."));
                 }
             } finally {
-                for (File file : temporary) if (!file.delete()) Logger.printInfo(() -> "Could not remove video temporary file");
+                for (File file : temporary) if (!MediaCache.delete(file)) Logger.printInfo(() -> "Could not remove video temporary file");
                 ACTIVE.remove(id);
             }
         }, () -> ACTIVE.remove(id));
@@ -154,7 +154,7 @@ final class VideoDownloads {
     }
 
     private static File temp(Context context, List<File> files) throws IOException {
-        File file = File.createTempFile("selected-video-", ".mp4", context.getCacheDir());
+        File file = MediaCache.createTempFile(context, "selected-video-", ".mp4");
         files.add(file);
         return file;
     }

@@ -60,7 +60,7 @@ final class AudioDownloads {
         MediaJobScheduler.JobHandle job = MediaJobScheduler.submit("sound", () -> {
             File fetched = null;
             try {
-                fetched = File.createTempFile("sound-source-", ".mp4", app.getCacheDir());
+                fetched = MediaCache.createTempFile(app, "sound-source-", ".mp4");
                 RemoteMedia.fetch(sourceUrls, fetched, false);
                 write(app, audioName, fetched);
             } catch (IOException | RuntimeException exception) {
@@ -69,7 +69,7 @@ final class AudioDownloads {
                     Utils.showToastLong(L10n.t("The sound couldn't be saved."));
                 }
             } finally {
-                if (fetched != null && !fetched.delete()) {
+                if (fetched != null && !MediaCache.delete(fetched)) {
                     Logger.printInfo(() -> "Could not remove sound temporary file");
                 }
                 ACTIVE.remove(id);
@@ -99,7 +99,7 @@ final class AudioDownloads {
         if (!enabled()) return;
         File output = null;
         try {
-            output = File.createTempFile("sound-", ".m4a", app.getCacheDir());
+            output = MediaCache.createTempFile(app, "sound-", ".m4a");
             TrackMuxer.audioOnly(source, output);
             String path = audioPath(DownloadsPatch.getVideoDownloadPath());
             MediaFileWriter.publish(app, output, name, "audio/mp4", path, true);
@@ -108,7 +108,7 @@ final class AudioDownloads {
             Logger.printException(() -> "Sound save failed", exception);
             Utils.showToastLong(L10n.t("The sound couldn't be saved."));
         } finally {
-            if (output != null && !output.delete()) {
+            if (output != null && !MediaCache.delete(output)) {
                 Logger.printInfo(() -> "Could not remove sound temporary file");
             }
         }

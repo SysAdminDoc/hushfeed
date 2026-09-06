@@ -75,7 +75,7 @@ final class RemoteMedia {
                 }
             }
         }
-        if (target != null) target.delete();
+        if (target != null) MediaCache.delete(target);
         throw failure;
     }
 

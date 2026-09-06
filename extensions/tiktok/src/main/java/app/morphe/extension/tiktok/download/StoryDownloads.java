@@ -197,7 +197,7 @@ public final class StoryDownloads {
 
     private static void saveVideo(Context app, Object aweme, List<String> urls, String audioName) throws IOException {
         MediaBudget.checkDiskSpace(app.getCacheDir(), -1L);
-        File temp = File.createTempFile("story-", ".mp4", app.getCacheDir());
+        File temp = MediaCache.createTempFile(app, "story-", ".mp4");
         try {
             RemoteMedia.fetch(urls, temp, false);
             String path = DownloadsPatch.getVideoDownloadPath();
@@ -206,7 +206,7 @@ public final class StoryDownloads {
             if (audioName != null) AudioDownloads.write(app, audioName, temp);
             Utils.showToastShort(L10n.f("Story saved to %1$s", path));
         } finally {
-            if (!temp.delete()) Logger.printInfo(() -> "Could not remove story temporary file");
+            if (!MediaCache.delete(temp)) Logger.printInfo(() -> "Could not remove story temporary file");
         }
     }
 
@@ -217,7 +217,7 @@ public final class StoryDownloads {
         try {
             for (int index = 0; index < photos.size(); index++) {
                 MediaBudget.checkDiskSpace(app.getCacheDir(), -1L);
-                File temp = File.createTempFile("story-photo-", ".tmp", app.getCacheDir());
+                File temp = MediaCache.createTempFile(app, "story-photo-", ".tmp");
                 temporary.add(temp);
                 String extension = RemoteMedia.fetch(photos.get(index), temp, true);
                 String mime = "jpg".equals(extension) ? "image/jpeg" : "image/" + extension;
@@ -235,7 +235,7 @@ public final class StoryDownloads {
                     String.valueOf(completed), String.valueOf(photos.size())));
         } finally {
             for (File file : temporary) {
-                if (!file.delete()) Logger.printInfo(() -> "Could not remove story temporary file");
+                if (!MediaCache.delete(file)) Logger.printInfo(() -> "Could not remove story temporary file");
             }
         }
     }

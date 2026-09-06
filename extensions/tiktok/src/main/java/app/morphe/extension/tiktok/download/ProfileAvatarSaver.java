@@ -187,7 +187,7 @@ public final class ProfileAvatarSaver {
             File temp = null;
             try {
                 MediaBudget.checkDiskSpace(app.getCacheDir(), -1L);
-                temp = File.createTempFile("profile-picture-", ".tmp", app.getCacheDir());
+                temp = MediaCache.createTempFile(app, "profile-picture-", ".tmp");
                 String extension = RemoteMedia.fetch(urlSnapshot, temp, true);
                 String mime = "jpg".equals(extension) ? "image/jpeg" : "image/" + extension;
                 String saved = name.substring(0, name.lastIndexOf('.') + 1) + extension;
@@ -197,7 +197,7 @@ public final class ProfileAvatarSaver {
                 Logger.printException(() -> "Profile picture download failed", exception);
                 Utils.showToastLong(L10n.t("The profile picture couldn't be saved."));
             } finally {
-                if (temp != null && !temp.delete()) {
+                if (temp != null && !MediaCache.delete(temp)) {
                     Logger.printInfo(() -> "Could not remove profile picture temporary file");
                 }
                 RUNNING.set(false);

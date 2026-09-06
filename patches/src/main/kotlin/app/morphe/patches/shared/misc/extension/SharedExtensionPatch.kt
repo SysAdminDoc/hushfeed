@@ -98,6 +98,8 @@ open class ExtensionHook(
     internal val fingerprint: Fingerprint,
     private val insertIndexResolver: BytecodePatchContext.(Method) -> Int = { 0 },
     private val contextRegisterResolver: BytecodePatchContext.(Method) -> String = { "p0" },
+    private val postContextClassDescriptor: String? = null,
+    private val postContextMethodName: String? = null,
 ) {
     context(patchContext: BytecodePatchContext)
     operator fun invoke(extensionClassDescriptor: String) {
@@ -110,6 +112,13 @@ open class ExtensionHook(
                 "invoke-static/range { $contextRegister .. $contextRegister }, " +
                         "$extensionClassDescriptor->setContext(Landroid/content/Context;)V",
             )
+            if (postContextClassDescriptor != null && postContextMethodName != null) {
+                addInstruction(
+                    insertIndex + 1,
+                    "invoke-static/range { $contextRegister .. $contextRegister }, " +
+                            "$postContextClassDescriptor->$postContextMethodName(Landroid/content/Context;)V",
+                )
+            }
         }
     }
 }

@@ -326,6 +326,7 @@ public final class StickerGallerySaver {
         if (uri == null) {
             throw new IllegalStateException("MediaStore insert returned null");
         }
+        registerPending(context, resolver, uri);
 
         try {
             try (OutputStream outputStream = resolver.openOutputStream(uri)) {
@@ -337,14 +338,10 @@ public final class StickerGallerySaver {
 
             ContentValues complete = new ContentValues();
             complete.put(MediaStore.Images.Media.IS_PENDING, 0);
-            resolver.update(uri, complete, null, null);
+            completePending(context, resolver, uri, complete);
             return uri;
         } catch (Throwable ex) {
-            try {
-                resolver.delete(uri, null, null);
-            } catch (Throwable ignored) {
-                // Best effort cleanup.
-            }
+            discardPending(context, resolver, uri, ex);
             throw ex;
         }
     }
@@ -366,6 +363,7 @@ public final class StickerGallerySaver {
         Uri collection = DownloadDestination.collectionUri(relativePath, format.video);
         Uri uri = resolver.insert(collection, values);
         if (uri == null) throw new IllegalStateException("MediaStore insert returned null");
+        registerPending(context, resolver, uri);
 
         try {
             try (OutputStream outputStream = resolver.openOutputStream(uri)) {
@@ -374,14 +372,10 @@ public final class StickerGallerySaver {
             }
             ContentValues complete = new ContentValues();
             complete.put(MediaStore.MediaColumns.IS_PENDING, 0);
-            resolver.update(uri, complete, null, null);
+            completePending(context, resolver, uri, complete);
             return uri;
         } catch (Throwable ex) {
-            try {
-                resolver.delete(uri, null, null);
-            } catch (Throwable ignored) {
-                // Best effort cleanup.
-            }
+            discardPending(context, resolver, uri, ex);
             throw ex;
         }
     }
@@ -453,6 +447,7 @@ public final class StickerGallerySaver {
             values.put(MediaStore.MediaColumns.IS_PENDING, 1);
             Uri uri = resolver.insert(DownloadDestination.collectionUri(relativePath, video), values);
             if (uri == null) throw new IllegalStateException("MediaStore insert returned null");
+            registerPending(context, resolver, uri);
             try {
                 try (OutputStream output = resolver.openOutputStream(uri)) {
                     if (output == null) throw new IllegalStateException("MediaStore output stream returned null");
@@ -460,14 +455,10 @@ public final class StickerGallerySaver {
                 }
                 ContentValues complete = new ContentValues();
                 complete.put(MediaStore.MediaColumns.IS_PENDING, 0);
-                resolver.update(uri, complete, null, null);
+                completePending(context, resolver, uri, complete);
                 return SaveResult.success(displayPath(displayName, video), uri.toString(), label);
             } catch (Throwable ex) {
-                try {
-                    resolver.delete(uri, null, null);
-                } catch (Throwable ignored) {
-                    // Best effort cleanup.
-                }
+                discardPending(context, resolver, uri, ex);
                 throw ex;
             }
         }
@@ -507,6 +498,7 @@ public final class StickerGallerySaver {
 
         Uri uri = resolver.insert(DownloadDestination.collectionUri(relativePath, true), values);
         if (uri == null) throw new IllegalStateException("MediaStore insert returned null");
+        registerPending(context, resolver, uri);
 
         try {
             try (ParcelFileDescriptor output = resolver.openFileDescriptor(uri, "w")) {
@@ -515,14 +507,10 @@ public final class StickerGallerySaver {
             }
             ContentValues complete = new ContentValues();
             complete.put(MediaStore.Video.Media.IS_PENDING, 0);
-            resolver.update(uri, complete, null, null);
+            completePending(context, resolver, uri, complete);
             return uri;
         } catch (Throwable ex) {
-            try {
-                resolver.delete(uri, null, null);
-            } catch (Throwable ignored) {
-                // Best effort cleanup.
-            }
+            discardPending(context, resolver, uri, ex);
             throw ex;
         }
     }
@@ -572,6 +560,55 @@ public final class StickerGallerySaver {
             throw new IllegalStateException("PNG encoding failed");
         }
         outputStream.flush();
+    }
+
+    private static void registerPending(Context context, ContentResolver resolver, Uri uri) throws IOException {
+        try {
+            MediaCache.markPending(context, uri);
+        } catch (IOException error) {
+            try {
+                resolver.delete(uri, null, null);
+            } catch (RuntimeException cleanup) {
+                error.addSuppressed(cleanup);
+            }
+            throw error;
+        }
+    }
+
+    private static void completePending(
+            Context context,
+            ContentResolver resolver,
+            Uri uri,
+            ContentValues values
+    ) throws IOException {
+        if (resolver.update(uri, values, null, null) != 1) {
+            throw new IOException("Could not publish sticker");
+        }
+        try {
+            MediaCache.clearPending(context, uri);
+        } catch (IOException error) {
+            // Reconciliation checks IS_PENDING before deleting a journaled URI, so a completed
+            // row remains safe if this final cleanup write is interrupted.
+            Logger.printException(() -> "Could not clear media publication journal", error);
+        }
+    }
+
+    private static void discardPending(
+            Context context,
+            ContentResolver resolver,
+            Uri uri,
+            Throwable failure
+    ) {
+        try {
+            resolver.delete(uri, null, null);
+        } catch (Throwable cleanup) {
+            failure.addSuppressed(cleanup);
+        }
+        try {
+            MediaCache.clearPending(context, uri);
+        } catch (IOException journalError) {
+            failure.addSuppressed(journalError);
+        }
     }
 
     private static void copy(InputStream inputStream, OutputStream outputStream) throws Exception {

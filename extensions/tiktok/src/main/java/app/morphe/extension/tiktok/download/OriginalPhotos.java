@@ -47,7 +47,7 @@ public final class OriginalPhotos {
             try {
                 for (int i = 0; i < photoSnapshot.size(); i++) {
                     MediaBudget.checkDiskSpace(app.getCacheDir(), -1L);
-                    File temp = File.createTempFile("original-photo-", ".tmp", app.getCacheDir());
+                    File temp = MediaCache.createTempFile(app, "original-photo-", ".tmp");
                     try {
                         String extension = RemoteMedia.fetch(photoSnapshot.get(i), temp, true);
                         String mime = "jpg".equals(extension) ? "image/jpeg" : "image/" + extension;
@@ -55,7 +55,7 @@ public final class OriginalPhotos {
                         MediaFileWriter.publish(app, temp, name, mime, DownloadsPatch.getPhotoDownloadPath(), false);
                         saved++;
                     } finally {
-                        if (!temp.delete()) Logger.printInfo(() -> "Could not remove original photo temporary file");
+                        if (!MediaCache.delete(temp)) Logger.printInfo(() -> "Could not remove original photo temporary file");
                     }
                 }
                 Utils.showToastShort(L10n.f("Saved %1$s original photos", saved));
