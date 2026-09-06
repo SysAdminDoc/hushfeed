@@ -127,6 +127,26 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
             ));
             addPreference(new TogglePreference(
                     context,
+                    "Hide the action bar",
+                    "Hide the column on the right: avatar, like, comments, favourite, share "
+                            + "and the music disc.",
+                    Settings.HIDE_FEED_ACTION_BAR
+            ));
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide surveys",
+                    "Hide the question cards TikTok slides over a video near its end.",
+                    Settings.HIDE_FEED_SURVEYS
+            ));
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide the status bar",
+                    "Keep the clock and status icons off the screen while TikTok is open. "
+                            + "Swipe down from the top to peek at them.",
+                    Settings.HIDE_STATUS_BAR
+            ));
+            addPreference(new TogglePreference(
+                    context,
                     "Hide visual search prompt",
                     "Hide the \"Search this image\" prompt TikTok shows over videos when it spots something to shop for.",
                     Settings.HIDE_VISUAL_SEARCH
