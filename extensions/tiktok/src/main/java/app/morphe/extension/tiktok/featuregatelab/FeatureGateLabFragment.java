@@ -1103,9 +1103,14 @@ public final class FeatureGateLabFragment extends Fragment {
         public View getView(int position, View convertView, ViewGroup parent) {
             RowHolder holder;
             if (convertView == null) {
+                // Two columns work while the text is small enough for both to fit. Past that
+                // the state column is squeezing three labels into a width that does not grow
+                // with them, so the row stacks and each half gets the whole width.
+                boolean stacked = context.getResources().getConfiguration().fontScale > 1.3f;
+
                 LinearLayout row = new LinearLayout(context);
-                row.setOrientation(LinearLayout.HORIZONTAL);
-                row.setGravity(Gravity.CENTER_VERTICAL);
+                row.setOrientation(stacked ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL);
+                row.setGravity(stacked ? Gravity.START : Gravity.CENTER_VERTICAL);
                 row.setMinimumHeight(FeatureGateLabUi.dp(context, 84));
                 row.setPadding(
                         FeatureGateLabUi.dp(context, 16),
@@ -1126,26 +1131,40 @@ public final class FeatureGateLabFragment extends Fragment {
                 key.setEllipsize(TextUtils.TruncateAt.MIDDLE);
                 textColumn.addView(title, FeatureGateLabUi.matchWrap());
                 textColumn.addView(key, FeatureGateLabUi.matchWrap());
-                row.addView(textColumn, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+                row.addView(textColumn, stacked
+                        ? new LinearLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT)
+                        : new LinearLayout.LayoutParams(
+                                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
+                int sideGravity = stacked ? Gravity.START : Gravity.END;
                 LinearLayout stateColumn = new LinearLayout(context);
                 stateColumn.setOrientation(LinearLayout.VERTICAL);
-                stateColumn.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+                stateColumn.setGravity(sideGravity | Gravity.CENTER_VERTICAL);
                 TextView type = FeatureGateLabUi.text(context, "", 12, SettingsUi.textSecondary(), Typeface.BOLD);
-                type.setGravity(Gravity.END);
+                type.setGravity(sideGravity);
                 TextView state = FeatureGateLabUi.text(context, "", 12, SettingsUi.textSecondary(), Typeface.NORMAL);
-                state.setGravity(Gravity.END);
+                state.setGravity(sideGravity);
                 TextView value = FeatureGateLabUi.text(context, "", 12, SettingsUi.textPrimary(), Typeface.NORMAL);
-                value.setGravity(Gravity.END);
-                value.setSingleLine(true);
+                value.setGravity(sideGravity);
+                // The value is the reason the row is worth reading. Given the width it wraps
+                // rather than shortening; only past three lines is there nothing else to do.
+                value.setSingleLine(false);
+                value.setMaxLines(3);
                 value.setEllipsize(TextUtils.TruncateAt.END);
                 stateColumn.addView(type, FeatureGateLabUi.matchWrap());
                 stateColumn.addView(value, FeatureGateLabUi.matchWrap());
                 stateColumn.addView(state, FeatureGateLabUi.matchWrap());
-                row.addView(stateColumn, new LinearLayout.LayoutParams(
-                        FeatureGateLabUi.dp(context, 116),
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                ));
+                LinearLayout.LayoutParams stateParams = stacked
+                        ? new LinearLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT)
+                        : new LinearLayout.LayoutParams(
+                                FeatureGateLabUi.dp(context, 116),
+                                ViewGroup.LayoutParams.WRAP_CONTENT);
+                if (stacked) stateParams.setMargins(0, FeatureGateLabUi.dp(context, 8), 0, 0);
+                row.addView(stateColumn, stateParams);
 
                 holder = new RowHolder(title, key, type, value, state);
                 row.setTag(holder);
