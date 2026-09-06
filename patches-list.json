@@ -1164,7 +1164,7 @@
     },
     {
       "name": "Hide video overlays",
-      "description": "Hides the visual search prompt TikTok lays over videos and the Live entrance in the top left corner, each with its own switch. Supports TikTok 46.2.3.",
+      "description": "Hides the visual search prompt TikTok lays over videos, the Live entrance in the top left corner, the caption and the music line, each with its own switch. Supports TikTok 46.2.3.",
       "use": false,
       "dependencies": [
         "BytecodePatch"

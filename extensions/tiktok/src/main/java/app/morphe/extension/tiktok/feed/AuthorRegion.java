@@ -5,6 +5,7 @@
 package app.morphe.extension.tiktok.feed;
 
 import android.app.Activity;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -46,6 +47,13 @@ public final class AuthorRegion {
     /** The name as TikTok wrote it, before a country was appended to it. */
     private static WeakReference<TextView> decoratedName = new WeakReference<>(null);
     private static CharSequence originalName;
+
+    /** Exactly what was written over it, so a row TikTok has since rebound is left alone. */
+    private static CharSequence decoratedText;
+
+    /** The region is read by reflection, so it is resolved once per video, not per frame. */
+    private static WeakReference<Object> regionAweme = new WeakReference<>(null);
+    private static String regionValue;
 
     private AuthorRegion() {
     }
@@ -100,7 +108,15 @@ public final class AuthorRegion {
                 return;
             }
 
-            decorate(findName(activity.findViewById(android.R.id.content)), region());
+            // Resolving the region first keeps the view tree search off the layout path
+            // for every video that has no country to show.
+            String region = region();
+            if (region == null) {
+                restore();
+                return;
+            }
+
+            decorate(findName(activity.findViewById(android.R.id.content)), region);
         } catch (Throwable ex) {
             Logger.printException(() -> "Could not show the author region", ex);
         }
@@ -133,20 +149,29 @@ public final class AuthorRegion {
             return;
         }
 
+        String suffix = SEPARATOR + region;
+        CharSequence current = name.getText();
+        if (name == decoratedName.get() && current != null && current.toString().endsWith(suffix)) {
+            // Already carrying this country. Every layout pass lands here.
+            return;
+        }
+
+        // Put back whatever was decorated before, then read the name again: on a video
+        // change the text read a moment ago was the previous country's, and appending to
+        // that is how a row ends up reading "creator - US - GB".
+        restore();
+
         CharSequence text = name.getText();
         if (text == null) {
             return;
         }
 
-        String suffix = SEPARATOR + region;
-        if (text.toString().endsWith(suffix)) {
-            return;
-        }
-
-        restore();
+        // concat rather than string addition, so a styled name keeps its spans.
+        CharSequence updated = TextUtils.concat(text, suffix);
         decoratedName = new WeakReference<>(name);
         originalName = text;
-        name.setText(text + suffix);
+        decoratedText = updated;
+        name.setText(updated);
     }
 
     /** Lets a test drive the ids the activity's resources would otherwise supply. */
@@ -157,25 +182,40 @@ public final class AuthorRegion {
 
     /** The two letter country the current video was posted from, upper case. */
     private static String region() {
-        String region = Reflect.string(CurrentVideoAuthor.getAweme(), "getRegion", "region");
-        if (region == null) {
+        Object aweme = CurrentVideoAuthor.getAweme();
+        if (aweme == null) {
+            regionAweme = new WeakReference<>(null);
+            regionValue = null;
             return null;
         }
-        String trimmed = region.trim();
-        return trimmed.isEmpty() ? null : trimmed.toUpperCase(Locale.ROOT);
+        if (aweme == regionAweme.get()) {
+            return regionValue;
+        }
+
+        String region = Reflect.string(aweme, "getRegion", "region");
+        String trimmed = region == null ? null : region.trim();
+        regionValue = trimmed == null || trimmed.isEmpty() ? null : trimmed.toUpperCase(Locale.ROOT);
+        regionAweme = new WeakReference<>(aweme);
+        return regionValue;
     }
 
     static void restore() {
         TextView name = decoratedName.get();
-        decoratedName = new WeakReference<>(null);
         CharSequence previous = originalName;
+        CharSequence written = decoratedText;
+        decoratedName = new WeakReference<>(null);
         originalName = null;
+        decoratedText = null;
 
-        if (name == null || previous == null) {
+        if (name == null || previous == null || written == null) {
             return;
         }
-        // Only undo our own edit. A rebound row already carries TikTok's text.
-        if (name.getText() != null && name.getText().toString().startsWith(previous.toString())) {
+
+        // Only undo the exact edit made here. A row TikTok has rebound since carries its
+        // own text, and a new creator's name can begin with the old one, so a prefix test
+        // would truncate a genuine name.
+        CharSequence now = name.getText();
+        if (now != null && now.toString().equals(written.toString())) {
             name.setText(previous);
         }
     }

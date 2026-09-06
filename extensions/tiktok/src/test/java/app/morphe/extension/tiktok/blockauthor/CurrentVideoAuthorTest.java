@@ -109,7 +109,7 @@ public class CurrentVideoAuthorTest {
                     Reflect.string(CurrentVideoAuthor.getAweme(), "getAid", "aid"));
             assertEquals("creator_gated", CurrentVideoAuthor.get().uid);
         } finally {
-            Settings.BLOCK_AUTHOR_BUTTON.save(true);
+            Settings.BLOCK_AUTHOR_BUTTON.save(false);
         }
     }
 }

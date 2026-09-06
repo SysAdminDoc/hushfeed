@@ -3,8 +3,13 @@ package app.morphe.extension.tiktok.feed;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
+import android.graphics.Typeface;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.StyleSpan;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -105,5 +110,50 @@ public class AuthorRegionTest {
         AuthorRegion.decorate(second, "GB");
         assertEquals("second creator · GB", second.getText().toString());
         assertEquals("first creator", first.getText().toString());
+    }
+
+    @Test
+    public void aVideoChangeOnTheSameRowReplacesTheCountryInsteadOfStackingIt() {
+        // The feed recycles the row: the same TextView is rebound for the next video, and
+        // the player can name that video before the row is redecorated.
+        LinearLayout row = feedRow("alice");
+        TextView name = AuthorRegion.findName(row);
+
+        AuthorRegion.decorate(name, "US");
+        AuthorRegion.decorate(name, "GB");
+        AuthorRegion.decorate(name, "DE");
+        assertEquals("alice · DE", name.getText().toString());
+
+        AuthorRegion.restore();
+        assertEquals("alice", name.getText().toString());
+    }
+
+    @Test
+    public void aRebuiltRowWhoseNameExtendsTheOldOneIsLeftAlone() {
+        LinearLayout row = feedRow("Sam");
+        TextView name = AuthorRegion.findName(row);
+        AuthorRegion.decorate(name, "US");
+        assertEquals("Sam · US", name.getText().toString());
+
+        // TikTok rebinds the recycled row to a creator whose name starts with the old one.
+        name.setText("Sam Smith");
+        AuthorRegion.restore();
+        assertEquals("Sam Smith", name.getText().toString());
+    }
+
+    @Test
+    public void aStyledNameKeepsItsSpans() {
+        LinearLayout row = feedRow("");
+        TextView name = AuthorRegion.findName(row);
+        SpannableString styled = new SpannableString("alice");
+        styled.setSpan(new StyleSpan(Typeface.BOLD), 0, 5, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        name.setText(styled);
+
+        AuthorRegion.decorate(name, "US");
+
+        assertEquals("alice · US", name.getText().toString());
+        CharSequence decorated = name.getText();
+        assertTrue(decorated instanceof Spanned);
+        assertEquals(1, ((Spanned) decorated).getSpans(0, 5, StyleSpan.class).length);
     }
 }

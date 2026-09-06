@@ -1,5 +1,7 @@
 ## 0.14.1 (2026-09-05)
 
+* Hide video overlays gained switches for the caption and the music line. Both put the row back when the switch goes off.
+
 * New Hide content warnings patch plays videos TikTok has classified without the overlay asking to be tapped through first. Off by default.
 
 * New Show author region patch puts the country a video was posted from next to the creator's name on the feed. Off by default.

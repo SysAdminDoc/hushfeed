@@ -110,6 +110,18 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
         if (SettingsStatus.videoOverlaysEnabled) {
             addPreference(new TogglePreference(
                     context,
+                    "Hide the caption",
+                    "Hide the description under the creator's name on the feed.",
+                    Settings.HIDE_FEED_CAPTION
+            ));
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide the music line",
+                    "Hide the spinning music cover and the track name beside the caption.",
+                    Settings.HIDE_FEED_MUSIC
+            ));
+            addPreference(new TogglePreference(
+                    context,
                     "Hide visual search prompt",
                     "Hide the \"Search this image\" prompt TikTok shows over videos when it spots something to shop for.",
                     Settings.HIDE_VISUAL_SEARCH

@@ -15,6 +15,7 @@ import app.morphe.extension.tiktok.settings.Settings;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.WeakHashMap;
 import java.util.Map;
 
 /**
@@ -36,7 +37,17 @@ public final class VideoOverlayHider {
     private static final String[] VISUAL_SEARCH_IDS = {"fb", "cn"};
     private static final String LIVE_ENTRANCE_ID = "jup";
 
+    /** The caption under the creator's name, and the music cover block beside it. */
+    private static final String CAPTION_ID = "desc";
+    private static final String MUSIC_ID = "videomusiccoverblock";
+
     private static final Map<String, Integer> RESOLVED_IDS = new HashMap<>();
+
+    /**
+     * Views this class hid, so turning a switch back off restores them and a view
+     * TikTok hid for its own reasons is never forced back on.
+     */
+    private static final Map<View, Boolean> HIDDEN_HERE = new WeakHashMap<>();
 
     private static WeakReference<Activity> activityReference = new WeakReference<>(null);
     private static ViewTreeObserver.OnGlobalLayoutListener listener;
@@ -90,19 +101,48 @@ public final class VideoOverlayHider {
             if (Settings.HIDE_LIVE_ENTRANCE.get()) {
                 hide(activity, APP_PACKAGE, LIVE_ENTRANCE_ID);
             }
+
+            // These two are ordinary feed furniture rather than a prompt, so they come back
+            // when the switch goes off instead of staying gone until the next video.
+            setHidden(view(activity, APP_PACKAGE, CAPTION_ID), Settings.HIDE_FEED_CAPTION.get());
+            setHidden(view(activity, APP_PACKAGE, MUSIC_ID), Settings.HIDE_FEED_MUSIC.get());
         } catch (Throwable ex) {
             Logger.printException(() -> "Video overlay hider failed", ex);
         }
     }
 
     private static void hide(Activity activity, String packageName, String name) {
-        int id = identifier(activity, packageName, name);
-        if (id == 0) {
-            return;
-        }
-        View view = activity.findViewById(id);
+        View view = view(activity, packageName, name);
         if (view != null && view.getVisibility() != View.GONE) {
             view.setVisibility(View.GONE);
+        }
+    }
+
+    private static View view(Activity activity, String packageName, String name) {
+        int id = identifier(activity, packageName, name);
+        return id == 0 ? null : activity.findViewById(id);
+    }
+
+    /**
+     * Hides a view and remembers it, or puts back one this class hid. A view that was
+     * already gone when the switch went on is left alone on the way back, because TikTok
+     * had its own reason for that.
+     */
+    static void setHidden(View view, boolean hidden) {
+        if (view == null) {
+            return;
+        }
+
+        if (hidden) {
+            if (view.getVisibility() != View.GONE) {
+                HIDDEN_HERE.put(view, Boolean.TRUE);
+                view.setVisibility(View.GONE);
+            }
+            return;
+        }
+
+        if (HIDDEN_HERE.remove(view) != null && view.getVisibility() == View.GONE) {
+            view.setVisibility(View.VISIBLE);
         }
     }
 
