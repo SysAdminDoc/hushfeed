@@ -94,11 +94,20 @@ public class AdvancedDownloadsTest {
         public String getUniqueId() { return uniqueId; }
         public String getNickname() { return nickname; }
     }
-    /** The profile fetch response the app reads the user out of. */
+    /**
+     * The profile fetch response, shaped like the patched one: the patch prepends the record
+     * call to getUser itself, so a double with a plain getter would hide a reader that goes
+     * back through the getter and never stops.
+     */
     public static final class Profile {
         public final Account user;
+        static int getUserCalls;
         Profile(Account user) { this.user = user; }
-        public Account getUser() { return user; }
+        public Account getUser() {
+            getUserCalls++;
+            ProfileAvatarSaver.recordProfileResponse(this);
+            return user;
+        }
     }
     public static final class Post {
         public final Info photoModeImageInfo;
@@ -316,13 +325,44 @@ public class AdvancedDownloadsTest {
     @Test public void theRecordedProfileIsTheOneTheResponseCarries() {
         Account account = new Account("dancer", "Dancer");
         account.avatar300 = new Address("https://example.com/300.jpg", 50);
+        Profile.getUserCalls = 0;
         ProfileAvatarSaver.recordProfileResponse(new Profile(account));
         assertSame(account, ProfileAvatarSaver.recordedProfileUser());
+        // Reading the field, not the getter: the patch put this call inside getUser, so one
+        // trip through the getter would be a stack overflow that the reflection helper eats.
+        assertEquals("getUser calls", 0, Profile.getUserCalls);
+
         // A response with no user leaves the last profile alone rather than blanking it.
         ProfileAvatarSaver.recordProfileResponse(new Profile(null));
         ProfileAvatarSaver.recordProfileResponse(new Object());
         ProfileAvatarSaver.recordProfileResponse(null);
         assertSame(account, ProfileAvatarSaver.recordedProfileUser());
+        assertEquals("getUser calls", 0, Profile.getUserCalls);
+    }
+
+    @Test public void thePictureIsRefusedWhenTheHandleOnScreenIsSomebodyElse() {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            android.widget.LinearLayout header = new android.widget.LinearLayout(activity);
+            android.widget.TextView handle = new android.widget.TextView(activity);
+            android.view.View avatar = new android.view.View(activity);
+            header.addView(handle);
+            header.addView(avatar);
+
+            Account onScreen = new Account("dancer", "Dancer");
+            Account somebodyElse = new Account("singer", "Singer");
+            handle.setText("@dancer");
+            assertTrue(ProfileAvatarSaver.matchesProfileOnScreen(avatar, onScreen));
+            assertFalse(ProfileAvatarSaver.matchesProfileOnScreen(avatar, somebodyElse));
+
+            // A header with no handle on it cannot tell either way, so it does not refuse.
+            handle.setText("Dancer");
+            assertTrue(ProfileAvatarSaver.matchesProfileOnScreen(avatar, somebodyElse));
+            // Neither can a profile with no handle of its own.
+            handle.setText("@dancer");
+            assertTrue(ProfileAvatarSaver.matchesProfileOnScreen(avatar, new Account(" ", null)));
+        }
     }
 
     @Test public void advancedPatchAloneShowsItsOwnOptions() throws Exception {

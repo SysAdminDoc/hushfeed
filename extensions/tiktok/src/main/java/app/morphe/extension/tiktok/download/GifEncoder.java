@@ -37,6 +37,15 @@ final class GifEncoder {
     private static final int ALPHA_FLOOR = 128;
     private static final int MAX_COLORS = 255;
 
+    /**
+     * Colours are counted at full precision until there are this many. Past it the picture is
+     * going to be quantised to 255 anyway, so it is snapped to five bits a channel first: that
+     * caps the work at 32,768 colours instead of the millions a photographic sticker carries,
+     * and the error it adds is a fraction of what median cut adds next.
+     */
+    private static final int EXACT_COLOR_LIMIT = 4096;
+    private static final int COARSE = 0xF8F8F8;
+
     private GifEncoder() {
     }
 
@@ -50,7 +59,8 @@ final class GifEncoder {
             }
         }
 
-        int[] palette = palette(frames);
+        int mask = precisionMask(frames);
+        int[] palette = palette(frames, mask);
         int transparent = palette.length;
         int tableSize = tableSize(palette.length + 1);
         int bits = Integer.numberOfTrailingZeros(tableSize);
@@ -106,7 +116,7 @@ final class GifEncoder {
                 int color = frame.argb[at];
                 indexes[at] = (byte) (((color >>> 24) < ALPHA_FLOOR)
                         ? transparent
-                        : nearest(nearest, palette, color & 0xFFFFFF));
+                        : nearest(nearest, palette, color & mask));
             }
             writeLzw(out, indexes, Math.max(2, bits));
         }
@@ -115,13 +125,13 @@ final class GifEncoder {
     }
 
     /** One palette for every frame, so the colours do not swim as the animation runs. */
-    private static int[] palette(List<Frame> frames) {
+    private static int[] palette(List<Frame> frames, int mask) {
         List<Integer> colors = new ArrayList<>();
         Map<Integer, Boolean> seen = new HashMap<>();
         for (Frame frame : frames) {
             for (int color : frame.argb) {
                 if ((color >>> 24) < ALPHA_FLOOR) continue;
-                Integer rgb = color & 0xFFFFFF;
+                Integer rgb = color & mask;
                 if (seen.put(rgb, Boolean.TRUE) == null) colors.add(rgb);
             }
         }
@@ -132,6 +142,23 @@ final class GifEncoder {
             return exact;
         }
         return medianCut(colors);
+    }
+
+    /**
+     * Full precision while the picture has few enough colours to count them all, coarser once
+     * it does not. Counting stops as soon as the answer is known, so a photographic frame does
+     * not build a map of every colour in it just to find that out.
+     */
+    private static int precisionMask(List<Frame> frames) {
+        Map<Integer, Boolean> seen = new HashMap<>();
+        for (Frame frame : frames) {
+            for (int color : frame.argb) {
+                if ((color >>> 24) < ALPHA_FLOOR) continue;
+                seen.put(color & 0xFFFFFF, Boolean.TRUE);
+                if (seen.size() > EXACT_COLOR_LIMIT) return COARSE;
+            }
+        }
+        return 0xFFFFFF;
     }
 
     /**

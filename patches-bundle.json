@@ -1,7 +1,7 @@
 {
   "created_at": "2026-09-06T03:04:11",
-  "description": "Hushfeed v0.16.0 targets global TikTok 46.2.3 (com.zhiliaoapp.musically).\n\nEvery settings page now shares AMOLED backgrounds, grouped rows and larger headings. Feature Gate Lab, gate details and recording reports follow the same layout. Light mode and larger English/German text remain supported. Native preferences keep their existing actions and saved values.\n\nValidation: 156 runtime tests passed locally. The release bundle contains 61 patches and passed checks for all three DEX payloads. Offscreen Android rendering covered both themes; phone installation has not been verified.\n\nThe downloadable .mpp is the patch bundle. Patch on the device with Morphe Manager and keep its existing signing key.",
-  "download_url": "https://github.com/SysAdminDoc/hushfeed/releases/download/v0.16.0/patches-0.16.0.mpp",
+  "description": "Hushfeed v0.17.0 targets global TikTok 46.2.3 (com.zhiliaoapp.musically).\n\nPatching now fits the memory Morphe Manager gives by default. The settings text moved out of TikTok's resources and into the patch's own code, and screen capture detection stopped asking for resources it did not need, so the default set of patches finishes in 512 MB instead of 768. AMOLED dark theme rewrites colours and still needs 768.\n\nNew in this release: the settings screen speaks Indonesian, a video's sound can be saved as its own .m4a, an animated sticker can be saved as MP4, GIF or the WebP TikTok sent, and a long press on a profile picture saves the full size original.\n\nValidation: 270 runtime tests passed locally. The bundle carries 63 patches and passed checks for all three DEX payloads; 62 of them applied to a stock 46.2.3 APK in one run. Phone installation has not been verified.\n\nThe downloadable .mpp is the patch bundle. Patch on the device with Morphe Manager and keep its existing signing key.",
+  "download_url": "https://github.com/SysAdminDoc/hushfeed/releases/download/v0.17.0/patches-0.17.0.mpp",
   "signature_download_url": "",
-  "version": "0.16.0"
+  "version": "0.17.0"
 }

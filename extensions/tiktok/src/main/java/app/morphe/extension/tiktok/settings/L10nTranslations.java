@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(824);
+        Map<String, String> table = new HashMap<>(834);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -622,6 +622,8 @@ public final class L10nTranslations {
                 "Externe Links direkt öffnen");
         table.put("Open profile and story website links in your system browser instead of TikTok's in-app browser.",
                 "Website-Links aus Profilen und Storys im Systembrowser öffnen statt in TikToks In-App-Browser.");
+        table.put("Open the profile again and try once more",
+                "Öffne das Profil erneut und versuche es noch einmal");
         table.put("Operator MCC/MNC",
                 "Netzbetreiber MCC/MNC");
         table.put("Operator name",
@@ -646,6 +648,8 @@ public final class L10nTranslations {
                 "Wiedergabe");
         table.put("Press and hold a profile picture to save the full size original to your photo destination.",
                 "Ein Profilbild gedrückt halten, um das Original in voller Größe im Fotoordner zu speichern.");
+        table.put("Profile picture saved to %1$s",
+                "Profilbild gespeichert unter %1$s");
         table.put("Promotions, popups, publish dates, and feed controls.",
                 "Werbeaktionen, Popups, Veröffentlichungsdaten und Feed-Bedienelemente.");
         table.put("Put back %1$s videos",
@@ -664,13 +668,13 @@ public final class L10nTranslations {
                 "Werbung aus dem Feed entfernen.");
         table.put("Remove feed ads",
                 "Werbung im Feed entfernen");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("Remove secure window flags. Restart TikTok after changing.",
                 "Sichere Fenster-Flags entfernen. Starte TikTok nach der Änderung neu.");
         table.put("Remove the Share via row.",
                 "Die Zeile „Teilen über“ entfernen.");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("Remove the actions row from the share sheet.",
                 "Die Aktionszeile aus dem Teilen-Menü entfernen.");
         table.put("Remove the row of friends from the top of the share sheet.",
@@ -783,17 +787,19 @@ public final class L10nTranslations {
                 "Feature-Gate-Aufzeichnung starten");
         table.put("Sticker destination",
                 "Speicherort für Sticker");
+        table.put("Still saving the last one",
+                "Das letzte wird noch gespeichert");
         table.put("Stop ByteDance AppLog events, AppsFlyer attribution, explicit Firebase screen reports and crash reporting from being sent. TikTok's own diagnostics go quiet with them.",
                 "ByteDance-AppLog-Ereignisse, AppsFlyer-Attribution, explizite Firebase-Bildschirmberichte und Absturzmeldungen nicht mehr senden. TikToks eigene Diagnose verstummt damit ebenfalls.");
+    }
+
+    private static void fillDe6(Map<String, String> table) {
         table.put("Stop TikTok reporting that you viewed a story or a profile, that you are typing. Online status is unchanged. It cannot undo what the server has already recorded.",
                 "TikTok nicht mehr melden lassen, dass du eine Story oder ein Profil angesehen hast oder gerade tippst. Der Online-Status bleibt unverändert. Was der Server bereits aufgezeichnet hat, lässt sich nicht rückgängig machen.");
         table.put("Stop feature gate recording",
                 "Feature-Gate-Aufzeichnung beenden");
         table.put("Stop the brand animation that plays over the comments when what someone typed matches an advertiser's trigger.",
                 "Stoppt die Markenanimation über den Kommentaren, wenn das Getippte zu einem Werbe-Auslöser passt.");
-    }
-
-    private static void fillDe6(Map<String, String> table) {
         table.put("Stop video looping",
                 "Videoschleife beenden");
         table.put("Stop videos at the end instead of replaying them.",
@@ -814,6 +820,8 @@ public final class L10nTranslations {
                 "Mindest- oder Höchstzahl an Teilungen, damit ein Video gezeigt wird.");
         table.put("The minimum or maximum views of a video to show.",
                 "Die Mindest- oder Höchstzahl an Aufrufen, die ein Video zum Anzeigen haben darf.");
+        table.put("The profile picture couldn't be saved.",
+                "Das Profilbild konnte nicht gespeichert werden.");
         table.put("The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks. Takes effect after a restart.",
                 "Der Daumen runter an jedem Kommentar blockiert das Konto, das ihn geschrieben hat, statt ihn abzulehnen. Der Kommentar wird abgedunkelt, ein Rückgängig-Banner folgt, und ein zweites Tippen hebt die Blockierung auf. Wirkt nach einem Neustart.");
         table.put("There was nothing to clear",
@@ -822,6 +830,8 @@ public final class L10nTranslations {
                 "Es gab nichts zurückzuholen");
         table.put("This deletes the local record only. Your TikTok account history is not touched.",
                 "Das löscht nur die lokale Aufzeichnung. Dein TikTok-Kontoverlauf bleibt unberührt.");
+        table.put("This profile picture isn't available to save",
+                "Dieses Profilbild lässt sich nicht speichern");
         table.put("Thumbs down blocks the commenter",
                 "Daumen runter blockiert den Kommentierenden");
         table.put("TikTok default",
@@ -901,7 +911,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(824);
+        Map<String, String> table = new HashMap<>(834);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1479,6 +1489,8 @@ public final class L10nTranslations {
                 "Buka tautan luar secara langsung");
         table.put("Open profile and story website links in your system browser instead of TikTok's in-app browser.",
                 "Buka tautan situs di profil dan Story lewat peramban sistemmu, bukan peramban dalam aplikasi TikTok.");
+        table.put("Open the profile again and try once more",
+                "Buka lagi profilnya dan coba sekali lagi");
         table.put("Operator MCC/MNC",
                 "MCC/MNC operator");
         table.put("Operator name",
@@ -1503,6 +1515,8 @@ public final class L10nTranslations {
                 "Pemutaran");
         table.put("Press and hold a profile picture to save the full size original to your photo destination.",
                 "Tekan dan tahan foto profil untuk menyimpan aslinya dalam ukuran penuh ke lokasi simpan fotomu.");
+        table.put("Profile picture saved to %1$s",
+                "Foto profil disimpan ke %1$s");
         table.put("Promotions, popups, publish dates, and feed controls.",
                 "Promosi, popup, tanggal unggah, dan kontrol feed.");
         table.put("Put back %1$s videos",
@@ -1521,13 +1535,13 @@ public final class L10nTranslations {
                 "Hapus iklan dari feed.");
         table.put("Remove feed ads",
                 "Hapus iklan di feed");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("Remove secure window flags. Restart TikTok after changing.",
                 "Hapus flag jendela aman. Mulai ulang TikTok setelah mengubahnya.");
         table.put("Remove the Share via row.",
                 "Hapus baris Bagikan lewat.");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("Remove the actions row from the share sheet.",
                 "Hapus baris aksi dari menu bagikan.");
         table.put("Remove the row of friends from the top of the share sheet.",
@@ -1640,17 +1654,19 @@ public final class L10nTranslations {
                 "Mulai merekam feature gate");
         table.put("Sticker destination",
                 "Lokasi simpan stiker");
+        table.put("Still saving the last one",
+                "Yang sebelumnya masih disimpan");
         table.put("Stop ByteDance AppLog events, AppsFlyer attribution, explicit Firebase screen reports and crash reporting from being sent. TikTok's own diagnostics go quiet with them.",
                 "Hentikan pengiriman peristiwa AppLog ByteDance, atribusi AppsFlyer, laporan layar Firebase, dan laporan mogok. Diagnostik milik TikTok ikut diam bersamanya.");
+    }
+
+    private static void fillIn6(Map<String, String> table) {
         table.put("Stop TikTok reporting that you viewed a story or a profile, that you are typing. Online status is unchanged. It cannot undo what the server has already recorded.",
                 "Hentikan TikTok melaporkan bahwa kamu melihat Story atau profil, dan bahwa kamu sedang mengetik. Status online tidak berubah. Ini tidak bisa membatalkan yang sudah tercatat di server.");
         table.put("Stop feature gate recording",
                 "Hentikan rekaman feature gate");
         table.put("Stop the brand animation that plays over the comments when what someone typed matches an advertiser's trigger.",
                 "Hentikan animasi merek yang muncul di atas komentar saat ketikan seseorang cocok dengan pemicu pengiklan.");
-    }
-
-    private static void fillIn6(Map<String, String> table) {
         table.put("Stop video looping",
                 "Hentikan pengulangan video");
         table.put("Stop videos at the end instead of replaying them.",
@@ -1671,6 +1687,8 @@ public final class L10nTranslations {
                 "Jumlah bagikan minimum atau maksimum agar video ditampilkan.");
         table.put("The minimum or maximum views of a video to show.",
                 "Jumlah tayangan minimum atau maksimum agar video ditampilkan.");
+        table.put("The profile picture couldn't be saved.",
+                "Foto profilnya tidak bisa disimpan.");
         table.put("The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks. Takes effect after a restart.",
                 "Jempol ke bawah pada tiap komentar memblokir akun yang menulisnya, bukan menandai tidak suka. Komentarnya meredup, muncul spanduk untuk mengurungkan, dan ketukan kedua membuka blokirnya. Berlaku setelah mulai ulang.");
         table.put("There was nothing to clear",
@@ -1679,6 +1697,8 @@ public final class L10nTranslations {
                 "Tidak ada yang bisa dikembalikan");
         table.put("This deletes the local record only. Your TikTok account history is not touched.",
                 "Ini hanya menghapus catatan di perangkat. Riwayat akun TikTok-mu tidak disentuh.");
+        table.put("This profile picture isn't available to save",
+                "Foto profil ini tidak bisa disimpan");
         table.put("Thumbs down blocks the commenter",
                 "Jempol ke bawah memblokir pengomentar");
         table.put("TikTok default",

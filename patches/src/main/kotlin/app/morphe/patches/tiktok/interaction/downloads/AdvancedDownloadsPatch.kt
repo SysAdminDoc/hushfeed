@@ -9,6 +9,7 @@ import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import com.android.tools.smali.dexlib2.AccessFlags
 
 private const val VIDEO = "Lcom/ss/android/ugc/aweme/feed/model/Video;"
 private const val URL = "Lcom/ss/android/ugc/aweme/base/model/UrlModel;"
@@ -38,6 +39,8 @@ private object ProfileAvatarBindFingerprint : Fingerprint(
     definingClass = "/ProfileHeaderAvatarBaseComponent;",
     parameters = listOf("I", "Landroid/view/View;", "Ljava/lang/String;"),
     returnType = "V",
+    // p2 is the View only on an instance method; on a static one it would be the String.
+    custom = { method, _ -> method.accessFlags and AccessFlags.STATIC.value == 0 },
 )
 
 private object StartDownloadFingerprint : Fingerprint(
