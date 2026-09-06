@@ -228,6 +228,8 @@
     <string name="mtp_4844952c">Schwarz</string>
     <!-- Hide the speech bubble and its count in the right column. -->
     <string name="mtp_48c563a4">Sprechblase und Zähler in der rechten Spalte ausblenden</string>
+    <!-- The minimum or maximum comments on a video to show. -->
+    <string name="mtp_49353a15">Mindest- oder Höchstzahl an Kommentaren, damit ein Video gezeigt wird.</string>
     <!-- Resume videos after scrolling -->
     <string name="mtp_4b6647b0">Videos nach dem Scrollen fortsetzen</string>
     <!-- Ghost mode -->
@@ -238,6 +240,8 @@
     <string name="mtp_4d498233">Dateiname für Fotos</string>
     <!-- Comma separated words or phrases. Matching captions are skipped. Case doesn't matter. -->
     <string name="mtp_4eb604d9">Wörter oder Ausdrücke, durch Kommas getrennt. Passende Beschreibungen werden übersprungen. Groß- und Kleinschreibung spielt keine Rolle.</string>
+    <!-- Min/Max comments -->
+    <string name="mtp_4ece1879">Min/Max Kommentare</string>
     <!-- Hide the favourite button -->
     <string name="mtp_4eeb97bd">Favoriten-Button ausblenden</string>
     <!-- Keep long-pressing Share from opening TikTok's quick-share interaction. -->
@@ -512,6 +516,8 @@
     <string name="mtp_afb994a9">Feature-Gate-Aufzeichnung beenden</string>
     <!-- Copy only the comment text when using TikTok's copy comment action. -->
     <string name="mtp_affe5c75">Beim Kopieren eines Kommentars über TikTok nur den Kommentartext übernehmen.</string>
+    <!-- The minimum or maximum shares of a video to show. -->
+    <string name="mtp_b0234035">Mindest- oder Höchstzahl an Teilungen, damit ein Video gezeigt wird.</string>
     <!-- Disable analytics and tracking -->
     <string name="mtp_b0662ffd">Analyse und Tracking abschalten</string>
     <!-- Hide the spinning music cover and the track name beside the caption. -->
@@ -586,6 +592,8 @@
     <string name="mtp_ca39d625">Dem Videoplayer eine Schaltfläche hinzufügen, die das Konto hinter dem aktuellen Video mit einem Tippen blockiert. Nach jeder Blockierung wird eine Rückgängig-Aktion angezeigt.</string>
     <!-- Filter comments by keyword -->
     <string name="mtp_ca99e6ad">Kommentare nach Stichwort filtern</string>
+    <!-- Min/Max shares -->
+    <string name="mtp_cb50904d">Min/Max Teilen</string>
     <!-- Hide the avatar and follow button -->
     <string name="mtp_cd086375">Bild und Folgen-Button ausblenden</string>
     <!-- Skip videos marked as using promotional music. -->
@@ -660,12 +668,16 @@
     <string name="mtp_e3295d0d">Pfeil und Zähler in der rechten Spalte ausblenden</string>
     <!-- Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working. -->
     <string name="mtp_e3515af9">Hushfeed hat ein TikTok-Rätsel ausgeblendet. Schalte Rätsel-Dialoge ausblenden aus, wenn etwas nicht mehr funktioniert.</string>
+    <!-- The minimum or maximum favourites of a video to show. -->
+    <string name="mtp_e3cc3455">Mindest- oder Höchstzahl an Favoriten, damit ein Video gezeigt wird.</string>
     <!-- Sticker destination -->
     <string name="mtp_e462ae24">Speicherort für Sticker</string>
     <!-- Save the latest available TikTok crash report for diagnostic export. -->
     <string name="mtp_e4734450">Den neuesten verfügbaren TikTok-Absturzbericht für den Diagnose-Export speichern.</string>
     <!-- Hide feed follow button -->
     <string name="mtp_e4828489">Folgen-Schaltfläche im Feed ausblenden</string>
+    <!-- Min/Max favourites -->
+    <string name="mtp_e49174e1">Min/Max Favoriten</string>
     <!-- Hide livestreams -->
     <string name="mtp_e51b58aa">Livestreams ausblenden</string>
     <!-- Automatically translates loaded comment batches using TikTok's translation system. -->

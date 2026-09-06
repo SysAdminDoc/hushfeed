@@ -114,11 +114,13 @@
     <string name="mtp_482cfe09">Photo destination</string>
     <string name="mtp_4844952c">Black</string>
     <string name="mtp_48c563a4">Hide the speech bubble and its count in the right column.</string>
+    <string name="mtp_49353a15">The minimum or maximum comments on a video to show.</string>
     <string name="mtp_4b6647b0">Resume videos after scrolling</string>
     <string name="mtp_4be0d7d6">Ghost mode</string>
     <string name="mtp_4d374f53">Hide sharing apps</string>
     <string name="mtp_4d498233">Photo filename</string>
     <string name="mtp_4eb604d9">Comma separated words or phrases. Matching captions are skipped. Case doesn\'t matter.</string>
+    <string name="mtp_4ece1879">Min/Max comments</string>
     <string name="mtp_4eeb97bd">Hide the favourite button</string>
     <string name="mtp_50a0fce9">Keep long-pressing Share from opening TikTok\'s quick-share interaction.</string>
     <string name="mtp_50c3929b">Days to remember a video. Zero removes the age limit. History keeps at most 10,000 videos.</string>
@@ -256,6 +258,7 @@
     <string name="mtp_af86ae2d">Arrange your feed and bottom tabs</string>
     <string name="mtp_afb994a9">Stop feature gate recording</string>
     <string name="mtp_affe5c75">Copy only the comment text when using TikTok\'s copy comment action.</string>
+    <string name="mtp_b0234035">The minimum or maximum shares of a video to show.</string>
     <string name="mtp_b0662ffd">Disable analytics and tracking</string>
     <string name="mtp_b0708c1d">Hide the spinning music cover and the track name beside the caption.</string>
     <string name="mtp_b0792e62">Return after using a TikTok feature to see every gate read during the recording.</string>
@@ -293,6 +296,7 @@
     <string name="mtp_c9822616">Downloads</string>
     <string name="mtp_ca39d625">Add a block button to the video player that blocks the account that posted the current video in one tap. An undo action is shown after each block.</string>
     <string name="mtp_ca99e6ad">Filter comments by keyword</string>
+    <string name="mtp_cb50904d">Min/Max shares</string>
     <string name="mtp_cd086375">Hide the avatar and follow button</string>
     <string name="mtp_cd3a25cd">Skip videos marked as using promotional music.</string>
     <string name="mtp_cdb09fad">Copy a quick report or save the full report as a file.</string>
@@ -330,9 +334,11 @@
     <string name="mtp_e263a49d">Remove the actions row from the share sheet.</string>
     <string name="mtp_e3295d0d">Hide the arrow and its count in the right column.</string>
     <string name="mtp_e3515af9">Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working.</string>
+    <string name="mtp_e3cc3455">The minimum or maximum favourites of a video to show.</string>
     <string name="mtp_e462ae24">Sticker destination</string>
     <string name="mtp_e4734450">Save the latest available TikTok crash report for diagnostic export.</string>
     <string name="mtp_e4828489">Hide feed follow button</string>
+    <string name="mtp_e49174e1">Min/Max favourites</string>
     <string name="mtp_e51b58aa">Hide livestreams</string>
     <string name="mtp_e60a17b2">Automatically translates loaded comment batches using TikTok\'s translation system.</string>
     <string name="mtp_e68cd348">code %1$s</string>

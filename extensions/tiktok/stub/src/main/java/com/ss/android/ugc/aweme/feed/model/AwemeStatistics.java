@@ -14,5 +14,17 @@ public class AwemeStatistics {
     public long getDiggCount() {
         throw new UnsupportedOperationException("Stub");
     }
+
+    public long getCommentCount() {
+        throw new UnsupportedOperationException("Stub");
+    }
+
+    public long getCollectCount() {
+        throw new UnsupportedOperationException("Stub");
+    }
+
+    public long getShareCount() {
+        throw new UnsupportedOperationException("Stub");
+    }
 }
 

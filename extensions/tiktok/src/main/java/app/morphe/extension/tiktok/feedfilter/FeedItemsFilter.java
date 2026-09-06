@@ -46,7 +46,10 @@ public final class FeedItemsFilter {
     );
     private static final List<IFilter> RANGE_FILTERS = List.of(
         new ViewCountFilter(),
-        new LikeCountFilter()
+        new LikeCountFilter(),
+        new CommentCountFilter(),
+        new FavouriteCountFilter(),
+        new ShareCountFilter()
     );
     private static final List<IFilter> LATE_FOLLOW_FILTERS = List.of(ADS_FILTER);
     /** The card shapes TikTok uses for a bought search result. */

@@ -71,6 +71,21 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
                 "Min/Max likes", "The minimum or maximum likes of a video to show.",
                 Settings.MIN_MAX_LIKES
         ));
+        addPreference(new RangeValuePreference(
+                context,
+                "Min/Max comments", "The minimum or maximum comments on a video to show.",
+                Settings.MIN_MAX_COMMENTS
+        ));
+        addPreference(new RangeValuePreference(
+                context,
+                "Min/Max favourites", "The minimum or maximum favourites of a video to show.",
+                Settings.MIN_MAX_FAVOURITES
+        ));
+        addPreference(new RangeValuePreference(
+                context,
+                "Min/Max shares", "The minimum or maximum shares of a video to show.",
+                Settings.MIN_MAX_SHARES
+        ));
         addPreference(new TogglePreference(
                 context,
                 "Hide paid partnerships",
