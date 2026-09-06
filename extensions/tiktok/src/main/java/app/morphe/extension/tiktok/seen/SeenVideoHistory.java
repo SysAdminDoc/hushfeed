@@ -372,7 +372,8 @@ public final class SeenVideoHistory {
 
     /** Zero keeps everything; anything older than this many days is dropped. */
     private static int retentionDays() {
-        return Math.max(0, Settings.SEEN_VIDEO_RETENTION_DAYS.get());
+        // 0 to 3650, the range the dialog offers. A restored backup can hold anything.
+        return Math.max(0, Math.min(3650, Settings.SEEN_VIDEO_RETENTION_DAYS.get()));
     }
 
     private static boolean hasReachedSeenThreshold(long positionMs, long durationMs) {

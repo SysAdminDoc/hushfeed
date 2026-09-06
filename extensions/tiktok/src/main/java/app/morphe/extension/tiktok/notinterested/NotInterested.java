@@ -60,8 +60,9 @@ public final class NotInterested {
                 IN_FLIGHT.set(false);
             }
             final boolean accepted = success;
-            Utils.runOnMainThread(() -> Utils.showToastShort(accepted
-                    ? "Marked as not interested" : "TikTok didn't accept the feedback. Try again later."));
+            Utils.runOnMainThread(() -> Utils.showToastShort(L10n.t(accepted
+                    ? "Marked as not interested"
+                    : "TikTok didn't accept the feedback. Try again later.")));
         });
     }
 

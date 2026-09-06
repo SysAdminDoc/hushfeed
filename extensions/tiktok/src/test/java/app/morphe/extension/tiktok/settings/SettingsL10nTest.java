@@ -70,8 +70,15 @@ public class SettingsL10nTest {
      * literal at a call site, so nothing checked those until this: the runtime feedback was
      * English on every phone while the settings around it were translated.
      *
+     * <p>The scan is over the whole file rather than line by line, and it looks at every
+     * literal anywhere inside the call's brackets. A first attempt matched only a quote
+     * straight after the opening bracket, and it went green while eleven toasts were still
+     * English, because {@code showToastShort(ok ? "a" : "b")} and a call wrapped across two
+     * lines both slipped past it.
+     *
      * <p>Feature Gate Lab is left out on purpose. It is a developer tool and its screens are
-     * English by choice, which the row that opens it says.
+     * English by choice, which the row that opens it says. The shared extension module is not
+     * walked either: it is TikTok-independent code, and this table is TikTok's.
      */
     @Test public void everyRuntimeToastGoesThroughTheTable() throws Exception {
         java.io.File root = new java.io.File("src/main/java/app/morphe/extension/tiktok");
@@ -80,30 +87,130 @@ public class SettingsL10nTest {
         assertTrue("could not find the source tree from " + new java.io.File(".").getAbsolutePath(),
                 root.isDirectory());
 
-        java.util.regex.Pattern raw = java.util.regex.Pattern.compile(
-                "showToast(?:Short|Long)\\s*\\(\\s*\"");
         java.util.List<String> offenders = new java.util.ArrayList<>();
         java.nio.file.Path base = root.toPath();
+        int scanned = 0;
         try (java.util.stream.Stream<java.nio.file.Path> files =
                      java.nio.file.Files.walk(base)) {
             for (java.nio.file.Path file : files.filter(p -> p.toString().endsWith(".java"))
                     .collect(java.util.stream.Collectors.toList())) {
                 if (file.toString().replace('\\', '/').contains("/featuregatelab/")) continue;
-                String[] lines = new String(java.nio.file.Files.readAllBytes(file),
-                        java.nio.charset.StandardCharsets.UTF_8).split("\n");
-                for (int index = 0; index < lines.length; index++) {
-                    if (raw.matcher(lines[index]).find()) {
-                        offenders.add(base.relativize(file) + ":" + (index + 1) + "  "
-                                + lines[index].trim());
-                    }
+                String text = new String(java.nio.file.Files.readAllBytes(file),
+                        java.nio.charset.StandardCharsets.UTF_8);
+                scanned++;
+                for (String offence : rawToastsIn(text)) {
+                    offenders.add(base.relativize(file) + ":" + offence);
                 }
             }
         }
 
+        assertTrue("the scan found no files to read", scanned > 20);
         assertTrue("a toast is shown to the reader, so it belongs in the translation table. "
                         + "Wrap it in L10n.t, or L10n.f when it carries a value:\n"
                         + String.join("\n", offenders),
                 offenders.isEmpty());
+    }
+
+    /** Marks every character of a source file as code, inside a literal, or inside a comment. */
+    private static final byte CODE = 0, LITERAL = 1, COMMENT = 2;
+
+    private static byte[] classify(String text) {
+        byte[] kind = new byte[text.length()];
+        int at = 0;
+        while (at < text.length()) {
+            char c = text.charAt(at);
+            if (c == '/' && at + 1 < text.length() && text.charAt(at + 1) == '/') {
+                while (at < text.length() && text.charAt(at) != '\n') kind[at++] = COMMENT;
+            } else if (c == '/' && at + 1 < text.length() && text.charAt(at + 1) == '*') {
+                int close = text.indexOf("*/", at + 2);
+                int stop = close < 0 ? text.length() : close + 2;
+                while (at < stop) kind[at++] = COMMENT;
+            } else if (c == '"' || c == '\'') {
+                kind[at++] = LITERAL;
+                while (at < text.length()) {
+                    char inside = text.charAt(at);
+                    kind[at++] = LITERAL;
+                    if (inside == '\\') { if (at < text.length()) kind[at++] = LITERAL; continue; }
+                    if (inside == c) break;
+                }
+            } else {
+                kind[at++] = CODE;
+            }
+        }
+        return kind;
+    }
+
+    /**
+     * Every string shown by a toast in this file that does not go through the table, as
+     * "line  text". A literal counts as translated when the brackets it sits directly inside
+     * belong to {@code L10n.t} or {@code L10n.f}; anything else, including a ternary and a
+     * concatenation, is the reader seeing English.
+     */
+    private static java.util.List<String> rawToastsIn(String text) {
+        byte[] kind = classify(text);
+        java.util.List<String> found = new java.util.ArrayList<>();
+        java.util.regex.Matcher call = java.util.regex.Pattern
+                .compile("showToast(?:Short|Long)?\\s*\\(").matcher(text);
+        while (call.find()) {
+            int open = call.end() - 1;
+            if (kind[call.start()] != CODE) continue;
+            int close = closingBracket(text, kind, open);
+            if (close < 0) continue;
+            for (int at = open + 1; at < close; at++) {
+                if (kind[at] != LITERAL || text.charAt(at) != '"') continue;
+                int literalEnd = at + 1;
+                while (literalEnd < close && kind[literalEnd] == LITERAL) literalEnd++;
+                if (!throughTheTable(text, kind, at)) {
+                    found.add(lineOf(text, at) + "  "
+                            + text.substring(at, Math.min(literalEnd, at + 70)));
+                }
+                at = literalEnd;
+            }
+        }
+        return found;
+    }
+
+    private static int closingBracket(String text, byte[] kind, int open) {
+        int depth = 0;
+        for (int at = open; at < text.length(); at++) {
+            if (kind[at] != CODE) continue;
+            if (text.charAt(at) == '(') depth++;
+            else if (text.charAt(at) == ')' && --depth == 0) return at;
+        }
+        return -1;
+    }
+
+    /** The call whose brackets this literal sits directly inside, if it is one of L10n's. */
+    private static boolean throughTheTable(String text, byte[] kind, int literalAt) {
+        int depth = 0;
+        int owner = -1;
+        for (int at = literalAt - 1; at >= 0; at--) {
+            if (kind[at] != CODE) continue;
+            char c = text.charAt(at);
+            if (c == ')') depth++;
+            else if (c == '(') {
+                if (depth == 0) { owner = at; break; }
+                depth--;
+            }
+        }
+        if (owner < 0) return false;
+        int end = owner;
+        while (end > 0 && Character.isWhitespace(text.charAt(end - 1))) end--;
+        int start = end;
+        while (start > 0) {
+            char c = text.charAt(start - 1);
+            if (Character.isJavaIdentifierPart(c) || c == '.') start--;
+            else break;
+        }
+        String name = text.substring(start, end);
+        return name.equals("L10n.t") || name.equals("L10n.f")
+                || name.endsWith(".L10n.t") || name.endsWith(".L10n.f");
+    }
+
+    private static int lineOf(String text, int index) {
+        int line = 1;
+        for (int at = 0; at < index; at++) if (text.charAt(at) == '\n') line++;
+        return line;
     }
 
     @Test

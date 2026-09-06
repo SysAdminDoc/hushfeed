@@ -54,6 +54,9 @@ public final class GestureActions {
         if (event == null || !Settings.EDGE_SEEK.get()) return 0;
         int seconds = Settings.EDGE_SEEK_SECONDS.get();
         if (seconds <= 0) return 0;
+        // The dialog offers at most 60. A restored backup is never asked, and a press that
+        // jumps an hour is indistinguishable from the video ending.
+        seconds = Math.min(60, seconds);
         Context context = Utils.getContext();
         if (context == null) return 0;
         int width = context.getResources().getDisplayMetrics().widthPixels;

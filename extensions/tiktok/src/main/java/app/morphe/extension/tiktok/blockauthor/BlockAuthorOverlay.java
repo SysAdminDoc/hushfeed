@@ -275,7 +275,7 @@ public final class BlockAuthorOverlay {
         }
         Logger.printDebug(() -> "Blocked sound " + sound.label() + (byId ? " by id" : " by name"));
 
-        showUndoBanner("Skipping videos with " + sound.label(), () -> {
+        showUndoBanner(L10n.f("Skipping videos with %1$s", sound.label()), () -> {
             if (byId) {
                 Settings.BLOCKED_SOUND_IDS.save(SoundIdentity.withoutEntry(Settings.BLOCKED_SOUND_IDS.get(), sound.id));
             } else {
@@ -506,11 +506,11 @@ public final class BlockAuthorOverlay {
      * for a mis-tap while scrolling.
      */
     private static void showUndo(VideoAuthor author) {
-        showUndoBanner("Blocked " + author.label(), () -> BlockAuthorService.unblock(author,
-                (success, message) -> Utils.showToastShort(
-                        success
-                                ? "Unblocked " + author.label()
-                                : "Could not unblock " + author.label())));
+        showUndoBanner(L10n.f("Blocked %1$s", author.label()),
+                () -> BlockAuthorService.unblock(author,
+                        (success, message) -> Utils.showToastShort(success
+                                ? L10n.f("Unblocked %1$s", author.label())
+                                : L10n.f("Could not unblock %1$s", author.label()))));
     }
 
     /**

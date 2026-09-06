@@ -75,8 +75,10 @@ final class VideoDownloads {
         }
         if (!ACTIVE.add(id)) return true;
         Utils.showToastShort(captions.isEmpty()
-                ? (muted ? "Saving the selected video quality without sound" : "Saving the selected video quality")
-                : "Saving video and subtitles to " + path);
+                ? L10n.t(muted
+                        ? "Saving the selected video quality without sound"
+                        : "Saving the selected video quality")
+                : L10n.f("Saving video and subtitles to %1$s", path));
         WORKER.execute(() -> {
             List<File> temporary = new ArrayList<>();
             try {
@@ -111,9 +113,7 @@ final class VideoDownloads {
                 // dropped it went to a different file. Fetching it again would download twice.
                 AudioDownloads.write(app, aweme, sound == null ? picture : sound);
                 int saved = SubtitleDownloads.save(app, captions, savedName, path);
-                Utils.showToastLong(captions.isEmpty() ? "Video saved"
-                        : "Video saved with " + saved + "/" + captions.size() + " subtitles in " + path
-                                + (saved == captions.size() ? "" : ". Some subtitles couldn't be saved."));
+                Utils.showToastLong(subtitleResult(captions.size(), saved, path));
             } catch (IOException | RuntimeException exception) {
                 Logger.printException(() -> "Selected-quality download failed", exception);
                 Utils.showToastLong(L10n.t("The video couldn't be saved. Try again, or choose Automatic."));
@@ -123,6 +123,19 @@ final class VideoDownloads {
             }
         });
         return true;
+    }
+
+    /**
+     * What to say once the file is written. Three separate sentences rather than one built
+     * from pieces: a translator needs the whole sentence to move the words around inside it.
+     */
+    private static String subtitleResult(int wanted, int saved, String path) {
+        if (wanted == 0) return L10n.t("Video saved");
+        if (saved == wanted) {
+            return L10n.f("Video saved with %1$s subtitles in %2$s", saved, path);
+        }
+        return L10n.f("Video saved in %1$s, but only %2$s of %3$s subtitles came with it",
+                path, saved, wanted);
     }
 
     private static File temp(Context context, List<File> files) throws IOException {

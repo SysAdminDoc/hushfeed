@@ -71,6 +71,14 @@ public final class AdvancedFeedRules {
     private static final Map<String, Pattern> COMPILED = new ConcurrentHashMap<>();
 
     /**
+     * How long a creator pattern may be. It is user input and it runs against every name in
+     * every feed page, so a long one with nested quantifiers can take the feed thread with
+     * it. Anything a person types to match a handle fits well inside this, and the list rides
+     * along in a settings backup, which is the way somebody else's pattern could arrive.
+     */
+    private static final int MAX_PATTERN_LENGTH = 200;
+
+    /**
      * The pattern for one entry, compiled once. A pattern that will not compile is dropped
      * and said once, because the entry otherwise looks like it is working.
      */
@@ -81,6 +89,12 @@ public final class AdvancedFeedRules {
         }
 
         String source = entry.substring(1, entry.length() - 1);
+        if (source.length() > MAX_PATTERN_LENGTH) {
+            COMPILED.put(entry, INVALID);
+            Utils.showToastLong(L10n.f(
+                    "That creator pattern is too long to use, so it was skipped: %1$s", entry));
+            return null;
+        }
         Pattern pattern;
         try {
             pattern = Pattern.compile(source, Pattern.CASE_INSENSITIVE);

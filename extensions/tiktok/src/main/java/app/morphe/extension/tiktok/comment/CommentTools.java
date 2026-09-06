@@ -340,13 +340,15 @@ public final class CommentTools {
 
             View root = cell.getRootView();
             BlockAuthorOverlay.showUndoBanner(root instanceof ViewGroup ? (ViewGroup) root : null,
-                    "Blocked " + author.label(), () -> {
+                    L10n.f("Blocked %1$s", author.label()), () -> {
                         if (author.uid != null) {
                             BLOCKED_UIDS.remove(author.uid);
                         }
                         applyBlockedState(cell);
                         BlockAuthorService.unblock(author, (undone, ignored) -> Utils.showToastShort(
-                                undone ? "Unblocked " + author.label() : "Could not unblock " + author.label()));
+                                undone
+                                        ? L10n.f("Unblocked %1$s", author.label())
+                                        : L10n.f("Could not unblock %1$s", author.label())));
                     });
         });
     }

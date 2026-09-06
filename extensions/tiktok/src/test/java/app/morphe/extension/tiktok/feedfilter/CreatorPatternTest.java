@@ -65,6 +65,19 @@ public class CreatorPatternTest {
         Settings.BLOCKED_CREATORS.save("");
     }
 
+    @Test public void aPatternTooLongToBeMeantIsRefused() {
+        // A creator pattern runs against every name in every feed page, and the list travels
+        // in a settings backup, so somebody else's pattern can arrive that way.
+        StringBuilder huge = new StringBuilder("/");
+        for (int index = 0; index < 60; index++) huge.append("(a+)+");
+        huge.append("$/");
+        assertTrue(huge.length() > 200);
+        assertNull(AdvancedFeedRules.compiled(huge.toString()));
+
+        // Something a person would actually type still compiles.
+        assertNotNull(AdvancedFeedRules.compiled("/^news_/"));
+    }
+
     @Test
     public void aPatternMatchesAFamilyOfHandles() {
         Settings.BLOCKED_CREATORS.save("/^news_/");

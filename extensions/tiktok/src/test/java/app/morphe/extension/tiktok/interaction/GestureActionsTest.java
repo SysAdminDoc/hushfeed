@@ -198,6 +198,15 @@ public class GestureActionsTest {
             assertEquals(7000L, GestureActions.edgeSeekDelta(press(width * 0.7f)));
             assertEquals(7000L, GestureActions.edgeSeekDelta(press(width - 1f)));
 
+            // A value the dialog would never accept, which is how a restored backup can
+            // arrive. The top of the dialog's range is what a press is worth.
+            Settings.EDGE_SEEK_SECONDS.save(100000);
+            assertEquals(-60_000L, GestureActions.edgeSeekDelta(press(0f)));
+            assertEquals(60_000L, GestureActions.edgeSeekDelta(press(width - 1f)));
+            Settings.EDGE_SEEK_SECONDS.save(-5);
+            assertEquals(0, GestureActions.edgeSeekDelta(press(0f)));
+            Settings.EDGE_SEEK_SECONDS.save(7);
+
             // The middle third keeps the Long press action.
             assertEquals(0, GestureActions.edgeSeekDelta(press(width / 2f)));
             assertEquals(0, GestureActions.edgeSeekDelta(press(width / 3f)));

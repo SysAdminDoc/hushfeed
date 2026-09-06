@@ -7,11 +7,15 @@
 package app.morphe.extension.tiktok.comment;
 
 import android.content.Context;
+import android.content.res.Configuration;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.StateListDrawable;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -148,6 +152,46 @@ public final class CommentSearch {
         }
     }
 
+    /**
+     * Whether the sheet this box is going into is dark.
+     *
+     * <p>Read from the context the sheet itself was built with, not from the shared dark mode
+     * flag: that flag is only ever written when Hushfeed's own settings screen opens, so in a
+     * session that never opened it the answer comes from the system configuration instead,
+     * which does not carry the night mode TikTok applied to itself. A white card in a black
+     * comment sheet is the visible version of that.
+     */
+    private static boolean isDarkSheet(Context context) {
+        int night = context.getResources().getConfiguration().uiMode
+                & Configuration.UI_MODE_NIGHT_MASK;
+        return night == Configuration.UI_MODE_NIGHT_YES;
+    }
+
+    /**
+     * The field's background, which is also the only thing that shows it has focus. A plain
+     * drawable would look the same focused and not, and replacing the platform background is
+     * what took the underline away in the first place.
+     */
+    private static StateListDrawable fieldBackground(Context context, boolean dark) {
+        float radius = 8 * context.getResources().getDisplayMetrics().density;
+        int stroke = Math.max(1, Math.round(context.getResources().getDisplayMetrics().density));
+
+        GradientDrawable focused = new GradientDrawable();
+        focused.setColor(dark ? 0xFF1B1B21 : 0xFFFFFFFF);
+        focused.setCornerRadius(radius);
+        focused.setStroke(stroke * 2, SettingsUi.accent());
+
+        GradientDrawable resting = new GradientDrawable();
+        resting.setColor(dark ? 0xFF111115 : 0xFFFFFFFF);
+        resting.setCornerRadius(radius);
+        resting.setStroke(stroke, dark ? 0xFF35353E : 0xFFD2D2D2);
+
+        StateListDrawable states = new StateListDrawable();
+        states.addState(new int[]{android.R.attr.state_focused}, focused);
+        states.addState(new int[]{}, resting);
+        return states;
+    }
+
     /** Builds the box and puts it in {@code column}, directly above whatever holds the list. */
     private static void insertBox(LinearLayout column, View anchor, ViewGroup listView) {
         if (Boolean.TRUE.equals(DECORATED.get(column))) return;
@@ -162,18 +206,20 @@ public final class CommentSearch {
         box.setInputType(InputType.TYPE_CLASS_TEXT);
         box.setGravity(Gravity.CENTER_VERTICAL);
         box.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        // The sheet belongs to TikTok, so the colours follow the phone's theme rather than
-        // whatever the settings screen happens to be using. A transparent background also
-        // takes the focus underline with it, which left nothing saying this was a field.
-        boolean dark = SettingsUi.isDarkMode();
+        boolean dark = isDarkSheet(context);
         box.setTextColor(dark ? 0xFFF5F5F7 : 0xFF16161C);
         box.setHintTextColor(dark ? 0xFFA8A8B3 : 0xFF575762);
-        box.setBackground(SettingsUi.borderedSurface(context, 8, false));
+        // A transparent background takes the focus underline with it, which left nothing
+        // saying this was a field at all, so the border does that job instead.
+        box.setBackground(fieldBackground(context, dark));
         int padding = Math.round(12 * context.getResources().getDisplayMetrics().density);
         box.setPadding(padding, padding, padding, padding);
+        // A minimum rather than a height: 48dp is the touch target, but at a large font scale
+        // the text needs more than that and a fixed height would cut the letters off.
+        box.setMinimumHeight(Math.round(48 * context.getResources().getDisplayMetrics().density));
         box.setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                Math.round(48 * context.getResources().getDisplayMetrics().density)));
+                ViewGroup.LayoutParams.WRAP_CONTENT));
         box.setText(query);
         box.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -182,6 +228,16 @@ public final class CommentSearch {
                 setQuery(typed == null ? "" : typed.toString());
                 narrowShownRows();
             }
+        });
+        box.setOnEditorActionListener((view, actionId, event) -> {
+            if (actionId != EditorInfo.IME_ACTION_SEARCH) return false;
+            // Filtering already happened as it was typed, so the key's job is to get the
+            // keyboard out of the way of the comments it just narrowed down.
+            InputMethodManager keyboard = (InputMethodManager)
+                    context.getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (keyboard != null) keyboard.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            view.clearFocus();
+            return true;
         });
         column.addView(box, column.indexOfChild(anchor));
         // Only once it is really in. Marking the column first would blacklist it for good if

@@ -8,6 +8,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
 
+import app.morphe.extension.tiktok.settings.L10n;
+
 import java.util.Locale;
 
 public final class DownloadDestination {
@@ -27,15 +29,16 @@ public final class DownloadDestination {
         String[] segments = normalized.split("/");
         for (String segment : segments) {
             if (segment.isEmpty() || ".".equals(segment) || "..".equals(segment)) {
-                throw new IllegalArgumentException("The destination contains an invalid folder name");
+                throw new IllegalArgumentException(
+                        L10n.t("The destination contains an invalid folder name"));
             }
         }
 
         String root = canonicalRoot(segments[0]);
         if (!isAllowedRoot(root, kind)) {
-            throw new IllegalArgumentException(
-                    kindLabel(kind) + " destinations must start with " + allowedRoots(kind)
-            );
+            throw new IllegalArgumentException(L10n.f(
+                    "%1$s destinations must start with %2$s",
+                    kindLabel(kind), allowedRoots(kind)));
         }
 
         segments[0] = root;
@@ -149,13 +152,13 @@ public final class DownloadDestination {
     private static String kindLabel(Kind kind) {
         switch (kind) {
             case VIDEO:
-                return "Video";
+                return L10n.t("Video");
             case PHOTO:
-                return "Photo";
+                return L10n.t("Photo");
             case STICKER:
-                return "Sticker";
+                return L10n.t("Sticker");
             default:
-                return "Media";
+                return L10n.t("Media");
         }
     }
 

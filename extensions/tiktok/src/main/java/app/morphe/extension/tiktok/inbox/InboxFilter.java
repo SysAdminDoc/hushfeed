@@ -343,9 +343,13 @@ public final class InboxFilter {
     }
 
     private static void report(int cleared) {
-        Utils.showToastShort(cleared == 0
-                ? "No suggested accounts to clear"
-                : "Dismissed " + cleared + " suggested account" + (cleared == 1 ? "" : "s"));
+        if (cleared == 0) {
+            Utils.showToastShort(L10n.t("No suggested accounts to clear"));
+        } else if (cleared == 1) {
+            Utils.showToastShort(L10n.t("Dismissed one suggested account"));
+        } else {
+            Utils.showToastShort(L10n.f("Dismissed %1$s suggested accounts", cleared));
+        }
     }
 
     /** Depth first search for a remove button whose account has not been dismissed yet. */

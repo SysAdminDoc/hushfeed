@@ -82,7 +82,8 @@ public final class SettingsBackupPreference extends Preference {
         Context context = activity.getApplicationContext();
         WeakReference<TikTokPreferenceFragment> owner = new WeakReference<>(fragment);
         if (action != EXPORT) AbstractPreferenceFragment.settingImportInProgress = true;
-        Utils.showToastShort(action == EXPORT ? "Saving settings backup" : "Updating settings");
+        Utils.showToastShort(L10n.t(action == EXPORT
+                ? "Saving settings backup" : "Updating settings"));
         Utils.runOnBackgroundThread(() -> {
             try {
                 if (action == EXPORT) {
@@ -95,8 +96,8 @@ public final class SettingsBackupPreference extends Preference {
                     SettingsBackup.restore(context, SettingsBackup.read(context.getContentResolver().openInputStream(uri)), true);
                 } else if (action == RESET) SettingsBackup.reset(context);
                 else SettingsBackup.undo(context);
-                Utils.showToastLong(action == EXPORT ? "Settings backup saved"
-                        : L10n.t("Settings saved. Restart TikTok to apply all changes."));
+                Utils.showToastLong(L10n.t(action == EXPORT ? "Settings backup saved"
+                        : "Settings saved. Restart TikTok to apply all changes."));
             } catch (Exception error) {
                 Logger.printException(() -> "Settings backup operation failed", error);
                 Utils.showToastLong(L10n.t(

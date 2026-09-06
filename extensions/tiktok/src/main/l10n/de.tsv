@@ -1,6 +1,7 @@
 # Settings text, English on the left, German on the right, one entry per line, tab separated.
 # scripts/gen-l10n.py turns this into a table inside L10nTranslations.java.
 # Keep %s and %d placeholders, {tokens} and product names as they are.
+%1$s destinations must start with %2$s	%1$s-Ziele müssen mit %2$s beginnen
 %1$s isn't installed or doesn't take links	%1$s ist nicht installiert oder nimmt keine Links an
 %d languages excluded	%d Sprachen ausgeschlossen
 %s on	%s aktiv
@@ -40,6 +41,7 @@ Backups and troubleshooting	Sicherungen und Fehlerdiagnose
 Black	Schwarz
 Block new bottom tabs	Neue untere Tabs blockieren
 Block new TikTok tabs	Neue TikTok-Tabs blockieren
+Blocked %1$s	%1$s blockiert
 Blocked caption words	Gesperrte Wörter in Beschreibungen
 Blocked comment words	Gesperrte Wörter in Kommentaren
 Blocked creators	Gesperrte Creator
@@ -116,6 +118,8 @@ Diagnostics	Diagnose
 Disable analytics and tracking	Analyse und Tracking abschalten
 Disable long-press quick share	Schnelles Teilen abschalten
 Disable long-press repost	Reposten bei langem Drücken abschalten
+Dismissed %1$s suggested accounts	%1$s Kontovorschläge entfernt
+Dismissed one suggested account	Ein Kontovorschlag entfernt
 Do not translate languages	Sprachen nicht übersetzen
 Do nothing	Nichts tun
 Do you wish to proceed?	Möchtest du fortfahren?
@@ -289,10 +293,12 @@ Long press	Langes Drücken
 Lower values require more likes per view. Zero disables this rule. One candidate may be kept to avoid an empty page.	Niedrigere Werte verlangen mehr Likes pro Aufruf. Null schaltet diese Regel ab. Ein Kandidat kann bleiben, damit die Seite nicht leer ist.
 Lowest	Niedrigste
 Make TikTok yours.	Mach TikTok zu deinem TikTok.
+Marked as not interested	Als „Kein Interesse“ markiert
 Match locale and timezone to country	Sprache und Zeitzone an das Land anpassen
 Maximum	Maximum
 Maximum video length	Maximale Videolänge
 Maximum views per like	Maximale Aufrufe pro Like
+Media	Medien
 MENUS	MENÜS
 Min/Max comments	Min/Max Kommentare
 Min/Max favourites	Min/Max Favoriten
@@ -307,6 +313,7 @@ No additional languages excluded	Keine weiteren Sprachen ausgeschlossen
 No limit	Keine Grenze
 No preset selected	Keine Vorgabe gewählt
 No sound to block on this video	Bei diesem Video gibt es keinen Sound zum Blockieren
+No suggested accounts to clear	Es gibt keine Kontovorschläge zum Entfernen
 No video selected	Kein Video ausgewählt
 Not interested button	Schaltfläche „Kein Interesse“
 Nothing is playing to seek	Es läuft gerade nichts zum Springen
@@ -328,6 +335,7 @@ Original language	Originalsprache
 Override SIM details	SIM-Angaben überschreiben
 Override store region (experimental)	Store-Region überschreiben (experimentell)
 People, shortcuts and sending controls	Kontakte, Verknüpfungen und Versandoptionen
+Photo	Foto
 Photo destination	Speicherort für Fotos
 Photo filename	Dateiname für Fotos
 Play videos TikTok has classified without the overlay asking to be tapped through first.	Von TikTok eingestufte Videos abspielen, ohne dass erst eine Warnung weggetippt werden muss.
@@ -375,7 +383,11 @@ Saved %1$s of %2$s photos before the story failed	%1$s von %2$s Fotos gespeicher
 Saved %1$s original photos	%1$s Originalfotos gespeichert
 Saved %1$s photos. The rest failed, so try again.	%1$s Fotos gespeichert. Der Rest hat nicht geklappt, versuche es noch einmal.
 Saving %1$s original photos	%1$s Originalfotos werden gespeichert
+Saving settings backup	Einstellungssicherung wird gespeichert
+Saving the selected video quality	Die gewählte Videoqualität wird gespeichert
+Saving the selected video quality without sound	Die gewählte Videoqualität wird ohne Ton gespeichert
 Saving the story	Story wird gespeichert
+Saving video and subtitles to %1$s	Video und Untertitel werden in %1$s gespeichert
 Search and override gate flags	Gate-Flags suchen und überschreiben
 Search local TikTok gate metadata and configure isolated typed overrides.	Lokale TikTok-Gate-Metadaten durchsuchen und isolierte typisierte Überschreibungen einrichten.
 Search the comments	Kommentare durchsuchen
@@ -391,6 +403,7 @@ Seen video history put back	Verlauf gesehener Videos zurückgeholt
 Send links to another app	Links an eine andere App senden
 Sending feedback	Rückmeldung wird gesendet
 Settings	Einstellungen
+Settings backup saved	Einstellungssicherung gespeichert
 Settings saved. Restart TikTok to apply all changes.	Einstellungen gespeichert. Starte TikTok neu, damit alle Änderungen wirken.
 Share links through another host	Links über einen anderen Host teilen
 Share sheet	Teilen-Menü
@@ -417,6 +430,7 @@ Skip content warnings	Inhaltswarnungen überspringen
 Skip recorded LIVE broadcasts in the feed.	Aufgezeichnete LIVE-Übertragungen im Feed überspringen.
 Skip videos marked as using promotional music.	Videos überspringen, die als Werbemusik gekennzeichnet sind.
 Skip videos that use a sound blocked with the player's sound button, or named below.	Videos überspringen, deren Sound über die Sound-Taste im Player gesperrt wurde oder unten aufgeführt ist.
+Skipping videos with %1$s	Videos mit %1$s werden übersprungen
 Sound saved to %1$s	Sound gespeichert unter %1$s
 Source code and releases	Quellcode und Versionen
 sp	sp
@@ -424,6 +438,7 @@ Speed menu choices	Auswahl im Geschwindigkeitsmenü
 Split comment minimum width	Mindestbreite für geteilte Kommentare
 Start each new video at your default. A manual choice lasts until the video changes.	Jedes neue Video mit deinem Standard starten. Eine manuelle Auswahl gilt, bis das Video wechselt.
 Start feature gate recording	Feature-Gate-Aufzeichnung starten
+Sticker	Sticker
 Sticker destination	Speicherort für Sticker
 Still reading the record. Tap again in a moment.	Der Verlauf wird noch gelesen. Tippe gleich noch einmal.
 Still saving the last one	Das letzte wird noch gespeichert
@@ -442,7 +457,9 @@ Tap %1$s again to send	Zum Senden noch einmal auf %1$s tippen
 Tap again to %1$s	Noch einmal tippen zum %1$s
 Tap the feed Follow button twice within four seconds.	Tippe die Folgen-Schaltfläche im Feed innerhalb von vier Sekunden zweimal an.
 Tap the like heart twice within four seconds. Removing a like stays immediate.	Tippe das Like-Herz innerhalb von vier Sekunden zweimal an. Das Entfernen eines Likes bleibt sofort.
+That creator pattern is too long to use, so it was skipped: %1$s	Dieses Kreator-Muster ist zu lang und wurde übersprungen: %1$s
 That settings change did not go through. Nothing was altered.	Diese Änderung hat nicht geklappt. Es wurde nichts geändert.
+The destination contains an invalid folder name	Im Zielpfad steht ein unzulässiger Ordnername
 The file picker is not available on this device.	Die Dateiauswahl ist auf diesem Gerät nicht verfügbar.
 The minimum or maximum comments on a video to show.	Mindest- oder Höchstzahl an Kommentaren, damit ein Video gezeigt wird.
 The minimum or maximum favourites of a video to show.	Mindest- oder Höchstzahl an Favoriten, damit ein Video gezeigt wird.
@@ -467,6 +484,7 @@ This video has no link to send, so TikTok's own save runs instead	Dieses Video h
 Thumbs down blocks the commenter	Daumen runter blockiert den Kommentierenden
 TikTok default	TikTok-Standard
 TikTok default (2x hold, quick share)	TikTok-Standard (2x halten, schnelles Teilen)
+TikTok didn't accept the feedback. Try again later.	TikTok hat die Rückmeldung nicht angenommen. Versuche es später noch einmal.
 TikTok patches for Morphe, built on the Metra patches by icysymmetra and the community sets before them. Tap to open the project page.	TikTok-Patches für Morphe, aufgebaut auf den Metra-Patches von icysymmetra und den Community-Sammlungen davor. Tippe, um die Projektseite zu öffnen.
 TikTok refused the follow: %1$s	TikTok hat das Folgen abgelehnt: %1$s
 Tokens: {creator}, {date}, {video_id}, {index}. The file extension is kept automatically.	Platzhalter: {creator}, {date}, {video_id}, {index}. Die Dateiendung bleibt automatisch erhalten.
@@ -480,6 +498,7 @@ Undo	Rückgängig
 Undo last restore	Letzte Wiederherstellung rückgängig machen
 Unlimited	Unbegrenzt
 Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.	Bis zu 8 Geschwindigkeiten von 0.5 bis 3, durch Kommas getrennt. Beispiel: 0.5, 1, 1.5, 2, 2.5, 3. Leer lassen für TikToks Liste. Nach dem Ändern der Liste neu starten.
+Updating settings	Einstellungen werden aktualisiert
 us, gb, jp, ...	us, gb, jp, ...
 Use 0 for TikTok's size, or 12 to 48 sp. Applies to the next caption.	0 für TikToks Größe oder 12 bis 48 sp. Gilt ab dem nächsten Untertitel.
 Use a default playback speed	Standardgeschwindigkeit verwenden
@@ -490,11 +509,15 @@ Use the selected country and operator values. Restart TikTok after changing regi
 Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.	Das geteilte Layout auf breiteren Bildschirmen verwenden. Starte TikTok nach dem Ändern dieser Option oder nach dem Aufklappen neu, falls das alte Layout bleibt.
 Use TikTok's native hold, slide down, and release gesture to lock 2x speed.	TikToks eigene Geste „Halten, nach unten wischen, loslassen“ verwenden, um die 2x-Geschwindigkeit zu fixieren.
 Use TikTok's non-personalized search state instead of the saved account choice.	TikToks nicht personalisierten Suchmodus statt der gespeicherten Kontoauswahl verwenden.
+Video	Video
 Video (MP4)	Video (MP4)
 Video destination	Speicherort für Videos
 Video download quality	Qualität für Video-Downloads
 Video filename	Dateiname für Videos
 Video playback quality	Wiedergabequalität
+Video saved	Video gespeichert
+Video saved in %1$s, but only %2$s of %3$s subtitles came with it	Video in %1$s gespeichert, aber nur %2$s von %3$s Untertiteln sind mitgekommen
+Video saved with %1$s subtitles in %2$s	Video mit %1$s Untertiteln in %2$s gespeichert
 videos	Videos
 Wait before hiding the controls.	Wartezeit, bevor die Bedienelemente ausgeblendet werden.
 WebP, exactly as TikTok sent it	WebP, genau so wie TikTok es geschickt hat

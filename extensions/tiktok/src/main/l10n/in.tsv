@@ -1,6 +1,7 @@
 # Settings text, English on the left, Indonesian on the right, one entry per line, tab separated.
 # scripts/gen-l10n.py turns this into a table inside L10nTranslations.java.
 # Keep %s and %d placeholders, {tokens} and product names as they are.
+%1$s destinations must start with %2$s	Tujuan %1$s harus diawali %2$s
 %1$s isn't installed or doesn't take links	%1$s tidak terpasang atau tidak menerima tautan
 %d languages excluded	%d bahasa dikecualikan
 %s on	%s aktif
@@ -40,6 +41,7 @@ Backups and troubleshooting	Cadangan dan pemecahan masalah
 Black	Hitam
 Block new bottom tabs	Blokir tab bawah yang baru
 Block new TikTok tabs	Blokir tab TikTok yang baru
+Blocked %1$s	%1$s diblokir
 Blocked caption words	Kata yang diblokir di keterangan
 Blocked comment words	Kata komentar yang diblokir
 Blocked creators	Kreator yang diblokir
@@ -116,6 +118,8 @@ Diagnostics	Diagnostik
 Disable analytics and tracking	Matikan analitik dan pelacakan
 Disable long-press quick share	Matikan bagikan cepat lewat tekan lama
 Disable long-press repost	Matikan bagikan ulang lewat tekan lama
+Dismissed %1$s suggested accounts	%1$s akun saran dihapus
+Dismissed one suggested account	Satu akun saran dihapus
 Do not translate languages	Bahasa yang tidak diterjemahkan
 Do nothing	Tidak melakukan apa pun
 Do you wish to proceed?	Mau lanjut?
@@ -289,10 +293,12 @@ Long press	Tekan lama
 Lower values require more likes per view. Zero disables this rule. One candidate may be kept to avoid an empty page.	Nilai lebih kecil menuntut lebih banyak suka per tayangan. Nol mematikan aturan ini. Satu video bisa dipertahankan supaya halaman tidak kosong.
 Lowest	Terendah
 Make TikTok yours.	Jadikan TikTok milikmu.
+Marked as not interested	Ditandai tidak tertarik
 Match locale and timezone to country	Samakan lokal dan zona waktu dengan negara
 Maximum	Maksimum
 Maximum video length	Durasi video maksimum
 Maximum views per like	Tayangan maksimum per suka
+Media	Media
 MENUS	MENU
 Min/Max comments	Komentar min/maks
 Min/Max favourites	Favorit min/maks
@@ -307,6 +313,7 @@ No additional languages excluded	Tidak ada bahasa tambahan yang dikecualikan
 No limit	Tanpa batas
 No preset selected	Tidak ada praset yang dipilih
 No sound to block on this video	Tidak ada suara untuk diblokir di video ini
+No suggested accounts to clear	Tidak ada akun saran yang bisa dihapus
 No video selected	Tidak ada video yang dipilih
 Not interested button	Tombol tidak tertarik
 Nothing is playing to seek	Tidak ada yang diputar untuk dilompati
@@ -328,6 +335,7 @@ Original language	Bahasa asli
 Override SIM details	Timpa detail SIM
 Override store region (experimental)	Timpa wilayah toko (eksperimental)
 People, shortcuts and sending controls	Orang, pintasan, dan kontrol pengiriman
+Photo	Foto
 Photo destination	Lokasi simpan foto
 Photo filename	Nama berkas foto
 Play videos TikTok has classified without the overlay asking to be tapped through first.	Putar video yang diklasifikasi TikTok tanpa lapisan yang harus diketuk lebih dulu.
@@ -375,7 +383,11 @@ Saved %1$s of %2$s photos before the story failed	%1$s dari %2$s foto tersimpan 
 Saved %1$s original photos	%1$s foto asli tersimpan
 Saved %1$s photos. The rest failed, so try again.	%1$s foto tersimpan. Sisanya gagal, coba lagi.
 Saving %1$s original photos	Menyimpan %1$s foto asli
+Saving settings backup	Menyimpan cadangan pengaturan
+Saving the selected video quality	Menyimpan kualitas video pilihan
+Saving the selected video quality without sound	Menyimpan kualitas video pilihan tanpa suara
 Saving the story	Menyimpan Story
+Saving video and subtitles to %1$s	Menyimpan video dan subtitel ke %1$s
 Search and override gate flags	Cari dan timpa flag gate
 Search local TikTok gate metadata and configure isolated typed overrides.	Cari metadata gate TikTok yang tersimpan di perangkat dan atur penimpaan bertipe secara terpisah.
 Search the comments	Cari di komentar
@@ -391,6 +403,7 @@ Seen video history put back	Riwayat video yang sudah ditonton dikembalikan
 Send links to another app	Kirim tautan ke aplikasi lain
 Sending feedback	Mengirim masukan
 Settings	Pengaturan
+Settings backup saved	Cadangan pengaturan disimpan
 Settings saved. Restart TikTok to apply all changes.	Pengaturan tersimpan. Mulai ulang TikTok untuk menerapkan semua perubahan.
 Share links through another host	Bagikan tautan lewat host lain
 Share sheet	Menu bagikan
@@ -417,6 +430,7 @@ Skip content warnings	Lewati peringatan konten
 Skip recorded LIVE broadcasts in the feed.	Lewati rekaman siaran LIVE di feed.
 Skip videos marked as using promotional music.	Lewati video yang ditandai memakai musik promosi.
 Skip videos that use a sound blocked with the player's sound button, or named below.	Lewati video yang memakai suara yang diblokir lewat tombol suara di pemutar, atau yang namanya ada di bawah.
+Skipping videos with %1$s	Melewati video dengan %1$s
 Sound saved to %1$s	Suara disimpan di %1$s
 Source code and releases	Kode sumber dan rilis
 sp	sp
@@ -424,6 +438,7 @@ Speed menu choices	Pilihan di menu kecepatan
 Split comment minimum width	Lebar minimum tata letak terbagi
 Start each new video at your default. A manual choice lasts until the video changes.	Mulai tiap video baru pada kecepatan pilihanmu. Pilihan manual bertahan sampai videonya berganti.
 Start feature gate recording	Mulai merekam feature gate
+Sticker	Stiker
 Sticker destination	Lokasi simpan stiker
 Still reading the record. Tap again in a moment.	Catatannya masih dibaca. Ketuk lagi sebentar lagi.
 Still saving the last one	Yang sebelumnya masih disimpan
@@ -442,7 +457,9 @@ Tap %1$s again to send	Ketuk %1$s lagi untuk mengirim
 Tap again to %1$s	Ketuk lagi untuk %1$s
 Tap the feed Follow button twice within four seconds.	Ketuk tombol Ikuti di feed dua kali dalam empat detik.
 Tap the like heart twice within four seconds. Removing a like stays immediate.	Ketuk ikon hati dua kali dalam empat detik. Membatalkan suka tetap langsung berlaku.
+That creator pattern is too long to use, so it was skipped: %1$s	Pola kreator itu terlalu panjang, jadi dilewati: %1$s
 That settings change did not go through. Nothing was altered.	Perubahan itu tidak berhasil. Tidak ada yang diubah.
+The destination contains an invalid folder name	Ada nama folder yang tidak sah di tujuannya
 The file picker is not available on this device.	Pemilih berkas tidak tersedia di perangkat ini.
 The minimum or maximum comments on a video to show.	Jumlah komentar minimum atau maksimum agar video ditampilkan.
 The minimum or maximum favourites of a video to show.	Jumlah favorit minimum atau maksimum agar video ditampilkan.
@@ -467,6 +484,7 @@ This video has no link to send, so TikTok's own save runs instead	Video ini tida
 Thumbs down blocks the commenter	Jempol ke bawah memblokir pengomentar
 TikTok default	Bawaan TikTok
 TikTok default (2x hold, quick share)	Bawaan TikTok (tahan 2x, bagikan cepat)
+TikTok didn't accept the feedback. Try again later.	TikTok tidak menerima masukannya. Coba lagi nanti.
 TikTok patches for Morphe, built on the Metra patches by icysymmetra and the community sets before them. Tap to open the project page.	Patch TikTok untuk Morphe, dibangun di atas patch Metra buatan icysymmetra dan kumpulan komunitas sebelumnya. Ketuk untuk membuka halaman proyek.
 TikTok refused the follow: %1$s	TikTok menolak permintaan mengikuti: %1$s
 Tokens: {creator}, {date}, {video_id}, {index}. The file extension is kept automatically.	Token: {creator}, {date}, {video_id}, {index}. Ekstensi berkas dipertahankan otomatis.
@@ -480,6 +498,7 @@ Undo	Urungkan
 Undo last restore	Urungkan pemulihan terakhir
 Unlimited	Tanpa batas
 Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.	Sampai 8 kecepatan dari 0.5 hingga 3, dipisahkan koma. Contoh: 0.5, 1, 1.5, 2, 2.5, 3. Kosongkan untuk memakai daftar TikTok. Mulai ulang setelah mengubah daftar ini.
+Updating settings	Memperbarui pengaturan
 us, gb, jp, ...	us, gb, jp, ...
 Use 0 for TikTok's size, or 12 to 48 sp. Applies to the next caption.	Pakai 0 untuk ukuran bawaan TikTok, atau 12 sampai 48 sp. Berlaku untuk keterangan berikutnya.
 Use a default playback speed	Pakai kecepatan pemutaran bawaan
@@ -490,11 +509,15 @@ Use the selected country and operator values. Restart TikTok after changing regi
 Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.	Pakai tata letak terbagi pada layar yang lebih lebar. Mulai ulang TikTok setelah mengubah opsi ini atau setelah membuka lipatan jika tata letak lama masih muncul.
 Use TikTok's native hold, slide down, and release gesture to lock 2x speed.	Pakai gestur bawaan TikTok, tahan lalu geser ke bawah dan lepas, untuk mengunci kecepatan 2x.
 Use TikTok's non-personalized search state instead of the saved account choice.	Pakai mode pencarian nonpersonal milik TikTok, bukan pilihan akun yang tersimpan.
+Video	Video
 Video (MP4)	Video (MP4)
 Video destination	Lokasi simpan video
 Video download quality	Kualitas unduhan video
 Video filename	Nama berkas video
 Video playback quality	Kualitas pemutaran video
+Video saved	Video disimpan
+Video saved in %1$s, but only %2$s of %3$s subtitles came with it	Video disimpan di %1$s, tapi cuma %2$s dari %3$s subtitel yang ikut
+Video saved with %1$s subtitles in %2$s	Video disimpan dengan %1$s subtitel di %2$s
 videos	video
 Wait before hiding the controls.	Tunggu sebelum kontrol disembunyikan.
 WebP, exactly as TikTok sent it	WebP, persis seperti yang dikirim TikTok
