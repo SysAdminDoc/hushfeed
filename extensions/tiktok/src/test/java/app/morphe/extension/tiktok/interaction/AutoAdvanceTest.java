@@ -34,7 +34,11 @@ public class AutoAdvanceTest {
         Settings.AUTO_ADVANCE.save(true);
     }
     @Test public void restartsNativeStopButPreservesPauseAndStopsWhenDisabled() {
-        var control = new AutoAdvance.Control(new FeedView());
+        // The control holds the view weakly, so the test has to hold it strongly. Without
+        // this the view can be collected part way through and every later update returns
+        // early, which showed up as one failing run in ten.
+        FeedView feed = new FeedView();
+        var control = new AutoAdvance.Control(feed);
         var state = new AtomicReference<>(State.AUTO_SCROLL_STATE_STOP);
         var starts = new AtomicInteger();
         var stops = new AtomicInteger();
@@ -58,13 +62,24 @@ public class AutoAdvanceTest {
         assertFalse(control.owned);
     }
     @Test public void disabledSettingLeavesPreexistingNativeAutoScrollAlone() {
-        var control = new AutoAdvance.Control(new FeedView());
+        FeedView feed = new FeedView();
+        var control = new AutoAdvance.Control(feed);
         var state = new AtomicReference<>(State.AUTO_SCROLL_STATE_START);
         control.update(state::get, () -> fail("Already running"), () -> fail("Native ownership"));
         Settings.AUTO_ADVANCE.save(false);
         control.update(state::get, () -> fail("Disabled"), () -> fail("Native ownership"));
         assertFalse(AutoAdvance.available(false));
         assertTrue(AutoAdvance.available(true));
+    }
+    @Test public void aCollectedFeedViewEndsTheControlsWork() {
+        FeedView view = new FeedView();
+        var control = new AutoAdvance.Control(view);
+        control.update(() -> State.AUTO_SCROLL_STATE_STOP, () -> { }, () -> fail("Not started"));
+
+        // Ownership of the view is deliberately weak. Once it is gone the control must do
+        // nothing at all, which is also why every case here keeps its own reference.
+        control.view.clear();
+        control.update(() -> State.AUTO_SCROLL_STATE_STOP, () -> fail("View is gone"), () -> fail("View is gone"));
     }
     @Test public void hiddenDetachedAndUnfocusedViewsCannotStartScrolling() {
         FeedView view = new FeedView();
@@ -79,7 +94,8 @@ public class AutoAdvanceTest {
         control.update(() -> null, () -> fail("Unknown state"), () -> fail("Unknown state"));
     }
     @Test public void nativeRefusalDoesNotClaimOwnershipAndSettingIsReachable() throws Exception {
-        var control = new AutoAdvance.Control(new FeedView());
+        FeedView feed = new FeedView();
+        var control = new AutoAdvance.Control(feed);
         control.update(() -> State.AUTO_SCROLL_STATE_STOP, () -> { }, () -> fail("Not started"));
         assertFalse(control.owned);
         try (var owner = Robolectric.buildActivity(app.morphe.extension.tiktok.captions.CaptionToolsTest.CaptionActivity.class).setup().visible()) {
