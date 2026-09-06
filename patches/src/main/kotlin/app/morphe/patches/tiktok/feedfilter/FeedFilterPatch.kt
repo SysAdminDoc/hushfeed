@@ -27,6 +27,8 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/feedfilter/FeedItemsFilter;"
+private const val PROFILE_DETAIL_PANEL_DESCRIPTOR =
+    "Lcom/ss/android/ugc/aweme/detail/panel/ProfileDetailFragmentPanel;"
 private const val TAKO_AI_FILTER_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/feedfilter/TakoAiFilter;"
 private const val CARD_FILTERS_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/feedfilter/CardFilters;"
 
@@ -116,6 +118,31 @@ val feedFilterPatch = bytecodePatch(
         ).forEach(MutableMethod::filterProfileAdsAfterNativeTransform)
 
         ProfileDetailAdEventFingerprint.method.filterProfileDetailAdEvent()
+
+        // Opening a video from a profile hands the list to the detail pager once, which the
+        // event above covers. Scrolling past that video refills the pager through the profile
+        // detail panel's own two delivery methods, and those never saw the profile filter.
+        val profileDetailDeliveries = mutableClassDefBy(PROFILE_DETAIL_PANEL_DESCRIPTOR).methods
+            .filter { candidate ->
+                candidate.returnType == "V" &&
+                    candidate.parameterTypes.map(CharSequence::toString) ==
+                    listOf("Ljava/util/List;", "Z")
+            }
+        if (profileDetailDeliveries.size != 2) {
+            throw PatchException(
+                "Expected two list deliveries on the profile detail panel, " +
+                    "found ${profileDetailDeliveries.size}",
+            )
+        }
+        profileDetailDeliveries.forEach { delivery ->
+            delivery.addInstructions(
+                0,
+                """
+                    invoke-static/range {p1 .. p1}, $EXTENSION_CLASS_DESCRIPTOR->filterProfileAds(Ljava/util/List;)Ljava/util/List;
+                    move-result-object p1
+                """,
+            )
+        }
 
         val finalFeedInsertionMethod = FinalFeedInsertionFingerprint.method
         val insertionPayloadType = finalFeedInsertionMethod.parameterTypes.single().toString()
