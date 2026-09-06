@@ -426,7 +426,10 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             ));
         }
 
-        addMenu(screen, Section.BEHAVIOR, SettingsMenuPreference.Icon.BEHAVIOR, countBehaviorSettings());
+        if (hasBehaviorSettings()) {
+            addMenu(screen, Section.BEHAVIOR, SettingsMenuPreference.Icon.BEHAVIOR,
+                    countBehaviorSettings());
+        }
 
         if (FeatureGateLabRuntime.isInstalled()) {
             screen.addPreference(new SettingsMenuPreference(
@@ -595,6 +598,31 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         if (activity != null) {
             activity.finish();
         }
+    }
+
+    /**
+     * Whether App behavior has anything in it. Every row on that page belongs to a patch, so
+     * with none of them installed the row would open a page with nothing but its heading.
+     */
+    private static boolean hasBehaviorSettings() {
+        return SettingsStatus.foldableSplitViewEnabled
+                || SettingsStatus.sanitizeShareUrlsEnabled
+                || SettingsStatus.externalBrowserEnabled
+                || SettingsStatus.showSeekbarEnabled
+                || SettingsStatus.seekbarThumbnailEnabled
+                || SettingsStatus.stopVideoLoopingEnabled
+                || SettingsStatus.resumeVideoAfterScrollEnabled
+                || SettingsStatus.longPressSpeedLockEnabled
+                || SettingsStatus.disableLongPressQuickShareEnabled
+                || SettingsStatus.disableLongPressRepostEnabled
+                || SettingsStatus.disableTelemetryEnabled
+                || SettingsStatus.ghostModeEnabled
+                || SettingsStatus.blockAuthorEnabled
+                || SettingsStatus.notInterestedEnabled
+                || SettingsStatus.nonPersonalizedSearchEnabled
+                || SettingsStatus.liveSearchEnabled
+                || SettingsStatus.duetStitchEnabled
+                || SettingsStatus.refreshRateEnabled;
     }
 
     private int countBehaviorSettings() {

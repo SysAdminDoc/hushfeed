@@ -296,10 +296,14 @@ internal object SearchResultRequestIdFingerprint : Fingerprint(
 
 /**
  * The Friends tab is its own feed and never arrives as a FeedItemList. Its response carries
- * FriendsFeed wrappers in a real named `friendFeedData` field, and every consumer reads that
- * field directly: `setRequestId` on the same class, which is what the search grid is hooked
- * on, has no callers at all in 46.2.3. The constructor is the one point every response passes
- * through with its items already stored.
+ * FriendsFeed wrappers in a real named `friendFeedData` field, and `setRequestId` on that
+ * class, which is what the search grid is hooked on, has no callers at all in 46.2.3.
+ *
+ * Three places are hooked because no single one covers it. The all-arguments constructor
+ * catches a response the app builds itself, and the no-argument one delegates to it. It does
+ * not catch a response off the wire: gson calls the constructor with defaults and then writes
+ * the fields reflectively, so the list is still empty when the constructor returns. For that,
+ * the getter and the success callback below run once the fields are populated.
  */
 internal object FriendsFeedResponseFingerprint : Fingerprint(
     definingClass = "Lcom/ss/android/ugc/aweme/friendstab/api/FriendsFeedResponse;",
@@ -310,6 +314,33 @@ internal object FriendsFeedResponseFingerprint : Fingerprint(
         "Lcom/ss/android/ugc/aweme/feed/model/LogPbBean;", "I", "Ljava/util/List;",
         "Ljava/util/List;", "Ljava/lang/String;",
     ),
+)
+
+/** Walks `friendFeedData` itself, so the list is populated by the time it runs. */
+internal object FriendsFeedAwemeListFingerprint : Fingerprint(
+    definingClass = "Lcom/ss/android/ugc/aweme/friendstab/api/FriendsFeedResponse;",
+    name = "getAwemeList",
+    returnType = "Ljava/util/List;",
+    parameters = emptyList(),
+)
+
+/**
+ * Where a fetched response is handed to the tab. The class is obfuscated, but the callback
+ * kept its name and the body names the response's own field, which is what identifies it.
+ */
+internal object FriendsFeedSuccessFingerprint : Fingerprint(
+    name = "onSuccess",
+    returnType = "V",
+    parameters = listOf("Ljava/lang/Object;"),
+    custom = { method, _ ->
+        method.implementation?.instructions?.any { instruction ->
+            instruction.getReference<FieldReference>()?.let { reference ->
+                reference.definingClass ==
+                    "Lcom/ss/android/ugc/aweme/friendstab/api/FriendsFeedResponse;" &&
+                    reference.name == "friendFeedData"
+            } == true
+        } == true
+    },
 )
 
 internal object TakoAiFeedButtonSetVisibleFingerprint : Fingerprint(

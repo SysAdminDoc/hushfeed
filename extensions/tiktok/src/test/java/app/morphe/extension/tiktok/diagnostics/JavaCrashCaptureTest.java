@@ -37,6 +37,41 @@ public class JavaCrashCaptureTest {
         assertEquals("nothing to hide", JavaCrashCapture.redact("nothing to hide"));
     }
 
+    @Test public void theMessagesAnAndroidNetworkFailureActuallyProducesAreRedacted() {
+        // Neither of the two commonest ones carries a scheme, which is what a pattern anchored
+        // on https:// misses.
+        String unknownHost = JavaCrashCapture.redact(
+                "java.net.UnknownHostException: Unable to resolve host "
+                        + "\"api16-normal-c-useast1a.tiktokv.com\": No address associated with hostname");
+        assertFalse(unknownHost, unknownHost.contains("tiktokv.com"));
+
+        String refused = JavaCrashCapture.redact(
+                "ConnectException: failed to connect to api16-normal.tiktokv.com/13.32.1.5 "
+                        + "(port 443) after 15000ms");
+        assertFalse(refused, refused.contains("tiktokv.com"));
+    }
+
+    @Test public void aCredentialDoesNotShieldTheOnesAfterIt() {
+        // Taking everything up to the next space swallows the delimiter, and then every later
+        // value on the line rides out inside the match.
+        String cookies = JavaCrashCapture.redact(
+                "Cookie: sessionid=abc123; msToken=SECRETVALUE; ttwid=1%7Cxyz");
+        assertFalse(cookies, cookies.contains("abc123"));
+        assertFalse(cookies, cookies.contains("SECRETVALUE"));
+        assertFalse(cookies, cookies.contains("1%7Cxyz"));
+
+        // A name the first version did not list, and a header rather than a query parameter.
+        String others = JavaCrashCapture.redact("sessionid_ss=abc123 odin_tt=deadbeef");
+        assertFalse(others, others.contains("abc123"));
+        assertFalse(others, others.contains("deadbeef"));
+        assertFalse(JavaCrashCapture.redact("X-Tt-Token: 03deadbeefcafe").contains("03deadbeefcafe"));
+
+        // Ordinary text is left readable, or the report stops being worth reading.
+        assertEquals("Attempt to invoke virtual method on a null object reference",
+                JavaCrashCapture.redact(
+                        "Attempt to invoke virtual method on a null object reference"));
+    }
+
     @Test public void aJavaCrashReportRedactsItsMessageAndItsStack() throws Exception {
         Throwable thrown = new IOException("unexpected end of stream on " + URL);
         Method build = JavaCrashCapture.class.getDeclaredMethod(

@@ -53,6 +53,33 @@ public class SettingsPagesTest {
     @After public void restoreControls() throws Exception {
         for (var entry : statuses.entrySet()) entry.getKey().setBoolean(null, entry.getValue());
     }
+    @Test public void aBundleWithOnlyTheSettingsPatchOffersNoEmptyPages() throws Exception {
+        // The @Before turns every status flag on, which is the opposite of the case that
+        // matters here: a user who selected Settings and nothing else must not be given rows
+        // that lead nowhere.
+        for (Field field : SettingsStatus.class.getDeclaredFields()) {
+            if (field.getType() == boolean.class && Modifier.isStatic(field.getModifiers())) {
+                field.setAccessible(true);
+                field.setBoolean(null, false);
+            }
+        }
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            TikTokPreferenceFragment home = new TikTokPreferenceFragment();
+            activity.getFragmentManager().beginTransaction()
+                    .replace(android.R.id.content, home).commit();
+            activity.getFragmentManager().executePendingTransactions();
+
+            android.preference.PreferenceScreen screen = home.getPreferenceScreen();
+            for (int index = 0; index < screen.getPreferenceCount(); index++) {
+                CharSequence title = screen.getPreference(index).getTitle();
+                assertNotEquals("App behavior has nothing in it without its patches",
+                        "App behavior", title == null ? "" : title.toString());
+            }
+        }
+    }
+
     @Test public void darkPagesNavigateAndRender() throws Exception { capturePages("dark"); }
     @Test @Config(qualifiers = "w480dp-h960dp-notnight-mdpi")
     public void lightPagesNavigateAndRender() throws Exception { capturePages("light"); }

@@ -82,19 +82,24 @@ public final class StickerGallerySaver {
 
             StickerAsset asset = findStickerAsset(sheetModel);
             if (asset == null) {
+                // Forget what the sheet was showing. Leaving the last one there would let the
+                // button save a sticker the reader has already moved on from.
+                synchronized (ATTACHED_SHEETS) {
+                    ATTACHED_SHEETS.remove(sheetView);
+                }
                 debugLog("[Morphe Stickers] no usable sticker URL");
                 return;
             }
 
             // The button is added once per sheet, but the sheet is reused for whatever sticker
-            // is opened next, so the sticker behind it is replaced on every bind. Keying only
-            // on the view would leave the button saving the sticker looked at before this one.
+            // is opened next. Recording it before anything below can return keeps the button
+            // pointed at what is on screen whatever happens after this.
+            boolean alreadyDecorated;
             synchronized (ATTACHED_SHEETS) {
-                if (ATTACHED_SHEETS.containsKey(sheetView)) {
-                    ATTACHED_SHEETS.put(sheetView, asset);
-                    return;
-                }
+                alreadyDecorated = ATTACHED_SHEETS.containsKey(sheetView);
+                ATTACHED_SHEETS.put(sheetView, asset);
             }
+            if (alreadyDecorated) return;
 
             List<View> actionButtons = findViewsByClassName(sheetView, "X.0GSy", "LX.0GSy", "X.0Daq", "LX.0Daq");
             ViewGroup actionParent = findCommonParent(actionButtons);
@@ -113,10 +118,6 @@ public final class StickerGallerySaver {
             TextView saveImageButton = createActionButton(template, sheetView);
             ViewGroup.LayoutParams layoutParams = cloneLayoutParams(template.getLayoutParams());
             actionParent.addView(saveImageButton, insertIndex, layoutParams);
-
-            synchronized (ATTACHED_SHEETS) {
-                ATTACHED_SHEETS.put(sheetView, asset);
-            }
 
             debugLog("[Morphe Stickers] attached Save sticker button animated=" + asset.animated
                     + " url=" + summarizeUrl(asset.url)

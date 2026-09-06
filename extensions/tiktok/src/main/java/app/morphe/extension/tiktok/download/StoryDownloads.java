@@ -74,6 +74,11 @@ public final class StoryDownloads {
                 // Ours goes back only if it was ours. Holding is how TikTok pauses a story,
                 // and clearing a listener we never set would take that away.
                 if (TAKEN.remove(view) != null) view.setOnLongClickListener(null);
+                // The component holds the view, so an entry left here keeps its own key
+                // reachable and the weak map never lets go of it.
+                synchronized (OWNERS) {
+                    OWNERS.remove(view);
+                }
                 return;
             }
             synchronized (OWNERS) {

@@ -133,8 +133,22 @@ val feedFilterPatch = bytecodePatch(
         )
 
         // The Friends tab is a separate feed with its own response type, so none of the
-        // hooks above ever see it. Filtering happens as the response is built, because every
-        // later reader takes the list straight off the field.
+        // hooks above ever see it, and every consumer reads its list straight off the field.
+        // The getter and the success callback carry a response whose fields are filled in;
+        // the constructor only catches the ones the app builds itself, because gson writes
+        // the fields after calling it.
+        FriendsFeedAwemeListFingerprint.method.addInstruction(
+            0,
+            "invoke-static/range {p0 .. p0}, " +
+                "$EXTENSION_CLASS_DESCRIPTOR->filterFriendsFeed(Ljava/lang/Object;)V",
+        )
+
+        FriendsFeedSuccessFingerprint.method.addInstruction(
+            0,
+            "invoke-static/range {p1 .. p1}, " +
+                "$EXTENSION_CLASS_DESCRIPTOR->filterFriendsFeed(Ljava/lang/Object;)V",
+        )
+
         FriendsFeedResponseFingerprint.method.apply {
             val returns = implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_VOID }
