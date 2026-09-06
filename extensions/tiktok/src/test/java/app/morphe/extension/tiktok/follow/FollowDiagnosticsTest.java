@@ -8,11 +8,13 @@ package app.morphe.extension.tiktok.follow;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import android.os.Looper;
 
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.tiktok.settings.Settings;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -37,6 +39,38 @@ public class FollowDiagnosticsTest {
 
     private static FollowDiagnostics.FollowRequestContext context() {
         return new FollowDiagnostics.FollowRequestContext(1, "/aweme/v1/commit/follow/user/");
+    }
+
+    @Test
+    public void aHashedAccountIdCannotBeCheckedAgainstAGuess() throws Exception {
+        Utils.setContext(RuntimeEnvironment.getApplication());
+        java.lang.reflect.Method hash =
+                FollowDiagnostics.class.getDeclaredMethod("hash", String.class);
+        hash.setAccessible(true);
+        java.lang.reflect.Field cached = FollowDiagnostics.class.getDeclaredField("salt");
+        cached.setAccessible(true);
+
+        try {
+            Settings.DIAGNOSTIC_REPORT_SALT.save("");
+            cached.set(null, null);
+            String first = (String) hash.invoke(null, "6812345678901234567");
+            assertNotEquals("the salt must be made and kept", "",
+                    Settings.DIAGNOSTIC_REPORT_SALT.get());
+
+            // Same install, same id: two reports from one phone still line up.
+            assertEquals(first, hash.invoke(null, "6812345678901234567"));
+
+            // Another install hashes the same id differently, so holding the id tells you
+            // nothing about whether it appears in somebody else's report.
+            Settings.DIAGNOSTIC_REPORT_SALT.save("");
+            cached.set(null, null);
+            assertNotEquals(first, hash.invoke(null, "6812345678901234567"));
+
+            assertEquals("empty", hash.invoke(null, (Object) null));
+        } finally {
+            Settings.DIAGNOSTIC_REPORT_SALT.save("");
+            cached.set(null, null);
+        }
     }
 
     @Test

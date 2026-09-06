@@ -1121,15 +1121,41 @@ public final class FollowDiagnostics {
         return sanitized;
     }
 
+    /**
+     * Stands in for an account id in a report that gets attached to bug reports. Without the
+     * salt this was a membership test: anybody holding a handful of candidate ids could hash
+     * them and see which appeared. The salt is made once per install and never leaves the
+     * phone, so two reports from the same device still line up with each other and a report
+     * from somebody else says nothing about whose accounts are in it.
+     */
     private static String hash(String value) {
         if (value == null || value.isEmpty()) return "empty";
 
         int hash = 0x811c9dc5;
-        for (int i = 0; i < value.length(); i++) {
-            hash ^= value.charAt(i);
+        String salted = salt() + value;
+        for (int i = 0; i < salted.length(); i++) {
+            hash ^= salted.charAt(i);
             hash *= 0x01000193;
         }
 
         return String.format(Locale.US, "%08x", hash);
+    }
+
+    private static volatile String salt;
+
+    private static String salt() {
+        String known = salt;
+        if (known != null) return known;
+
+        synchronized (FollowDiagnostics.class) {
+            if (salt != null) return salt;
+            String stored = Settings.DIAGNOSTIC_REPORT_SALT.get();
+            if (stored.isEmpty()) {
+                stored = Long.toHexString(new java.security.SecureRandom().nextLong());
+                Settings.DIAGNOSTIC_REPORT_SALT.save(stored);
+            }
+            salt = stored;
+            return stored;
+        }
     }
 }

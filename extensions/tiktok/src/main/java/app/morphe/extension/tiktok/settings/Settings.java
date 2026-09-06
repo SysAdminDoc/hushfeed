@@ -273,6 +273,18 @@ public class Settings extends BaseSettings {
     public static final StringSetting SIMSPOOF_MCCMNC = new StringSetting("simspoof_mccmnc", "310260");
     public static final StringSetting SIMSPOOF_OP_NAME = new StringSetting("simspoof_op_name", "T-Mobile");
 
+    /**
+     * Made once per install so a hashed account id in a diagnostic report cannot be checked
+     * against a guess. Never shown, never exported: it is excluded from the backup for the
+     * same reason the installation bookkeeping is.
+     */
+    public static final StringSetting DIAGNOSTIC_REPORT_SALT = new StringSetting(
+            "diagnostic_report_salt",
+            "",
+            false,
+            false
+    );
+
     static {
         if (!DOWNLOAD_PATHS_MIGRATED.get()) {
             String legacyPath = DOWNLOAD_PATH.get();
