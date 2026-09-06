@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-05T22:46:11",
-  "description": "Hushfeed v0.15.1 targets global TikTok 46.2.3 (com.zhiliaoapp.musically).\n\nThe repository is public from this release, so Morphe Manager can add it as a source from the project page. The build tooling moved to Gradle 9.7.1 with current libraries; the patcher stays at 1.12.0 to match the stable manager.\n\nThe bundle is otherwise the same as v0.15.0: the first release under the project's own name, with the block button fix, the author region, content warning skip, the caption, music, action column, survey and status bar hides, long-press controls, and a settings screen that follows the phone's language (English and German).\n\nThe downloadable .mpp is the patch bundle. Patch on the device with Morphe Manager and keep its existing signing key.\n\nValidation: 149 runtime tests passed. The bundle contains 61 patches and passed the checks for all three DEX payloads.\n",
-  "download_url": "https://github.com/SysAdminDoc/hushfeed/releases/download/v0.15.1/patches-0.15.1.mpp",
+  "created_at": "2026-09-06T03:04:11",
+  "description": "Hushfeed v0.16.0 targets global TikTok 46.2.3 (com.zhiliaoapp.musically).\n\nEvery settings page now shares AMOLED backgrounds, grouped rows and larger headings. Feature Gate Lab, gate details and recording reports follow the same layout. Light mode and larger English/German text remain supported. Native preferences keep their existing actions and saved values.\n\nValidation: 156 runtime tests passed locally. The release bundle contains 61 patches and passed checks for all three DEX payloads. Offscreen Android rendering covered both themes; phone installation has not been verified.\n\nThe downloadable .mpp is the patch bundle. Patch on the device with Morphe Manager and keep its existing signing key.",
+  "download_url": "https://github.com/SysAdminDoc/hushfeed/releases/download/v0.16.0/patches-0.16.0.mpp",
   "signature_download_url": "",
-  "version": "0.15.1"
+  "version": "0.16.0"
 }
