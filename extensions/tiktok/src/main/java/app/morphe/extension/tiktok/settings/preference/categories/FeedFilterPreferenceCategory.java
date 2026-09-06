@@ -31,7 +31,7 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
     @Override
     public void addPreferences(Context context) {
         addPreference(new InputTextPreference(context, "Blocked caption words", "Comma separated words or phrases. Matching captions are skipped. Case doesn't matter.", Settings.BLOCKED_CAPTION_WORDS));
-        addPreference(new InputTextPreference(context, "Blocked creators", "Comma separated account handles or user ids. These accounts are always skipped.", Settings.BLOCKED_CREATORS));
+        addPreference(new InputTextPreference(context, "Blocked creators", "Comma separated account handles or user ids. These accounts are always skipped. An entry between slashes, like /^news_/, is a pattern matched against the handle and the display name.", Settings.BLOCKED_CREATORS));
         addPreference(new NumberInputPreference(context, "Maximum video length", "Seconds. Zero keeps every length. If only quality rules reject a page, keep the nearest allowed candidate.", Settings.MAX_VIDEO_SECONDS, 0, 86400));
         addPreference(new NumberInputPreference(context, "Maximum views per like", "Lower values require more likes per view. Zero disables this rule. One candidate may be kept to avoid an empty page.", Settings.MAX_VIEWS_PER_LIKE, 0, 1000000));
         addPreference(new TogglePreference(context, "Hide promotional music", "Skip videos marked as using promotional music.", Settings.HIDE_PROMOTIONAL_MUSIC));

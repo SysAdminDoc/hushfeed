@@ -1,10 +1,16 @@
 package app.morphe.extension.tiktok.feedfilter;
 
+import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
+import app.morphe.extension.tiktok.settings.L10n;
 import app.morphe.extension.tiktok.settings.Settings;
 import com.ss.android.ugc.aweme.feed.model.Aweme;
 import com.ss.android.ugc.aweme.feed.model.AwemeStatistics;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 public final class AdvancedFeedRules {
     private AdvancedFeedRules() {}
@@ -28,12 +34,59 @@ public final class AdvancedFeedRules {
             Object author = Reflect.property(item, "getAuthor", "author");
             String uid = Reflect.string(author, "getUid", "uid");
             String handle = Reflect.string(author, "getUniqueId", "uniqueId");
-            for (String entry : terms(Settings.BLOCKED_CREATORS.get())) {
+            String nickname = Reflect.string(author, "getNickname", "nickname");
+            for (String entry : rawTerms(Settings.BLOCKED_CREATORS.get())) {
+                if (isPattern(entry)) {
+                    Pattern pattern = compiled(entry);
+                    if (pattern != null && (matches(pattern, handle) || matches(pattern, nickname))) {
+                        return true;
+                    }
+                    continue;
+                }
                 if (entry.startsWith("@")) entry = entry.substring(1);
                 if (!entry.isEmpty() && (entry.equalsIgnoreCase(uid) || entry.equalsIgnoreCase(handle))) return true;
             }
             return false;
         }
+
+        private static boolean matches(Pattern pattern, String value) {
+            return value != null && pattern.matcher(value).find();
+        }
+    }
+
+    /** An entry between slashes is a pattern rather than a name to match exactly. */
+    static boolean isPattern(String entry) {
+        return entry.length() > 2 && entry.startsWith("/") && entry.endsWith("/");
+    }
+
+    private static volatile String compiledSource;
+    private static volatile Pattern compiledPattern;
+    private static volatile String reportedInvalid;
+
+    /**
+     * The pattern for one entry, compiled once. A whole feed page runs through the same
+     * entry in a row, so remembering the last one is enough to keep compilation off the
+     * scan. A pattern that will not compile is dropped and said once, because the entry
+     * otherwise looks like it is working.
+     */
+    static Pattern compiled(String entry) {
+        if (entry.equals(compiledSource)) {
+            return compiledPattern;
+        }
+        String source = entry.substring(1, entry.length() - 1);
+        Pattern pattern;
+        try {
+            pattern = Pattern.compile(source, Pattern.CASE_INSENSITIVE);
+        } catch (PatternSyntaxException invalid) {
+            pattern = null;
+            if (!entry.equals(reportedInvalid)) {
+                reportedInvalid = entry;
+                Utils.showToastLong(L10n.f("Hushfeed cannot read the creator pattern %1$s", entry));
+            }
+        }
+        compiledSource = entry;
+        compiledPattern = pattern;
+        return pattern;
     }
 
     public static final class PromotionalMusicFilter implements IFilter {
@@ -82,5 +135,33 @@ public final class AdvancedFeedRules {
 
     private static String[] terms(String value) {
         return value.toLowerCase(Locale.ROOT).trim().split("\\s*[,\\n]\\s*");
+    }
+
+    /**
+     * The same entries with their case intact, which a pattern needs: lower casing turns
+     * \D into \d. A comma inside a pattern is not a separator, so a fragment that opens a
+     * pattern and does not close it takes the fragments after it until one does.
+     */
+    static String[] rawTerms(String value) {
+        List<String> entries = new ArrayList<>();
+        StringBuilder open = null;
+        for (String fragment : value.trim().split("\\s*[,\\n]\\s*")) {
+            if (open != null) {
+                open.append(',').append(fragment);
+                if (fragment.endsWith("/")) {
+                    entries.add(open.toString());
+                    open = null;
+                }
+                continue;
+            }
+            if (fragment.startsWith("/") && !isPattern(fragment)) {
+                open = new StringBuilder(fragment);
+                continue;
+            }
+            entries.add(fragment);
+        }
+        // An entry that opened a pattern and never closed it is still worth matching on.
+        if (open != null) entries.add(open.toString());
+        return entries.toArray(new String[0]);
     }
 }

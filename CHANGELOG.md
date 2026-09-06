@@ -1,5 +1,7 @@
 ## Unreleased
 
+* A blocked creator entry between slashes, like /^news_/, is a pattern instead of one handle. It is matched against the @name and the display name, and a pattern that will not compile is dropped and said once rather than quietly doing nothing.
+
 * Feed filter takes ranges for comments, favourites and shares as well as views and likes. They read the same statistics the app already sends with every video.
 
 * Each of the six buttons in the right column has its own switch: the avatar and follow button, like, comments, favourite, the music disc and share. Hiding the whole column is still one switch.

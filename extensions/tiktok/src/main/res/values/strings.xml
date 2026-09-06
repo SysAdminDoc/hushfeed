@@ -156,6 +156,7 @@
     <string name="mtp_69494ab7">Remove watermark</string>
     <string name="mtp_6a8a62af">Disable long-press repost</string>
     <string name="mtp_6ac7d0d2">Copy comments without username</string>
+    <string name="mtp_6b108249">Comma separated account handles or user ids. These accounts are always skipped. An entry between slashes, like /^news_/, is a pattern matched against the handle and the display name.</string>
     <string name="mtp_6b2516d5">Lower values require more likes per view. Zero disables this rule. One candidate may be kept to avoid an empty page.</string>
     <string name="mtp_6b93cbb7">Comments beside the video</string>
     <string name="mtp_708c02f3">Continue supported videos from where you stopped when you scroll back to them.</string>
@@ -369,6 +370,7 @@
     <string name="mtp_f5bf4950">Video quality, speed and automatic advance.</string>
     <string name="mtp_f62d6224">Show the country a video was posted from next to the creator\'s name.</string>
     <string name="mtp_f63da85a">Original language</string>
+    <string name="mtp_f6923b0b">Hushfeed cannot read the creator pattern %1$s</string>
     <string name="mtp_f6cebd09">Stop the brand animation that plays over the comments when what someone typed matches an advertiser\'s trigger.</string>
     <string name="mtp_f6fc5d0c">Skip blocked sounds</string>
     <string name="mtp_f768f7c6">Restore settings</string>

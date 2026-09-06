@@ -389,3 +389,5 @@ Min/Max favourites	Min/Max Favoriten
 The minimum or maximum favourites of a video to show.	Mindest- oder Höchstzahl an Favoriten, damit ein Video gezeigt wird.
 Min/Max shares	Min/Max Teilen
 The minimum or maximum shares of a video to show.	Mindest- oder Höchstzahl an Teilungen, damit ein Video gezeigt wird.
+Comma separated account handles or user ids. These accounts are always skipped. An entry between slashes, like /^news_/, is a pattern matched against the handle and the display name.	Kommagetrennte Konto-Namen oder Nutzer-IDs. Diese Konten werden immer übersprungen. Ein Eintrag zwischen Schrägstrichen, etwa /^news_/, ist ein Muster für den @Namen und den Anzeigenamen.
+Hushfeed cannot read the creator pattern %1$s	Hushfeed kann das Creator-Muster %1$s nicht lesen
