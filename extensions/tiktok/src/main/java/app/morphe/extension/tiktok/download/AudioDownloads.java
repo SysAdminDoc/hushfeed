@@ -13,8 +13,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Saves a video's sound as its own .m4a, copied out of a container rather than re-encoded.
@@ -25,7 +23,6 @@ import java.util.concurrent.Executors;
  * when TikTok's own downloader takes the video does this fetch anything of its own.
  */
 final class AudioDownloads {
-    private static final ExecutorService WORKER = Executors.newSingleThreadExecutor();
     private static final Set<String> ACTIVE = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
 
     private AudioDownloads() {}
@@ -47,27 +44,38 @@ final class AudioDownloads {
         List<String> sound = VideoDownloads.audioUrls(video, null);
         List<String> source = sound.isEmpty() ? VideoDownloads.sourceUrls(video) : sound;
         if (source.isEmpty()) return;
+        final List<String> sourceUrls = List.copyOf(source);
 
         String id = Reflect.string(aweme, "getAid", "aid");
         if (id == null) return;
         Context app = context.getApplicationContext();
+        String audioName;
+        try {
+            audioName = DownloadFilenameFormatter.formatSelectedAudioName(aweme);
+        } catch (RuntimeException exception) {
+            Logger.printException(() -> "Could not work out the sound download name", exception);
+            return;
+        }
         if (!ACTIVE.add(id)) return;
-        WORKER.execute(() -> {
+        MediaJobScheduler.JobHandle job = MediaJobScheduler.submit("sound", () -> {
             File fetched = null;
             try {
                 fetched = File.createTempFile("sound-source-", ".mp4", app.getCacheDir());
-                RemoteMedia.fetch(source, fetched, false);
-                write(app, aweme, fetched);
+                RemoteMedia.fetch(sourceUrls, fetched, false);
+                write(app, audioName, fetched);
             } catch (IOException | RuntimeException exception) {
-                Logger.printException(() -> "Sound download failed", exception);
-                Utils.showToastLong(L10n.t("The sound couldn't be saved."));
+                if (!MediaBudget.isCancellation(exception)) {
+                    Logger.printException(() -> "Sound download failed", exception);
+                    Utils.showToastLong(L10n.t("The sound couldn't be saved."));
+                }
             } finally {
                 if (fetched != null && !fetched.delete()) {
                     Logger.printInfo(() -> "Could not remove sound temporary file");
                 }
                 ACTIVE.remove(id);
             }
-        });
+        }, () -> ACTIVE.remove(id));
+        if (job == null) ACTIVE.remove(id);
     }
 
     /**
@@ -76,14 +84,25 @@ final class AudioDownloads {
      * video download down with it.
      */
     static void write(Context app, Object aweme, File source) {
+        if (aweme == null) return;
+        String name;
+        try {
+            name = DownloadFilenameFormatter.formatSelectedAudioName(aweme);
+        } catch (RuntimeException exception) {
+            Logger.printException(() -> "Could not work out the sound download name", exception);
+            return;
+        }
+        write(app, name, source);
+    }
+
+    static void write(Context app, String name, File source) {
         if (!enabled()) return;
         File output = null;
         try {
             output = File.createTempFile("sound-", ".m4a", app.getCacheDir());
             TrackMuxer.audioOnly(source, output);
             String path = audioPath(DownloadsPatch.getVideoDownloadPath());
-            MediaFileWriter.publish(app, output, DownloadFilenameFormatter.formatSelectedAudioName(aweme),
-                    "audio/mp4", path, true);
+            MediaFileWriter.publish(app, output, name, "audio/mp4", path, true);
             Utils.showToastShort(L10n.f("Sound saved to %1$s", path));
         } catch (IOException | RuntimeException exception) {
             Logger.printException(() -> "Sound save failed", exception);

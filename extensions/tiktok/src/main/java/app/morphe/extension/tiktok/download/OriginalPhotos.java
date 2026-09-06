@@ -13,11 +13,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
 
 public final class OriginalPhotos {
-    private static final ExecutorService WORKER = Executors.newSingleThreadExecutor();
     private static final Set<String> ACTIVE = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
     private OriginalPhotos() {}
 
@@ -41,16 +38,18 @@ public final class OriginalPhotos {
         }
         String id = Reflect.string(aweme, "getAid", "aid");
         if (id == null) return false;
+        List<List<String>> photoSnapshot = snapshot(photos);
         if (!ACTIVE.add(id)) return true;
         Context app = context.getApplicationContext();
-        Utils.showToastShort(L10n.f("Saving %1$s original photos", photos.size()));
-        WORKER.execute(() -> {
+        Utils.showToastShort(L10n.f("Saving %1$s original photos", photoSnapshot.size()));
+        MediaJobScheduler.JobHandle job = MediaJobScheduler.submit("original photos", () -> {
             int saved = 0;
             try {
-                for (int i = 0; i < photos.size(); i++) {
+                for (int i = 0; i < photoSnapshot.size(); i++) {
+                    MediaBudget.checkDiskSpace(app.getCacheDir(), -1L);
                     File temp = File.createTempFile("original-photo-", ".tmp", app.getCacheDir());
                     try {
-                        String extension = RemoteMedia.fetch(photos.get(i), temp, true);
+                        String extension = RemoteMedia.fetch(photoSnapshot.get(i), temp, true);
                         String mime = "jpg".equals(extension) ? "image/jpeg" : "image/" + extension;
                         String name = DownloadFilenameFormatter.formatOriginalPhotoName(aweme, i + 1, extension);
                         MediaFileWriter.publish(app, temp, name, mime, DownloadsPatch.getPhotoDownloadPath(), false);
@@ -61,14 +60,25 @@ public final class OriginalPhotos {
                 }
                 Utils.showToastShort(L10n.f("Saved %1$s original photos", saved));
             } catch (IOException | RuntimeException exception) {
+                if (MediaBudget.isCancellation(exception)) return;
                 int completed = saved;
                 Logger.printException(() -> "Original photo download failed after " + completed + " photos", exception);
                 Utils.showToastLong(L10n.f("Saved %1$s photos. The rest failed, so try again.", saved));
             } finally {
                 ACTIVE.remove(id);
             }
-        });
+        }, () -> ACTIVE.remove(id));
+        if (job == null) {
+            ACTIVE.remove(id);
+            return false;
+        }
         return true;
+    }
+
+    private static List<List<String>> snapshot(List<List<String>> photos) {
+        List<List<String>> copy = new ArrayList<>();
+        for (List<String> photo : photos) copy.add(List.copyOf(photo));
+        return List.copyOf(copy);
     }
 
     static List<List<String>> sources(Object aweme) {

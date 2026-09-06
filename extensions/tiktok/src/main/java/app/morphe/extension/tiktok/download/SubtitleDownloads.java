@@ -8,7 +8,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -105,7 +108,9 @@ final class SubtitleDownloads {
         for (Track track : tracks) {
             File temp = null;
             try {
+                MediaBudget.check(null);
                 String srt = fetch(track.urls, track.format);
+                MediaBudget.checkDiskSpace(context.getCacheDir(), srt.length() * 2L);
                 temp = File.createTempFile("subtitle-", ".srt", context.getCacheDir());
                 try (var output = new FileOutputStream(temp)) { output.write(srt.getBytes(StandardCharsets.UTF_8)); }
                 MediaFileWriter.publish(context, temp, stem + "." + track.language + ".srt", "application/x-subrip", path, false);
@@ -121,30 +126,52 @@ final class SubtitleDownloads {
 
     static String fetch(List<String> urls, String format) throws IOException {
         IOException last = new IOException("No subtitle URL");
+        MediaBudget.Deadline deadline = MediaBudget.deadline();
         for (String url : urls) {
-            HttpURLConnection connection = null;
-            try {
-                connection = (HttpURLConnection) new URL(url).openConnection();
-                connection.setConnectTimeout(15000);
-                connection.setReadTimeout(30000);
-                connection.setRequestProperty("Accept-Encoding", "identity");
-                if (connection.getResponseCode() != 200) throw new IOException("Subtitle server returned " + connection.getResponseCode());
-                String lengthHeader = connection.getHeaderField("Content-Length");
-                if (lengthHeader != null) {
-                    try {
-                        if (Long.parseLong(lengthHeader.trim()) > 2 * 1024 * 1024) {
-                            throw new IOException("Subtitle file is too large");
-                        }
-                    } catch (NumberFormatException ignored) {
-                        // The streamed copy below remains the authoritative size limit.
+            for (int attempt = 0; attempt < MediaBudget.MAX_ATTEMPTS_PER_MIRROR; attempt++) {
+                HttpURLConnection connection = null;
+                try {
+                    MediaBudget.check(deadline);
+                    connection = (HttpURLConnection) new URL(url).openConnection();
+                    connection.setConnectTimeout(MediaBudget.timeoutMillis(deadline, 15000));
+                    connection.setReadTimeout(MediaBudget.timeoutMillis(deadline, 30000));
+                    connection.setRequestProperty("Accept-Encoding", "identity");
+                    int responseCode = connection.getResponseCode();
+                    if (MediaBudget.isTransientStatus(responseCode)
+                            && attempt + 1 < MediaBudget.MAX_ATTEMPTS_PER_MIRROR) {
+                        MediaBudget.waitBeforeRetry(connection.getHeaderField("Retry-After"), attempt, deadline);
+                        continue;
                     }
+                    if (responseCode != 200) throw new IOException("Subtitle server returned " + responseCode);
+                    String lengthHeader = connection.getHeaderField("Content-Length");
+                    if (lengthHeader != null) {
+                        try {
+                            if (Long.parseLong(lengthHeader.trim()) > 2 * 1024 * 1024) {
+                                throw new IOException("Subtitle file is too large");
+                            }
+                        } catch (NumberFormatException ignored) {
+                            // The streamed copy below remains the authoritative size limit.
+                        }
+                    }
+                    try (var input = connection.getInputStream(); var output = new ByteArrayOutputStream()) {
+                        MediaFileWriter.copy(input, output, 2 * 1024 * 1024, deadline);
+                        return SubtitleFormat.toSrt(new String(output.toByteArray(), StandardCharsets.UTF_8), format);
+                    }
+                } catch (IOException | RuntimeException error) {
+                    if (error instanceof InterruptedIOException) throw (InterruptedIOException) error;
+                    boolean retryable = error instanceof SocketTimeoutException
+                            || error instanceof ConnectException;
+                    if (retryable && attempt + 1 < MediaBudget.MAX_ATTEMPTS_PER_MIRROR) {
+                        MediaBudget.waitBeforeRetry(null, attempt, deadline);
+                        continue;
+                    }
+                    last = new IOException("Subtitle mirror failed ("
+                            + error.getClass().getSimpleName() + "): " + RemoteMedia.summarizeUrl(url));
+                    break;
+                } finally {
+                    if (connection != null) connection.disconnect();
                 }
-                try (var input = connection.getInputStream(); var output = new ByteArrayOutputStream()) {
-                    MediaFileWriter.copy(input, output, 2 * 1024 * 1024);
-                    return SubtitleFormat.toSrt(new String(output.toByteArray(), StandardCharsets.UTF_8), format);
-                }
-            } catch (IOException error) { last = error; }
-            finally { if (connection != null) connection.disconnect(); }
+            }
         }
         throw last;
     }

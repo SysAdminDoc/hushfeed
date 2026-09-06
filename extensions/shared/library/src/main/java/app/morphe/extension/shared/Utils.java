@@ -53,7 +53,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -235,19 +236,25 @@ public class Utils {
      * All tasks run at max thread priority.
      */
     private static final ThreadPoolExecutor backgroundThreadPool = new ThreadPoolExecutor(
-            3, // 3 threads always ready to go.
-            Integer.MAX_VALUE,
-            10, // For any threads over the minimum, keep them alive 10 seconds after they go idle.
+            3,
+            6,
+            10,
             TimeUnit.SECONDS,
-            new SynchronousQueue<>(),
+            new ArrayBlockingQueue<>(32),
             r -> { // ThreadFactory
                 Thread t = new Thread(r);
                 t.setPriority(Thread.MAX_PRIORITY); // Run at max priority.
+                t.setDaemon(true);
                 return t;
-            });
+            },
+            new ThreadPoolExecutor.AbortPolicy());
 
     public static void runOnBackgroundThread(Runnable task) {
-        backgroundThreadPool.execute(task);
+        try {
+            backgroundThreadPool.execute(task);
+        } catch (RejectedExecutionException error) {
+            Logger.printException(() -> "Background task queue is full", error);
+        }
     }
 
     public static <T> Future<T> submitOnBackgroundThread(Callable<T> call) {

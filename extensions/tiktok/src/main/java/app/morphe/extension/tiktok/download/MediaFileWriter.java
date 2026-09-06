@@ -18,6 +18,10 @@ final class MediaFileWriter {
     private MediaFileWriter() {}
 
     static String publish(Context context, File source, String name, String mime, String path, boolean video) throws IOException {
+        File destinationDirectory = path == null
+                ? Environment.getExternalStorageDirectory()
+                : new File(Environment.getExternalStorageDirectory(), path);
+        MediaBudget.checkDiskSpace(destinationDirectory, source == null ? -1L : source.length());
         if (Build.VERSION.SDK_INT >= 29) {
             var resolver = context.getContentResolver();
             ContentValues values = new ContentValues();
@@ -90,7 +94,7 @@ final class MediaFileWriter {
     }
 
     static long copy(InputStream input, OutputStream output) throws IOException {
-        return copy(input, output, Long.MAX_VALUE);
+        return copy(input, output, Long.MAX_VALUE, null);
     }
 
     /**
@@ -98,10 +102,18 @@ final class MediaFileWriter {
      * result is an error: a zero byte file in the gallery looks like a save that worked.
      */
     static long copy(InputStream input, OutputStream output, long limit) throws IOException {
+        return copy(input, output, limit, null);
+    }
+
+    static long copy(InputStream input, OutputStream output, long limit,
+            MediaBudget.Deadline deadline) throws IOException {
         byte[] buffer = new byte[65536];
         long total = 0;
         int count;
-        while ((count = input.read(buffer)) != -1) {
+        while (true) {
+            MediaBudget.check(deadline);
+            count = input.read(buffer);
+            if (count == -1) break;
             total += count;
             if (total > limit) {
                 throw new IOException("That file is larger than " + (limit >> 20) + " MB");

@@ -13,6 +13,7 @@ final class TrackMuxer {
     private TrackMuxer() {}
 
     static void combine(File video, File audio, File output) throws IOException {
+        MediaBudget.checkDiskSpace(output.getParentFile(), video.length() + audio.length());
         MediaExtractor picture = new MediaExtractor(), sound = new MediaExtractor();
         MediaMuxer muxer = null;
         try {
@@ -36,6 +37,7 @@ final class TrackMuxer {
 
     /** Copies just the sound into its own MP4 container, which is what an .m4a is. */
     static void audioOnly(File source, File output) throws IOException {
+        MediaBudget.checkDiskSpace(output.getParentFile(), source.length());
         MediaExtractor sound = new MediaExtractor();
         MediaMuxer muxer = null;
         try {
@@ -55,6 +57,7 @@ final class TrackMuxer {
 
     /** Copies just the picture, which is a download of a video with the sound left out. */
     static void videoOnly(File source, File output) throws IOException {
+        MediaBudget.checkDiskSpace(output.getParentFile(), source.length());
         MediaExtractor picture = new MediaExtractor();
         MediaMuxer muxer = null;
         try {
@@ -89,6 +92,7 @@ final class TrackMuxer {
         MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
         int samples = 0;
         while (extractor.getSampleTime() >= 0) {
+            MediaBudget.check(null);
             if ((extractor.getSampleFlags() & MediaExtractor.SAMPLE_FLAG_ENCRYPTED) != 0) throw new IOException("Encrypted media cannot be saved");
             if (android.os.Build.VERSION.SDK_INT >= 28) {
                 long size = extractor.getSampleSize();

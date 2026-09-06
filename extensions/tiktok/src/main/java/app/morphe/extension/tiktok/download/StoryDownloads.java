@@ -23,8 +23,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Saves a story from a press and hold on it.
@@ -40,7 +38,6 @@ import java.util.concurrent.Executors;
  */
 @SuppressWarnings("unused")
 public final class StoryDownloads {
-    private static final ExecutorService WORKER = Executors.newSingleThreadExecutor();
     private static final Set<String> ACTIVE = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
 
     /** The story each play area is showing, and the view each play area put on screen. */
@@ -152,6 +149,16 @@ public final class StoryDownloads {
             return true;
         }
 
+        List<List<String>> photoSnapshot = snapshot(photos);
+        List<String> videoSnapshot = List.copyOf(video);
+        String audioName = null;
+        if (AudioDownloads.enabled()) {
+            try { audioName = DownloadFilenameFormatter.formatSelectedAudioName(aweme); }
+            catch (RuntimeException exception) {
+                Logger.printException(() -> "Could not work out the story sound name", exception);
+            }
+        }
+
         Context app = context.getApplicationContext();
         if (!ACTIVE.add(id)) {
             Utils.showToastShort(L10n.t("Still saving the last one"));
@@ -159,20 +166,27 @@ public final class StoryDownloads {
         }
         Utils.showToastShort(L10n.t("Saving the story"));
         try {
-            WORKER.execute(() -> {
+            String capturedAudioName = audioName;
+            MediaJobScheduler.JobHandle job = MediaJobScheduler.submit("story", () -> {
                 try {
-                    if (photos.isEmpty()) {
-                        saveVideo(app, aweme, video);
+                    if (photoSnapshot.isEmpty()) {
+                        saveVideo(app, aweme, videoSnapshot, capturedAudioName);
                     } else {
-                        savePhotos(app, aweme, photos);
+                        savePhotos(app, aweme, photoSnapshot);
                     }
                 } catch (IOException | RuntimeException exception) {
-                    Logger.printException(() -> "Story download failed", exception);
-                    Utils.showToastLong(L10n.t("The story couldn't be saved."));
+                    if (!MediaBudget.isCancellation(exception)) {
+                        Logger.printException(() -> "Story download failed", exception);
+                        Utils.showToastLong(L10n.t("The story couldn't be saved."));
+                    }
                 } finally {
                     ACTIVE.remove(id);
                 }
-            });
+            }, () -> ACTIVE.remove(id));
+            if (job == null) {
+                ACTIVE.remove(id);
+                return false;
+            }
         } catch (RuntimeException exception) {
             ACTIVE.remove(id);
             Logger.printException(() -> "Could not start the story download", exception);
@@ -181,14 +195,15 @@ public final class StoryDownloads {
         return true;
     }
 
-    private static void saveVideo(Context app, Object aweme, List<String> urls) throws IOException {
+    private static void saveVideo(Context app, Object aweme, List<String> urls, String audioName) throws IOException {
+        MediaBudget.checkDiskSpace(app.getCacheDir(), -1L);
         File temp = File.createTempFile("story-", ".mp4", app.getCacheDir());
         try {
             RemoteMedia.fetch(urls, temp, false);
             String path = DownloadsPatch.getVideoDownloadPath();
             MediaFileWriter.publish(app, temp, DownloadFilenameFormatter.formatSelectedVideoName(aweme),
                     "video/mp4", path, true);
-            AudioDownloads.write(app, aweme, temp);
+            if (audioName != null) AudioDownloads.write(app, audioName, temp);
             Utils.showToastShort(L10n.f("Story saved to %1$s", path));
         } finally {
             if (!temp.delete()) Logger.printInfo(() -> "Could not remove story temporary file");
@@ -201,6 +216,7 @@ public final class StoryDownloads {
         int saved = 0;
         try {
             for (int index = 0; index < photos.size(); index++) {
+                MediaBudget.checkDiskSpace(app.getCacheDir(), -1L);
                 File temp = File.createTempFile("story-photo-", ".tmp", app.getCacheDir());
                 temporary.add(temp);
                 String extension = RemoteMedia.fetch(photos.get(index), temp, true);
@@ -222,5 +238,11 @@ public final class StoryDownloads {
                 if (!file.delete()) Logger.printInfo(() -> "Could not remove story temporary file");
             }
         }
+    }
+
+    private static List<List<String>> snapshot(List<List<String>> photos) {
+        List<List<String>> copy = new ArrayList<>();
+        for (List<String> photo : photos) copy.add(List.copyOf(photo));
+        return List.copyOf(copy);
     }
 }

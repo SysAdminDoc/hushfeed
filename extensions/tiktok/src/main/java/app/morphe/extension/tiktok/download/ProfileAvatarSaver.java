@@ -20,8 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -34,7 +32,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @SuppressWarnings("unused")
 public final class ProfileAvatarSaver {
-    private static final ExecutorService WORKER = Executors.newSingleThreadExecutor();
     private static final AtomicBoolean RUNNING = new AtomicBoolean();
 
     /**
@@ -174,6 +171,7 @@ public final class ProfileAvatarSaver {
             Utils.showToastShort(L10n.t("This profile picture isn't available to save"));
             return;
         }
+        final List<String> urlSnapshot = List.copyOf(urls);
         if (android.os.Build.VERSION.SDK_INT >= 23 && android.os.Build.VERSION.SDK_INT < 29
                 && context.checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != android.content.pm.PackageManager.PERMISSION_GRANTED) return;
@@ -185,11 +183,12 @@ public final class ProfileAvatarSaver {
             Utils.showToastShort(L10n.t("Still saving the last one"));
             return;
         }
-        WORKER.execute(() -> {
+        MediaJobScheduler.JobHandle job = MediaJobScheduler.submit("profile picture", () -> {
             File temp = null;
             try {
+                MediaBudget.checkDiskSpace(app.getCacheDir(), -1L);
                 temp = File.createTempFile("profile-picture-", ".tmp", app.getCacheDir());
-                String extension = RemoteMedia.fetch(urls, temp, true);
+                String extension = RemoteMedia.fetch(urlSnapshot, temp, true);
                 String mime = "jpg".equals(extension) ? "image/jpeg" : "image/" + extension;
                 String saved = name.substring(0, name.lastIndexOf('.') + 1) + extension;
                 MediaFileWriter.publish(app, temp, saved, mime, path, false);
@@ -203,6 +202,7 @@ public final class ProfileAvatarSaver {
                 }
                 RUNNING.set(false);
             }
-        });
+        }, () -> RUNNING.set(false));
+        if (job == null) RUNNING.set(false);
     }
 }

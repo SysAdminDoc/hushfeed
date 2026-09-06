@@ -1069,6 +1069,8 @@ public final class L10nTranslations {
                 "Der Daumen runter an jedem Kommentar blockiert das Konto, das ihn geschrieben hat, statt ihn abzulehnen. Der Kommentar wird abgedunkelt, ein Rückgängig-Banner folgt, und ein zweites Tippen hebt die Blockierung auf. Wirkt nach einem Neustart.");
         table.put("The video couldn't be saved. Try again, or choose Automatic.",
                 "Das Video konnte nicht gespeichert werden. Versuche es noch einmal oder wähle Automatisch.");
+        table.put("Too many media saves are already running. Try again shortly.",
+                "Es laufen bereits zu viele Medienspeicherungen. Versuche es gleich noch einmal.");
         table.put("There was nothing to clear",
                 "Es gab nichts zu löschen");
         table.put("There was nothing to put back",
@@ -2218,6 +2220,8 @@ public final class L10nTranslations {
                 "Jempol ke bawah pada tiap komentar memblokir akun yang menulisnya, bukan menandai tidak suka. Komentarnya meredup, muncul spanduk untuk mengurungkan, dan ketukan kedua membuka blokirnya. Berlaku setelah mulai ulang.");
         table.put("The video couldn't be saved. Try again, or choose Automatic.",
                 "Videonya tidak bisa disimpan. Coba lagi, atau pilih Otomatis.");
+        table.put("Too many media saves are already running. Try again shortly.",
+                "Terlalu banyak penyimpanan media yang sedang berjalan. Coba lagi sebentar.");
         table.put("There was nothing to clear",
                 "Tidak ada yang bisa dihapus");
         table.put("There was nothing to put back",

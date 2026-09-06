@@ -15,12 +15,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.json.JSONObject;
 
 final class VideoDownloads {
-    private static final ExecutorService WORKER = Executors.newSingleThreadExecutor();
     private static final Set<String> ACTIVE = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
     private VideoDownloads() {}
 
@@ -51,9 +48,9 @@ final class VideoDownloads {
             selectedUrls = urls(Reflect.property(video, "getDownloadNoWatermarkAddr", "downloadNoWatermarkAddr"));
             if (selectedUrls.isEmpty()) selectedUrls = urls(Reflect.property(video, "getDownloadAddr", "downloadAddr"));
         }
-        List<String> videoUrls = selectedUrls;
+        List<String> videoUrls = List.copyOf(selectedUrls);
         boolean dash = selected != null && Boolean.TRUE.equals(Reflect.invoke(video, "hasDashBitrate"));
-        List<String> audioUrls = dash ? audioUrls(video, selected) : Collections.emptyList();
+        List<String> audioUrls = dash ? List.copyOf(audioUrls(video, selected)) : Collections.emptyList();
         if (videoUrls.isEmpty() || (dash && !muted && audioUrls.isEmpty())) {
             Utils.showToastShort(L10n.t(
                     "This quality isn't available as a complete file, so TikTok's own save runs instead"));
@@ -73,13 +70,23 @@ final class VideoDownloads {
             Logger.printException(() -> "Could not work out the download name", exception);
             return false;
         }
+        String audioName = null;
+        if (AudioDownloads.enabled()) {
+            try {
+                audioName = DownloadFilenameFormatter.formatSelectedAudioName(aweme);
+            } catch (RuntimeException exception) {
+                Logger.printException(() -> "Could not work out the sound download name", exception);
+            }
+        }
+        final String audioNameSnapshot = audioName;
+        List<SubtitleDownloads.Track> captionSnapshot = List.copyOf(captions);
         if (!ACTIVE.add(id)) return true;
         Utils.showToastShort(captions.isEmpty()
                 ? L10n.t(muted
                         ? "Saving the selected video quality without sound"
                         : "Saving the selected video quality")
                 : L10n.f("Saving video and subtitles to %1$s", path));
-        WORKER.execute(() -> {
+        MediaJobScheduler.JobHandle job = MediaJobScheduler.submit("video", () -> {
             List<File> temporary = new ArrayList<>();
             try {
                 File picture = temp(app, temporary);
@@ -111,17 +118,25 @@ final class VideoDownloads {
                 // The sound is already on disk: the separate stream when the video has one,
                 // otherwise the video itself, which still carries it because the copy that
                 // dropped it went to a different file. Fetching it again would download twice.
-                AudioDownloads.write(app, aweme, sound == null ? picture : sound);
-                int saved = SubtitleDownloads.save(app, captions, savedName, path);
-                Utils.showToastLong(subtitleResult(captions.size(), saved, path));
+                if (audioNameSnapshot != null) {
+                    AudioDownloads.write(app, audioNameSnapshot, sound == null ? picture : sound);
+                }
+                int saved = SubtitleDownloads.save(app, captionSnapshot, savedName, path);
+                Utils.showToastLong(subtitleResult(captionSnapshot.size(), saved, path));
             } catch (IOException | RuntimeException exception) {
-                Logger.printException(() -> "Selected-quality download failed", exception);
-                Utils.showToastLong(L10n.t("The video couldn't be saved. Try again, or choose Automatic."));
+                if (!MediaBudget.isCancellation(exception)) {
+                    Logger.printException(() -> "Selected-quality download failed", exception);
+                    Utils.showToastLong(L10n.t("The video couldn't be saved. Try again, or choose Automatic."));
+                }
             } finally {
                 for (File file : temporary) if (!file.delete()) Logger.printInfo(() -> "Could not remove video temporary file");
                 ACTIVE.remove(id);
             }
-        });
+        }, () -> ACTIVE.remove(id));
+        if (job == null) {
+            ACTIVE.remove(id);
+            return false;
+        }
         return true;
     }
 

@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Media saves now share a bounded worker queue. Transfers have byte, deadline and free-space budgets, transient mirrors retry with capped backoff, request data is snapshotted before enqueueing, and cancellation removes unpublished work without falling back to the UI thread.
+
 * Media downloads keep trying later mirrors when an earlier URL is malformed. Each mirror owns its parsing, connection and transfer errors, aggregate failures omit signed query data, and a failed run removes a partial temporary file.
 
 * The settings journal now survives an AtomicFile backup left by a crash, compares Lab rules without depending on their display order, and covers edits made from the Lab detail pages. Seen-history loading can retry after a clear races a failed open, reset takes its journal lock before capturing defaults, and detached exports still clean up the selected document.

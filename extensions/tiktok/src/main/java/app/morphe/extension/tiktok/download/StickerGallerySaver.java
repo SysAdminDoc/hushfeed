@@ -51,8 +51,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.WeakHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @SuppressWarnings("unused")
 public final class StickerGallerySaver {
@@ -62,7 +60,6 @@ public final class StickerGallerySaver {
     private static final int CONNECT_TIMEOUT_MS = 15_000;
     private static final int READ_TIMEOUT_MS = 20_000;
 
-    private static final ExecutorService SAVE_EXECUTOR = Executors.newSingleThreadExecutor();
     private static final Handler MAIN_HANDLER = new Handler(Looper.getMainLooper());
     /** The sticker each decorated sheet is currently showing, so a reused sheet saves its own. */
     private static final WeakHashMap<View, StickerAsset> ATTACHED_SHEETS = new WeakHashMap<>();
@@ -193,7 +190,7 @@ public final class StickerGallerySaver {
         button.setEnabled(false);
         toast(context, L10n.t("Saving sticker"));
 
-        SAVE_EXECUTOR.execute(() -> {
+        MediaJobScheduler.JobHandle job = MediaJobScheduler.submit("sticker", () -> {
             SaveResult result = saveSticker(context, asset);
             MAIN_HANDLER.post(() -> {
                 button.setEnabled(true);
@@ -205,17 +202,20 @@ public final class StickerGallerySaver {
                             + " url=" + summarizeUrl(asset.url));
                 }
             });
-        });
+        }, () -> MAIN_HANDLER.post(() -> button.setEnabled(true)));
+        if (job == null) MAIN_HANDLER.post(() -> button.setEnabled(true));
     }
 
     private static SaveResult saveSticker(Context context, StickerAsset asset) {
         HttpURLConnection connection = null;
         Uri pendingUri = null;
+        MediaBudget.Deadline deadline = MediaBudget.deadline();
 
         try {
+            MediaBudget.check(deadline);
             connection = (HttpURLConnection) new URL(asset.url).openConnection();
-            connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
-            connection.setReadTimeout(READ_TIMEOUT_MS);
+            connection.setConnectTimeout(MediaBudget.timeoutMillis(deadline, CONNECT_TIMEOUT_MS));
+            connection.setReadTimeout(MediaBudget.timeoutMillis(deadline, READ_TIMEOUT_MS));
             connection.setInstanceFollowRedirects(true);
             connection.setRequestProperty("User-Agent", "TikTok 46.2.3 Morphe");
 
@@ -223,6 +223,9 @@ public final class StickerGallerySaver {
             if (responseCode < 200 || responseCode >= 300) {
                 return SaveResult.failure(L10n.t("The sticker could not be downloaded"));
             }
+            long declaredLength = connection.getContentLength();
+            MediaBudget.checkTransferLength(declaredLength);
+            MediaBudget.checkDiskSpace(context.getCacheDir(), declaredLength);
 
             try (BufferedInputStream inputStream = new BufferedInputStream(connection.getInputStream())) {
                 MediaFormat format = detectMediaFormat(connection.getContentType(), asset.url, inputStream, asset.animated);
