@@ -1191,6 +1191,34 @@
       "options": []
     },
     {
+      "name": "Hide search suggestions",
+      "description": "Hides the suggested searches TikTok offers on the search page before you type. Your own search history is left alone. Supports TikTok 46.2.3.",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Hide suggested accounts",
       "description": "Stops the suggested accounts list from being built on the Activity, New followers and Inbox pages. Shares its switch with Hide inbox items. Supports TikTok 46.2.3.",
       "use": false,

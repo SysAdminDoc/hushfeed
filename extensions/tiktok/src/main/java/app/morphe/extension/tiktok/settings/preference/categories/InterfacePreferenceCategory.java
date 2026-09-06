@@ -200,6 +200,14 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
                     Settings.HIDE_VISUAL_SEARCH
             ));
         }
+        if (SettingsStatus.hideSearchSuggestionsEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide search suggestions",
+                    "Hide the searches TikTok offers before you type. Your own search history stays.",
+                    Settings.HIDE_SEARCH_SUGGESTIONS
+            ));
+        }
         if (SettingsStatus.videoOverlaysEnabled || SettingsStatus.hideFeedLiveButtonEnabled) {
             addPreference(new TogglePreference(
                     context,

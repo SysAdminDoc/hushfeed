@@ -14,7 +14,7 @@
 
 Hushfeed is a set of TikTok patches for [Morphe](https://github.com/MorpheApp/morphe-manager). It cuts down accidental taps and gives you more say over what the app puts in front of you. It runs on the global TikTok build, `com.zhiliaoapp.musically`, version [46.2.3](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/).
 
-It started as a private fork of [icysymmetra's Metra patches](https://github.com/icysymmetra/tiktok-patches-for-morphe) and grew past them. Everything upstream ships is still here, along with the work from other community bundles and a long list of additions of its own. The result is 63 patches, each with its own switch in a settings screen that follows your phone's language.
+It started as a private fork of [icysymmetra's Metra patches](https://github.com/icysymmetra/tiktok-patches-for-morphe) and grew past them. Everything upstream ships is still here, along with the work from other community bundles and a long list of additions of its own. The result is 64 patches, each with its own switch in a settings screen that follows your phone's language.
 
 ## What it does
 
@@ -72,6 +72,7 @@ The Settings patch adds the entry point; most patches depend on it and it's sele
 | `Downloads` | Adds watermark-free downloads, filename templates, and comment sticker saving. An animated sticker is written as MP4, GIF, or the WebP TikTok sent, whichever you pick. |
 | `Enable Live search` | Shows TikTok's search entry in the Live drawer where supported. |
 | `Enable non-personalized search` | Uses TikTok's non-personalized search mode instead of its saved account choice. |
+| `Hide search suggestions` | Hides the searches TikTok offers on the search page before you type, and stops it fetching them. Your own search history stays. |
 | `Feature Gate Lab` | Adds a searchable menu for viewing and overriding supported TikTok feature flags and configuration values. Client-side overrides cannot bypass server enforcement. |
 | `Feature Gate Recorder` | Records gate reads while you use a feature, then shows new and changed values. Save the full report as JSON or copy a smaller report. |
 | `Follow diagnostics` | Reads what the server said about a follow. TikTok answers a refused follow like a successful one, so this reports the refusal and its reason once per session, and writes the whole exchange to the diagnostic report when logging is on. |
@@ -229,7 +230,7 @@ Google Play only ever serves the newest build it thinks your device can run, so 
 
 ### Why that version and not a newer one
 
-Every patch here is tied to code TikTok does not name: the classes and methods are renamed on each build, so a patch finds its place by the shape of the code around it. Those shapes move. 46.2.3 is the build all 63 patches have actually been run against, and the compatibility metadata says so. A newer build may well patch, and the patcher will let you try, but a patch whose anchor moved either fails loudly at patch time or, worse, lands somewhere it should not. TikTok is several minor versions ahead already; checking a newer one means running the whole bundle against it and reading which patches failed, which has not been done yet.
+Every patch here is tied to code TikTok does not name: the classes and methods are renamed on each build, so a patch finds its place by the shape of the code around it. Those shapes move. 46.2.3 is the build all 64 patches have actually been run against, and the compatibility metadata says so. A newer build may well patch, and the patcher will let you try, but a patch whose anchor moved either fails loudly at patch time or, worse, lands somewhere it should not. TikTok is several minor versions ahead already; checking a newer one means running the whole bundle against it and reading which patches failed, which has not been done yet.
 
 Only the global package is declared in the compatibility metadata.
 

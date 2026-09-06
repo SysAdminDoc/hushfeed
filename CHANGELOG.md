@@ -1,5 +1,7 @@
 ## Unreleased
 
+* A switch for the searches TikTok puts on the search page before you type. It stops the app asking for them as well as showing them, so the rows are not fetched and then hidden. What you have searched for yourself is a different list and is left alone.
+
 * Stories can be saved. They are ordinary posts with no save button anywhere on them, so press and hold one and it goes to your usual video or photo destination, photo posts and all. Holding a story is also how TikTok pauses it, so the switch is off until you ask for it.
 
 ## 0.17.0 (2026-09-06)
