@@ -134,9 +134,9 @@ public final class SeenVideoHistory {
                     undo = readAll();
                     getDatabase().getWritableDatabase().delete(TABLE, null, null);
                 } catch (Throwable throwable) {
-                    // No copy means nothing to offer; leaving the flag set would promise a way
-                    // back that does not exist.
-                    undoOffered = false;
+                    // Only a missing copy withdraws the offer. The read can succeed and the
+                    // delete still fail, and then the way back is the one thing worth keeping.
+                    if (undo == null) undoOffered = false;
                     Logger.printException(() -> "Seen video history clear failed", throwable);
                 }
             });
@@ -201,7 +201,14 @@ public final class SeenVideoHistory {
             }
             trimMemory();
 
-            Map<String, Long> rows = new HashMap<>(copy);
+            // What goes back to the database is what memory settled on, not the copy: a
+            // video watched again since the clear has a newer time, and writing the copy over
+            // it would put that back to the older one on the next load.
+            Map<String, Long> rows = new HashMap<>();
+            for (String aid : copy.keySet()) {
+                Long merged = SEEN.get(aid);
+                if (merged != null) rows.put(aid, merged);
+            }
             IO.execute(() -> {
                 try {
                     SQLiteDatabase writable = getDatabase().getWritableDatabase();

@@ -225,6 +225,14 @@ public class SeenVideoHistoryTest {
         assertTrue(SeenVideoHistory.undoClear());
         drain();
         assertEquals("the older copy must not overwrite it", watchedAgain, seenAt("55"));
+
+        // And what went back to the database is the newer time too, or the next load would
+        // quietly undo the merge.
+        try (android.database.Cursor c = database().rawQuery(
+                "SELECT last_seen_ms FROM seen_videos WHERE aid = '55'", null)) {
+            assertTrue(c.moveToFirst());
+            assertEquals("the row on disk must match memory", watchedAgain, c.getLong(0));
+        }
     }
 
     private static long seenAt(String aid) throws Exception {

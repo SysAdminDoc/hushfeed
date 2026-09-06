@@ -284,6 +284,54 @@ public class CommentSearchTest {
         }
     }
 
+    @Test public void theBoxLeavesWithTheSheetItBelongsTo() {
+        try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup().visible()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            Settings.COMMENT_SEARCH.save(true);
+            CommentSearch.setQuery("");
+
+            // The column the box lands in can sit above the sheet and outlive it.
+            LinearLayout column = new LinearLayout(activity);
+            column.setOrientation(LinearLayout.VERTICAL);
+            activity.setContentView(column);
+            LinearLayout listView = new LinearLayout(activity);
+            listView.setOrientation(LinearLayout.VERTICAL);
+            column.addView(listView);
+
+            View row = new View(activity);
+            row.setLayoutParams(new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, 120));
+            listView.addView(row);
+            CommentSearch.onCellBound(row, new Comment("Great recipe", "cook", "Sam"));
+            shadowOf(Looper.getMainLooper()).idle();
+            assertEquals(2, column.getChildCount());
+            ((EditText) column.getChildAt(0)).setText("recipe");
+
+            // The reader closes the comments.
+            column.removeView(listView);
+            shadowOf(Looper.getMainLooper()).idle();
+            assertEquals("no box left over the feed", 0, column.getChildCount());
+            assertEquals("and no search left running", "", CommentSearch.query());
+
+            // The next sheet under the same column still gets one of its own.
+            LinearLayout second = new LinearLayout(activity);
+            second.setOrientation(LinearLayout.VERTICAL);
+            column.addView(second);
+            View other = new View(activity);
+            other.setLayoutParams(new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, 120));
+            second.addView(other);
+            CommentSearch.onCellBound(other, new Comment("Nothing alike", "someone", "Someone"));
+            shadowOf(Looper.getMainLooper()).idle();
+            assertEquals(2, column.getChildCount());
+            assertTrue(column.getChildAt(0) instanceof EditText);
+        } finally {
+            CommentSearch.setQuery("");
+            Settings.COMMENT_SEARCH.save(false);
+        }
+    }
+
     @Test public void nothingIsTouchedWhileTheSwitchIsOff() {
         try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup().visible()) {
             var activity = controller.get();

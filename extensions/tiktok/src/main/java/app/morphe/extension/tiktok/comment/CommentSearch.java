@@ -130,7 +130,7 @@ public final class CommentSearch {
         for (int level = 0; level < MAX_COLUMN_LEVELS && parent instanceof ViewGroup; level++) {
             if (parent instanceof LinearLayout
                     && ((LinearLayout) parent).getOrientation() == LinearLayout.VERTICAL) {
-                insertBox((LinearLayout) parent, anchor);
+                insertBox((LinearLayout) parent, anchor, listView);
                 return;
             }
             anchor = (View) parent;
@@ -146,9 +146,8 @@ public final class CommentSearch {
     }
 
     /** Builds the box and puts it in {@code column}, directly above whatever holds the list. */
-    private static void insertBox(LinearLayout column, View anchor) {
+    private static void insertBox(LinearLayout column, View anchor, ViewGroup listView) {
         if (Boolean.TRUE.equals(DECORATED.get(column))) return;
-        DECORATED.put(column, Boolean.TRUE);
 
         Context context = column.getContext();
         EditText box = new EditText(context);
@@ -171,6 +170,25 @@ public final class CommentSearch {
             }
         });
         column.addView(box, column.indexOfChild(anchor));
+        // Only once it is really in. Marking the column first would blacklist it for good if
+        // anything above threw, and the sheet would never get a box again.
+        DECORATED.put(column, Boolean.TRUE);
+
+        // The column can be further up than the sheet and outlive it, so the box leaves with
+        // the list it belongs to rather than being left over the feed.
+        listView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override public void onViewAttachedToWindow(View view) {}
+
+            @Override public void onViewDetachedFromWindow(View view) {
+                view.removeOnAttachStateChangeListener(this);
+                DECORATED.remove(column);
+                setQuery("");
+                // Posted rather than done here: this runs while the parent is part way
+                // through taking the list out, and taking a second child out underneath
+                // that leaves it reading a list it has already changed.
+                column.post(() -> column.removeView(box));
+            }
+        });
     }
 
     /**
