@@ -6,6 +6,8 @@
 
 * Blocking only shows the undo action after TikTok returns an exact status of zero. A missing, malformed or uncertain response leaves the current view alone and reports that the result could not be confirmed. The same rule applies when undoing a block from a comment.
 
+* Diagnostic exports scrub ordinary selected events as well as crash reports. Signed URLs, token assignments and credential-bearing exception text are removed before copy or file export, and copied reports are marked sensitive for Android versions that support the clipboard flag.
+
 * Settings text that said the wrong thing. The thumbs down block claimed it needed a restart, which it never did. The two region switches claimed one and never asked for it, and now they do, because TikTok reads the country at startup. A dozen summaries that talked about secure window flags, native seekbars, candidates and pages now say what actually happens.
 
 * Every message the patches show you is now in your own language, not just the settings screens. Blocking, saving, seeking, the confirm taps and the backup actions all spoke English on a German or Indonesian phone. The ones that name something, a handle or a file, are built so the translation decides the word order rather than having English word order with the name dropped in.

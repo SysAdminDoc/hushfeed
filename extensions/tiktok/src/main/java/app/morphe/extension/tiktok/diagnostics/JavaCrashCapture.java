@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.diagnostics.DiagnosticCategory;
+import app.morphe.extension.shared.diagnostics.DiagnosticRedactor;
 import app.morphe.extension.shared.settings.preference.LogBufferManager;
 
 public final class JavaCrashCapture {
@@ -159,44 +160,9 @@ public final class JavaCrashCapture {
         return truncated ? sanitized + "\n[summary truncated]" : sanitized;
     }
 
-    /**
-     * Takes the addresses and credentials out of crash text. A report is written to shared
-     * storage and copied to the clipboard so it can be attached to a bug report, and a network
-     * failure carries the whole request URL in its message: TikTok's own URLs hold the session
-     * and device identifiers as query parameters.
-     *
-     * <p>Three things this has to get right, each of which it did not at first. The two
-     * commonest network exceptions name the host without a scheme
-     * ({@code Unable to resolve host "api16.tiktokv.com"}), so a pattern anchored on
-     * {@code https://} misses exactly the messages worth redacting. A credential is followed
-     * by a delimiter rather than whitespace, so taking everything up to the next space
-     * swallows the delimiter and lets the rest of a cookie line through. And naming the
-     * credentials that were known at the time is an allowlist that ages badly: anything
-     * shaped like a long opaque value beside a name that reads like a credential goes.
-     */
     static String redact(String text) {
-        if (text == null || text.isEmpty()) return "";
-        return text
-                .replaceAll("(?i)\\b[a-z][a-z0-9+.-]*://[^\\s\"'<>]+", "[url omitted]")
-                .replaceAll("(?i)\\b(?:[a-z0-9-]+\\.)+" + HOST_SUFFIXES + "\\b(?:[:/][^\\s\"'<>]*)?",
-                        "[host omitted]")
-                .replaceAll("(?i)\\b(" + CREDENTIAL_NAMES + ")\\s*[=:]\\s*\"?[^\\s;,&\"'<>]+",
-                        "$1=[omitted]");
+        return DiagnosticRedactor.redact(text);
     }
-
-    /** The domains TikTok's own traffic uses. A bare host in a message is still an address. */
-    private static final String HOST_SUFFIXES =
-            "(?:tiktokv?\\.com|tiktokcdn\\.com|byteoversea\\.com|bytedance\\.com|musical\\.ly|ibyteimg\\.com)";
-
-    /**
-     * Anything named like a credential or a device identifier. Kept wide on purpose: a name
-     * that is not one costs a redacted value in a crash report, and a name that is one and is
-     * missing from the list costs the reader their account.
-     */
-    private static final String CREDENTIAL_NAMES =
-            "[a-z0-9_-]*(?:token|session|sessionid|sid|secret|password|passwd|signature|cookie"
-                    + "|auth|credential|device_id|deviceid|install_id|installid|iid|openudid"
-                    + "|odin|ttwid|uid|sec_user_id|secuid)[a-z0-9_-]*";
 
     private static final class MorpheCrashHandler implements Thread.UncaughtExceptionHandler {
         private final Context context;

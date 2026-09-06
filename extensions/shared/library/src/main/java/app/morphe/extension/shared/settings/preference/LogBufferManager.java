@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.diagnostics.DiagnosticEvent;
+import app.morphe.extension.shared.diagnostics.DiagnosticRedactor;
 import app.morphe.extension.shared.settings.BaseSettings;
 
 /** Bounded structured event storage and latest sanitized crash storage. */
@@ -150,15 +151,15 @@ public final class LogBufferManager {
     public static String buildExportText() {
         Set<String> selected = LogExportFilterPreference.parse(BaseSettings.DEBUG_LOG_FILTERS.get());
         boolean includeAll = selected.isEmpty() || selected.contains("all");
-        String crash = readCrashReport(Utils.getContext());
-        String npthCrash = readNpthCrashReport(Utils.getContext());
+        String crash = DiagnosticRedactor.redact(readCrashReport(Utils.getContext()));
+        String npthCrash = DiagnosticRedactor.redact(readNpthCrashReport(Utils.getContext()));
 
         List<DiagnosticEvent> snapshot = new ArrayList<>(logBuffer);
         StringBuilder events = new StringBuilder();
         for (DiagnosticEvent event : snapshot) {
             if (!includeAll && !selected.contains(event.category.value)) continue;
             if (events.length() > 0) events.append('\n');
-            events.append(event.format());
+            events.append(DiagnosticRedactor.redact(event.format()));
         }
 
         if (crash.isEmpty() && npthCrash.isEmpty() && events.length() == 0) return "";

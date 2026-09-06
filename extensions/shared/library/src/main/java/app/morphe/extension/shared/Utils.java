@@ -17,6 +17,7 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.PersistableBundle;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -427,6 +428,13 @@ public class Utils {
         ClipboardManager clipboard = (ClipboardManager) context
                 .getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText("Morphe", text);
+        if (Build.VERSION.SDK_INT >= 24) {
+            PersistableBundle extras = new PersistableBundle();
+            // Use the literal so API 24 through 32 can carry the flag before the constant
+            // was added to the SDK. Android 13 and newer recognize the same key.
+            extras.putBoolean("android.content.extra.IS_SENSITIVE", true);
+            clip.getDescription().setExtras(extras);
+        }
         clipboard.setPrimaryClip(clip);
     }
 
