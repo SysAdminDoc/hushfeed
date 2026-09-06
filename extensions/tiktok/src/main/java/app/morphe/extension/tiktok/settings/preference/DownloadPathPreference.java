@@ -5,6 +5,7 @@
 
 package app.morphe.extension.tiktok.settings.preference;
 
+import app.morphe.extension.tiktok.settings.L10n;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -144,9 +145,9 @@ public class DownloadPathPreference extends DialogPreference {
 
     @Override
     protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
-        builder.setPositiveButton("Save", (dialog, which) -> this.onClick(dialog, DialogInterface.BUTTON_POSITIVE));
+        builder.setPositiveButton(L10n.t(getContext(), "Save"), (dialog, which) -> this.onClick(dialog, DialogInterface.BUTTON_POSITIVE));
         builder.setNegativeButton(android.R.string.cancel, null);
-        builder.setNeutralButton("Browse", null);
+        builder.setNeutralButton(L10n.t(getContext(), "Browse"), null);
     }
 
     @Override
@@ -176,5 +177,15 @@ public class DownloadPathPreference extends DialogPreference {
 
     private String normalizePath(String path) {
         return DownloadDestination.resolve(path, kind);
+    }
+
+    @Override
+    public void setTitle(CharSequence title) {
+        super.setTitle(L10n.t(getContext(), title));
+    }
+
+    @Override
+    public void setSummary(CharSequence summary) {
+        super.setSummary(L10n.t(getContext(), summary));
     }
 }

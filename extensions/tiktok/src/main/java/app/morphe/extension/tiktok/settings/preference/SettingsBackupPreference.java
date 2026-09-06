@@ -1,5 +1,6 @@
 package app.morphe.extension.tiktok.settings.preference;
 
+import app.morphe.extension.tiktok.settings.L10n;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -82,7 +83,7 @@ public final class SettingsBackupPreference extends Preference {
                 } else if (action == RESET) SettingsBackup.reset(context);
                 else SettingsBackup.undo(context);
                 Utils.showToastLong(action == EXPORT ? "Settings backup saved"
-                        : "Settings saved. Restart TikTok to apply all changes.");
+                        : L10n.t("Settings saved. Restart TikTok to apply all changes."));
             } catch (Exception error) {
                 Logger.printException(() -> "Settings backup operation failed", error);
                 Utils.showToastLong("Settings operation failed: " + error.getMessage());
@@ -100,5 +101,15 @@ public final class SettingsBackupPreference extends Preference {
     @Override protected void onBindView(View view) {
         super.onBindView(view);
         app.morphe.extension.tiktok.Utils.setTitleAndSummaryColor(view);
+    }
+
+    @Override
+    public void setTitle(CharSequence title) {
+        super.setTitle(L10n.t(getContext(), title));
+    }
+
+    @Override
+    public void setSummary(CharSequence summary) {
+        super.setSummary(L10n.t(getContext(), summary));
     }
 }

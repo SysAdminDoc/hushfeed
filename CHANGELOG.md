@@ -1,5 +1,7 @@
 ## 0.14.1 (2026-09-05)
 
+* The settings screen follows the phone's language. German ships with this release, and a translation table plus a generator make the next language a single file. Falls back to English for anything untranslated.
+
 * New Long-press controls patch. A long press on a video can keep TikTok's own action, do nothing, or open the comments. Off by default.
 
 * Hide video overlays gained switches for the caption, the music line, the action column on the right, the survey cards and the status bar. Each puts its element back when the switch goes off.

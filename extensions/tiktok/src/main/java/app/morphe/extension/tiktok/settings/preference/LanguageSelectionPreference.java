@@ -4,6 +4,7 @@
  */
 package app.morphe.extension.tiktok.settings.preference;
 
+import app.morphe.extension.tiktok.settings.L10n;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
@@ -110,7 +111,7 @@ public final class LanguageSelectionPreference extends Preference {
         if (names.size() <= 3) {
             setSummary(TextUtils.join(", ", names));
         } else {
-            setSummary(names.size() + " languages excluded");
+            setSummary(L10n.f(getContext(), "%d languages excluded", names.size()));
         }
     }
 
@@ -385,5 +386,15 @@ public final class LanguageSelectionPreference extends Preference {
             row.addView(text, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
             return row;
         }
+    }
+
+    @Override
+    public void setTitle(CharSequence title) {
+        super.setTitle(L10n.t(getContext(), title));
+    }
+
+    @Override
+    public void setSummary(CharSequence summary) {
+        super.setSummary(L10n.t(getContext(), summary));
     }
 }

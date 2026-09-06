@@ -5,6 +5,7 @@
 
 package app.morphe.extension.tiktok.settings.preference;
 
+import app.morphe.extension.tiktok.settings.L10n;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.ActivityNotFoundException;
@@ -82,7 +83,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
 
     public static void openDownloadPathFolderPicker(DownloadPathPreference preference) {
         if (activeFragment == null) {
-            app.morphe.extension.shared.Utils.showToastShort("Folder picker is not available");
+            app.morphe.extension.shared.Utils.showToastShort(L10n.t("Folder picker is not available"));
             return;
         }
 
@@ -95,7 +96,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             activeFragment.startActivityForResult(intent, REQUEST_DOWNLOAD_PATH_FOLDER);
         } catch (ActivityNotFoundException exception) {
             pendingDownloadPathPreference = null;
-            app.morphe.extension.shared.Utils.showToastLong("Folder picker is not available on this device");
+            app.morphe.extension.shared.Utils.showToastLong(L10n.t("Folder picker is not available on this device"));
         }
     }
 
@@ -172,7 +173,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         final var context = getActivity();
         activeFragment = this;
 
-        confirmDialogTitle = "Do you wish to proceed?";
+        confirmDialogTitle = L10n.t(getActivity(), "Do you wish to proceed?");
 
         Utils.setIsDarkModeEnabled(isDarkModeEnabled(context));
 
@@ -410,10 +411,14 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             SettingsMenuPreference.Icon icon,
             int activeCount
     ) {
+        String description = L10n.t(getActivity(), section.description);
+        if (description.endsWith(".")) {
+            description = description.substring(0, description.length() - 1);
+        }
         screen.addPreference(new SettingsMenuPreference(
                 getActivity(),
                 section.title,
-                section.description.substring(0, section.description.length() - 1),
+                description,
                 icon,
                 activeCount,
                 preference -> {
@@ -493,7 +498,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
     private void openSection(Section section) {
         FragmentManager manager = getFragmentManager();
         if (manager == null || getId() == 0) {
-            Utils.showToastShort("Could not open settings section");
+            Utils.showToastShort(L10n.t("Could not open settings section"));
             return;
         }
 
@@ -606,7 +611,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
 
         String relativePath = getRelativePrimaryStoragePath(data.getData());
         if (relativePath == null) {
-            app.morphe.extension.shared.Utils.showToastLong("Only internal storage folders are supported");
+            app.morphe.extension.shared.Utils.showToastLong(L10n.t("Only internal storage folders are supported"));
             return;
         }
 

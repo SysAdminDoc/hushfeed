@@ -27,6 +27,28 @@ dependencies {
     compileOnly(project(":patches:stub"))
 }
 
+// The settings text for every language ships inside the bundle so the Settings patch can
+// add it to TikTok's resources. The source of truth is the extension's res folder, which
+// the extension's own tests read; the generator is scripts/gen-l10n.py.
+val l10nDir = layout.buildDirectory.dir("generated/l10n")
+val syncL10n by tasks.registering(Sync::class) {
+    description = "Copy the settings translations into the bundle's resources"
+    from(rootProject.file("extensions/tiktok/src/main/res")) {
+        include("values*/strings.xml")
+    }
+    from(rootProject.file("extensions/tiktok/src/main/l10n")) {
+        include("index.txt")
+    }
+    into(l10nDir.map { it.dir("l10n") })
+}
+sourceSets["main"].resources.srcDir(l10nDir)
+tasks.named("processResources") {
+    dependsOn(syncL10n)
+}
+tasks.named("sourcesJar") {
+    dependsOn(syncL10n)
+}
+
 tasks {
     val verifyBundle by registering(JavaExec::class) {
         group = "verification"

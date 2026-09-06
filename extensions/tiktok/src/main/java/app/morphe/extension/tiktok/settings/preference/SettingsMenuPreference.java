@@ -4,6 +4,7 @@
  */
 package app.morphe.extension.tiktok.settings.preference;
 
+import app.morphe.extension.tiktok.settings.L10n;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -414,5 +415,15 @@ public final class SettingsMenuPreference extends Preference {
         public int getIntrinsicHeight() {
             return 40;
         }
+    }
+
+    @Override
+    public void setTitle(CharSequence title) {
+        super.setTitle(L10n.t(getContext(), title));
+    }
+
+    @Override
+    public void setSummary(CharSequence summary) {
+        super.setSummary(L10n.t(getContext(), summary));
     }
 }

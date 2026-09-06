@@ -1,5 +1,6 @@
 package app.morphe.extension.tiktok.settings.preference;
 
+import app.morphe.extension.tiktok.settings.L10n;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.preference.Preference;
@@ -40,11 +41,11 @@ public final class FeatureGateRecorderPreference extends Preference {
         text.setPadding(padding, padding, padding, padding);
         scroll.addView(text);
         AlertDialog.Builder builder = new AlertDialog.Builder(context)
-                .setTitle("Recorded gate reads (" + FeatureGateLearnMode.lastCandidateCount() + ")")
-                .setView(scroll).setPositiveButton("Close", null)
-                .setNegativeButton("Save JSON", (ignored, which) -> GateReportExport.save(context, report));
+                .setTitle(L10n.f(context, "Recorded gate reads (%d)", FeatureGateLearnMode.lastCandidateCount()))
+                .setView(scroll).setPositiveButton(L10n.t(context, "Close"), null)
+                .setNegativeButton(L10n.t(context, "Save JSON"), (ignored, which) -> GateReportExport.save(context, report));
         if (report.length() <= GateReportExport.MAX_CLIPBOARD_CHARS) {
-            builder.setNeutralButton("Copy report", (ignored, which) -> GateReportExport.copy(context, report));
+            builder.setNeutralButton(L10n.t(context, "Copy report"), (ignored, which) -> GateReportExport.copy(context, report));
         }
         AlertDialog dialog = builder.create();
         dialog.show();
@@ -55,13 +56,23 @@ public final class FeatureGateRecorderPreference extends Preference {
         setTitle(FeatureGateLearnMode.isRecording() ? "Stop feature gate recording" : "Start feature gate recording");
         setSummary(FeatureGateLearnMode.isRecording()
                 ? "Return after using a TikTok feature to see every gate read during the recording."
-                : "Compare gate reads with their previous values. Last recording: "
-                        + FeatureGateLearnMode.lastCandidateCount() + " gates.");
+                : L10n.f(getContext(), "Compare gate reads with their previous values. Last recording: %d gates.",
+                        FeatureGateLearnMode.lastCandidateCount()));
     }
 
     @Override protected void onBindView(View view) {
         refresh();
         super.onBindView(view);
         Utils.setTitleAndSummaryColor(view);
+    }
+
+    @Override
+    public void setTitle(CharSequence title) {
+        super.setTitle(L10n.t(getContext(), title));
+    }
+
+    @Override
+    public void setSummary(CharSequence summary) {
+        super.setSummary(L10n.t(getContext(), summary));
     }
 }

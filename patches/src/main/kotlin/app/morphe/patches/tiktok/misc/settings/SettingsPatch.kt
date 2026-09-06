@@ -47,7 +47,7 @@ val settingsPatch = bytecodePatch(
     description = "Adds the Metra patches settings menu to TikTok. Supports TikTok 46.2.3.",
     default = true,
 ) {
-    dependsOn(sharedExtensionPatch)
+    dependsOn(sharedExtensionPatch, addResourcesPatch)
 
     compatibleWith(*AppCompatibilities.tiktok4623())
 

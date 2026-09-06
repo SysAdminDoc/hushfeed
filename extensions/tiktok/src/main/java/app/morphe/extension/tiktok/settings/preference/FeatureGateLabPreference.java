@@ -4,6 +4,7 @@
  */
 package app.morphe.extension.tiktok.settings.preference;
 
+import app.morphe.extension.tiktok.settings.L10n;
 import android.app.Activity;
 import android.preference.Preference;
 import android.view.View;
@@ -26,5 +27,15 @@ public final class FeatureGateLabPreference extends Preference {
     protected void onBindView(View view) {
         super.onBindView(view);
         app.morphe.extension.tiktok.Utils.setTitleAndSummaryColor(view);
+    }
+
+    @Override
+    public void setTitle(CharSequence title) {
+        super.setTitle(L10n.t(getContext(), title));
+    }
+
+    @Override
+    public void setSummary(CharSequence summary) {
+        super.setSummary(L10n.t(getContext(), summary));
     }
 }

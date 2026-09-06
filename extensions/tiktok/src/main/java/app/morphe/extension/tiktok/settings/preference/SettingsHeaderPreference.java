@@ -4,6 +4,7 @@
  */
 package app.morphe.extension.tiktok.settings.preference;
 
+import app.morphe.extension.tiktok.settings.L10n;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
@@ -58,8 +59,8 @@ public final class SettingsHeaderPreference extends Preference {
     ) {
         super(context);
         this.kind = kind;
-        this.heading = heading;
-        this.detail = detail;
+        this.heading = L10n.t(context, heading);
+        this.detail = L10n.t(context, detail);
         this.backAction = backAction;
         setSelectable(kind != Kind.CAPTION);
         setOrder(kind == Kind.CAPTION ? -900 : -1000);
@@ -93,7 +94,7 @@ public final class SettingsHeaderPreference extends Preference {
         topRow.setOrientation(LinearLayout.HORIZONTAL);
 
         ImageView back = new ImageView(context);
-        back.setContentDescription("Back");
+        back.setContentDescription(L10n.t(context, "Back"));
         back.setImageDrawable(new BackDrawable());
         back.setOnClickListener(view -> {
             if (backAction != null) {
@@ -115,7 +116,7 @@ public final class SettingsHeaderPreference extends Preference {
         titleParams.topMargin = SettingsUi.dp(context, 2);
         container.addView(title, titleParams);
 
-        TextView menuLabel = SettingsUi.text(context, "MENUS", 12.5f, SettingsUi.textDisabled(), 1);
+        TextView menuLabel = SettingsUi.text(context, L10n.t(context, "MENUS"), 12.5f, SettingsUi.textDisabled(), 1);
         LinearLayout.LayoutParams menuLabelParams = new LinearLayout.LayoutParams(-1, -2);
         menuLabelParams.leftMargin = SettingsUi.dp(context, 14);
         menuLabelParams.topMargin = SettingsUi.dp(context, 18);
@@ -143,7 +144,7 @@ public final class SettingsHeaderPreference extends Preference {
         });
 
         ImageView back = new ImageView(context);
-        back.setContentDescription("Back");
+        back.setContentDescription(L10n.t(context, "Back"));
         back.setImageDrawable(new BackDrawable());
         int buttonSize = SettingsUi.dp(context, 40);
         container.addView(back, new LinearLayout.LayoutParams(buttonSize, buttonSize));

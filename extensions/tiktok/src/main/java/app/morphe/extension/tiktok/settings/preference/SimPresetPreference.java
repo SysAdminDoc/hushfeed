@@ -1,5 +1,6 @@
 package app.morphe.extension.tiktok.settings.preference;
 
+import app.morphe.extension.tiktok.settings.L10n;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
@@ -295,5 +296,15 @@ public class SimPresetPreference extends Preference {
         public boolean isEnabled(int position) {
             return getItem(position) != null;
         }
+    }
+
+    @Override
+    public void setTitle(CharSequence title) {
+        super.setTitle(L10n.t(getContext(), title));
+    }
+
+    @Override
+    public void setSummary(CharSequence summary) {
+        super.setSummary(L10n.t(getContext(), summary));
     }
 }

@@ -5,6 +5,7 @@
 
 package app.morphe.extension.tiktok.settings.preference.categories;
 
+import app.morphe.extension.tiktok.settings.L10n;
 import android.content.Context;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
@@ -32,5 +33,10 @@ public abstract class ConditionalPreferenceCategory extends PreferenceCategory {
         super.onBindView(view);
         SettingsUi.styleCategory(view);
     }
-}
 
+    @Override
+    public void setTitle(CharSequence title) {
+        super.setTitle(L10n.t(getContext(), title));
+    }
+
+}

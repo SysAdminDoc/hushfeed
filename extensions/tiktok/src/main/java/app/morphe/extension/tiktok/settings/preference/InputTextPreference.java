@@ -5,6 +5,7 @@
 
 package app.morphe.extension.tiktok.settings.preference;
 
+import app.morphe.extension.tiktok.settings.L10n;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -89,7 +90,7 @@ public class InputTextPreference extends EditTextPreference {
 
     @Override
     protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
-        builder.setPositiveButton("Save", (dialog, which)
+        builder.setPositiveButton(L10n.t(getContext(), "Save"), (dialog, which)
                 -> this.onClick(dialog, DialogInterface.BUTTON_POSITIVE));
         builder.setNegativeButton(android.R.string.cancel, null);
     }
@@ -99,5 +100,14 @@ public class InputTextPreference extends EditTextPreference {
         super.showDialog(state);
         SettingsUi.styleFramedDialog(getDialog());
     }
-}
 
+    @Override
+    public void setTitle(CharSequence title) {
+        super.setTitle(L10n.t(getContext(), title));
+    }
+
+    @Override
+    public void setSummary(CharSequence summary) {
+        super.setSummary(L10n.t(getContext(), summary));
+    }
+}

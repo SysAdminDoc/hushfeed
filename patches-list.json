@@ -1505,7 +1505,8 @@
       "description": "Adds the Metra patches settings menu to TikTok. Supports TikTok 46.2.3.",
       "use": true,
       "dependencies": [
-        "BytecodePatch"
+        "BytecodePatch",
+        "ResourcePatch"
       ],
       "compatiblePackages": {
         "com.zhiliaoapp.musically": [

@@ -1,5 +1,6 @@
 package app.morphe.extension.tiktok.settings.preference.categories;
 
+import app.morphe.extension.tiktok.settings.L10n;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.preference.PreferenceScreen;
@@ -43,23 +44,33 @@ public class DebugPreferenceCategory extends ConditionalPreferenceCategory {
         ));
 
         var logFilter = new TintedLogExportFilterPreference(context);
-        logFilter.setTitle("Included diagnostics");
+        logFilter.setTitle(L10n.t(context, "Included diagnostics"));
         addPreference(logFilter);
 
         var exportLogs = new TintedExportDiagnosticReportPreference(context);
-        exportLogs.setTitle("Export diagnostic report");
-        exportLogs.setSummary("Copy a quick report or save the full report as a file.");
+        exportLogs.setTitle(L10n.t(context, "Export diagnostic report"));
+        exportLogs.setSummary(L10n.t(context, "Copy a quick report or save the full report as a file."));
         addPreference(exportLogs);
 
         var clearLogs = new TintedClearLogBufferPreference(context);
-        clearLogs.setTitle("Clear diagnostic data");
-        clearLogs.setSummary("Clear buffered events and saved crash reports.");
+        clearLogs.setTitle(L10n.t(context, "Clear diagnostic data"));
+        clearLogs.setSummary(L10n.t(context, "Clear buffered events and saved crash reports."));
         addPreference(clearLogs);
     }
 
     private static class TintedExportDiagnosticReportPreference extends ExportDiagnosticReportPreference {
         TintedExportDiagnosticReportPreference(Context context) {
             super(context);
+        }
+
+        @Override
+        public void setTitle(CharSequence title) {
+            super.setTitle(L10n.t(getContext(), title));
+        }
+
+        @Override
+        public void setSummary(CharSequence summary) {
+            super.setSummary(L10n.t(getContext(), summary));
         }
 
         @Override
@@ -80,6 +91,16 @@ public class DebugPreferenceCategory extends ConditionalPreferenceCategory {
         }
 
         @Override
+        public void setTitle(CharSequence title) {
+            super.setTitle(L10n.t(getContext(), title));
+        }
+
+        @Override
+        public void setSummary(CharSequence summary) {
+            super.setSummary(L10n.t(getContext(), summary));
+        }
+
+        @Override
         protected void onBindView(View view) {
             super.onBindView(view);
             Utils.setTitleAndSummaryColor(view);
@@ -94,6 +115,16 @@ public class DebugPreferenceCategory extends ConditionalPreferenceCategory {
     private static class TintedClearLogBufferPreference extends ClearLogBufferPreference {
         TintedClearLogBufferPreference(Context context) {
             super(context);
+        }
+
+        @Override
+        public void setTitle(CharSequence title) {
+            super.setTitle(L10n.t(getContext(), title));
+        }
+
+        @Override
+        public void setSummary(CharSequence summary) {
+            super.setSummary(L10n.t(getContext(), summary));
         }
 
         @Override
