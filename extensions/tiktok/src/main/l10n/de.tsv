@@ -106,6 +106,8 @@ Could not confirm unblock for %1$s	Die Aufhebung der Blockierung von %1$s konnte
 Could not copy report. Use Save JSON.	Bericht konnte nicht kopiert werden. Nutze „JSON speichern“.
 Could not open settings section	Einstellungsbereich konnte nicht geöffnet werden
 Could not read who posted this comment	Konnte nicht lesen, wer diesen Kommentar geschrieben hat
+Could not restore settings	Einstellungen konnten nicht wiederhergestellt werden
+Could not save settings backup	Einstellungssicherung konnte nicht gespeichert werden
 Could not unblock %1$s	Die Blockierung von %1$s konnte nicht aufgehoben werden
 Could not unblock %1$s: %2$s	Die Blockierung von %1$s konnte nicht aufgehoben werden: %2$s
 Country and network preferences	Land und Netzwerkeinstellungen
@@ -371,6 +373,8 @@ Remove tracking parameters from shared links.	Tracking-Parameter aus geteilten L
 Remove watermark	Wasserzeichen entfernen
 Report saved to %1$s	Bericht gespeichert unter %1$s
 Reset settings	Einstellungen zurücksetzen
+Restore failed. Some settings may still be changed.	Wiederherstellung fehlgeschlagen. Einige Einstellungen können noch geändert sein.
+Restore failed. Some settings may still be changed. Use Undo to recover.	Wiederherstellung fehlgeschlagen. Einige Einstellungen können noch geändert sein. Nutze „Rückgängig“, um sie wiederherzustellen.
 Restore defaults immediately. Your current settings are kept for Undo.	Standardwerte sofort wiederherstellen. Deine aktuellen Einstellungen bleiben zum Rückgängigmachen erhalten.
 Restore settings	Einstellungen wiederherstellen
 Resume videos after scrolling	Videos nach dem Scrollen fortsetzen
@@ -472,6 +476,7 @@ That creator pattern is too long to use, so it was skipped: %1$s	Dieses Kreator-
 That creator pattern is too long to use: %1$s	Dieses Kreator-Muster ist zu lang: %1$s
 That is not an app name. Try something like com.example.downloader, or leave the box empty to keep saving in TikTok.	Das ist kein App-Name. Versuche etwas wie com.example.downloader, oder lass das Feld leer, damit weiter in TikTok gespeichert wird.
 That settings change did not go through. Nothing was altered.	Diese Änderung hat nicht geklappt. Es wurde nichts geändert.
+The settings backup was rejected. Nothing was altered.	Die Einstellungssicherung wurde abgelehnt. Es wurde nichts geändert.
 That sticker is in a format Hushfeed cannot read	Dieser Sticker liegt in einem Format vor, das Hushfeed nicht lesen kann
 The destination contains an invalid folder name	Im Zielpfad steht ein unzulässiger Ordnername
 The file picker is not available on this device.	Die Dateiauswahl ist auf diesem Gerät nicht verfügbar.

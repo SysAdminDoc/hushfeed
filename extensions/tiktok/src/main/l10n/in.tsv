@@ -106,6 +106,8 @@ Could not confirm unblock for %1$s	Pembukaan blokir %1$s tidak dapat dikonfirmas
 Could not copy report. Use Save JSON.	Laporan tidak bisa disalin. Pakai Simpan JSON.
 Could not open settings section	Bagian pengaturan tidak bisa dibuka
 Could not read who posted this comment	Tidak bisa membaca siapa yang menulis komentar ini
+Could not restore settings	Pengaturan tidak bisa dipulihkan
+Could not save settings backup	Cadangan pengaturan tidak bisa disimpan
 Could not unblock %1$s	Blokir %1$s tidak bisa dibuka
 Could not unblock %1$s: %2$s	Blokir %1$s tidak bisa dibuka: %2$s
 Country and network preferences	Preferensi negara dan jaringan
@@ -371,6 +373,8 @@ Remove tracking parameters from shared links.	Hapus parameter pelacakan dari tau
 Remove watermark	Hapus tanda air
 Report saved to %1$s	Laporan disimpan di %1$s
 Reset settings	Setel ulang pengaturan
+Restore failed. Some settings may still be changed.	Pemulihan gagal. Beberapa pengaturan mungkin masih berubah.
+Restore failed. Some settings may still be changed. Use Undo to recover.	Pemulihan gagal. Beberapa pengaturan mungkin masih berubah. Gunakan Urungkan untuk memulihkannya.
 Restore defaults immediately. Your current settings are kept for Undo.	Kembalikan ke bawaan sekarang juga. Pengaturanmu yang sekarang disimpan untuk Urungkan.
 Restore settings	Pulihkan pengaturan
 Resume videos after scrolling	Lanjutkan video setelah menggulir
@@ -472,6 +476,7 @@ That creator pattern is too long to use, so it was skipped: %1$s	Pola kreator it
 That creator pattern is too long to use: %1$s	Pola kreator itu terlalu panjang: %1$s
 That is not an app name. Try something like com.example.downloader, or leave the box empty to keep saving in TikTok.	Itu bukan nama aplikasi. Coba seperti com.example.downloader, atau kosongkan saja biar tetap disimpan di TikTok.
 That settings change did not go through. Nothing was altered.	Perubahan itu tidak berhasil. Tidak ada yang diubah.
+The settings backup was rejected. Nothing was altered.	Cadangan pengaturan ditolak. Tidak ada yang diubah.
 That sticker is in a format Hushfeed cannot read	Stiker itu formatnya tidak bisa dibaca Hushfeed
 The destination contains an invalid folder name	Ada nama folder yang tidak sah di tujuannya
 The file picker is not available on this device.	Pemilih berkas tidak tersedia di perangkat ini.

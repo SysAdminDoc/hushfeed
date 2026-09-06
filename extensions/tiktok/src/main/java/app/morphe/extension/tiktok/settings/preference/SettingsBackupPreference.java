@@ -100,8 +100,7 @@ public final class SettingsBackupPreference extends Preference {
                         : "Settings saved. Restart TikTok to apply all changes."));
             } catch (Exception error) {
                 Logger.printException(() -> "Settings backup operation failed", error);
-                Utils.showToastLong(L10n.t(
-                    "That settings change did not go through. Nothing was altered."));
+                Utils.showToastLong(L10n.t(failureMessage(action, error)));
             } finally {
                 Utils.runOnMainThread(() -> {
                     if (action != EXPORT) AbstractPreferenceFragment.settingImportInProgress = false;
@@ -111,6 +110,26 @@ public final class SettingsBackupPreference extends Preference {
                 });
             }
         });
+    }
+
+    static String failureMessage(int action, Exception error) {
+        if (action == EXPORT) return "Could not save settings backup.";
+        if (error instanceof SettingsBackup.RestoreException) {
+            SettingsBackup.RestoreException restore = (SettingsBackup.RestoreException) error;
+            switch (restore.getFailure()) {
+                case REJECTED_INPUT:
+                    return "The settings backup was rejected. Nothing was altered.";
+                case ROLLED_BACK:
+                    return "That settings change did not go through. Nothing was altered.";
+                case RECOVERY_REQUIRED:
+                    return restore.isRecoveryAvailable()
+                            ? "Restore failed. Some settings may still be changed. Use Undo to recover."
+                            : "Restore failed. Some settings may still be changed.";
+                default:
+                    break;
+            }
+        }
+        return "Could not restore settings.";
     }
 
     @Override protected void onBindView(View view) {

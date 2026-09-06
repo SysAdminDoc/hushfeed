@@ -190,6 +190,50 @@ public class SettingsBackupTest {
         assertTrue(FeatureGateLabStore.masterEnabled());
     }
 
+    @Test public void partialRollbackReportsRecoveryAndKeepsPersistedValuesVisible() throws Exception {
+        var app = Utils.getContext();
+        FeatureGateLabStore.setMasterEnabled(true);
+        JSONObject next = new JSONObject(SettingsBackup.create(false));
+        next.getJSONObject("settings").put(Settings.REGION_SPOOF.key, true);
+        next.getJSONObject("lab").put("master", false);
+        var original = Setting.preferences.preferences;
+        var normalFailure = new java.util.concurrent.atomic.AtomicBoolean();
+        var labCommits = new java.util.concurrent.atomic.AtomicInteger();
+        var normal = failingCommitsWithoutApply(original, normalFailure::get, () -> {});
+        var lab = failingCommitsWithoutApply(app.getSharedPreferences("morphe_feature_gate_lab", 0),
+                () -> labCommits.get() == 1, () -> {
+                    if (labCommits.incrementAndGet() == 1) normalFailure.set(true);
+                });
+        var field = app.morphe.extension.shared.settings.preference.SharedPrefCategory.class
+                .getDeclaredField("preferences");
+        field.setAccessible(true);
+        field.set(Setting.preferences, normal);
+        Utils.setContext(new android.content.ContextWrapper(app) {
+            @Override public android.content.SharedPreferences getSharedPreferences(String name, int mode) {
+                return name.equals("morphe_feature_gate_lab") ? lab : super.getSharedPreferences(name, mode);
+            }
+        });
+        try {
+            try {
+                SettingsBackup.restore(Utils.getContext(), next.toString(), true);
+                fail("restore should report the failed rollback");
+            } catch (SettingsBackup.RestoreException error) {
+                assertEquals(SettingsBackup.Failure.RECOVERY_REQUIRED, error.getFailure());
+                assertFalse(error.isRollbackComplete());
+                assertTrue(error.isRecoveryAvailable());
+            }
+            assertEquals(Boolean.TRUE, Setting.preferences.preferences.getAll().get(Settings.REGION_SPOOF.key));
+            assertTrue(FeatureGateLabStore.masterEnabled());
+            assertTrue(SettingsBackup.hasUndo(app));
+        } finally {
+            field.set(Setting.preferences, original);
+            Utils.setContext(app);
+        }
+        SettingsBackup.undo(app);
+        assertFalse(Settings.REGION_SPOOF.get());
+        assertTrue(FeatureGateLabStore.masterEnabled());
+    }
+
     @Test public void anOlderCompleteInventoryUsesDefaultsForNewerSettings() throws Exception {
         Settings.MAX_VIDEO_SECONDS.save(75);
         JSONObject root = new JSONObject(SettingsBackup.create(false));
@@ -219,6 +263,25 @@ public class SettingsBackupTest {
                                     committed.run();
                                     return !fail.getAsBoolean() && (Boolean) result;
                                 }
+                                return result instanceof android.content.SharedPreferences.Editor ? editorProxy : result;
+                            });
+                });
+    }
+
+    private static android.content.SharedPreferences failingCommitsWithoutApply(
+            android.content.SharedPreferences target, java.util.function.BooleanSupplier fail,
+            Runnable attempted) {
+        return (android.content.SharedPreferences) java.lang.reflect.Proxy.newProxyInstance(
+                target.getClass().getClassLoader(), new Class[]{android.content.SharedPreferences.class}, (proxy, method, args) -> {
+                    if (!method.getName().equals("edit")) return method.invoke(target, args);
+                    var editor = target.edit();
+                    return java.lang.reflect.Proxy.newProxyInstance(editor.getClass().getClassLoader(),
+                            new Class[]{android.content.SharedPreferences.Editor.class}, (editorProxy, call, values) -> {
+                                if (call.getName().equals("commit")) {
+                                    attempted.run();
+                                    if (fail.getAsBoolean()) return false;
+                                }
+                                Object result = call.invoke(editor, values);
                                 return result instanceof android.content.SharedPreferences.Editor ? editorProxy : result;
                             });
                 });

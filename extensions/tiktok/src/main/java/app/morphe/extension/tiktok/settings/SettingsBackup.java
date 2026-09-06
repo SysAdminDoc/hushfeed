@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,6 +29,35 @@ public final class SettingsBackup {
     public static final String FORMAT = "hushfeed-settings";
     public static final String LEGACY_FORMAT = "metra-settings";
     private SettingsBackup() {}
+
+    public enum Failure {
+        REJECTED_INPUT,
+        ROLLED_BACK,
+        RECOVERY_REQUIRED
+    }
+
+    /** A restore failure that records whether both stores are back at their prior state. */
+    public static final class RestoreException extends Exception {
+        private final Failure failure;
+        private final boolean rollbackComplete;
+        private final boolean recoveryAvailable;
+
+        private RestoreException(Throwable cause, Failure failure, boolean rollbackComplete,
+                boolean recoveryAvailable) {
+            super(cause.getMessage(), cause);
+            this.failure = failure;
+            this.rollbackComplete = rollbackComplete;
+            this.recoveryAvailable = recoveryAvailable;
+        }
+
+        public Failure getFailure() { return failure; }
+        public boolean isRollbackComplete() { return rollbackComplete; }
+        public boolean isRecoveryAvailable() { return recoveryAvailable; }
+
+        private static RestoreException rejected(Throwable cause) {
+            return new RestoreException(cause, Failure.REJECTED_INPUT, true, false);
+        }
+    }
 
     private static boolean included(Setting<?> setting) {
         return setting.includeWithImportExport || setting == BaseSettings.DEBUG_LOG_FILTERS;
@@ -68,9 +98,16 @@ public final class SettingsBackup {
     }
 
     public static void restore(Context context, String text, boolean saveUndo) throws Exception {
-        Snapshot next = parse(text);
+        Snapshot next;
+        try {
+            next = parse(text);
+        } catch (Exception error) {
+            throw RestoreException.rejected(error);
+        }
         String previousText = create(false);
         Snapshot previous = parse(previousText);
+        Map<String, ?> previousPreferences = new LinkedHashMap<>(
+                Setting.preferences.preferences.getAll());
         if (saveUndo) writeUndo(context, previousText);
         try {
             apply(next);
@@ -78,13 +115,68 @@ public final class SettingsBackup {
             try { Setting.saveAll(previous.values); } catch (Exception rollback) { error.addSuppressed(rollback); }
             try { FeatureGateLabStore.replaceSettings(previous.rules, previous.master, previous.acknowledged); }
             catch (Exception rollback) { error.addSuppressed(rollback); }
-            throw error;
+            boolean rollbackComplete = ordinarySettingsMatch(previousPreferences)
+                    && labSettingsMatch(previous);
+            boolean recoveryAvailable = hasVerifiedUndo(context);
+            throw new RestoreException(error,
+                    rollbackComplete ? Failure.ROLLED_BACK : Failure.RECOVERY_REQUIRED,
+                    rollbackComplete, recoveryAvailable);
         }
     }
 
     public static void reset(Context context) throws Exception { restore(context, create(true), true); }
     public static void undo(Context context) throws Exception { restore(context, read(undoFile(context).openRead()), false); }
     public static boolean hasUndo(Context context) { return undoFile(context).getBaseFile().isFile(); }
+
+    private static boolean ordinarySettingsMatch(Map<String, ?> expected) {
+        try {
+            return expected.equals(Setting.preferences.preferences.getAll());
+        } catch (RuntimeException error) {
+            return false;
+        }
+    }
+
+    private static boolean labSettingsMatch(Snapshot expected) {
+        try {
+            if (expected.master != FeatureGateLabStore.masterEnabled()
+                    || expected.acknowledged != FeatureGateLabStore.warningAcknowledged()) {
+                return false;
+            }
+            List<FeatureGateLabStore.Rule> actual = FeatureGateLabStore.rules();
+            if (actual.size() != expected.rules.size()) return false;
+            for (FeatureGateLabStore.Rule wanted : expected.rules) {
+                FeatureGateLabStore.Rule found = null;
+                for (FeatureGateLabStore.Rule candidate : actual) {
+                    if (Objects.equals(wanted.id, candidate.id)) {
+                        found = candidate;
+                        break;
+                    }
+                }
+                if (found == null || !sameRule(wanted, found)) return false;
+            }
+            return true;
+        } catch (RuntimeException error) {
+            return false;
+        }
+    }
+
+    private static boolean sameRule(FeatureGateLabStore.Rule left, FeatureGateLabStore.Rule right) {
+        return Objects.equals(left.manager, right.manager)
+                && Objects.equals(left.key, right.key)
+                && Objects.equals(left.type, right.type)
+                && Objects.equals(left.value, right.value)
+                && left.enabled == right.enabled;
+    }
+
+    private static boolean hasVerifiedUndo(Context context) {
+        if (!hasUndo(context)) return false;
+        try (InputStream input = undoFile(context).openRead()) {
+            parse(read(input));
+            return true;
+        } catch (Exception error) {
+            return false;
+        }
+    }
 
     private static void apply(Snapshot snapshot) throws IOException {
         Setting.saveAll(snapshot.values);
