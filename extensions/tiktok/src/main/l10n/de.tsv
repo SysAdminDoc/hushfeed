@@ -10,7 +10,6 @@ About Hushfeed	Über Hushfeed
 Add a block button to the video player that blocks the account that posted the current video in one tap. An undo action is shown after each block.	Dem Videoplayer eine Schaltfläche hinzufügen, die das Konto hinter dem aktuellen Video mit einem Tippen blockiert. Nach jeder Blockierung wird eine Rückgängig-Aktion angezeigt.
 Add a button beside the block control to send feedback about the current video.	Neben der Blockieren-Schaltfläche eine Schaltfläche hinzufügen, um Feedback zum aktuellen Video zu senden.
 Adds a custom option to TikTok's offline videos menu after restart.	Fügt TikToks Menü für Offline-Videos nach einem Neustart eine eigene Option hinzu.
-Ads, Shop, livestreams, and view limits.	Werbung, Shop, Livestreams und Aufruflimits.
 Advance when a video ends	Weiterschalten, wenn ein Video endet
 All available languages	Alle verfügbaren Sprachen
 All loaded tabs	Alle geladenen Tabs
@@ -28,7 +27,6 @@ App behavior	App-Verhalten
 Apply to video downloads and image downloads.	Gilt für Video- und Bild-Downloads.
 Arrange your feed and bottom tabs	Ordne deine Feed-Tabs und unteren Tabs an
 Auto translate comments	Kommentare automatisch übersetzen
-Auto translate, quick reactions, and copy options.	Automatische Übersetzung, Schnellreaktionen und Kopieroptionen.
 Automatic	Automatisch
 Automatic clear display	Automatische freie Ansicht
 Automatically translates loaded comment batches using TikTok's translation system.	Übersetzt geladene Kommentare automatisch über TikToks Übersetzungssystem.
@@ -85,7 +83,6 @@ Compare gate reads with their previous values. Last recording: %d gates.	Gate-Zu
 Confirm before following	Vor dem Folgen bestätigen
 Confirm before liking	Vor dem Liken bestätigen
 Confirm before sending to a friend	Vor dem Senden an Freunde bestätigen
-Confirm before sending, and hidden people and options.	Bestätigung vor dem Senden sowie ausgeblendete Personen und Optionen.
 Continue supported videos from where you stopped when you scroll back to them.	Unterstützte Videos dort fortsetzen, wo du aufgehört hast, wenn du zu ihnen zurückscrollst.
 Copy a quick report or save the full report as a file.	Einen Kurzbericht kopieren oder den vollständigen Bericht als Datei speichern.
 Copy comments without username	Kommentare ohne Nutzernamen kopieren
@@ -94,7 +91,6 @@ Copy report	Bericht kopieren
 Could not open settings section	Einstellungsbereich konnte nicht geöffnet werden
 Country and network preferences	Land und Netzwerkeinstellungen
 Country ISO	Länder-ISO
-Country, operator, locale and timezone.	Land, Netzbetreiber, Sprache und Zeitzone.
 Current: %1$s %2$s	Aktuell: %1$s %2$s
 Custom offline videos	Eigene Offline-Videos
 Custom SIM details	Eigene SIM-Angaben
@@ -125,7 +121,6 @@ Export diagnostic report	Diagnosebericht exportieren
 Feature Gate Lab	Feature Gate Lab
 Feed filter	Feed-Filter
 Feed navigation	Feed-Navigation
-Feed tabs, bottom tabs, and Tako AI.	Feed-Tabs, untere Tabs und Tako AI.
 Filter bottom tabs	Untere Tabs filtern
 Filter comments by keyword	Kommentare nach Stichwort filtern
 Filter feed tabs	Feed-Tabs filtern
@@ -304,7 +299,6 @@ Operator name	Name des Netzbetreibers
 Original language	Originalsprache
 Override SIM details	SIM-Angaben überschreiben
 Override store region (experimental)	Store-Region überschreiben (experimentell)
-Path, watermark, and offline videos.	Pfad, Wasserzeichen und Offline-Videos.
 People, shortcuts and sending controls	Kontakte, Verknüpfungen und Versandoptionen
 Photo destination	Speicherort für Fotos
 Photo filename	Dateiname für Fotos
@@ -314,10 +308,9 @@ Press and hold a profile picture to save the full size original to your photo de
 Press and hold a story to save it. Stories have no save button of their own, and holding one is how TikTok pauses it, so this takes that gesture over.	Eine Story gedrückt halten, um sie zu speichern. Stories haben keinen eigenen Speicher-Button, und Halten pausiert bei TikTok, also übernimmt das diese Geste.
 Press and hold the left or right third of the screen to jump back or forward. The middle third keeps the Long press action.	Halte das linke oder rechte Drittel des Bildschirms gedrückt, um zurück oder vorwärts zu springen. Im mittleren Drittel gilt weiterhin die Aktion für langes Drücken.
 Profile picture saved to %1$s	Profilbild gespeichert unter %1$s
-Promotions, popups, publish dates, and feed controls.	Werbeaktionen, Popups, Veröffentlichungsdaten und Feed-Bedienelemente.
 Put a box above the comments that narrows them to the ones matching what you type, by what they say or who said it. Clearing the box brings the rest back.	Ein Feld über den Kommentaren, das auf die passenden eingrenzt, nach Inhalt oder nach der Person. Feld leeren bringt die übrigen zurück.
 Put back %1$s videos	%1$s Videos zurückgeholt
-Quality, files and subtitles	Qualität, Dateien und Untertitel
+Quality, files, subtitles and hand-off	Qualität, Dateien, Untertitel und Weitergabe
 Quality, speed and automatic advance	Qualität, Tempo und automatischer Wechsel
 Recorded gate reads (%d)	Aufgezeichnete Gate-Zugriffe (%d)
 Recover the settings saved before the last restore or reset.	Die vor der letzten Wiederherstellung oder Zurücksetzung gespeicherten Einstellungen zurückholen.
@@ -335,7 +328,6 @@ Restore defaults immediately. Your current settings are kept for Undo.	Standardw
 Restore settings	Einstellungen wiederherstellen
 Resume videos after scrolling	Videos nach dem Scrollen fortsetzen
 Return after using a TikTok feature to see every gate read during the recording.	Komm nach dem Verwenden einer TikTok-Funktion zurück, um jeden Gate-Zugriff während der Aufzeichnung zu sehen.
-Rows, stories tray, and header controls.	Zeilen, Story-Leiste und Kopfzeilen-Elemente.
 Sanitize sharing links	Teilen-Links bereinigen
 Save	Speichern
 Save a profile picture on a long press	Profilbild per langem Druck speichern
@@ -362,11 +354,9 @@ Seen video history cleared. Tap again to put it back.	Verlauf gesehener Videos g
 Seen video history put back	Verlauf gesehener Videos zurückgeholt
 Send links to another app	Links an eine andere App senden
 Settings	Einstellungen
-Settings backup and diagnostic reports.	Einstellungssicherung und Diagnoseberichte.
 Settings saved. Restart TikTok to apply all changes.	Einstellungen gespeichert. Starte TikTok neu, damit alle Änderungen wirken.
 Share links through another host	Links über einen anderen Host teilen
 Share sheet	Teilen-Menü
-Sharing, playback, and gestures.	Teilen, Wiedergabe und Gesten.
 Show @username beside a video instead of the display name the creator chose.	Zeigt @Benutzername neben einem Video statt des Anzeigenamens, den die Person gewählt hat.
 Show a video preview thumbnail while dragging the seekbar.	Beim Ziehen der Fortschrittsleiste ein Vorschaubild des Videos anzeigen.
 Show block button on videos	Blockieren-Schaltfläche auf Videos anzeigen
@@ -449,7 +439,6 @@ Video destination	Speicherort für Videos
 Video download quality	Qualität für Video-Downloads
 Video filename	Dateiname für Videos
 Video playback quality	Wiedergabequalität
-Video quality, speed and automatic advance.	Videoqualität, Geschwindigkeit und automatisches Weiterschalten.
 videos	Videos
 Wait before hiding the controls.	Wartezeit, bevor die Bedienelemente ausgeblendet werden.
 WebP, exactly as TikTok sent it	WebP, genau so wie TikTok es geschickt hat

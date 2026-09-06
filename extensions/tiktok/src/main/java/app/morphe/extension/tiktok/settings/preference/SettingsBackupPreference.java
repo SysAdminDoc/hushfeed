@@ -35,15 +35,28 @@ public final class SettingsBackupPreference extends Preference {
         });
     }
 
+    /**
+     * The four backup actions, kept together at the end of the page. They used to be added
+     * without an order and so landed among the logging rows, which put Back up and Restore
+     * four rows apart with unrelated switches between them.
+     */
     public static void addTo(TikTokPreferenceFragment fragment, PreferenceScreen screen) {
-        screen.addPreference(new SettingsBackupPreference(fragment, EXPORT, "Back up settings",
-                "Save patch settings and Feature Gate Lab rules to a JSON file."));
-        screen.addPreference(new SettingsBackupPreference(fragment, IMPORT, "Restore settings",
-                "Choose a backup file. Your current settings are kept for Undo."));
-        screen.addPreference(new SettingsBackupPreference(fragment, RESET, "Reset settings",
-                "Restore defaults immediately. Your current settings are kept for Undo."));
-        screen.addPreference(new SettingsBackupPreference(fragment, UNDO, "Undo last restore or reset",
-                "Recover the settings saved before the last restore or reset."));
+        int order = screen.getPreferenceCount();
+        for (Object[] row : new Object[][]{
+                {EXPORT, "Back up settings",
+                        "Save patch settings and Feature Gate Lab rules to a JSON file."},
+                {IMPORT, "Restore settings",
+                        "Choose a backup file. Your current settings are kept for Undo."},
+                {RESET, "Reset settings",
+                        "Restore defaults immediately. Your current settings are kept for Undo."},
+                {UNDO, "Undo last restore or reset",
+                        "Recover the settings saved before the last restore or reset."},
+        }) {
+            SettingsBackupPreference preference = new SettingsBackupPreference(
+                    fragment, (Integer) row[0], (String) row[1], (String) row[2]);
+            preference.setOrder(order++);
+            screen.addPreference(preference);
+        }
     }
 
     private static void pickFile(TikTokPreferenceFragment fragment, int action) {

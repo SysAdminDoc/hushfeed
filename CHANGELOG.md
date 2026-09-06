@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Three things about the settings screens. The comment search box follows your phone's theme, has a border so it looks like a field you can type in, gets a search key rather than a newline, and is a proper size to tap. Each section says the same thing on the home page as it does at the top of its own page, where the two used to disagree. And the Diagnostics page keeps the backup actions together at the end instead of scattering them between the logging switches.
+
 * The undo on the block banner is a real target now, announces itself to a screen reader, and says Undo in your own language. Clear all on the suggested accounts row is translated too, and readable on a light inbox rather than washed out.
 
 * Turning off the profile picture or story save gives TikTok its own long press back. Both took over the gesture while switched on and then kept it after being switched off, answering that they had not handled it, which is not the same as handing it back. Holding a story is how TikTok pauses it, so that one was worth getting right.

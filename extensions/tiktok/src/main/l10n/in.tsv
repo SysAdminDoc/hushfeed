@@ -10,7 +10,6 @@ About Hushfeed	Tentang Hushfeed
 Add a block button to the video player that blocks the account that posted the current video in one tap. An undo action is shown after each block.	Tambahkan tombol blokir di pemutar video yang memblokir akun pengunggah video ini dalam satu ketukan. Aksi untuk mengurungkan muncul setelah tiap pemblokiran.
 Add a button beside the block control to send feedback about the current video.	Tambahkan tombol di samping kontrol blokir untuk mengirim masukan tentang video ini.
 Adds a custom option to TikTok's offline videos menu after restart.	Menambahkan opsi khusus ke menu video offline TikTok setelah mulai ulang.
-Ads, Shop, livestreams, and view limits.	Iklan, Shop, siaran LIVE, dan batas tayangan.
 Advance when a video ends	Lanjut saat video berakhir
 All available languages	Semua bahasa yang tersedia
 All loaded tabs	Semua tab yang dimuat
@@ -28,7 +27,6 @@ App behavior	Perilaku aplikasi
 Apply to video downloads and image downloads.	Berlaku untuk unduhan video dan unduhan gambar.
 Arrange your feed and bottom tabs	Atur feed dan tab bawahmu
 Auto translate comments	Terjemahkan komentar otomatis
-Auto translate, quick reactions, and copy options.	Terjemahan otomatis, reaksi cepat, dan opsi salin.
 Automatic	Otomatis
 Automatic clear display	Tampilan bersih otomatis
 Automatically translates loaded comment batches using TikTok's translation system.	Menerjemahkan komentar yang dimuat secara otomatis lewat sistem terjemahan TikTok.
@@ -85,7 +83,6 @@ Compare gate reads with their previous values. Last recording: %d gates.	Banding
 Confirm before following	Konfirmasi sebelum mengikuti
 Confirm before liking	Konfirmasi sebelum menyukai
 Confirm before sending to a friend	Konfirmasi sebelum mengirim ke teman
-Confirm before sending, and hidden people and options.	Konfirmasi sebelum mengirim, serta orang dan opsi yang disembunyikan.
 Continue supported videos from where you stopped when you scroll back to them.	Lanjutkan video yang didukung dari titik terakhir saat kamu menggulir kembali ke video itu.
 Copy a quick report or save the full report as a file.	Salin laporan ringkas atau simpan laporan lengkap sebagai berkas.
 Copy comments without username	Salin komentar tanpa nama pengguna
@@ -94,7 +91,6 @@ Copy report	Salin laporan
 Could not open settings section	Bagian pengaturan tidak bisa dibuka
 Country and network preferences	Preferensi negara dan jaringan
 Country ISO	ISO negara
-Country, operator, locale and timezone.	Negara, operator, lokal, dan zona waktu.
 Current: %1$s %2$s	Saat ini: %1$s %2$s
 Custom offline videos	Batas video offline khusus
 Custom SIM details	Detail SIM khusus
@@ -125,7 +121,6 @@ Export diagnostic report	Ekspor laporan diagnostik
 Feature Gate Lab	Feature Gate Lab
 Feed filter	Filter feed
 Feed navigation	Navigasi feed
-Feed tabs, bottom tabs, and Tako AI.	Tab feed, tab bawah, dan Tako AI.
 Filter bottom tabs	Filter tab bawah
 Filter comments by keyword	Filter komentar berdasarkan kata kunci
 Filter feed tabs	Filter tab feed
@@ -304,7 +299,6 @@ Operator name	Nama operator
 Original language	Bahasa asli
 Override SIM details	Timpa detail SIM
 Override store region (experimental)	Timpa wilayah toko (eksperimental)
-Path, watermark, and offline videos.	Lokasi simpan, tanda air, dan video offline.
 People, shortcuts and sending controls	Orang, pintasan, dan kontrol pengiriman
 Photo destination	Lokasi simpan foto
 Photo filename	Nama berkas foto
@@ -314,10 +308,9 @@ Press and hold a profile picture to save the full size original to your photo de
 Press and hold a story to save it. Stories have no save button of their own, and holding one is how TikTok pauses it, so this takes that gesture over.	Tekan dan tahan Story untuk menyimpannya. Story tidak punya tombol simpan sendiri, dan menahannya adalah cara TikTok menjeda, jadi gestur itu diambil alih.
 Press and hold the left or right third of the screen to jump back or forward. The middle third keeps the Long press action.	Tekan dan tahan sepertiga kiri atau kanan layar untuk melompat mundur atau maju. Sepertiga bagian tengah tetap memakai aksi Tekan lama.
 Profile picture saved to %1$s	Foto profil disimpan ke %1$s
-Promotions, popups, publish dates, and feed controls.	Promosi, popup, tanggal unggah, dan kontrol feed.
 Put a box above the comments that narrows them to the ones matching what you type, by what they say or who said it. Clearing the box brings the rest back.	Kotak di atas komentar yang mempersempit ke komentar yang cocok dengan ketikanmu, berdasarkan isinya atau siapa yang menulis. Mengosongkan kotaknya mengembalikan sisanya.
 Put back %1$s videos	%1$s video dikembalikan
-Quality, files and subtitles	Kualitas, berkas, dan subtitle
+Quality, files, subtitles and hand-off	Kualitas, berkas, subtitel, dan penerusan
 Quality, speed and automatic advance	Kualitas, kecepatan, dan lanjut otomatis
 Recorded gate reads (%d)	Pembacaan gate yang terekam (%d)
 Recover the settings saved before the last restore or reset.	Ambil kembali pengaturan yang tersimpan sebelum pemulihan atau penyetelan ulang terakhir.
@@ -335,7 +328,6 @@ Restore defaults immediately. Your current settings are kept for Undo.	Kembalika
 Restore settings	Pulihkan pengaturan
 Resume videos after scrolling	Lanjutkan video setelah menggulir
 Return after using a TikTok feature to see every gate read during the recording.	Kembali ke sini setelah memakai fitur TikTok untuk melihat semua gate yang dibaca selama perekaman.
-Rows, stories tray, and header controls.	Baris, deret Story, dan kontrol header.
 Sanitize sharing links	Bersihkan tautan berbagi
 Save	Simpan
 Save a profile picture on a long press	Simpan foto profil dengan tekan lama
@@ -362,11 +354,9 @@ Seen video history cleared. Tap again to put it back.	Riwayat video yang sudah d
 Seen video history put back	Riwayat video yang sudah ditonton dikembalikan
 Send links to another app	Kirim tautan ke aplikasi lain
 Settings	Pengaturan
-Settings backup and diagnostic reports.	Cadangan pengaturan dan laporan diagnostik.
 Settings saved. Restart TikTok to apply all changes.	Pengaturan tersimpan. Mulai ulang TikTok untuk menerapkan semua perubahan.
 Share links through another host	Bagikan tautan lewat host lain
 Share sheet	Menu bagikan
-Sharing, playback, and gestures.	Berbagi, pemutaran, dan gestur.
 Show @username beside a video instead of the display name the creator chose.	Tampilkan @namapengguna di samping video, bukan nama tampilan pilihan kreator.
 Show a video preview thumbnail while dragging the seekbar.	Tampilkan pratinjau video saat bilah progres digeser.
 Show block button on videos	Tampilkan tombol blokir di video
@@ -449,7 +439,6 @@ Video destination	Lokasi simpan video
 Video download quality	Kualitas unduhan video
 Video filename	Nama berkas video
 Video playback quality	Kualitas pemutaran video
-Video quality, speed and automatic advance.	Kualitas video, kecepatan, dan lanjut otomatis.
 videos	video
 Wait before hiding the controls.	Tunggu sebelum kontrol disembunyikan.
 WebP, exactly as TikTok sent it	WebP, persis seperti yang dikirim TikTok

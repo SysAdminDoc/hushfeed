@@ -7,10 +7,11 @@
 package app.morphe.extension.tiktok.comment;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.TypedValue;
+import android.view.inputmethod.EditorInfo;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,7 +21,9 @@ import android.widget.LinearLayout;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
+import app.morphe.extension.tiktok.settings.L10n;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.settings.preference.SettingsUi;
 
 import java.lang.ref.WeakReference;
 import java.util.Locale;
@@ -151,15 +154,26 @@ public final class CommentSearch {
 
         Context context = column.getContext();
         EditText box = new EditText(context);
-        box.setHint("Search these comments");
+        box.setHint(L10n.t(context, "Search these comments"));
+        box.setContentDescription(L10n.t(context, "Search these comments"));
         box.setSingleLine(true);
+        // A single line field with a newline key is a dead end; this is a search.
+        box.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
+        box.setInputType(InputType.TYPE_CLASS_TEXT);
         box.setGravity(Gravity.CENTER_VERTICAL);
         box.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        box.setBackgroundColor(Color.TRANSPARENT);
+        // The sheet belongs to TikTok, so the colours follow the phone's theme rather than
+        // whatever the settings screen happens to be using. A transparent background also
+        // takes the focus underline with it, which left nothing saying this was a field.
+        boolean dark = SettingsUi.isDarkMode();
+        box.setTextColor(dark ? 0xFFF5F5F7 : 0xFF16161C);
+        box.setHintTextColor(dark ? 0xFFA8A8B3 : 0xFF575762);
+        box.setBackground(SettingsUi.borderedSurface(context, 8, false));
         int padding = Math.round(12 * context.getResources().getDisplayMetrics().density);
         box.setPadding(padding, padding, padding, padding);
         box.setLayoutParams(new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                Math.round(48 * context.getResources().getDisplayMetrics().density)));
         box.setText(query);
         box.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}

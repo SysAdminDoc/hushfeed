@@ -54,18 +54,23 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
     private static DownloadPathPreference pendingDownloadPathPreference;
     private SettingsListAdapter styledAdapter;
 
+    /**
+     * Each section carries one sentence, used both as the subtitle on the home row and as the
+     * caption at the top of its own page. There used to be two, and they disagreed: the
+     * Downloads row promised quality and subtitles while its page said path and watermark.
+     */
     private enum Section {
-        FEED_FILTER("Feed filter", "Ads, Shop, livestreams, and view limits."),
-        FEED_NAVIGATION("Feed navigation", "Feed tabs, bottom tabs, and Tako AI."),
-        INTERFACE("Interface", "Promotions, popups, publish dates, and feed controls."),
-        COMMENTS("Comments and translation", "Auto translate, quick reactions, and copy options."),
-        DOWNLOADS("Downloads", "Path, watermark, and offline videos."),
-        PLAYBACK("Playback", "Video quality, speed and automatic advance."),
-        INBOX("Inbox", "Rows, stories tray, and header controls."),
-        SHARE("Share sheet", "Confirm before sending, and hidden people and options."),
-        REGION("Region settings", "Country, operator, locale and timezone."),
-        BEHAVIOR("App behavior", "Sharing, playback, and gestures."),
-        DIAGNOSTICS("Diagnostics", "Settings backup and diagnostic reports.");
+        FEED_FILTER("Feed filter", "Choose what reaches your feed"),
+        FEED_NAVIGATION("Feed navigation", "Arrange your feed and bottom tabs"),
+        INTERFACE("Interface", "Captions, gestures and on-screen controls"),
+        COMMENTS("Comments and translation", "Filters, translation and copy options"),
+        DOWNLOADS("Downloads", "Quality, files, subtitles and hand-off"),
+        PLAYBACK("Playback", "Quality, speed and automatic advance"),
+        INBOX("Inbox", "Choose which rows and controls appear"),
+        SHARE("Share sheet", "People, shortcuts and sending controls"),
+        REGION("Region settings", "Country and network preferences"),
+        BEHAVIOR("App behavior", "Links, privacy and player tools"),
+        DIAGNOSTICS("Diagnostics", "Backups and troubleshooting");
 
         final String title;
         final String description;
@@ -463,22 +468,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             SettingsMenuPreference.Icon icon,
             int activeCount
     ) {
-        String menuDescription;
-        switch (section) {
-            case FEED_FILTER: menuDescription = "Choose what reaches your feed"; break;
-            case FEED_NAVIGATION: menuDescription = "Arrange your feed and bottom tabs"; break;
-            case INTERFACE: menuDescription = "Captions, gestures and on-screen controls"; break;
-            case COMMENTS: menuDescription = "Filters, translation and copy options"; break;
-            case DOWNLOADS: menuDescription = "Quality, files and subtitles"; break;
-            case PLAYBACK: menuDescription = "Quality, speed and automatic advance"; break;
-            case INBOX: menuDescription = "Choose which rows and controls appear"; break;
-            case SHARE: menuDescription = "People, shortcuts and sending controls"; break;
-            case REGION: menuDescription = "Country and network preferences"; break;
-            case BEHAVIOR: menuDescription = "Links, privacy and player tools"; break;
-            case DIAGNOSTICS: menuDescription = "Backups and troubleshooting"; break;
-            default: menuDescription = section.description;
-        }
-        String description = L10n.t(getActivity(), menuDescription);
+        String description = L10n.t(getActivity(), section.description);
         if (description.endsWith(".")) {
             description = description.substring(0, description.length() - 1);
         }
