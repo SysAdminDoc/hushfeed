@@ -155,10 +155,21 @@ public final class JavaCrashCapture {
         if (detail == null || "null".equals(detail)) return "";
         boolean truncated = detail.length() > NPTH_DETAIL_MAX_CHARS;
         String boundedDetail = truncated ? detail.substring(0, NPTH_DETAIL_MAX_CHARS) : detail;
-        String sanitized = boundedDetail
+        String sanitized = redact(boundedDetail);
+        return truncated ? sanitized + "\n[summary truncated]" : sanitized;
+    }
+
+    /**
+     * Takes the addresses and credentials out of crash text. A report is written to shared
+     * storage and copied to the clipboard so it can be attached to a bug report, and a network
+     * exception carries the whole request URL in its message: TikTok's own URLs hold the
+     * session and device identifiers as query parameters.
+     */
+    static String redact(String text) {
+        if (text == null || text.isEmpty()) return "";
+        return text
                 .replaceAll("(?i)https?://\\S+", "[url omitted]")
                 .replaceAll("(?i)(access_token|sessionid|sid_tt|passport_csrf_token)=\\S+", "$1=[omitted]");
-        return truncated ? sanitized + "\n[summary truncated]" : sanitized;
     }
 
     private static final class MorpheCrashHandler implements Thread.UncaughtExceptionHandler {
@@ -210,6 +221,7 @@ public final class JavaCrashCapture {
     ) {
         StringWriter stack = new StringWriter();
         throwable.printStackTrace(new PrintWriter(stack));
+        String sanitizedStack = redact(stack.toString());
 
         StringBuilder report = new StringBuilder();
         report.append("schema: 1\n")
@@ -227,10 +239,10 @@ public final class JavaCrashCapture {
                 .append("thread: ").append(thread.getName()).append('\n')
                 .append("thread_id: ").append(thread.getId()).append('\n')
                 .append("exception: ").append(throwable.getClass().getName()).append('\n')
-                .append("message: ").append(safe(throwable.getMessage())).append('\n')
+                .append("message: ").append(redact(safe(throwable.getMessage()))).append('\n')
                 .append("delegate: ").append(delegate == null ? "none" : delegate.getClass().getName())
                 .append("\n\n[STACK TRACE]\n")
-                .append(stack);
+                .append(sanitizedStack);
 
         String recent = LogBufferManager.snapshotForCrash(RECENT_EVENTS_MAX_CHARS);
         if (!recent.isEmpty()) {

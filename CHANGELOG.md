@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Crash reports stop carrying addresses and session tokens. The reports TikTok's own crash handler produced were already scrubbed, but the ones from the patch's Java handler were not, and a network exception puts the whole request URL in its message. Those reports go to shared storage and to the clipboard so they can be attached to a bug report, so anything in them travels. Both paths now go through the same scrub.
+
 * Saving a video no longer falls over when one of its captions names no language. TikTok sends the language as free text, and a value that cleans up to nothing but separators used to slip past the unknown-language fallback and then crash the save outright. It is treated as unknown now, like an empty one always was.
 
 * Clearing the seen video history keeps its way back when you tap twice quickly. The record is read off the database on a background thread, and a second tap that arrived before that finished used up the offer and left nothing to put back, which on a cold database is exactly the window the toast invites you into. The offer now stands until the copy is really there, and the row says so. Putting the record back also keeps a video you watched again in the meantime at its newer time instead of the older one.
