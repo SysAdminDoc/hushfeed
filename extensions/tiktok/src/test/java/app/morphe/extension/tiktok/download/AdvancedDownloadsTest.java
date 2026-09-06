@@ -86,6 +86,20 @@ public class AdvancedDownloadsTest {
         public Author getAuthor() { return author; }
         public String getAid() { return aid; }
     }
+    /** A profile, carrying only the avatar sizes a given test wants to offer. */
+    public static final class Account {
+        public Address avatar300, avatarLarger, avatarMedium, avatar168, avatarThumb;
+        private final String uniqueId, nickname;
+        Account(String uniqueId, String nickname) { this.uniqueId = uniqueId; this.nickname = nickname; }
+        public String getUniqueId() { return uniqueId; }
+        public String getNickname() { return nickname; }
+    }
+    /** The profile fetch response the app reads the user out of. */
+    public static final class Profile {
+        public final Account user;
+        Profile(Account user) { this.user = user; }
+        public Account getUser() { return user; }
+    }
     public static final class Post {
         public final Info photoModeImageInfo;
         Post(List<Photo> photos) { photoModeImageInfo = new Info(photos); }
@@ -263,6 +277,52 @@ public class AdvancedDownloadsTest {
         // The fallback a failed conversion writes is that same untouched WebP.
         assertEquals("WebP", StickerGallerySaver.MediaFormat.webp().label);
         assertEquals("image/webp", StickerGallerySaver.MediaFormat.webp().mimeType);
+    }
+
+    @Test public void theProfilePictureTakesTheLargestSizeThatIsThere() {
+        Account account = new Account("dancer", "Dancer");
+        account.avatarThumb = new Address("https://example.com/thumb.jpg", 10);
+        account.avatar168 = new Address("https://example.com/168.jpg", 20);
+        account.avatarMedium = new Address("https://example.com/medium.jpg", 30);
+        account.avatarLarger = new Address("https://example.com/larger.jpg", 40);
+        account.avatar300 = new Address("https://example.com/300.jpg", 50);
+        assertEquals(List.of("https://example.com/300.jpg"), ProfileAvatarSaver.avatarUrls(account));
+
+        // Each size steps down only when the one above it is missing, never past it.
+        account.avatar300 = null;
+        assertEquals(List.of("https://example.com/larger.jpg"), ProfileAvatarSaver.avatarUrls(account));
+        account.avatarLarger = new Address(null, 0);
+        assertEquals(List.of("https://example.com/medium.jpg"), ProfileAvatarSaver.avatarUrls(account));
+        account.avatarMedium = null;
+        assertEquals(List.of("https://example.com/168.jpg"), ProfileAvatarSaver.avatarUrls(account));
+        account.avatar168 = null;
+        assertEquals(List.of("https://example.com/thumb.jpg"), ProfileAvatarSaver.avatarUrls(account));
+        account.avatarThumb = null;
+        assertTrue(ProfileAvatarSaver.avatarUrls(account).isEmpty());
+        assertTrue(ProfileAvatarSaver.avatarUrls(new Object()).isEmpty());
+    }
+
+    @Test public void theProfilePictureIsNamedAfterTheAccount() {
+        Utils.setContext(RuntimeEnvironment.getApplication());
+        assertEquals("dancer_profile.jpg", ProfileAvatarSaver.avatarName(new Account("dancer", "Dancer")));
+        // No handle falls back to the display name.
+        assertEquals("Dancer_profile.jpg", ProfileAvatarSaver.avatarName(new Account("  ", "Dancer")));
+        // Path separators are replaced rather than dropped, so the name stays legal and unique.
+        assertEquals("____profile.jpg", ProfileAvatarSaver.avatarName(new Account(null, "///")));
+        // Nothing to go on at all is the only case that falls back to a fixed name.
+        assertEquals("profile_profile.jpg", ProfileAvatarSaver.avatarName(new Object()));
+    }
+
+    @Test public void theRecordedProfileIsTheOneTheResponseCarries() {
+        Account account = new Account("dancer", "Dancer");
+        account.avatar300 = new Address("https://example.com/300.jpg", 50);
+        ProfileAvatarSaver.recordProfileResponse(new Profile(account));
+        assertSame(account, ProfileAvatarSaver.recordedProfileUser());
+        // A response with no user leaves the last profile alone rather than blanking it.
+        ProfileAvatarSaver.recordProfileResponse(new Profile(null));
+        ProfileAvatarSaver.recordProfileResponse(new Object());
+        ProfileAvatarSaver.recordProfileResponse(null);
+        assertSame(account, ProfileAvatarSaver.recordedProfileUser());
     }
 
     @Test public void advancedPatchAloneShowsItsOwnOptions() throws Exception {

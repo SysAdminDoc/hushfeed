@@ -46,7 +46,7 @@
     },
     {
       "name": "Advanced downloads",
-      "description": "Adds download quality choices, saves Photo Mode images directly from their source URLs, and can keep a video's sound as its own audio file.",
+      "description": "Adds download quality choices, saves Photo Mode images directly from their source URLs, keeps a video's sound as its own audio file, and saves a profile picture from a long press on the avatar.",
       "use": false,
       "dependencies": [
         "BytecodePatch"

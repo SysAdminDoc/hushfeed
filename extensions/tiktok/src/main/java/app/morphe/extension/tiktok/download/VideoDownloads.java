@@ -136,7 +136,8 @@ final class VideoDownloads {
         return selected;
     }
 
-    private static List<String> urls(Object address) {
+    /** The https addresses inside a UrlModel, in the order it lists them. */
+    static List<String> urls(Object address) {
         Object raw = Reflect.property(address, "getUrlList", "urlList");
         List<String> result = new ArrayList<>();
         if (raw instanceof List<?>) for (Object url : (List<?>) raw) {

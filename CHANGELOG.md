@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Press and hold a profile picture to save it. TikTok never puts the full size avatar on screen, so the file comes from the profile the app loaded rather than from what is drawn, which means you get the original rather than a display crop. It lands in your photo destination, named after the account.
+
 * Animated stickers save in the format you pick. The old behaviour turned every one into an MP4, which messaging apps that take animated stickers reject. WebP now writes the file TikTok sent, byte for byte, and GIF is written here rather than handed to a converter app. If a conversion fails the sticker is still saved as the WebP it arrived as, so a save never comes back empty handed.
 
 * Review pass over the settings lookup and the sound save. A phone set to two languages reads them in order again, so French and then German shows German rather than English: the new table lookup was only reading the first language, which is not what Android does with resources. Saving the sound no longer downloads the same bytes a second time; it takes them from the file the video download already has, which also means the .m4a and the video carry the same audio stream.

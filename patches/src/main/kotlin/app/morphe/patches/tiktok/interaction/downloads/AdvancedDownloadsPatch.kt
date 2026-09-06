@@ -19,6 +19,27 @@ private object DownloadAddressFingerprint : Fingerprint(
 private object CleanDownloadAddressFingerprint : Fingerprint(
     definingClass = VIDEO, name = "getDownloadNoWatermarkAddr", parameters = emptyList(), returnType = URL,
 )
+/**
+ * The profile fetch. Real class and method names, and the app reads the user out of it every
+ * time a profile is opened, which is what tells the extension whose picture is on screen.
+ */
+private object ProfileUserResponseFingerprint : Fingerprint(
+    definingClass = "Lcom/ss/android/ugc/aweme/profile/UserResponse;",
+    name = "getUser",
+    parameters = emptyList(),
+    returnType = "Lcom/ss/android/ugc/aweme/profile/model/User;",
+)
+
+/**
+ * The profile header's avatar. `IHeaderAvatarAbility` declares exactly one method and the
+ * base component implements it, so the shape finds it without naming the obfuscated method.
+ */
+private object ProfileAvatarBindFingerprint : Fingerprint(
+    definingClass = "/ProfileHeaderAvatarBaseComponent;",
+    parameters = listOf("I", "Landroid/view/View;", "Ljava/lang/String;"),
+    returnType = "V",
+)
+
 private object StartDownloadFingerprint : Fingerprint(
     strings = listOf("download_method", "download_action"),
     parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;", "Landroid/content/Context;", "I", "Ljava/lang/String;", "Z", "Lcom/ss/android/ugc/aweme/sharer/model/SharePackage;"),
@@ -28,7 +49,7 @@ private object StartDownloadFingerprint : Fingerprint(
 @Suppress("unused")
 val advancedDownloadsPatch = bytecodePatch(
     name = "Advanced downloads",
-    description = "Adds download quality choices, saves Photo Mode images directly from their source URLs, and can keep a video's sound as its own audio file.",
+    description = "Adds download quality choices, saves Photo Mode images directly from their source URLs, keeps a video's sound as its own audio file, and saves a profile picture from a long press on the avatar.",
     default = false,
 ) {
     compatibleWith(*AppCompatibilities.tiktok4623())
@@ -54,6 +75,17 @@ val advancedDownloadsPatch = bytecodePatch(
                 return-void
             """, ExternalLabel("original", getInstruction(0)))
         }
+        ProfileUserResponseFingerprint.method.addInstruction(
+            0,
+            "invoke-static/range { p0 .. p0 }, ${EXTENSION}ProfileAvatarSaver;->" +
+                "recordProfileResponse(Ljava/lang/Object;)V",
+        )
+        ProfileAvatarBindFingerprint.method.addInstruction(
+            0,
+            "invoke-static/range { p2 .. p2 }, ${EXTENSION}ProfileAvatarSaver;->" +
+                "attachAvatar(Landroid/view/View;)V",
+        )
+
         SettingsStatusLoadFingerprint.method.addInstruction(0,
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableAdvancedDownloads()V")
     }

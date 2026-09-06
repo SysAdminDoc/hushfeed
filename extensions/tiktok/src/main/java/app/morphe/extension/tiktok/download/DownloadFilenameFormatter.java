@@ -137,6 +137,16 @@ public final class DownloadFilenameFormatter {
         return formatSourceName(aweme, 1, "m4a", false);
     }
 
+    /**
+     * A profile picture is named after the account rather than by the video template, whose
+     * tokens have nothing to fill them here.
+     */
+    static String formatProfilePictureName(String handle) {
+        String base = trimToLength(sanitizeBaseName(sanitizeToken(handle)), MAX_BASENAME_LENGTH);
+        if (base.isEmpty()) base = "profile";
+        return base + "_profile.jpg";
+    }
+
     private static String formatSourceName(Object aweme, int index, String extension, boolean photo) {
         Object author = invoke(aweme, "getAuthor");
         String creator = firstNonBlank(invokeString(author, "getUniqueId"), invokeString(author, "getNickname"), "unknown");

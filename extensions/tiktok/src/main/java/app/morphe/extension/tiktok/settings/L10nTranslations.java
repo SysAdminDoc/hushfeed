@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(820);
+        Map<String, String> table = new HashMap<>(824);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -644,6 +644,8 @@ public final class L10nTranslations {
                 "Von TikTok eingestufte Videos abspielen, ohne dass erst eine Warnung weggetippt werden muss.");
         table.put("Playback",
                 "Wiedergabe");
+        table.put("Press and hold a profile picture to save the full size original to your photo destination.",
+                "Ein Profilbild gedrückt halten, um das Original in voller Größe im Fotoordner zu speichern.");
         table.put("Promotions, popups, publish dates, and feed controls.",
                 "Werbeaktionen, Popups, Veröffentlichungsdaten und Feed-Bedienelemente.");
         table.put("Put back %1$s videos",
@@ -666,11 +668,11 @@ public final class L10nTranslations {
                 "Sichere Fenster-Flags entfernen. Starte TikTok nach der Änderung neu.");
         table.put("Remove the Share via row.",
                 "Die Zeile „Teilen über“ entfernen.");
-        table.put("Remove the actions row from the share sheet.",
-                "Die Aktionszeile aus dem Teilen-Menü entfernen.");
     }
 
     private static void fillDe5(Map<String, String> table) {
+        table.put("Remove the actions row from the share sheet.",
+                "Die Aktionszeile aus dem Teilen-Menü entfernen.");
         table.put("Remove the row of friends from the top of the share sheet.",
                 "Die Freundesreihe oben im Teilen-Menü entfernen.");
         table.put("Remove tracking parameters from shared links.",
@@ -699,6 +701,8 @@ public final class L10nTranslations {
                 "JSON speichern");
         table.put("Save SRT files with the video. Paired saves use Movies on Android 11+, Download on Android 10, and your video folder on older versions.",
                 "SRT-Dateien zusammen mit dem Video speichern. Gemeinsame Speicherungen nutzen Movies ab Android 11, Download auf Android 10 und deinen Videoordner auf älteren Versionen.");
+        table.put("Save a profile picture on a long press",
+                "Profilbild per langem Druck speichern");
         table.put("Save every photo in the post directly from its source URL, without rendering it again.",
                 "Jedes Foto des Beitrags direkt von seiner Quell-URL speichern, ohne es neu zu rendern.");
         table.put("Save patch settings and Feature Gate Lab rules to a JSON file.",
@@ -787,13 +791,13 @@ public final class L10nTranslations {
                 "Feature-Gate-Aufzeichnung beenden");
         table.put("Stop the brand animation that plays over the comments when what someone typed matches an advertiser's trigger.",
                 "Stoppt die Markenanimation über den Kommentaren, wenn das Getippte zu einem Werbe-Auslöser passt.");
+    }
+
+    private static void fillDe6(Map<String, String> table) {
         table.put("Stop video looping",
                 "Videoschleife beenden");
         table.put("Stop videos at the end instead of replaying them.",
                 "Videos am Ende anhalten, statt sie zu wiederholen.");
-    }
-
-    private static void fillDe6(Map<String, String> table) {
         table.put("Subtitle language",
                 "Untertitelsprache");
         table.put("Tap the feed Follow button twice within four seconds.",
@@ -897,7 +901,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(820);
+        Map<String, String> table = new HashMap<>(824);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1497,6 +1501,8 @@ public final class L10nTranslations {
                 "Putar video yang diklasifikasi TikTok tanpa lapisan yang harus diketuk lebih dulu.");
         table.put("Playback",
                 "Pemutaran");
+        table.put("Press and hold a profile picture to save the full size original to your photo destination.",
+                "Tekan dan tahan foto profil untuk menyimpan aslinya dalam ukuran penuh ke lokasi simpan fotomu.");
         table.put("Promotions, popups, publish dates, and feed controls.",
                 "Promosi, popup, tanggal unggah, dan kontrol feed.");
         table.put("Put back %1$s videos",
@@ -1519,11 +1525,11 @@ public final class L10nTranslations {
                 "Hapus flag jendela aman. Mulai ulang TikTok setelah mengubahnya.");
         table.put("Remove the Share via row.",
                 "Hapus baris Bagikan lewat.");
-        table.put("Remove the actions row from the share sheet.",
-                "Hapus baris aksi dari menu bagikan.");
     }
 
     private static void fillIn5(Map<String, String> table) {
+        table.put("Remove the actions row from the share sheet.",
+                "Hapus baris aksi dari menu bagikan.");
         table.put("Remove the row of friends from the top of the share sheet.",
                 "Hapus baris teman dari bagian atas menu bagikan.");
         table.put("Remove tracking parameters from shared links.",
@@ -1552,6 +1558,8 @@ public final class L10nTranslations {
                 "Simpan JSON");
         table.put("Save SRT files with the video. Paired saves use Movies on Android 11+, Download on Android 10, and your video folder on older versions.",
                 "Simpan berkas SRT bersama videonya. Penyimpanan berpasangan memakai Movies di Android 11+, Download di Android 10, dan folder videomu di versi lama.");
+        table.put("Save a profile picture on a long press",
+                "Simpan foto profil dengan tekan lama");
         table.put("Save every photo in the post directly from its source URL, without rendering it again.",
                 "Simpan setiap foto dalam unggahan langsung dari URL sumbernya, tanpa dirender ulang.");
         table.put("Save patch settings and Feature Gate Lab rules to a JSON file.",
@@ -1640,13 +1648,13 @@ public final class L10nTranslations {
                 "Hentikan rekaman feature gate");
         table.put("Stop the brand animation that plays over the comments when what someone typed matches an advertiser's trigger.",
                 "Hentikan animasi merek yang muncul di atas komentar saat ketikan seseorang cocok dengan pemicu pengiklan.");
+    }
+
+    private static void fillIn6(Map<String, String> table) {
         table.put("Stop video looping",
                 "Hentikan pengulangan video");
         table.put("Stop videos at the end instead of replaying them.",
                 "Hentikan video di akhir, bukan memutarnya ulang.");
-    }
-
-    private static void fillIn6(Map<String, String> table) {
         table.put("Subtitle language",
                 "Bahasa subtitle");
         table.put("Tap the feed Follow button twice within four seconds.",
