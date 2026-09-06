@@ -6,6 +6,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.interaction.blockauthor.blockAuthorPatch
+import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.util.cloneMutable
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -25,7 +26,7 @@ val notInterestedPatch = bytecodePatch(
     description = "Adds a button beside the block control to tell TikTok you aren't interested in the current video. Off by default.",
     default = false,
 ) {
-    dependsOn(blockAuthorPatch)
+    dependsOn(sharedExtensionPatch, blockAuthorPatch)
     compatibleWith(*AppCompatibilities.tiktok4623())
     execute {
         val factory = mutableClassDefBy(DislikeRequestFactoryFingerprint.method.definingClass)

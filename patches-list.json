@@ -245,6 +245,7 @@
       "description": "Adds optional second-tap protection to the feed Follow button and like heart. A red ring marks the armed button.",
       "use": false,
       "dependencies": [
+        "BytecodePatch",
         "BytecodePatch"
       ],
       "compatiblePackages": {
@@ -300,7 +301,9 @@
       "name": "Custom offline videos limit",
       "description": "Adds a custom entry to TikTok's offline videos menu with a configurable limit from 1 to 1000 videos.",
       "use": true,
-      "dependencies": [],
+      "dependencies": [
+        "BytecodePatch"
+      ],
       "compatiblePackages": {
         "com.zhiliaoapp.musically": [
           "46.2.3"
@@ -493,6 +496,7 @@
       "description": "Lets double taps do nothing or open the current video's comments.",
       "use": false,
       "dependencies": [
+        "BytecodePatch",
         "BytecodePatch"
       ],
       "compatiblePackages": {
@@ -1392,6 +1396,7 @@
       "description": "Adds a button beside the block control to tell TikTok you aren't interested in the current video. Off by default.",
       "use": false,
       "dependencies": [
+        "BytecodePatch",
         "BytecodePatch"
       ],
       "compatiblePackages": {
@@ -1842,6 +1847,7 @@
       "description": "Saves subtitle files beside downloaded videos and adds caption size, background, and clear-display options.",
       "use": false,
       "dependencies": [
+        "BytecodePatch",
         "BytecodePatch",
         "BytecodePatch"
       ],

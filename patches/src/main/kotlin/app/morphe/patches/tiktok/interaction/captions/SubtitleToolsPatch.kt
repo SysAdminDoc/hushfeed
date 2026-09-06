@@ -7,6 +7,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.interaction.blockauthor.blockAuthorPatch
 import app.morphe.patches.tiktok.interaction.downloads.advancedDownloadsPatch
+import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.util.cloneMutable
 import app.morphe.util.getReference
@@ -31,7 +32,7 @@ val subtitleToolsPatch = bytecodePatch(
     default = false,
 ) {
     compatibleWith(*AppCompatibilities.tiktok4623())
-    dependsOn(advancedDownloadsPatch, blockAuthorPatch)
+    dependsOn(sharedExtensionPatch, advancedDownloadsPatch, blockAuthorPatch)
     execute {
         val rendererConstructor = CaptionViewFingerprint.method.implementation!!.instructions.mapNotNull {
             it.getReference<MethodReference>()

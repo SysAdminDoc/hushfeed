@@ -8,6 +8,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.interaction.blockauthor.blockAuthorPatch
+import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 
 private const val EXTENSION = "Lapp/morphe/extension/tiktok/interaction/GestureActions;"
@@ -34,7 +35,7 @@ val doubleTapPatch = bytecodePatch(
     default = false,
 ) {
     compatibleWith(*AppCompatibilities.tiktok4623())
-    dependsOn(blockAuthorPatch)
+    dependsOn(sharedExtensionPatch, blockAuthorPatch)
     execute {
         DoubleTapFingerprint.method.apply {
             check(implementation!!.registerCount > parameterTypes.size + 1)

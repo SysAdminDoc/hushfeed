@@ -1,6 +1,7 @@
 package app.morphe.patches.tiktok.interaction.offlinevideos
 
 import app.morphe.patches.shared.compat.AppCompatibilities
+import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.bytecodePatch
@@ -22,6 +23,8 @@ val customOfflineVideosLimitPatch = bytecodePatch(
     description = "Adds a custom entry to TikTok's offline videos menu with a configurable limit from 1 to 1000 videos.",
     default = true,
 ) {
+    dependsOn(sharedExtensionPatch)
+
     compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
