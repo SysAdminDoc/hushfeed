@@ -23,18 +23,26 @@ public class NumberInputPreference extends EditTextPreference {
     private final int maxValue;
     private final String unit;
 
-    public NumberInputPreference(Context context, String title, String summary, IntegerSetting setting,
-                                 int minValue, int maxValue) {
-        this(context, title, summary, setting, minValue, maxValue, "videos");
+    public NumberInputPreference(Context context, String title, String summary,
+                                 IntegerSetting setting) {
+        this(context, title, summary, setting, "videos");
     }
 
-    public NumberInputPreference(Context context, String title, String summary, IntegerSetting setting,
-                                 int minValue, int maxValue, String unit) {
+    /**
+     * The range comes from the setting, not from here. Passing it separately meant the dialog
+     * and the stored value could disagree, and only the dialog was ever enforcing it: a
+     * restored backup went straight into the setting without being asked anything.
+     */
+    public NumberInputPreference(Context context, String title, String summary,
+                                 IntegerSetting setting, String unit) {
         super(context);
+        if (!setting.hasRange()) {
+            throw new IllegalArgumentException(setting.key + " has no range to offer");
+        }
         this.unit = unit;
         this.baseSummary = summary;
-        this.minValue = minValue;
-        this.maxValue = maxValue;
+        this.minValue = setting.minimum();
+        this.maxValue = setting.maximum();
         setTitle(title);
         setKey(setting.key);
         setValue(String.valueOf(clamp(setting.get())));

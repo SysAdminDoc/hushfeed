@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1050);
+        Map<String, String> table = new HashMap<>(1052);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -66,6 +66,8 @@ public final class L10nTranslations {
                 "%d Sprachen ausgeschlossen");
         table.put("%s on",
                 "%s aktiv");
+        table.put("A creator pattern is taking too long and was switched off: %1$s",
+                "Ein Kreator-Muster braucht zu lange und wurde abgeschaltet: %1$s");
         table.put("A hidden puzzle may be the cause.",
                 "Ein ausgeblendetes Rätsel kann die Ursache sein.");
         table.put("A host to put in place of tiktok.com when you share or copy a link, like vxtiktok.com. Leave it empty to share TikTok's own links. Only TikTok links are changed, and only the host: nothing is sent anywhere new.",
@@ -176,11 +178,11 @@ public final class L10nTranslations {
                 "Wähle sichtbare Zeilen und Bedienelemente");
         table.put("Clear",
                 "Löschen");
-        table.put("Clear all",
-                "Alle löschen");
     }
 
     private static void fillDe1(Map<String, String> table) {
+        table.put("Clear all",
+                "Alle löschen");
         table.put("Clear all suggested accounts",
                 "Alle vorgeschlagenen Konten löschen");
         table.put("Clear buffered events and saved crash reports.",
@@ -299,11 +301,11 @@ public final class L10nTranslations {
                 "Sprachen nicht übersetzen");
         table.put("Do nothing",
                 "Nichts tun");
-        table.put("Do you wish to proceed?",
-                "Möchtest du fortfahren?");
     }
 
     private static void fillDe2(Map<String, String> table) {
+        table.put("Do you wish to proceed?",
+                "Möchtest du fortfahren?");
         table.put("Double tap",
                 "Doppeltippen");
         table.put("Download original photos",
@@ -422,11 +424,11 @@ public final class L10nTranslations {
                 "Schwebende Werbe-Abzeichen, Münzen und Timer-Banner auf der Startseite ausblenden.");
         table.put("Hide floating promotions",
                 "Schwebende Werbeaktionen ausblenden");
-        table.put("Hide image video",
-                "Bildbeiträge ausblenden");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Hide image video",
+                "Bildbeiträge ausblenden");
         table.put("Hide image video from feed.",
                 "Bildbeiträge aus dem Feed ausblenden.");
         table.put("Hide inserted cards",
@@ -545,11 +547,11 @@ public final class L10nTranslations {
                 "Playlist-Leiste ausblenden");
         table.put("Hide the playlist bar along the bottom of videos that belong to a series.",
                 "Die Playlist-Leiste am unteren Rand von Videos ausblenden, die zu einer Serie gehören.");
-        table.put("Hide the plus button under the creator's avatar on the action rail.",
-                "Die Plus-Schaltfläche unter dem Avatar des Creators in der Aktionsleiste ausblenden.");
     }
 
     private static void fillDe4(Map<String, String> table) {
+        table.put("Hide the plus button under the creator's avatar on the action rail.",
+                "Die Plus-Schaltfläche unter dem Avatar des Creators in der Aktionsleiste ausblenden.");
         table.put("Hide the question cards TikTok slides over a video near its end.",
                 "Die Fragekarten ausblenden, die TikTok gegen Ende eines Videos einblendet.");
         table.put("Hide the row of story avatars across the top of the Inbox.",
@@ -668,11 +670,11 @@ public final class L10nTranslations {
                 "Min/Max Favoriten");
         table.put("Min/Max likes",
                 "Min./Max. Likes");
-        table.put("Min/Max shares",
-                "Min./Max. geteilt");
     }
 
     private static void fillDe5(Map<String, String> table) {
+        table.put("Min/Max shares",
+                "Min./Max. geteilt");
         table.put("Min/Max views",
                 "Min./Max. Aufrufe");
         table.put("Minimum",
@@ -791,11 +793,11 @@ public final class L10nTranslations {
                 "Einstellungen zurücksetzen");
         table.put("Restore defaults immediately. Your current settings are kept for Undo.",
                 "Standardwerte sofort wiederherstellen. Deine aktuellen Einstellungen bleiben zum Rückgängigmachen erhalten.");
-        table.put("Restore settings",
-                "Einstellungen wiederherstellen");
     }
 
     private static void fillDe6(Map<String, String> table) {
+        table.put("Restore settings",
+                "Einstellungen wiederherstellen");
         table.put("Resume videos after scrolling",
                 "Videos nach dem Scrollen fortsetzen");
         table.put("Return after using a TikTok feature to see every gate read during the recording.",
@@ -914,11 +916,11 @@ public final class L10nTranslations {
                 "Die vollständigen Listen „Aktivität“ und „Neue Follower“ anzeigen, statt bei einer Schaltfläche „Alle anzeigen“ zu enden.");
         table.put("Show the whole video instead of cropping it to the window. Nothing changes on a tall phone, where it already fits. On a folding phone opened up, a squarer screen or a split view the sides or the ends stop being cut off.",
                 "Das ganze Video zeigen, statt es auf das Fenster zuzuschneiden. Auf einem hohen Telefon ändert sich nichts, dort passt es bereits. Auf einem aufgeklappten Falttelefon, einem quadratischeren Bildschirm oder im geteilten Bildschirm werden die Seiten oder die Enden nicht mehr abgeschnitten.");
-        table.put("Show where a video was posted",
-                "Herkunftsland anzeigen");
     }
 
     private static void fillDe7(Map<String, String> table) {
+        table.put("Show where a video was posted",
+                "Herkunftsland anzeigen");
         table.put("Skip blocked sounds",
                 "Gesperrte Sounds überspringen");
         table.put("Skip content warnings",
@@ -1037,11 +1039,11 @@ public final class L10nTranslations {
                 "TikTok-Standard (2x halten, schnelles Teilen)");
         table.put("TikTok didn't accept the feedback. Try again later.",
                 "TikTok hat die Rückmeldung nicht angenommen. Versuche es später noch einmal.");
-        table.put("TikTok patches for Morphe, built on the Metra patches by icysymmetra and the community sets before them. Tap to open the project page.",
-                "TikTok-Patches für Morphe, aufgebaut auf den Metra-Patches von icysymmetra und den Community-Sammlungen davor. Tippe, um die Projektseite zu öffnen.");
     }
 
     private static void fillDe8(Map<String, String> table) {
+        table.put("TikTok patches for Morphe, built on the Metra patches by icysymmetra and the community sets before them. Tap to open the project page.",
+                "TikTok-Patches für Morphe, aufgebaut auf den Metra-Patches von icysymmetra und den Community-Sammlungen davor. Tippe, um die Projektseite zu öffnen.");
         table.put("TikTok refused the follow: %1$s",
                 "TikTok hat das Folgen abgelehnt: %1$s");
         table.put("Tokens: {creator}, {date}, {video_id}, {index}. The file extension is kept automatically.",
@@ -1135,7 +1137,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1050);
+        Map<String, String> table = new HashMap<>(1052);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1157,6 +1159,8 @@ public final class L10nTranslations {
                 "%d bahasa dikecualikan");
         table.put("%s on",
                 "%s aktif");
+        table.put("A creator pattern is taking too long and was switched off: %1$s",
+                "Ada pola kreator yang terlalu lama, jadi dimatikan: %1$s");
         table.put("A hidden puzzle may be the cause.",
                 "Teka-teki yang disembunyikan bisa jadi penyebabnya.");
         table.put("A host to put in place of tiktok.com when you share or copy a link, like vxtiktok.com. Leave it empty to share TikTok's own links. Only TikTok links are changed, and only the host: nothing is sent anywhere new.",
@@ -1267,11 +1271,11 @@ public final class L10nTranslations {
                 "Pilih baris dan kontrol yang muncul");
         table.put("Clear",
                 "Hapus");
-        table.put("Clear all",
-                "Hapus semua");
     }
 
     private static void fillIn1(Map<String, String> table) {
+        table.put("Clear all",
+                "Hapus semua");
         table.put("Clear all suggested accounts",
                 "Hapus semua akun yang disarankan");
         table.put("Clear buffered events and saved crash reports.",
@@ -1390,11 +1394,11 @@ public final class L10nTranslations {
                 "Bahasa yang tidak diterjemahkan");
         table.put("Do nothing",
                 "Tidak melakukan apa pun");
-        table.put("Do you wish to proceed?",
-                "Mau lanjut?");
     }
 
     private static void fillIn2(Map<String, String> table) {
+        table.put("Do you wish to proceed?",
+                "Mau lanjut?");
         table.put("Double tap",
                 "Ketuk dua kali");
         table.put("Download original photos",
@@ -1513,11 +1517,11 @@ public final class L10nTranslations {
                 "Sembunyikan lencana promosi mengambang, koin, dan spanduk penghitung waktu di beranda.");
         table.put("Hide floating promotions",
                 "Sembunyikan promosi mengambang");
-        table.put("Hide image video",
-                "Sembunyikan video foto");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Hide image video",
+                "Sembunyikan video foto");
         table.put("Hide image video from feed.",
                 "Sembunyikan video foto dari feed.");
         table.put("Hide inserted cards",
@@ -1636,11 +1640,11 @@ public final class L10nTranslations {
                 "Sembunyikan bilah playlist");
         table.put("Hide the playlist bar along the bottom of videos that belong to a series.",
                 "Sembunyikan bilah playlist di bagian bawah video yang termasuk sebuah seri.");
-        table.put("Hide the plus button under the creator's avatar on the action rail.",
-                "Sembunyikan tombol tambah di bawah foto profil kreator pada kolom aksi.");
     }
 
     private static void fillIn4(Map<String, String> table) {
+        table.put("Hide the plus button under the creator's avatar on the action rail.",
+                "Sembunyikan tombol tambah di bawah foto profil kreator pada kolom aksi.");
         table.put("Hide the question cards TikTok slides over a video near its end.",
                 "Sembunyikan kartu pertanyaan yang TikTok munculkan menjelang akhir video.");
         table.put("Hide the row of story avatars across the top of the Inbox.",
@@ -1759,11 +1763,11 @@ public final class L10nTranslations {
                 "Favorit min/maks");
         table.put("Min/Max likes",
                 "Suka min/maks");
-        table.put("Min/Max shares",
-                "Bagikan min/maks");
     }
 
     private static void fillIn5(Map<String, String> table) {
+        table.put("Min/Max shares",
+                "Bagikan min/maks");
         table.put("Min/Max views",
                 "Tayangan min/maks");
         table.put("Minimum",
@@ -1882,11 +1886,11 @@ public final class L10nTranslations {
                 "Setel ulang pengaturan");
         table.put("Restore defaults immediately. Your current settings are kept for Undo.",
                 "Kembalikan ke bawaan sekarang juga. Pengaturanmu yang sekarang disimpan untuk Urungkan.");
-        table.put("Restore settings",
-                "Pulihkan pengaturan");
     }
 
     private static void fillIn6(Map<String, String> table) {
+        table.put("Restore settings",
+                "Pulihkan pengaturan");
         table.put("Resume videos after scrolling",
                 "Lanjutkan video setelah menggulir");
         table.put("Return after using a TikTok feature to see every gate read during the recording.",
@@ -2005,11 +2009,11 @@ public final class L10nTranslations {
                 "Tampilkan seluruh daftar Aktivitas dan Pengikut baru, bukan berhenti di tombol Lihat semua.");
         table.put("Show the whole video instead of cropping it to the window. Nothing changes on a tall phone, where it already fits. On a folding phone opened up, a squarer screen or a split view the sides or the ends stop being cut off.",
                 "Tampilkan video secara utuh, bukan dipotong mengikuti jendela. Di ponsel yang tinggi tidak ada yang berubah karena videonya memang sudah pas. Di ponsel lipat yang dibuka, layar yang lebih persegi, atau mode layar terbagi, sisi atau ujung videonya tidak lagi terpotong.");
-        table.put("Show where a video was posted",
-                "Tampilkan asal unggahan video");
     }
 
     private static void fillIn7(Map<String, String> table) {
+        table.put("Show where a video was posted",
+                "Tampilkan asal unggahan video");
         table.put("Skip blocked sounds",
                 "Lewati suara yang diblokir");
         table.put("Skip content warnings",
@@ -2128,11 +2132,11 @@ public final class L10nTranslations {
                 "Bawaan TikTok (tahan 2x, bagikan cepat)");
         table.put("TikTok didn't accept the feedback. Try again later.",
                 "TikTok tidak menerima masukannya. Coba lagi nanti.");
-        table.put("TikTok patches for Morphe, built on the Metra patches by icysymmetra and the community sets before them. Tap to open the project page.",
-                "Patch TikTok untuk Morphe, dibangun di atas patch Metra buatan icysymmetra dan kumpulan komunitas sebelumnya. Ketuk untuk membuka halaman proyek.");
     }
 
     private static void fillIn8(Map<String, String> table) {
+        table.put("TikTok patches for Morphe, built on the Metra patches by icysymmetra and the community sets before them. Tap to open the project page.",
+                "Patch TikTok untuk Morphe, dibangun di atas patch Metra buatan icysymmetra dan kumpulan komunitas sebelumnya. Ketuk untuk membuka halaman proyek.");
         table.put("TikTok refused the follow: %1$s",
                 "TikTok menolak permintaan mengikuti: %1$s");
         table.put("Tokens: {creator}, {date}, {video_id}, {index}. The file extension is kept automatically.",

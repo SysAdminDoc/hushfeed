@@ -339,6 +339,20 @@ public abstract class Setting<T> {
     protected abstract void setValueFromString(String newValue);
 
     /**
+     * The value this setting will really hold, given one it has been asked to hold. A
+     * setting with a range gives back the nearest value inside it; every other setting gives
+     * back what it was handed.
+     *
+     * <p>Every path that assigns {@link #value} goes through this, because a value arrives
+     * from a restored backup file as readily as from a dialog, and only the dialog asks
+     * questions about it.
+     */
+    @NonNull
+    protected T coerce(@NonNull T newValue) {
+        return newValue;
+    }
+
+    /**
      * Load and set the value of {@link #value}.
      */
     protected abstract void load();
@@ -347,12 +361,13 @@ public abstract class Setting<T> {
      * Persistently saves the value.
      */
     public final void save(T newValue) {
+        newValue = coerce(Objects.requireNonNull(newValue));
         if (value.equals(newValue)) {
             return;
         }
 
         // Must set before saving to preferences (otherwise importing fails to update UI correctly).
-        value = Objects.requireNonNull(newValue);
+        value = newValue;
 
         if (defaultValue.equals(newValue)) {
             removeFromPreferences();
@@ -391,6 +406,7 @@ public abstract class Setting<T> {
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static synchronized void saveAll(Map<Setting<?>, Object> updates) throws java.io.IOException {
         Map<Setting<?>, Object> previous = new HashMap<>();
+        Map<Setting<?>, Object> bounded = new HashMap<>();
         for (var entry : updates.entrySet()) {
             Setting setting = entry.getKey();
             Object next = entry.getValue();
@@ -399,9 +415,12 @@ public abstract class Setting<T> {
             if (next == null || !type.isInstance(next)) {
                 throw new IllegalArgumentException("Invalid value for " + setting.key);
             }
+            // A backup file is not a dialog and was never asked to stay in range. Into a copy
+            // rather than back into the caller's map, which need not accept being written to.
+            bounded.put(setting, setting.coerce(next));
             previous.put(setting, setting.get());
         }
-        if (!writeBatch(updates)) {
+        if (!writeBatch(bounded)) {
             boolean restored = writeBatch(previous);
             throw new java.io.IOException(restored ? "Could not save settings" : "Could not save settings or roll back; use Undo");
         }

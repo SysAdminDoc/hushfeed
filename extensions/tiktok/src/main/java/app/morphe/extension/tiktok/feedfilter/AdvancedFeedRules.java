@@ -1,5 +1,7 @@
 package app.morphe.extension.tiktok.feedfilter;
 
+import androidx.annotation.NonNull;
+
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.settings.L10n;
@@ -52,7 +54,82 @@ public final class AdvancedFeedRules {
         }
 
         private static boolean matches(Pattern pattern, String value) {
-            return value != null && pattern.matcher(value).find();
+            return value != null && matchesWithinBudget(pattern, value);
+        }
+    }
+
+    /**
+     * How many characters a single name may be read for, counting the re-reads backtracking
+     * costs. The two sides are far apart, so the number between them is not delicate:
+     * measured against a 66 character display name, {@code dropship} costs 61 reads,
+     * {@code ^The Very} costs 8, a six-way alternation costs 398, and every ordinary pattern
+     * tried stayed under 500. On the other side, {@code ^(a+)+\1$} against 25 characters
+     * costs 67 million reads and a quarter of a second, and four characters more never
+     * finishes at all.
+     *
+     * <p>Two hundred thousand leaves a pattern somebody would actually write four hundred
+     * times the room it needs, and cuts a runaway off in well under a millisecond. It also
+     * catches the merely expensive: {@code (.*)(.*)(.*)z} costs 2.7 million reads and 19 ms
+     * on that same name, which is not a hang but is still too much to spend per video.
+     */
+    private static final int MATCH_BUDGET = 200_000;
+
+    /** One entry that ran out of budget, so it is only complained about once. */
+    private static final Map<Pattern, Boolean> RUNAWAY = new ConcurrentHashMap<>();
+
+    /**
+     * Whether the pattern matches, giving up rather than hanging the thread it is on.
+     *
+     * <p>{@link Pattern} has no time limit of its own. The name is handed over through a
+     * wrapper that counts the reads and throws once it has had enough, which is the only
+     * place the regex engine can be interrupted from outside.
+     */
+    static boolean matchesWithinBudget(Pattern pattern, String value) {
+        if (Boolean.TRUE.equals(RUNAWAY.get(pattern))) return false;
+        try {
+            return pattern.matcher(new BudgetedText(value, MATCH_BUDGET)).find();
+        } catch (BudgetSpent spent) {
+            if (RUNAWAY.putIfAbsent(pattern, Boolean.TRUE) == null) {
+                Utils.showToastLong(L10n.f(
+                        "A creator pattern is taking too long and was switched off: %1$s",
+                        pattern.pattern()));
+            }
+            return false;
+        }
+    }
+
+    /** Thrown out of the regex engine once a single match has read enough characters. */
+    private static final class BudgetSpent extends RuntimeException {
+        BudgetSpent() {
+            super(null, null, false, false);
+        }
+    }
+
+    /** A name the regex engine may only look at so many times. */
+    private static final class BudgetedText implements CharSequence {
+        private final CharSequence text;
+        private int left;
+
+        BudgetedText(CharSequence text, int budget) {
+            this.text = text;
+            this.left = budget;
+        }
+
+        @Override public int length() {
+            return text.length();
+        }
+
+        @Override public char charAt(int index) {
+            if (--left < 0) throw new BudgetSpent();
+            return text.charAt(index);
+        }
+
+        @Override public CharSequence subSequence(int start, int end) {
+            return new BudgetedText(text.subSequence(start, end), left);
+        }
+
+        @NonNull @Override public String toString() {
+            return text.toString();
         }
     }
 

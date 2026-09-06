@@ -13,6 +13,8 @@ import app.morphe.extension.shared.settings.BooleanSetting;
 import app.morphe.extension.shared.settings.FloatSetting;
 import app.morphe.extension.shared.settings.IntegerSetting;
 import app.morphe.extension.shared.settings.Setting;
+
+import app.morphe.extension.tiktok.offline.CustomOfflineVideosLimitPatch;
 import app.morphe.extension.shared.settings.StringSetting;
 import app.morphe.extension.tiktok.navigation.BottomNavigationTabOptions;
 import app.morphe.extension.tiktok.navigation.NavigationTabOptions;
@@ -21,15 +23,17 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting REGION_SPOOF = new BooleanSetting("region_spoof", FALSE, true);
     public static final BooleanSetting REGION_STORE_SPOOF = new BooleanSetting("region_store_spoof", FALSE, true);
     public static final BooleanSetting FOLDABLE_SPLIT_VIEW = new BooleanSetting("foldable_split_view", FALSE, true);
-    public static final IntegerSetting FOLDABLE_SPLIT_VIEW_MIN_WIDTH_DP = new IntegerSetting("foldable_split_view_min_width_dp", 600, true);
+    public static final IntegerSetting FOLDABLE_SPLIT_VIEW_MIN_WIDTH_DP = new IntegerSetting("foldable_split_view_min_width_dp", 600, true).withRange(320, 1600);
     public static final BooleanSetting DOWNLOAD_SUBTITLES = new BooleanSetting("download_subtitles", FALSE);
     public static final StringSetting SUBTITLE_LANGUAGE = new StringSetting("subtitle_language", "original");
-    public static final IntegerSetting CAPTION_TEXT_SIZE = new IntegerSetting("caption_text_size", 0);
+    public static final IntegerSetting CAPTION_TEXT_SIZE =
+            new IntegerSetting("caption_text_size", 0).withRange(0, 48);
     public static final StringSetting CAPTION_BACKGROUND = new StringSetting("caption_background", "default");
     public static final BooleanSetting KEEP_CAPTIONS_CLEAR_DISPLAY = new BooleanSetting("keep_captions_clear_display", FALSE);
     public static final BooleanSetting ALLOW_SCREEN_CAPTURE = new BooleanSetting("allow_screen_capture", FALSE, true);
     public static final BooleanSetting AUTOMATIC_CLEAR_DISPLAY = new BooleanSetting("automatic_clear_display", FALSE);
-    public static final IntegerSetting AUTOMATIC_CLEAR_DISPLAY_DELAY = new IntegerSetting("automatic_clear_display_delay", 1000);
+    public static final IntegerSetting AUTOMATIC_CLEAR_DISPLAY_DELAY =
+            new IntegerSetting("automatic_clear_display_delay", 1000).withRange(0, 30000);
     public static final StringSetting PLAYBACK_QUALITY = new StringSetting("playback_quality", "auto");
     public static final StringSetting PLAYBACK_QUALITY_METERED = new StringSetting("playback_quality_metered", "off");
     public static final StringSetting DOWNLOAD_VIDEO_QUALITY = new StringSetting("download_video_quality", "auto");
@@ -55,15 +59,19 @@ public class Settings extends BaseSettings {
             new BooleanSetting("hide_follower_notifications", FALSE);
     public static final BooleanSetting HIDE_MESSAGE_STREAKS =
             new BooleanSetting("hide_message_streaks", FALSE);
-    public static final IntegerSetting EDGE_SEEK_SECONDS = new IntegerSetting("edge_seek_seconds", 5);
+        // Zero is not in the dialog but is meaningful: it turns edge seeking off on its own.
+    public static final IntegerSetting EDGE_SEEK_SECONDS =
+            new IntegerSetting("edge_seek_seconds", 5).withRange(0, 60);
     public static final BooleanSetting CONFIRM_FOLLOW = new BooleanSetting("confirm_follow", FALSE);
     public static final BooleanSetting CONFIRM_LIKE = new BooleanSetting("confirm_like", FALSE);
     public static final StringSetting BLOCKED_CAPTION_WORDS = new StringSetting("blocked_caption_words", "");
     public static final StringSetting BLOCKED_CREATORS = new StringSetting("blocked_creators", "");
     public static final StringSetting REGION_ONLY_FROM = new StringSetting("region_only_from", "", true);
     public static final StringSetting REGION_NEVER_FROM = new StringSetting("region_never_from", "", true);
-    public static final IntegerSetting MAX_VIDEO_SECONDS = new IntegerSetting("max_video_seconds", 0);
-    public static final IntegerSetting MAX_VIEWS_PER_LIKE = new IntegerSetting("max_views_per_like", 0);
+    public static final IntegerSetting MAX_VIDEO_SECONDS =
+            new IntegerSetting("max_video_seconds", 0).withRange(0, 86400);
+    public static final IntegerSetting MAX_VIEWS_PER_LIKE =
+            new IntegerSetting("max_views_per_like", 0).withRange(0, 1000000);
     public static final BooleanSetting HIDE_PROMOTIONAL_MUSIC = new BooleanSetting("hide_promotional_music", FALSE);
     public static final BooleanSetting HIDE_LIVE_REPLAYS = new BooleanSetting("hide_live_replays", FALSE);
     public static final BooleanSetting HIDE_SHARE_CHANNELS = new BooleanSetting("hide_share_channels", FALSE);
@@ -157,7 +165,7 @@ public class Settings extends BaseSettings {
             500,
             true,
             Setting.parent(CUSTOM_OFFLINE_VIDEOS)
-    );
+    ).withRange(CustomOfflineVideosLimitPatch.MIN_LIMIT, CustomOfflineVideosLimitPatch.MAX_LIMIT);
     public static final BooleanSetting SHOW_SEEKBAR = new BooleanSetting("show_seekbar", TRUE);
     public static final BooleanSetting SHOW_SEEKBAR_THUMBNAIL = new BooleanSetting(
             "show_seekbar_thumbnail",
@@ -229,7 +237,7 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_SERIES = new BooleanSetting("hide_series", FALSE, true);
     public static final BooleanSetting HIDE_SEEN_VIDEOS = new BooleanSetting("hide_seen_videos", FALSE, true);
     public static final IntegerSetting SEEN_VIDEO_RETENTION_DAYS =
-            new IntegerSetting("seen_video_retention_days", 30);
+            new IntegerSetting("seen_video_retention_days", 30).withRange(0, 3650);
     public static final BooleanSetting HIDE_PLAYLIST_BAR = new BooleanSetting("hide_playlist_bar", FALSE, true);
     public static final BooleanSetting HIDE_EVENT_BADGE = new BooleanSetting("hide_event_badge", FALSE, true);
     public static final BooleanSetting HIDE_INSERTED_CARDS = new BooleanSetting("hide_inserted_cards", FALSE, true);

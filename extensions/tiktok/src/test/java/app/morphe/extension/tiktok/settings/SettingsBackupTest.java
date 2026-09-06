@@ -289,4 +289,28 @@ public class SettingsBackupTest {
         }
         fail("Missing completion toast: " + ShadowToast.getTextOfLatestToast());
     }
+
+    @Test public void aBackupCannotPlantANumberTheDialogWouldRefuse() throws Exception {
+        // Every numeric setting the dialog bounds, bounded again where the value is stored.
+        // A backup file is written by hand or shared by somebody else, and until now the
+        // only thing enforcing a range was a dialog it never went through.
+        String backup = SettingsBackup.create(false);
+        JSONObject root = new JSONObject(backup);
+        JSONObject values = root.getJSONObject("settings");
+        values.put("edge_seek_seconds", 100000);
+        values.put("seen_video_retention_days", -12);
+        values.put("max_video_seconds", 999999999);
+        values.put("caption_text_size", 400);
+        SettingsBackup.restore(Utils.getContext(), root.toString(), true);
+
+        assertEquals(60, (int) Settings.EDGE_SEEK_SECONDS.get());
+        assertEquals(0, (int) Settings.SEEN_VIDEO_RETENTION_DAYS.get());
+        assertEquals(86400, (int) Settings.MAX_VIDEO_SECONDS.get());
+        assertEquals(48, (int) Settings.CAPTION_TEXT_SIZE.get());
+
+        // A number inside the range is left exactly alone.
+        values.put("edge_seek_seconds", 12);
+        SettingsBackup.restore(Utils.getContext(), root.toString(), true);
+        assertEquals(12, (int) Settings.EDGE_SEEK_SECONDS.get());
+    }
 }

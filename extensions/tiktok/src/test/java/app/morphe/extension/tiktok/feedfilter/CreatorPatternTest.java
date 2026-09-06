@@ -78,6 +78,47 @@ public class CreatorPatternTest {
         assertNotNull(AdvancedFeedRules.compiled("/^news_/"));
     }
 
+    @Test(timeout = 20_000) public void aPatternThatWouldNeverFinishGivesUpInstead() {
+        // A group repeated against its own backreference, on a name that almost matches. The
+        // cost doubles with every extra character: measured on this runtime, 25 characters
+        // takes a quarter of a second and 29 does not finish. Ten characters of pattern, so
+        // the length limit never sees it coming, and the blocked list travels in a settings
+        // backup, which is how somebody else's pattern gets here in the first place.
+        ShadowToast.reset();
+        Settings.BLOCKED_CREATORS.save("/^(a+)+\\1$/");
+        AdvancedFeedRules.CreatorFilter filter = new AdvancedFeedRules.CreatorFilter();
+
+        StringBuilder nickname = new StringBuilder();
+        for (int index = 0; index < 39; index++) nickname.append('a');
+        nickname.append('!');
+        assertEquals(40, nickname.length());
+
+        long started = System.nanoTime();
+        assertFalse(filter.getFiltered(video("someone", nickname.toString())));
+        long took = (System.nanoTime() - started) / 1_000_000L;
+        assertTrue("gave up after " + took + "ms, which is not giving up", took < 2_000);
+
+        // Having run out once, it stays off rather than costing the budget on every video.
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        assertEquals("the reader is told once that the pattern was switched off",
+                1, ShadowToast.shownToastCount());
+        for (int index = 0; index < 50; index++) {
+            assertFalse(filter.getFiltered(video("someone", nickname.toString())));
+        }
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        assertEquals("and not once per video", 1, ShadowToast.shownToastCount());
+
+        // A pattern that settles quickly is not touched by any of this.
+        Settings.BLOCKED_CREATORS.save("/^(x+)+y$/");
+        assertTrue(new AdvancedFeedRules.CreatorFilter().getFiltered(video("someone", "xxxy")));
+        Settings.BLOCKED_CREATORS.save("/(shop|store|deals|discount|promo|sale)/");
+        AdvancedFeedRules.CreatorFilter ordinary = new AdvancedFeedRules.CreatorFilter();
+        assertTrue(ordinary.getFiltered(video("someone", "The Very Long Display Name Of "
+                + "Someone With Deals To Offer You Today 12345")));
+        assertFalse(ordinary.getFiltered(video("someone", "The Very Long Display Name Of "
+                + "Someone Who Types A Lot Indeed 12345")));
+    }
+
     @Test
     public void aPatternMatchesAFamilyOfHandles() {
         Settings.BLOCKED_CREATORS.save("/^news_/");
