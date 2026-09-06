@@ -141,6 +141,7 @@
     <string name="mtp_59dbc567">Hide message requests</string>
     <string name="mtp_5aa5954c">Hide Live entrance</string>
     <string name="mtp_5b1688ea">Hide the Activity row of likes and comments on your posts.</string>
+    <string name="mtp_5b98717f">Seen video history cleared. Tap again to put it back.</string>
     <string name="mtp_5bac658d">Comma separated sound ids recorded by the player\'s sound button. Remove one to unblock it.</string>
     <string name="mtp_5e612b47">Unlimited</string>
     <string name="mtp_5f61191a">Show seekbar thumbnail</string>
@@ -223,6 +224,7 @@
     <string name="mtp_8f953f19">A tap on a person in the Send to row only selects them. A second tap on the same person within four seconds sends the video.</string>
     <string name="mtp_8fc60fcc">Filter bottom tabs</string>
     <string name="mtp_8fea54f1">Show the whole Activity and New followers lists instead of stopping at a View all button.</string>
+    <string name="mtp_9063adec">There was nothing to put back</string>
     <string name="mtp_9086a46e">Stop videos at the end instead of replaying them.</string>
     <string name="mtp_932f29bb">Remove tracking parameters from shared links.</string>
     <string name="mtp_93382e68">Remove feed ads</string>
@@ -241,6 +243,7 @@
     <string name="mtp_9ad329f1">No limit</string>
     <string name="mtp_9b23a9fd">Blocked caption words</string>
     <string name="mtp_9c047d1a">Subtitle language</string>
+    <string name="mtp_9cfb0410">Seen video history put back</string>
     <string name="mtp_9db1aed7">Open TikTok home to detect loaded bottom tabs.</string>
     <string name="mtp_9e44cc17">Hide the column on the right: avatar, like, comments, favourite, share and the music disc.</string>
     <string name="mtp_9f0249ca">Make TikTok yours.</string>

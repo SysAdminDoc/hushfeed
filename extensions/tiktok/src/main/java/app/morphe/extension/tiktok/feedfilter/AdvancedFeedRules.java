@@ -9,6 +9,8 @@ import com.ss.android.ugc.aweme.feed.model.AwemeStatistics;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -59,33 +61,35 @@ public final class AdvancedFeedRules {
         return entry.length() > 2 && entry.startsWith("/") && entry.endsWith("/");
     }
 
-    private static volatile String compiledSource;
-    private static volatile Pattern compiledPattern;
-    private static volatile String reportedInvalid;
+    /** One entry that will not compile, remembered so it is only ever said once. */
+    private static final Pattern INVALID = Pattern.compile("");
+    /**
+     * Every entry seen so far, compiled. Each item on a feed page runs through every entry,
+     * so a cache of one would never hit; and a map keeps the answer and the entry it belongs
+     * to together, which two fields written in sequence do not.
+     */
+    private static final Map<String, Pattern> COMPILED = new ConcurrentHashMap<>();
 
     /**
-     * The pattern for one entry, compiled once. A whole feed page runs through the same
-     * entry in a row, so remembering the last one is enough to keep compilation off the
-     * scan. A pattern that will not compile is dropped and said once, because the entry
-     * otherwise looks like it is working.
+     * The pattern for one entry, compiled once. A pattern that will not compile is dropped
+     * and said once, because the entry otherwise looks like it is working.
      */
     static Pattern compiled(String entry) {
-        if (entry.equals(compiledSource)) {
-            return compiledPattern;
+        Pattern cached = COMPILED.get(entry);
+        if (cached != null) {
+            return cached == INVALID ? null : cached;
         }
+
         String source = entry.substring(1, entry.length() - 1);
         Pattern pattern;
         try {
             pattern = Pattern.compile(source, Pattern.CASE_INSENSITIVE);
         } catch (PatternSyntaxException invalid) {
-            pattern = null;
-            if (!entry.equals(reportedInvalid)) {
-                reportedInvalid = entry;
-                Utils.showToastLong(L10n.f("Hushfeed cannot read the creator pattern %1$s", entry));
-            }
+            COMPILED.put(entry, INVALID);
+            Utils.showToastLong(L10n.f("Hushfeed cannot read the creator pattern %1$s", entry));
+            return null;
         }
-        compiledSource = entry;
-        compiledPattern = pattern;
+        COMPILED.put(entry, pattern);
         return pattern;
     }
 
@@ -139,29 +143,35 @@ public final class AdvancedFeedRules {
 
     /**
      * The same entries with their case intact, which a pattern needs: lower casing turns
-     * \D into \d. A comma inside a pattern is not a separator, so a fragment that opens a
-     * pattern and does not close it takes the fragments after it until one does.
+     * \D into \d.
+     *
+     * A comma inside a pattern is not a separator, so a fragment that opens a pattern takes
+     * the ones after it until one closes it. A line is as far as that reaches, and a pattern
+     * nothing closes gives its fragments back as they were: a stray slash must not swallow
+     * the names after it.
      */
     static String[] rawTerms(String value) {
         List<String> entries = new ArrayList<>();
-        StringBuilder open = null;
-        for (String fragment : value.trim().split("\\s*[,\\n]\\s*")) {
-            if (open != null) {
-                open.append(',').append(fragment);
-                if (fragment.endsWith("/")) {
-                    entries.add(open.toString());
-                    open = null;
+        for (String line : value.trim().split("\\s*\\n\\s*")) {
+            List<String> pending = null;
+            for (String fragment : line.split("\\s*,\\s*")) {
+                if (pending != null) {
+                    pending.add(fragment);
+                    if (fragment.endsWith("/")) {
+                        entries.add(String.join(",", pending));
+                        pending = null;
+                    }
+                    continue;
                 }
-                continue;
+                if (fragment.startsWith("/") && !isPattern(fragment)) {
+                    pending = new ArrayList<>();
+                    pending.add(fragment);
+                    continue;
+                }
+                entries.add(fragment);
             }
-            if (fragment.startsWith("/") && !isPattern(fragment)) {
-                open = new StringBuilder(fragment);
-                continue;
-            }
-            entries.add(fragment);
+            if (pending != null) entries.addAll(pending);
         }
-        // An entry that opened a pattern and never closed it is still worth matching on.
-        if (open != null) entries.add(open.toString());
         return entries.toArray(new String[0]);
     }
 }

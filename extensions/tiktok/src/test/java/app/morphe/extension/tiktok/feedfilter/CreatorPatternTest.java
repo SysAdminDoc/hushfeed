@@ -8,6 +8,7 @@ package app.morphe.extension.tiktok.feedfilter;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -138,6 +139,61 @@ public class CreatorPatternTest {
 
         assertTrue(filter.getFiltered(video("letters", "Letters")));
         assertFalse(filter.getFiltered(video("1234", "1234")));
+    }
+
+    @Test
+    public void aStraySlashDoesNotSwallowTheNamesAfterIt() {
+        // An entry that opens a pattern and never closes it used to take the rest of the
+        // list with it, and the result matched nothing at all.
+        assertArrayEquals(new String[]{"/", "someone", "other"},
+                AdvancedFeedRules.rawTerms("/, someone, other"));
+        assertArrayEquals(new String[]{"/^news", "someone"},
+                AdvancedFeedRules.rawTerms("/^news, someone"));
+
+        Settings.BLOCKED_CREATORS.save("/, someone");
+        assertTrue(new AdvancedFeedRules.CreatorFilter().getFiltered(video("someone", "Some One")));
+    }
+
+    @Test
+    public void aPatternDoesNotReachPastItsLine() {
+        // A pattern is written on one line; the next line starts a new entry whatever the
+        // one above it left open.
+        assertArrayEquals(new String[]{"/^a", "someone"},
+                AdvancedFeedRules.rawTerms("/^a\nsomeone"));
+        assertArrayEquals(new String[]{"/a{2,3}/", "someone"},
+                AdvancedFeedRules.rawTerms("/a{2,3}/\nsomeone"));
+    }
+
+    @Test
+    public void severalPatternsEachKeepTheirOwnCompiledForm() {
+        // Every item on a page runs through every entry, so the entries interleave. A cache
+        // of one would hand the second entry the first one's pattern.
+        Settings.BLOCKED_CREATORS.save("/^news_/, /dropship/");
+        AdvancedFeedRules.CreatorFilter filter = new AdvancedFeedRules.CreatorFilter();
+
+        for (int i = 0; i < 3; i++) {
+            assertTrue(filter.getFiltered(video("news_uk", "The Paper")));
+            assertTrue(filter.getFiltered(video("someone", "Best Dropship Deals")));
+            assertFalse(filter.getFiltered(video("someone", "Woodwork")));
+        }
+        assertNotNull(AdvancedFeedRules.compiled("/^news_/"));
+        assertNotNull(AdvancedFeedRules.compiled("/dropship/"));
+        assertTrue(AdvancedFeedRules.compiled("/^news_/") != AdvancedFeedRules.compiled("/dropship/"));
+    }
+
+    @Test
+    public void oneBadPatternAmongGoodOnesIsSaidOnceAndTheOthersKeepWorking() {
+        ShadowToast.reset();
+        Settings.BLOCKED_CREATORS.save("/^news_/, /([bad/");
+        AdvancedFeedRules.CreatorFilter filter = new AdvancedFeedRules.CreatorFilter();
+
+        for (int i = 0; i < 4; i++) {
+            assertTrue(filter.getFiltered(video("news_uk", "The Paper")));
+            assertFalse(filter.getFiltered(video("someone", "Some One")));
+        }
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        assertEquals("the bad pattern is named once, not once per video",
+                1, ShadowToast.shownToastCount());
     }
 
     @Test

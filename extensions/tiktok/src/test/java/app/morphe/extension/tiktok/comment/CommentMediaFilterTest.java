@@ -126,6 +126,26 @@ public class CommentMediaFilterTest {
     }
 
     @Test
+    public void theKeywordFilterAloneLeavesPicturesAlone() {
+        // The other way round: words are filtered, pictures are not, because that switch
+        // is off. Without the media guard every picture would go with them.
+        Settings.COMMENT_KEYWORD_FILTER.save(true);
+        Settings.COMMENT_BLOCKED_KEYWORDS.save("spam");
+        Settings.HIDE_COMMENT_MEDIA.save(false);
+
+        Comment spam = words("this is spam");
+        Comment withImage = words("");
+        withImage.imageList = new ArrayList<>(Collections.singletonList(new Object()));
+        Comment withSticker = words("");
+        withSticker.stickerStruct = new Object();
+
+        ItemList page = new ItemList(new ArrayList<>(Arrays.asList(spam, withImage, withSticker)));
+        CommentTools.onCommentListLoaded(page);
+
+        assertEquals(Arrays.asList(withImage, withSticker), page.items);
+    }
+
+    @Test
     public void thePictureSwitchWorksWithoutTheKeywordFilter() {
         // The two switches are independent: one on and the other off has to still filter.
         Settings.HIDE_COMMENT_MEDIA.save(true);

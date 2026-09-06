@@ -39,6 +39,7 @@ public class SeenVideoHistoryTest {
         SeenVideoHistory.clear();
         drain();
         assertEquals(0, SeenVideoHistory.size());
+        assertTrue(SeenVideoHistory.canUndo());
         assertEquals(2, SeenVideoHistory.undoSize());
         assertFalse(SeenVideoHistory.shouldHide("42"));
 
@@ -48,6 +49,7 @@ public class SeenVideoHistoryTest {
         assertTrue(SeenVideoHistory.shouldHide("42"));
         assertTrue(SeenVideoHistory.shouldHide("43"));
         // The way back is used up once it has been taken.
+        assertFalse(SeenVideoHistory.canUndo());
         assertEquals(0, SeenVideoHistory.undoSize());
         assertFalse(SeenVideoHistory.undoClear());
     }
@@ -82,6 +84,30 @@ public class SeenVideoHistoryTest {
         drain();
         assertEquals(0, SeenVideoHistory.undoSize());
         assertFalse(SeenVideoHistory.undoClear());
+    }
+
+    @Test public void aClearBeforeTheHistoryLoadsStillKeepsAWayBack() throws Exception {
+        // The rows are on disk but memory has never been loaded, which is what happens when
+        // the feature is off. Clearing has to read the database, not the empty map.
+        SeenVideoHistory.onPlayProgressChange("91", 5000, 10000);
+        SeenVideoHistory.onPlayProgressChange("92", 5000, 10000);
+        drain();
+
+        Field started = SeenVideoHistory.class.getDeclaredField("LOAD_STARTED");
+        started.setAccessible(true);
+        ((AtomicBoolean) started.get(null)).set(false);
+        Field seen = SeenVideoHistory.class.getDeclaredField("SEEN");
+        seen.setAccessible(true);
+        ((java.util.Map<?, ?>) seen.get(null)).clear();
+
+        SeenVideoHistory.clear();
+        drain();
+        assertEquals("the copy comes off the database", 2, SeenVideoHistory.undoSize());
+
+        assertTrue(SeenVideoHistory.undoClear());
+        drain();
+        assertTrue(SeenVideoHistory.shouldHide("91"));
+        assertTrue(SeenVideoHistory.shouldHide("92"));
     }
 
     @Test public void refreshedPageRejectsTheVideoJustWatched() throws Exception {

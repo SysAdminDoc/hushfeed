@@ -56,11 +56,15 @@ public final class SeenVideoHistory {
 
     private static volatile Database database;
     /**
-     * The history as it was before the last clear. Clearing is one tap with no dialog, so
-     * the way back has to be kept until it is plainly no longer wanted: the next clear, or
-     * the end of the process.
+     * The history as it was before the last clear, read from the database rather than from
+     * memory: memory may never have been loaded, and a clear deletes every row either way.
      */
     private static volatile Map<String, Long> undo;
+    /**
+     * Set the moment a clear is asked for, so the screen can offer the way back without
+     * waiting for the copy to be read.
+     */
+    private static volatile boolean undoOffered;
     private static volatile String callbackAid;
     private static volatile boolean callbackAidMarked;
 
@@ -117,14 +121,17 @@ public final class SeenVideoHistory {
 
     public static void clear() {
         synchronized (HISTORY_LOCK) {
-            ensureLoaded();
-            undo = new HashMap<>(SEEN);
             generation++;
             SEEN.clear();
             callbackAid = null;
             callbackAidMarked = false;
+            undo = null;
+            undoOffered = true;
             IO.execute(() -> {
                 try {
+                    // Read the rows before deleting them. Memory is not the source here: a
+                    // load may never have run, and the delete takes every row regardless.
+                    undo = readAll();
                     getDatabase().getWritableDatabase().delete(TABLE, null, null);
                 } catch (Throwable throwable) {
                     Logger.printException(() -> "Seen video history clear failed", throwable);
@@ -133,7 +140,34 @@ public final class SeenVideoHistory {
         }
     }
 
-    /** How many videos the last clear removed, or zero when there is nothing to put back. */
+    /** Every row in the database, whether or not memory has been loaded. */
+    private static Map<String, Long> readAll() {
+        Map<String, Long> rows = new HashMap<>();
+        try (Cursor cursor = getDatabase().getReadableDatabase().query(
+                TABLE,
+                new String[]{COLUMN_AID, COLUMN_LAST_SEEN},
+                null, null, null, null, null)) {
+            int aidColumn = cursor.getColumnIndexOrThrow(COLUMN_AID);
+            int seenColumn = cursor.getColumnIndexOrThrow(COLUMN_LAST_SEEN);
+            while (cursor.moveToNext()) {
+                String aid = normalizeAid(cursor.getString(aidColumn));
+                if (aid != null) {
+                    rows.put(aid, cursor.getLong(seenColumn));
+                }
+            }
+        }
+        return rows;
+    }
+
+    /**
+     * Whether the last thing asked of this history was a clear, so the way back is what to
+     * offer next. Answered without waiting for the copy to be read off the database.
+     */
+    public static boolean canUndo() {
+        return undoOffered;
+    }
+
+    /** How many videos the last clear removed, or zero when the copy is not ready yet. */
     public static int undoSize() {
         Map<String, Long> copy = undo;
         return copy == null ? 0 : copy.size();
@@ -147,6 +181,7 @@ public final class SeenVideoHistory {
     public static boolean undoClear() {
         synchronized (HISTORY_LOCK) {
             Map<String, Long> copy = undo;
+            undoOffered = false;
             if (copy == null || copy.isEmpty()) {
                 return false;
             }

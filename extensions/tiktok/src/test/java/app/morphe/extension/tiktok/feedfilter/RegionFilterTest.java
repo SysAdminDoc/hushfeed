@@ -48,6 +48,17 @@ public class RegionFilterTest {
     }
 
     @Test
+    public void theRegionFilterIsWiredIntoTheFeedFilter() throws Exception {
+        java.lang.reflect.Field field = FeedItemsFilter.class.getDeclaredField("CONTENT_FILTERS");
+        field.setAccessible(true);
+        java.util.List<?> registered = (java.util.List<?>) field.get(null);
+
+        boolean present = false;
+        for (Object filter : registered) present |= filter instanceof RegionFilter;
+        assertTrue("the region filter is not in the content set", present);
+    }
+
+    @Test
     public void twoEmptyListsFilterNothing() {
         assertFalse(new RegionFilter().getEnabled());
     }

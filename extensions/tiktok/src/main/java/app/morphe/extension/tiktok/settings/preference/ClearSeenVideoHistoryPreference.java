@@ -23,27 +23,24 @@ public final class ClearSeenVideoHistoryPreference extends Preference {
     public ClearSeenVideoHistoryPreference(Context context) {
         super(context);
         setTitle("Clear the seen video history");
-        setSummary(CLEAR_SUMMARY);
+        // Whether a clear is waiting to be undone outlives this row, so the row has to ask
+        // rather than assume it is the first one ever built.
+        setSummary(SeenVideoHistory.canUndo() ? UNDO_SUMMARY : CLEAR_SUMMARY);
+
         // One tap clears it. Nothing is lost that cannot be put back, so the way back is
         // the next tap rather than a dialog asking permission first.
         setOnPreferenceClickListener(preference -> {
-            if (SeenVideoHistory.undoSize() > 0 && SeenVideoHistory.size() == 0) {
-                int restored = SeenVideoHistory.undoSize();
-                if (SeenVideoHistory.undoClear()) {
-                    Utils.showToastShort(L10n.f(context, "Put back %1$s videos", String.valueOf(restored)));
-                    setSummary(CLEAR_SUMMARY);
-                    return true;
-                }
-            }
-
-            int cleared = SeenVideoHistory.size();
-            SeenVideoHistory.clear();
-            if (cleared == 0) {
-                Utils.showToastShort(L10n.t(context, "There was nothing to clear"));
+            if (SeenVideoHistory.canUndo()) {
+                boolean restored = SeenVideoHistory.undoClear();
+                Utils.showToastShort(L10n.t(context, restored
+                        ? "Seen video history put back"
+                        : "There was nothing to put back"));
+                setSummary(CLEAR_SUMMARY);
                 return true;
             }
-            Utils.showToastLong(L10n.f(context, "Cleared %1$s videos. Tap again to put them back.",
-                    String.valueOf(cleared)));
+
+            SeenVideoHistory.clear();
+            Utils.showToastLong(L10n.t(context, "Seen video history cleared. Tap again to put it back."));
             setSummary(UNDO_SUMMARY);
             return true;
         });

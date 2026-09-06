@@ -282,6 +282,8 @@
     <string name="mtp_5aa5954c">Live-Zugang ausblenden</string>
     <!-- Hide the Activity row of likes and comments on your posts. -->
     <string name="mtp_5b1688ea">Die Zeile „Aktivität“ mit Likes und Kommentaren zu deinen Beiträgen ausblenden.</string>
+    <!-- Seen video history cleared. Tap again to put it back. -->
+    <string name="mtp_5b98717f">Verlauf gesehener Videos gelöscht. Tippe erneut, um ihn zurückzuholen.</string>
     <!-- Comma separated sound ids recorded by the player's sound button. Remove one to unblock it. -->
     <string name="mtp_5bac658d">Sound-IDs, durch Kommas getrennt, die über die Sound-Taste im Player erfasst wurden. Entferne eine, um sie freizugeben.</string>
     <!-- Unlimited -->
@@ -446,6 +448,8 @@
     <string name="mtp_8fc60fcc">Untere Tabs filtern</string>
     <!-- Show the whole Activity and New followers lists instead of stopping at a View all button. -->
     <string name="mtp_8fea54f1">Die vollständigen Listen „Aktivität“ und „Neue Follower“ anzeigen, statt bei einer Schaltfläche „Alle anzeigen“ zu enden.</string>
+    <!-- There was nothing to put back -->
+    <string name="mtp_9063adec">Es gab nichts zurückzuholen</string>
     <!-- Stop videos at the end instead of replaying them. -->
     <string name="mtp_9086a46e">Videos am Ende anhalten, statt sie zu wiederholen.</string>
     <!-- Remove tracking parameters from shared links. -->
@@ -482,6 +486,8 @@
     <string name="mtp_9b23a9fd">Gesperrte Wörter in Beschreibungen</string>
     <!-- Subtitle language -->
     <string name="mtp_9c047d1a">Untertitelsprache</string>
+    <!-- Seen video history put back -->
+    <string name="mtp_9cfb0410">Verlauf gesehener Videos zurückgeholt</string>
     <!-- Open TikTok home to detect loaded bottom tabs. -->
     <string name="mtp_9db1aed7">Öffne die TikTok-Startseite, damit geladene untere Tabs erkannt werden.</string>
     <!-- Hide the column on the right: avatar, like, comments, favourite, share and the music disc. -->
