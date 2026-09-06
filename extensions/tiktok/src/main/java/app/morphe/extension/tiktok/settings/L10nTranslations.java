@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(812);
+        Map<String, String> table = new HashMap<>(820);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -94,6 +94,8 @@ public final class L10nTranslations {
                 "Veröffentlichungsdatum immer anzeigen");
         table.put("Always show the publish date in video author information. Requires restart.",
                 "Das Veröffentlichungsdatum immer in den Angaben zum Video-Ersteller anzeigen. Erfordert einen Neustart.");
+        table.put("Animated sticker format",
+                "Format animierter Sticker");
         table.put("App behavior",
                 "App-Verhalten");
         table.put("Apply to video downloads and image downloads.",
@@ -174,11 +176,11 @@ public final class L10nTranslations {
                 "Gelöscht. Tippe erneut, um alles zurückzuholen.");
         table.put("Close",
                 "Schließen");
-        table.put("Comma separated account handles or user ids. These accounts are always skipped.",
-                "Kontonamen oder Nutzer-IDs, durch Kommas getrennt. Diese Konten werden immer übersprungen.");
     }
 
     private static void fillDe1(Map<String, String> table) {
+        table.put("Comma separated account handles or user ids. These accounts are always skipped.",
+                "Kontonamen oder Nutzer-IDs, durch Kommas getrennt. Diese Konten werden immer übersprungen.");
         table.put("Comma separated account handles or user ids. These accounts are always skipped. An entry between slashes, like /^news_/, is a pattern matched against the handle and the display name.",
                 "Kommagetrennte Konto-Namen oder Nutzer-IDs. Diese Konten werden immer übersprungen. Ein Eintrag zwischen Schrägstrichen, etwa /^news_/, ist ein Muster für den @Namen und den Anzeigenamen.");
         table.put("Comma separated country codes, like GB, IE. Videos posted from anywhere else are hidden. Leave empty for all countries.",
@@ -297,11 +299,11 @@ public final class L10nTranslations {
                 "Feed-Tabs filtern");
         table.put("Filter offline fallback videos",
                 "Offline-Ersatzvideos filtern");
-        table.put("Filters, translation and copy options",
-                "Filter, Übersetzung und Kopieroptionen");
     }
 
     private static void fillDe2(Map<String, String> table) {
+        table.put("Filters, translation and copy options",
+                "Filter, Übersetzung und Kopieroptionen");
         table.put("Folder picker is not available",
                 "Ordnerauswahl ist nicht verfügbar");
         table.put("Folder picker is not available on this device",
@@ -310,6 +312,8 @@ public final class L10nTranslations {
                 "Für dich");
         table.put("Forget seen videos after",
                 "Gesehene Videos vergessen nach");
+        table.put("GIF",
+                "GIF");
         table.put("Ghost mode",
                 "Geistermodus");
         table.put("Hidden commenters",
@@ -418,13 +422,13 @@ public final class L10nTranslations {
                 "Tabs ausblenden, die TikTok später hinzufügt, sofern du sie nicht erlaubst.");
         table.put("Hide the \"Search this image\" prompt TikTok shows over videos when it spots something to shop for.",
                 "Den Hinweis „Dieses Bild suchen“ ausblenden, den TikTok über Videos zeigt, wenn es etwas zum Kaufen erkennt.");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Hide the Activity row of likes and comments on your posts.",
                 "Die Zeile „Aktivität“ mit Likes und Kommentaren zu deinen Beiträgen ausblenden.");
         table.put("Hide the Archive row.",
                 "Die Zeile „Archiv“ ausblenden.");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Hide the Live button in the top left corner of the feed.",
                 "Die Live-Schaltfläche oben links im Feed ausblenden.");
         table.put("Hide the Message requests row.",
@@ -541,13 +545,13 @@ public final class L10nTranslations {
                 "Oberfläche");
         table.put("Keep a local record of what you have watched and drop those videos from later feed pages.",
                 "Lokal festhalten, was du gesehen hast, und diese Videos aus späteren Feed-Seiten entfernen.");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Keep automatic advance enabled. Pauses and open dialogs still stop scrolling. Restart after enabling it; use this switch to turn it off.",
                 "Automatisches Weiterschalten eingeschaltet lassen. Pausen und offene Dialoge stoppen das Scrollen weiterhin. Nach dem Einschalten neu starten; zum Ausschalten diesen Schalter verwenden.");
         table.put("Keep captions in clear display",
                 "Untertitel in der freien Ansicht behalten");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("Keep holding Like from opening TikTok's repost action.",
                 "Verhindern, dass Halten von „Gefällt mir“ TikToks Repost-Aktion öffnet.");
         table.put("Keep long-pressing Share from opening TikTok's quick-share interaction.",
@@ -664,13 +668,13 @@ public final class L10nTranslations {
                 "Die Zeile „Teilen über“ entfernen.");
         table.put("Remove the actions row from the share sheet.",
                 "Die Aktionszeile aus dem Teilen-Menü entfernen.");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("Remove the row of friends from the top of the share sheet.",
                 "Die Freundesreihe oben im Teilen-Menü entfernen.");
         table.put("Remove tracking parameters from shared links.",
                 "Tracking-Parameter aus geteilten Links entfernen.");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("Remove watermark",
                 "Wasserzeichen entfernen");
         table.put("Reset settings",
@@ -787,13 +791,13 @@ public final class L10nTranslations {
                 "Videoschleife beenden");
         table.put("Stop videos at the end instead of replaying them.",
                 "Videos am Ende anhalten, statt sie zu wiederholen.");
+    }
+
+    private static void fillDe6(Map<String, String> table) {
         table.put("Subtitle language",
                 "Untertitelsprache");
         table.put("Tap the feed Follow button twice within four seconds.",
                 "Tippe die Folgen-Schaltfläche im Feed innerhalb von vier Sekunden zweimal an.");
-    }
-
-    private static void fillDe6(Map<String, String> table) {
         table.put("Tap the like heart twice within four seconds. Removing a like stays immediate.",
                 "Tippe das Like-Herz innerhalb von vier Sekunden zweimal an. Das Entfernen eines Likes bleibt sofort.");
         table.put("The minimum or maximum comments on a video to show.",
@@ -854,6 +858,8 @@ public final class L10nTranslations {
                 "Die gewählten Werte für Land und Netzbetreiber verwenden. Starte TikTok nach dem Ändern der Regionseinstellungen neu.");
         table.put("Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.",
                 "Das geteilte Layout auf breiteren Bildschirmen verwenden. Starte TikTok nach dem Ändern dieser Option oder nach dem Aufklappen neu, falls das alte Layout bleibt.");
+        table.put("Video (MP4)",
+                "Video (MP4)");
         table.put("Video destination",
                 "Speicherort für Videos");
         table.put("Video download quality",
@@ -866,6 +872,8 @@ public final class L10nTranslations {
                 "Videoqualität, Geschwindigkeit und automatisches Weiterschalten.");
         table.put("Wait before hiding the controls.",
                 "Wartezeit, bevor die Bedienelemente ausgeblendet werden.");
+        table.put("WebP, exactly as TikTok sent it",
+                "WebP, genau so wie TikTok es geschickt hat");
         table.put("Window width needed to enable the layout. Restart after changing.",
                 "Fensterbreite, ab der das Layout aktiv wird. Nach dem Ändern neu starten.");
         table.put("Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.",
@@ -889,7 +897,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(812);
+        Map<String, String> table = new HashMap<>(820);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -939,6 +947,8 @@ public final class L10nTranslations {
                 "Selalu tampilkan tanggal unggah");
         table.put("Always show the publish date in video author information. Requires restart.",
                 "Selalu tampilkan tanggal unggah di informasi pembuat video. Perlu mulai ulang.");
+        table.put("Animated sticker format",
+                "Format stiker animasi");
         table.put("App behavior",
                 "Perilaku aplikasi");
         table.put("Apply to video downloads and image downloads.",
@@ -1019,11 +1029,11 @@ public final class L10nTranslations {
                 "Terhapus. Ketuk lagi untuk mengembalikan catatannya.");
         table.put("Close",
                 "Tutup");
-        table.put("Comma separated account handles or user ids. These accounts are always skipped.",
-                "Nama pengguna atau id pengguna dipisahkan koma. Akun ini selalu dilewati.");
     }
 
     private static void fillIn1(Map<String, String> table) {
+        table.put("Comma separated account handles or user ids. These accounts are always skipped.",
+                "Nama pengguna atau id pengguna dipisahkan koma. Akun ini selalu dilewati.");
         table.put("Comma separated account handles or user ids. These accounts are always skipped. An entry between slashes, like /^news_/, is a pattern matched against the handle and the display name.",
                 "Nama pengguna atau id pengguna dipisahkan koma. Akun ini selalu dilewati. Entri di antara garis miring, seperti /^news_/, adalah pola yang dicocokkan dengan nama pengguna dan nama tampilan.");
         table.put("Comma separated country codes, like GB, IE. Videos posted from anywhere else are hidden. Leave empty for all countries.",
@@ -1142,11 +1152,11 @@ public final class L10nTranslations {
                 "Filter tab feed");
         table.put("Filter offline fallback videos",
                 "Filter video offline cadangan");
-        table.put("Filters, translation and copy options",
-                "Filter, terjemahan, dan opsi salin");
     }
 
     private static void fillIn2(Map<String, String> table) {
+        table.put("Filters, translation and copy options",
+                "Filter, terjemahan, dan opsi salin");
         table.put("Folder picker is not available",
                 "Pemilih folder tidak tersedia");
         table.put("Folder picker is not available on this device",
@@ -1155,6 +1165,8 @@ public final class L10nTranslations {
                 "For You");
         table.put("Forget seen videos after",
                 "Lupakan video yang sudah ditonton setelah");
+        table.put("GIF",
+                "GIF");
         table.put("Ghost mode",
                 "Mode senyap");
         table.put("Hidden commenters",
@@ -1263,13 +1275,13 @@ public final class L10nTranslations {
                 "Sembunyikan tab yang TikTok tambahkan kemudian, kecuali kamu mengizinkannya.");
         table.put("Hide the \"Search this image\" prompt TikTok shows over videos when it spots something to shop for.",
                 "Sembunyikan ajakan \"Cari gambar ini\" yang TikTok tampilkan di atas video saat menemukan sesuatu yang bisa dibeli.");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Hide the Activity row of likes and comments on your posts.",
                 "Sembunyikan baris Aktivitas berisi suka dan komentar pada unggahanmu.");
         table.put("Hide the Archive row.",
                 "Sembunyikan baris Arsip.");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Hide the Live button in the top left corner of the feed.",
                 "Sembunyikan tombol LIVE di pojok kiri atas feed.");
         table.put("Hide the Message requests row.",
@@ -1386,13 +1398,13 @@ public final class L10nTranslations {
                 "Tampilan");
         table.put("Keep a local record of what you have watched and drop those videos from later feed pages.",
                 "Simpan catatan tontonanmu di perangkat dan buang video itu dari halaman feed berikutnya.");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Keep automatic advance enabled. Pauses and open dialogs still stop scrolling. Restart after enabling it; use this switch to turn it off.",
                 "Biarkan lanjut otomatis tetap aktif. Jeda dan dialog yang terbuka tetap menghentikan gulir. Mulai ulang setelah mengaktifkannya; pakai sakelar ini untuk mematikannya.");
         table.put("Keep captions in clear display",
                 "Pertahankan keterangan saat tampilan bersih");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("Keep holding Like from opening TikTok's repost action.",
                 "Cegah menahan tombol Suka membuka aksi bagikan ulang milik TikTok.");
         table.put("Keep long-pressing Share from opening TikTok's quick-share interaction.",
@@ -1509,13 +1521,13 @@ public final class L10nTranslations {
                 "Hapus baris Bagikan lewat.");
         table.put("Remove the actions row from the share sheet.",
                 "Hapus baris aksi dari menu bagikan.");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("Remove the row of friends from the top of the share sheet.",
                 "Hapus baris teman dari bagian atas menu bagikan.");
         table.put("Remove tracking parameters from shared links.",
                 "Hapus parameter pelacakan dari tautan yang dibagikan.");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("Remove watermark",
                 "Hapus tanda air");
         table.put("Reset settings",
@@ -1632,13 +1644,13 @@ public final class L10nTranslations {
                 "Hentikan pengulangan video");
         table.put("Stop videos at the end instead of replaying them.",
                 "Hentikan video di akhir, bukan memutarnya ulang.");
+    }
+
+    private static void fillIn6(Map<String, String> table) {
         table.put("Subtitle language",
                 "Bahasa subtitle");
         table.put("Tap the feed Follow button twice within four seconds.",
                 "Ketuk tombol Ikuti di feed dua kali dalam empat detik.");
-    }
-
-    private static void fillIn6(Map<String, String> table) {
         table.put("Tap the like heart twice within four seconds. Removing a like stays immediate.",
                 "Ketuk ikon hati dua kali dalam empat detik. Membatalkan suka tetap langsung berlaku.");
         table.put("The minimum or maximum comments on a video to show.",
@@ -1699,6 +1711,8 @@ public final class L10nTranslations {
                 "Pakai nilai negara dan operator yang dipilih. Mulai ulang TikTok setelah mengubah pengaturan wilayah.");
         table.put("Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.",
                 "Pakai tata letak terbagi pada layar yang lebih lebar. Mulai ulang TikTok setelah mengubah opsi ini atau setelah membuka lipatan jika tata letak lama masih muncul.");
+        table.put("Video (MP4)",
+                "Video (MP4)");
         table.put("Video destination",
                 "Lokasi simpan video");
         table.put("Video download quality",
@@ -1711,6 +1725,8 @@ public final class L10nTranslations {
                 "Kualitas video, kecepatan, dan lanjut otomatis.");
         table.put("Wait before hiding the controls.",
                 "Tunggu sebelum kontrol disembunyikan.");
+        table.put("WebP, exactly as TikTok sent it",
+                "WebP, persis seperti yang dikirim TikTok");
         table.put("Window width needed to enable the layout. Restart after changing.",
                 "Lebar jendela yang dibutuhkan agar tata letak ini aktif. Mulai ulang setelah mengubahnya.");
         table.put("Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.",

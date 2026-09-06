@@ -207,15 +207,38 @@ public final class StickerGallerySaver {
                 String displayName = DownloadFilenameFormatter.formatCommentMediaName(format.extension, mediaId);
 
                 if (!format.convertToPng) {
-                    if (format.convertToMp4) {
+                    if (format.convertToMp4 || format.convertToGif) {
                         byte[] animatedWebp = readFully(inputStream);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            pendingUri = saveAnimatedWebpMp4WithMediaStore(context, animatedWebp, displayName);
-                            return SaveResult.success(displayPath(displayName, true), pendingUri.toString(), "MP4");
-                        }
+                        try {
+                            if (format.convertToGif) {
+                                return saveConvertedSticker(context, animatedWebp, displayName,
+                                        "image/gif", false, "GIF");
+                            }
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                pendingUri = saveAnimatedWebpMp4WithMediaStore(context, animatedWebp, displayName);
+                                return SaveResult.success(displayPath(displayName, true), pendingUri.toString(), "MP4");
+                            }
 
-                        File outputFile = saveAnimatedWebpMp4WithLegacyStorage(context, animatedWebp, displayName);
-                        return SaveResult.success(outputFile.getAbsolutePath(), outputFile.getAbsolutePath(), "MP4");
+                            File outputFile = saveAnimatedWebpMp4WithLegacyStorage(context, animatedWebp, displayName);
+                            return SaveResult.success(outputFile.getAbsolutePath(), outputFile.getAbsolutePath(), "MP4");
+                        } catch (Throwable ex) {
+                            // Better the sticker in the format it arrived in than nothing at all.
+                            debugLog("[Morphe Stickers] conversion failed, keeping the WebP: " + ex);
+                            pendingUri = null;
+                            MediaFormat source = MediaFormat.webp();
+                            String webpName = DownloadFilenameFormatter.formatCommentMediaName(
+                                    source.extension, mediaId);
+                            try (InputStream bytes = new java.io.ByteArrayInputStream(animatedWebp)) {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                    pendingUri = saveStreamWithMediaStore(context, bytes, webpName, source);
+                                    return SaveResult.success(displayPath(webpName, false),
+                                            pendingUri.toString(), source.label);
+                                }
+                                File saved = saveStreamWithLegacyStorage(context, bytes, webpName, source.mimeType);
+                                return SaveResult.success(saved.getAbsolutePath(), saved.getAbsolutePath(),
+                                        source.label);
+                            }
+                        }
                     }
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -384,6 +407,64 @@ public final class StickerGallerySaver {
         return outputFile;
     }
 
+    /** Runs a converter into the gallery, and cleans up after itself when it throws. */
+    private static SaveResult saveConvertedSticker(
+            Context context,
+            byte[] animatedWebp,
+            String displayName,
+            String mimeType,
+            boolean video,
+            String label
+    ) throws Exception {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContentResolver resolver = context.getContentResolver();
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, displayName);
+            values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
+            String relativePath = stickerRelativePath(video);
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath);
+            values.put(MediaStore.MediaColumns.IS_PENDING, 1);
+            Uri uri = resolver.insert(DownloadDestination.collectionUri(relativePath, video), values);
+            if (uri == null) throw new IllegalStateException("MediaStore insert returned null");
+            try {
+                try (OutputStream output = resolver.openOutputStream(uri)) {
+                    if (output == null) throw new IllegalStateException("MediaStore output stream returned null");
+                    AnimatedWebpGifConverter.convert(animatedWebp, output);
+                }
+                ContentValues complete = new ContentValues();
+                complete.put(MediaStore.MediaColumns.IS_PENDING, 0);
+                resolver.update(uri, complete, null, null);
+                return SaveResult.success(displayPath(displayName, video), uri.toString(), label);
+            } catch (Throwable ex) {
+                try {
+                    resolver.delete(uri, null, null);
+                } catch (Throwable ignored) {
+                    // Best effort cleanup.
+                }
+                throw ex;
+            }
+        }
+
+        File directory = new File(Environment.getExternalStorageDirectory(), stickerRelativePath(video));
+        if (!directory.isDirectory() && !directory.mkdirs()) {
+            throw new IllegalStateException("Could not create " + directory);
+        }
+        File outputFile = new File(directory, displayName);
+        try {
+            try (OutputStream output = new FileOutputStream(outputFile)) {
+                AnimatedWebpGifConverter.convert(animatedWebp, output);
+            }
+        } catch (Throwable ex) {
+            if (outputFile.exists() && !outputFile.delete()) {
+                debugLog("[Morphe Stickers] could not remove partial file=" + outputFile.getAbsolutePath());
+            }
+            throw ex;
+        }
+        MediaScannerConnection.scanFile(context, new String[]{outputFile.getAbsolutePath()},
+                new String[]{mimeType}, null);
+        return SaveResult.success(outputFile.getAbsolutePath(), outputFile.getAbsolutePath(), label);
+    }
+
     private static Uri saveAnimatedWebpMp4WithMediaStore(
             Context context,
             byte[] animatedWebp,
@@ -511,7 +592,7 @@ public final class StickerGallerySaver {
         }
         if (isWebp(header) || "image/webp".equals(mimeType) || "webp".equals(extension)) {
             if (animated || isAnimatedWebp(header)) {
-                return MediaFormat.mp4();
+                return MediaFormat.animated(Settings.DOWNLOAD_STICKER_FORMAT.get());
             }
             return MediaFormat.png();
         }
@@ -926,12 +1007,13 @@ public final class StickerGallerySaver {
         }
     }
 
-    private static final class MediaFormat {
+    static final class MediaFormat {
         final String mimeType;
         final String extension;
         final boolean video;
         final boolean convertToPng;
         final boolean convertToMp4;
+        final boolean convertToGif;
         final String label;
 
         private MediaFormat(
@@ -940,6 +1022,7 @@ public final class StickerGallerySaver {
                 boolean video,
                 boolean convertToPng,
                 boolean convertToMp4,
+                boolean convertToGif,
                 String label
         ) {
             this.mimeType = mimeType;
@@ -947,19 +1030,39 @@ public final class StickerGallerySaver {
             this.video = video;
             this.convertToPng = convertToPng;
             this.convertToMp4 = convertToMp4;
+            this.convertToGif = convertToGif;
             this.label = label;
         }
 
         static MediaFormat png() {
-            return new MediaFormat("image/png", "png", false, true, false, "PNG");
+            return new MediaFormat("image/png", "png", false, true, false, false, "PNG");
         }
 
         static MediaFormat mp4() {
-            return new MediaFormat("video/mp4", "mp4", true, false, true, "MP4");
+            return new MediaFormat("video/mp4", "mp4", true, false, true, false, "MP4");
+        }
+
+        static MediaFormat gif() {
+            return new MediaFormat("image/gif", "gif", false, false, false, true, "GIF");
+        }
+
+        static MediaFormat webp() {
+            return passthrough("image/webp", "webp", false, "WebP");
+        }
+
+        /**
+         * What an animated sticker is written as. WebP is the file TikTok sent, byte for byte,
+         * which is also what a messaging app that takes animated stickers wants; the other two
+         * are converted here. Anything unrecognised keeps the old behaviour.
+         */
+        static MediaFormat animated(String choice) {
+            if ("gif".equals(choice)) return gif();
+            if ("webp".equals(choice)) return webp();
+            return mp4();
         }
 
         static MediaFormat passthrough(String mimeType, String extension, boolean video, String label) {
-            return new MediaFormat(mimeType, extension, video, false, false, label);
+            return new MediaFormat(mimeType, extension, video, false, false, false, label);
         }
     }
 

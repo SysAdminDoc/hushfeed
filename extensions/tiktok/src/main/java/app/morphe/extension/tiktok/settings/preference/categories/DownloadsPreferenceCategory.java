@@ -60,12 +60,17 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
                 Settings.DOWNLOAD_PHOTO_PATH,
                 DownloadDestination.Kind.PHOTO
         ));
-        if (SettingsStatus.downloadEnabled) addPreference(new DownloadPathPreference(
-                context,
-                "Sticker destination",
-                Settings.DOWNLOAD_STICKER_PATH,
-                DownloadDestination.Kind.STICKER
-        ));
+        if (SettingsStatus.downloadEnabled) {
+            addPreference(new ChoicePreference(context, "Animated sticker format", Settings.DOWNLOAD_STICKER_FORMAT,
+                    new String[]{"Video (MP4)", "GIF", "WebP, exactly as TikTok sent it"},
+                    new String[]{"mp4", "gif", "webp"}));
+            addPreference(new DownloadPathPreference(
+                    context,
+                    "Sticker destination",
+                    Settings.DOWNLOAD_STICKER_PATH,
+                    DownloadDestination.Kind.STICKER
+            ));
+        }
         addPreference(new InputTextPreference(
                 context,
                 "Video filename",

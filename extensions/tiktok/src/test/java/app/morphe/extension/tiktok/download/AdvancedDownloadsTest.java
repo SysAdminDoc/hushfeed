@@ -236,6 +236,35 @@ public class AdvancedDownloadsTest {
         } finally { server.close(); responder.join(1000); assertTrue(temp.delete()); }
     }
 
+    @Test public void theStickerFormatChoicePicksTheContainerAndFallsBackToTheSource() {
+        Utils.setContext(RuntimeEnvironment.getApplication());
+        // The default is what shipped before the choice existed.
+        assertTrue(StickerGallerySaver.MediaFormat.animated("mp4").convertToMp4);
+        assertEquals("mp4", StickerGallerySaver.MediaFormat.animated("mp4").extension);
+
+        var gif = StickerGallerySaver.MediaFormat.animated("gif");
+        assertTrue(gif.convertToGif);
+        assertFalse(gif.convertToMp4);
+        assertFalse("a GIF is not a video to the gallery", gif.video);
+        assertEquals("image/gif", gif.mimeType);
+
+        // WebP is the sticker exactly as it arrived, so nothing converts it.
+        var webp = StickerGallerySaver.MediaFormat.animated("webp");
+        assertFalse(webp.convertToGif);
+        assertFalse(webp.convertToMp4);
+        assertFalse(webp.convertToPng);
+        assertEquals("image/webp", webp.mimeType);
+        assertEquals("webp", webp.extension);
+
+        // An unknown or missing choice keeps the old behaviour rather than refusing to save.
+        assertTrue(StickerGallerySaver.MediaFormat.animated("avif").convertToMp4);
+        assertTrue(StickerGallerySaver.MediaFormat.animated(null).convertToMp4);
+
+        // The fallback a failed conversion writes is that same untouched WebP.
+        assertEquals("WebP", StickerGallerySaver.MediaFormat.webp().label);
+        assertEquals("image/webp", StickerGallerySaver.MediaFormat.webp().mimeType);
+    }
+
     @Test public void advancedPatchAloneShowsItsOwnOptions() throws Exception {
         try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
             var activity = controller.get();
