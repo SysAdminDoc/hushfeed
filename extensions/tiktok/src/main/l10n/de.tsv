@@ -395,3 +395,5 @@ Only from these countries	Nur aus diesen Ländern
 Comma separated country codes, like GB, IE. Videos posted from anywhere else are hidden. Leave empty for all countries.	Kommagetrennte Ländercodes, etwa GB, IE. Videos von überall sonst werden ausgeblendet. Leer lassen für alle Länder.
 Never from these countries	Nie aus diesen Ländern
 Comma separated country codes. Videos posted from these are hidden, whatever the list above says.	Kommagetrennte Ländercodes. Videos von dort werden ausgeblendet, egal was die Liste darüber sagt.
+Hide picture comments	Bild-Kommentare ausblenden
+Hide comments made of an image or a sticker instead of words.	Kommentare ausblenden, die aus einem Bild oder Sticker statt aus Worten bestehen.

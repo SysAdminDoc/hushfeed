@@ -94,6 +94,8 @@
     <string name="mtp_1867fdfc">Gilt für Video- und Bild-Downloads.</string>
     <!-- Hide archive -->
     <string name="mtp_193d2f89">Archiv ausblenden</string>
+    <!-- Hide picture comments -->
+    <string name="mtp_1c26d401">Bild-Kommentare ausblenden</string>
     <!-- Settings -->
     <string name="mtp_1c33c293">Einstellungen</string>
     <!-- Clear the seen video history? -->
@@ -286,6 +288,8 @@
     <string name="mtp_5e612b47">Unbegrenzt</string>
     <!-- Show seekbar thumbnail -->
     <string name="mtp_5f61191a">Vorschaubild an der Fortschrittsleiste anzeigen</string>
+    <!-- Hide comments made of an image or a sticker instead of words. -->
+    <string name="mtp_607d2526">Kommentare ausblenden, die aus einem Bild oder Sticker statt aus Worten bestehen.</string>
     <!-- Comma separated usernames or display names whose comments are hidden. -->
     <string name="mtp_6144c035">Nutzernamen oder Anzeigenamen, durch Kommas getrennt, deren Kommentare ausgeblendet werden.</string>
     <!-- Delete the local record of the videos you have watched. -->

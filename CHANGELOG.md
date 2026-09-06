@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Comment tools can hide comments that are a picture or a sticker instead of words, replies included. It works on its own, without the keyword filter.
+
 * Clear display now hides the tab strip by asking whether the controls are actually hidden, rather than reading a stored setting the automatic path never writes. The strip stayed up in exactly the case the change was meant to fix.
 * The search filter leaves a page alone when every card on it looks like an advert. A whole page of adverts is less likely than one of the card shapes being wrong, and an empty grid tells the user nothing.
 

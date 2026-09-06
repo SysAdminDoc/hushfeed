@@ -60,7 +60,7 @@ The Settings patch adds the entry point; most patches depend on it and it's sele
 | `Always show publish date` | Keeps the video's publish date visible in its author information. |
 | `Not interested button` | Sends feedback about the current video through TikTok's own service. The button works independently of the block switch. |
 | `Block author button` | Adds a button to the video player that blocks the account that posted the current video in one tap, with an undo banner. Long press it to move it. A second button blocks the current sound. |
-| `Comment tools` | Hides comments containing chosen words or from chosen accounts, and turns the thumbs down on each comment into a block button. |
+| `Comment tools` | Hides comments containing chosen words or from chosen accounts, and turns the thumbs down on each comment into a block button. A switch hides comments made of an image or a sticker rather than words. |
 | `Copy comments without username` | Copies only the comment text without including the creator's username. |
 | `Custom offline videos limit` | Adds a custom entry to TikTok's offline videos menu with a configurable limit from 1 to 1000 videos. Values outside the range use the nearest valid limit. |
 | `Disable login requirement` | Removes TikTok's mandatory login gate from supported flows. |

@@ -230,6 +230,7 @@ public class Settings extends BaseSettings {
     public static final StringSetting COMMENT_BLOCKED_KEYWORDS = new StringSetting("comment_blocked_keywords", "");
     public static final StringSetting COMMENT_BLOCKED_USERS = new StringSetting("comment_blocked_users", "");
     public static final BooleanSetting BLOCK_FROM_COMMENT = new BooleanSetting("block_from_comment", TRUE);
+    public static final BooleanSetting HIDE_COMMENT_MEDIA = new BooleanSetting("hide_comment_media", FALSE);
     public static final BooleanSetting HIDE_COMMENT_EGGS = new BooleanSetting("hide_comment_eggs", TRUE);
     // Share sheet tools. The confirm step is on by default because it is the point of the patch.
     public static final BooleanSetting SHARE_CONFIRM_SEND = new BooleanSetting("share_confirm_send", TRUE);

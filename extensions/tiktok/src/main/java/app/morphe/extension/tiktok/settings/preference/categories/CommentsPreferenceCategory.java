@@ -78,6 +78,12 @@ public class CommentsPreferenceCategory extends ConditionalPreferenceCategory {
             ));
             addPreference(new TogglePreference(
                     context,
+                    "Hide picture comments",
+                    "Hide comments made of an image or a sticker instead of words.",
+                    Settings.HIDE_COMMENT_MEDIA
+            ));
+            addPreference(new TogglePreference(
+                    context,
                     "Thumbs down blocks the commenter",
                     "The thumbs down on each comment blocks the account that posted it instead of "
                             + "disliking. The comment dims, an undo banner follows, and a second tap "

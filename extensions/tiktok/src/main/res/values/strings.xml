@@ -47,6 +47,7 @@
     <string name="mtp_17b46266">Skip videos that use a sound blocked with the player\'s sound button, or named below.</string>
     <string name="mtp_1867fdfc">Apply to video downloads and image downloads.</string>
     <string name="mtp_193d2f89">Hide archive</string>
+    <string name="mtp_1c26d401">Hide picture comments</string>
     <string name="mtp_1c33c293">Settings</string>
     <string name="mtp_1c8b73f8">Clear the seen video history?</string>
     <string name="mtp_1f0ff3bc">Only enable when recording logs to report an issue. Leaving it on for too long can make TikTok feel laggy and may lead to crashes.</string>
@@ -143,6 +144,7 @@
     <string name="mtp_5bac658d">Comma separated sound ids recorded by the player\'s sound button. Remove one to unblock it.</string>
     <string name="mtp_5e612b47">Unlimited</string>
     <string name="mtp_5f61191a">Show seekbar thumbnail</string>
+    <string name="mtp_607d2526">Hide comments made of an image or a sticker instead of words.</string>
     <string name="mtp_6144c035">Comma separated usernames or display names whose comments are hidden.</string>
     <string name="mtp_616cc689">Delete the local record of the videos you have watched.</string>
     <string name="mtp_62af8486">Comma separated. A comment is hidden if its text contains any of them. Case does not matter.</string>

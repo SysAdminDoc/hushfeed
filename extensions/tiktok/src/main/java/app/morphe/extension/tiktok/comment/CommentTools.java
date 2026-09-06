@@ -121,14 +121,16 @@ public final class CommentTools {
      * before they are shown. Matching comments are removed from the list in place.
      */
     public static void onCommentListLoaded(Object commentItemList) {
-        if (!Settings.COMMENT_KEYWORD_FILTER.get() || commentItemList == null) {
+        boolean byWord = Settings.COMMENT_KEYWORD_FILTER.get();
+        boolean media = Settings.HIDE_COMMENT_MEDIA.get();
+        if ((!byWord && !media) || commentItemList == null) {
             return;
         }
 
         try {
-            List<String> keywords = entries(Settings.COMMENT_BLOCKED_KEYWORDS.get());
-            List<String> users = entries(Settings.COMMENT_BLOCKED_USERS.get());
-            if (keywords.isEmpty() && users.isEmpty()) {
+            List<String> keywords = byWord ? entries(Settings.COMMENT_BLOCKED_KEYWORDS.get()) : List.of();
+            List<String> users = byWord ? entries(Settings.COMMENT_BLOCKED_USERS.get()) : List.of();
+            if (keywords.isEmpty() && users.isEmpty() && !media) {
                 return;
             }
 
@@ -137,7 +139,7 @@ public final class CommentTools {
                 return;
             }
 
-            int removed = filterComments((List<?>) itemsObject, keywords, users);
+            int removed = filterComments((List<?>) itemsObject, keywords, users, media);
             if (removed > 0) {
                 final int count = removed;
                 Logger.printDebug(() -> "Comment filter removed " + count + " comment(s)");
@@ -360,7 +362,7 @@ public final class CommentTools {
 
     // ---- keyword filter ----------------------------------------------------------------
 
-    private static int filterComments(List<?> comments, List<String> keywords, List<String> users) {
+    private static int filterComments(List<?> comments, List<String> keywords, List<String> users, boolean media) {
         int removed = 0;
         Iterator<?> iterator = comments.iterator();
         while (iterator.hasNext()) {
@@ -369,7 +371,7 @@ public final class CommentTools {
                 continue;
             }
 
-            if (matches(comment, keywords, users)) {
+            if (matches(comment, keywords, users, media)) {
                 try {
                     iterator.remove();
                     removed++;
@@ -382,13 +384,17 @@ public final class CommentTools {
 
             Object replies = Reflect.property(comment, "getReplyComments", "replyComments");
             if (replies instanceof List) {
-                removed += filterComments((List<?>) replies, keywords, users);
+                removed += filterComments((List<?>) replies, keywords, users, media);
             }
         }
         return removed;
     }
 
-    private static boolean matches(Object comment, List<String> keywords, List<String> users) {
+    private static boolean matches(Object comment, List<String> keywords, List<String> users, boolean media) {
+        if (media && hasMedia(comment)) {
+            return true;
+        }
+
         String text = Reflect.string(comment, "getText", "text");
         if (text != null && !keywords.isEmpty()) {
             String lower = text.toLowerCase(Locale.ROOT);
@@ -411,6 +417,23 @@ public final class CommentTools {
             }
         }
         return false;
+    }
+
+    /**
+     * Whether a comment carries a picture rather than words. TikTok keeps three shapes on
+     * the model: the attached images, a sticker struct, and the post items a text-on-image
+     * comment is built from.
+     */
+    private static boolean hasMedia(Object comment) {
+        Object images = Reflect.property(comment, "getImageList", "imageList");
+        if (images instanceof List && !((List<?>) images).isEmpty()) {
+            return true;
+        }
+        Object posts = Reflect.property(comment, "getTextImageCommentPostItemList", "textImageCommentPostItemList");
+        if (posts instanceof List && !((List<?>) posts).isEmpty()) {
+            return true;
+        }
+        return Reflect.property(comment, "getStickerStruct", "stickerStruct") != null;
     }
 
     // ---- model access ------------------------------------------------------------------
