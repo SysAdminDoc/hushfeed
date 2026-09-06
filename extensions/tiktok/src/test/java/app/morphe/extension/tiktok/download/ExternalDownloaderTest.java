@@ -51,6 +51,23 @@ public class ExternalDownloaderTest {
         Unshared(String handle, String id) { author = new Author(handle); aid = id; }
     }
 
+    /** The shape TikTok actually has: getters, which is what the commit rests on. */
+    public static final class GetterAuthor {
+        private final String handle;
+        GetterAuthor(String handle) { this.handle = handle; }
+        public String getUniqueId() { return handle; }
+    }
+
+    public static final class GetterVideo {
+        private final String url, handle, id;
+        GetterVideo(String url, String handle, String id) {
+            this.url = url; this.handle = handle; this.id = id;
+        }
+        public String getShareUrl() { return url; }
+        public GetterAuthor getAuthor() { return new GetterAuthor(handle); }
+        public String getAid() { return id; }
+    }
+
     @Test public void onlyARealPackageNameCountsAsAnApp() {
         try {
             for (String typed : new String[]{"com.dv.adm", "  com.dv.adm  ", "a.b", "com.a_b.c9"}) {
@@ -78,6 +95,31 @@ public class ExternalDownloaderTest {
         assertNull(ExternalDownloader.shareUrl(new Unshared(null, "7712345")));
         assertNull(ExternalDownloader.shareUrl(new Unshared("dancer", null)));
         assertNull(ExternalDownloader.shareUrl(new Object()));
+
+        // The same again through getters, which is the shape the app really has.
+        assertEquals("https://www.tiktok.com/@dancer/video/7712345", ExternalDownloader.shareUrl(
+                new GetterVideo("https://www.tiktok.com/@dancer/video/7712345", "dancer", "7712345")));
+        // An empty link is no link, so the handle and the id build one.
+        assertEquals("https://www.tiktok.com/@dancer/video/7712345",
+                ExternalDownloader.shareUrl(new GetterVideo("", "dancer", "7712345")));
+        assertEquals("https://www.tiktok.com/@dancer/video/7712345",
+                ExternalDownloader.shareUrl(new GetterVideo("   ", "dancer", "7712345")));
+        assertNull(ExternalDownloader.shareUrl(new GetterVideo(null, null, "7712345")));
+    }
+
+    @Test public void anAppThatIsNotThereLeavesTheSaveWhereItWas() {
+        try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            // Robolectric only refuses an activity it cannot resolve once it is asked to.
+            Shadows.shadowOf(activity.getApplication()).checkActivities(true);
+            Settings.EXTERNAL_DOWNLOADER_PACKAGE.save("com.example.notinstalled");
+
+            Shared video = new Shared("https://www.tiktok.com/@dancer/video/7712345");
+            assertFalse("the save stays here", ExternalDownloader.handOff(video, activity));
+        } finally {
+            Settings.EXTERNAL_DOWNLOADER_PACKAGE.save("");
+        }
     }
 
     @Test public void theLinkGoesToTheAppThatWasNamedAndNowhereElse() {

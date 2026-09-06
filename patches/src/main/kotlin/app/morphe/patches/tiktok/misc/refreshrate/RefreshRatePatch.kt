@@ -7,8 +7,8 @@
 package app.morphe.patches.tiktok.misc.refreshrate
 
 import app.morphe.patcher.Fingerprint
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
@@ -16,13 +16,14 @@ import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 
 private const val EXTENSION = "Lapp/morphe/extension/tiktok/misc/RefreshRate;"
 private const val LAYOUT_PARAMS = "Landroid/view/WindowManager\$LayoutParams;"
 
-private fun writesRefreshRate(instruction: com.android.tools.smali.dexlib2.iface.instruction.Instruction) =
+private fun writesRefreshRate(instruction: Instruction) =
     instruction.opcode == Opcode.IPUT &&
         instruction.getReference<FieldReference>()?.let { reference ->
             reference.definingClass == LAYOUT_PARAMS && reference.name == "preferredRefreshRate"
@@ -44,10 +45,10 @@ private object RefreshRateWriteFingerprint : Fingerprint(
 @Suppress("unused")
 val refreshRatePatch = bytecodePatch(
     name = "Uncap the refresh rate",
-    description = "Stops TikTok asking the screen to run at the frame rate of the video, " +
-        "which on a 90 or 120 Hz phone means everything else in the app runs at that rate " +
-        "too. With the switch on the window states no preference and the phone decides. " +
-        "Supports TikTok 46.2.3.",
+    description = "Stops TikTok asking the screen to run slower than it can, which it does " +
+        "by asking for the frame rate of the video it is playing. On a 90 or 120 Hz phone " +
+        "that ask takes the whole app down to that rate, scrolling included. A request that " +
+        "is not slower than the screen is left alone. Supports TikTok 46.2.3.",
     default = false,
 ) {
     dependsOn(sharedExtensionPatch)
@@ -60,26 +61,23 @@ val refreshRatePatch = bytecodePatch(
             val method = match.method
             val implementation = method.implementation ?: return@forEach
 
-            // Later writes first, because inserting in front of one moves the ones after it.
+            // Later writes first, because replacing one does not move the others but reading
+            // them fresh each time would.
             val writes = implementation.instructions.withIndex()
                 .filter { writesRefreshRate(it.value) }
                 .map { it.index }
                 .toList()
 
             writes.asReversed().forEach { index ->
-                val rate = (implementation.instructions.elementAt(index) as TwoRegisterInstruction).registerA
-                if (rate > 15) {
-                    throw PatchException(
-                        "Uncap the refresh rate: the rate sits in v$rate in ${method.name}, " +
-                            "which move-result cannot reach.",
-                    )
-                }
-                method.addInstructions(
+                val store = method.implementation!!.instructions.elementAt(index)
+                    as TwoRegisterInstruction
+                // The store is replaced rather than its value rewritten. PlayerController puts
+                // the same register into its own lastRefreshRate on the next line, and taking
+                // the value away from it there would leave TikTok's bookkeeping holding zero.
+                method.replaceInstruction(
                     index,
-                    """
-                        invoke-static { v$rate }, $EXTENSION->preferredRefreshRate(F)F
-                        move-result v$rate
-                    """,
+                    "invoke-static { v${store.registerB}, v${store.registerA} }, " +
+                        "$EXTENSION->apply(${LAYOUT_PARAMS}F)V",
                 )
                 patched++
             }

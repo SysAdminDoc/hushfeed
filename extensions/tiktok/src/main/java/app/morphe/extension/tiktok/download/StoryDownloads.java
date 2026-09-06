@@ -123,6 +123,8 @@ public final class StoryDownloads {
         // The quality download handles the video, its sound and its subtitles the way the
         // settings ask for. It declines when there is nothing for it to do differently, and
         // then the story is fetched from whatever address it carries.
+        // The same hand-off the save button gets, so one setting covers both.
+        if (ExternalDownloader.handOff(aweme, context)) return true;
         if (VideoDownloads.start(aweme, context)) return true;
 
         List<List<String>> photos = OriginalPhotos.sources(aweme);

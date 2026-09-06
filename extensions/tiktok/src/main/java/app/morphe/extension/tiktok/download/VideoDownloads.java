@@ -32,12 +32,19 @@ final class VideoDownloads {
         List<SubtitleDownloads.Track> captions = SettingsStatus.subtitleToolsEnabled && Settings.DOWNLOAD_SUBTITLES.get()
                 ? SubtitleDownloads.tracks(video, Settings.SUBTITLE_LANGUAGE.get(), Locale.getDefault()) : Collections.emptyList();
         String quality = Settings.DOWNLOAD_VIDEO_QUALITY.get();
+        boolean muted = Settings.DOWNLOAD_WITHOUT_SOUND.get();
+        boolean automatic = "auto".equals(quality);
         // Automatic with nothing else asked for is TikTok's own download, which already does
-        // the right thing. Taking the sound off is a reason to take it over.
-        if (captions.isEmpty() && "auto".equals(quality) && !Settings.DOWNLOAD_WITHOUT_SOUND.get()) return false;
+        // the right thing. Taking the sound off is a reason to take it over, but not a reason
+        // to fetch a different file: on Automatic the source stays the one TikTok would have
+        // used and only the sound is left out of it.
+        if (captions.isEmpty() && automatic && !muted) return false;
         Object rates = Reflect.readField(video, "bitRate");
-        Object selected = rates instanceof List<?> ? QualitySelector.choose((List<?>) rates, "auto".equals(quality) ? "highest" : quality) : null;
-        if (selected == null && captions.isEmpty()) return false;
+        Object selected = !automatic && rates instanceof List<?>
+                ? QualitySelector.choose((List<?>) rates, quality)
+                : (captions.isEmpty() || !(rates instanceof List<?>) ? null
+                        : QualitySelector.choose((List<?>) rates, "highest"));
+        if (selected == null && captions.isEmpty() && !muted) return false;
         List<String> selectedUrls = urls(Reflect.property(selected, "getPlayAddr", "playAddr"));
         if (selected == null) {
             selectedUrls = urls(Reflect.property(video, "getDownloadNoWatermarkAddr", "downloadNoWatermarkAddr"));
@@ -46,7 +53,7 @@ final class VideoDownloads {
         List<String> videoUrls = selectedUrls;
         boolean dash = selected != null && Boolean.TRUE.equals(Reflect.invoke(video, "hasDashBitrate"));
         List<String> audioUrls = dash ? audioUrls(video, selected) : Collections.emptyList();
-        if (videoUrls.isEmpty() || (dash && audioUrls.isEmpty())) {
+        if (videoUrls.isEmpty() || (dash && !muted && audioUrls.isEmpty())) {
             Utils.showToastShort("This quality isn't available as a complete download; using TikTok's download");
             return false;
         }
@@ -64,7 +71,6 @@ final class VideoDownloads {
             Logger.printException(() -> "Could not work out the download name", exception);
             return false;
         }
-        boolean muted = Settings.DOWNLOAD_WITHOUT_SOUND.get();
         if (!ACTIVE.add(id)) return true;
         Utils.showToastShort(captions.isEmpty()
                 ? (muted ? "Saving the selected video quality without sound" : "Saving the selected video quality")
@@ -75,24 +81,32 @@ final class VideoDownloads {
                 File picture = temp(app, temporary);
                 RemoteMedia.fetch(videoUrls, picture, false);
                 File result = picture, sound = null;
-                if (dash) {
-                    // The sound is a separate stream here, so it is fetched either way: the
-                    // muted save just does not put it back, and Save the sound as well still
-                    // has something to write.
+                if (dash && !muted) {
+                    // The sound is a separate stream here and the save is not finished without
+                    // it, so a failure to fetch it fails the whole thing.
                     sound = temp(app, temporary);
                     RemoteMedia.fetch(audioUrls, sound, false);
-                    if (!muted) {
-                        result = temp(app, temporary);
-                        TrackMuxer.combine(picture, sound, result);
+                    result = temp(app, temporary);
+                    TrackMuxer.combine(picture, sound, result);
+                } else if (dash && AudioDownloads.enabled() && !audioUrls.isEmpty()) {
+                    // Muted, but the sound is wanted beside it as an .m4a. That is a second
+                    // file, so losing it is not a reason to lose the video as well.
+                    try {
+                        File separate = temp(app, temporary);
+                        RemoteMedia.fetch(audioUrls, separate, false);
+                        sound = separate;
+                    } catch (IOException | RuntimeException exception) {
+                        Logger.printException(() -> "Could not fetch the sound to save beside a muted video", exception);
                     }
-                } else if (muted) {
+                } else if (!dash && muted) {
                     // One file with both tracks in it, so the picture is copied out on its own.
                     result = temp(app, temporary);
                     TrackMuxer.videoOnly(picture, result);
                 }
                 String savedName = MediaFileWriter.publish(app, result, name, "video/mp4", path, true);
                 // The sound is already on disk: the separate stream when the video has one,
-                // otherwise the video itself. Fetching it again would download it twice.
+                // otherwise the video itself, which still carries it because the copy that
+                // dropped it went to a different file. Fetching it again would download twice.
                 AudioDownloads.write(app, aweme, sound == null ? picture : sound);
                 int saved = SubtitleDownloads.save(app, captions, savedName, path);
                 Utils.showToastLong(captions.isEmpty() ? "Video saved"

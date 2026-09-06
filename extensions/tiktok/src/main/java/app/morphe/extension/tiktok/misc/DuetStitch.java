@@ -11,20 +11,26 @@ import app.morphe.extension.tiktok.settings.Settings;
 /**
  * Whether a video says it may be duetted or stitched.
  *
- * <p>TikTok reads one number off the video: 2 means the creator closed it, 1 means friends
- * only, and anything else carries on to the other checks. Those other checks are the ones
- * worth keeping. A photo post still cannot be duetted, a deleted video still cannot, and the
- * app's own reasons for refusing all still apply, because this only answers the question the
- * creator's setting answers.
+ * <p>TikTok reads one number off the video and gives two different reasons for refusing on
+ * it: 1 is the creator saying friends only, and 2 is the commercial one, a video carrying
+ * music or a partnership that closes duets whatever anyone wants. Both duet and stitch use
+ * the same two numbers. Only the first is answered differently here. Turning the second into
+ * "anyone may" would put the upload in front of a wall it is meant to be behind, and it is
+ * the case most likely to have the post taken down afterwards.
+ *
+ * <p>Every other reason the app has for refusing is a separate check on a separate value and
+ * is untouched: a photo post, a private video, children's mode, a deleted video.
  */
 public final class DuetStitch {
+    /** What the app reads as "anyone may". */
+    private static final int ANYONE = 0;
+    /** The creator's own choice: only people they follow back. */
+    private static final int FRIENDS_ONLY = 1;
+
     private DuetStitch() {}
 
-    /**
-     * True when the video's own setting should read as zero, which is the number the app
-     * takes to mean anyone may.
-     */
-    public static boolean allow() {
-        return Settings.ALLOW_DUET_AND_STITCH.get();
+    public static int setting(int original) {
+        if (!Settings.ALLOW_DUET_AND_STITCH.get()) return original;
+        return original == FRIENDS_ONLY ? ANYONE : original;
     }
 }

@@ -9,10 +9,13 @@ package app.morphe.patches.tiktok.interaction.duetstitch
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 private const val EXTENSION = "Lapp/morphe/extension/tiktok/misc/DuetStitch;"
 private const val AWEME = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
@@ -54,23 +57,30 @@ val duetStitchPatch = bytecodePatch(
     execute {
         for (fingerprint in listOf(DuetSettingFingerprint, StitchSettingFingerprint)) {
             fingerprint.method.apply {
-                // A getter this small can be compiled with only its own receiver, and then v0
-                // is that receiver rather than a spare.
-                check(implementation!!.registerCount > 1) {
-                    "Allow Duet and Stitch: ${fingerprint.name} has no free local register."
+                // The value is taken as the getter hands it back, rather than the getter being
+                // answered before it reads anything, because the number it returns says which
+                // of two refusals applies and only one of them is ours to answer.
+                val returns = implementation!!.instructions.withIndex()
+                    .filter { it.value.opcode == Opcode.RETURN }
+                    .map { it.index }
+                    .toList()
+                check(returns.isNotEmpty()) {
+                    "Allow Duet and Stitch: ${fingerprint.name} does not return a value."
                 }
-                addInstructions(
-                    0,
-                    """
-                        invoke-static {}, $EXTENSION->allow()Z
-                        move-result v0
-                        if-eqz v0, :morphe_keep_setting
-                        const/4 v0, 0x0
-                        return v0
-                        :morphe_keep_setting
-                        nop
-                    """,
-                )
+                returns.asReversed().forEach { index ->
+                    val setting = getInstruction<OneRegisterInstruction>(index).registerA
+                    check(setting <= 15) {
+                        "Allow Duet and Stitch: ${fingerprint.name} returns from v$setting, " +
+                            "which move-result cannot reach."
+                    }
+                    addInstructions(
+                        index,
+                        """
+                            invoke-static { v$setting }, $EXTENSION->setting(I)I
+                            move-result v$setting
+                        """,
+                    )
+                }
             }
         }
 

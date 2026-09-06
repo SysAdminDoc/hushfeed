@@ -53,9 +53,9 @@ The Settings patch adds the entry point; most patches depend on it and it's sele
 | `Subtitle tools` | Saves captions as SRT files beside downloaded videos. Choose original, device or all available languages, adjust caption size and background, and keep the current caption visible in clear display. |
 | `Playback quality` | Chooses the lowest, highest or a target video quality for regular and adaptive playback. A second choice caps quality on mobile data, and only ever lowers it. Download quality has its own setting. |
 | `Advanced downloads` | Selects a video quality or target resolution and combines separate audio tracks when needed. Optional extras save Photo Mode images straight from their source URLs, keep a video's sound as its own .m4a, and save a profile picture at full size or a story from a long press. |
-| `Advanced downloads` extras | Saving without sound, and handing the video's link to a downloader you already use instead of saving here. Both live under Downloads. |
+| `Advanced downloads` extras | Saving without sound, and handing the video's link to a downloader you already use instead of saving here. Both live under Downloads, and the hand-off covers the story save too. |
 | `Allow Duet and Stitch` | Ignores the creator's Duet and Stitch setting so the entries appear. Every other check the app makes still applies, and whether the upload is accepted is the server's decision. |
-| `Uncap the refresh rate` | Stops TikTok asking the screen to run at the frame rate of the video it is playing, which on a 90 or 120 Hz phone slows the whole app to that rate. |
+| `Uncap the refresh rate` | Stops TikTok asking the screen to run slower than it can, which it does by asking for the frame rate of the video. A request that is not slower than the screen is left alone. |
 | `Fit video to the screen` | Shows the whole of a video instead of cropping it to the window. Nothing changes on a tall phone. On a folding phone opened up, a squarer screen or a split view the sides or the ends stop being cut off. |
 | `Notification controls` | Adds a switch for the notification saying somebody new followed you, and one for message streaks. The follower notification is dropped before Android is asked to post it; everything else in the drawer is untouched. |
 | `Long-press controls` | Lets a long press on a video keep TikTok's own action, do nothing, or open the video's comments, and can turn a press on the left or right third of the screen into a jump back or forward by however many seconds you pick. Brings `Double-tap controls` with it, which supplies the comment control. |
@@ -65,6 +65,7 @@ The Settings patch adds the entry point; most patches depend on it and it's sele
 | `Always show publish date` | Keeps the video's publish date visible in its author information. |
 | `Not interested button` | Sends feedback about the current video through TikTok's own service. The button works independently of the block switch. |
 | `Block author button` | Adds a button to the video player that blocks the account that posted the current video in one tap, with an undo banner. Long press it to move it. A second button blocks the current sound. |
+| `Comment tools` search | A box above the comments that narrows them by what they say or who said it. Comments that do not match are collapsed, not removed, so clearing the box brings them back. |
 | `Comment tools` | Hides comments containing chosen words or from chosen accounts, and turns the thumbs down on each comment into a block button. A switch hides comments made of an image or a sticker rather than words. |
 | `Copy comments without username` | Copies only the comment text without including the creator's username. |
 | `Custom offline videos limit` | Adds a custom entry to TikTok's offline videos menu with a configurable limit from 1 to 1000 videos. Values outside the range use the nearest valid limit. |
