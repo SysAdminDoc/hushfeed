@@ -1,3 +1,7 @@
+## Unreleased
+
+* The box above the comments now actually turns up. It was being added from the callback that fills a comment row in, and a list fills a row in before it puts it on screen, so the code went looking for the comment sheet from a row that was not in it yet and found nothing. It waits for the row to land now. It also looks a little further up for something to sit above, because the list is not always a direct child of the column that stacks the sheet, and a search you typed on one video no longer follows you to the next one.
+
 ## 0.19.0 (2026-09-06)
 
 * A box above the comments that narrows them to what you are looking for, by what a comment says or who said it. Nothing is taken out of TikTok's list: comments that do not match are collapsed where they sit, so clearing the box brings them all back and paging, replies and counts never know anything happened.

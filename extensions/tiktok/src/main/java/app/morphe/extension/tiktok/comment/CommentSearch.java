@@ -43,8 +43,12 @@ public final class CommentSearch {
     /** The list a box has already been put above, so it is only added once. */
     private static final Map<ViewGroup, Boolean> DECORATED = new WeakHashMap<>();
 
+    /** How far above the list to look for something that stacks its children. */
+    private static final int MAX_COLUMN_LEVELS = 4;
+
     private static volatile String query = "";
     private static WeakReference<ViewGroup> shown = new WeakReference<>(null);
+    private static boolean warnedNoColumn;
 
     private CommentSearch() {}
 
@@ -87,27 +91,62 @@ public final class CommentSearch {
         try {
             ROW_COMMENTS.put(itemView, comment);
             setRowHidden(itemView, !matches(comment, query));
-            ViewParent parent = itemView.getParent();
-            if (parent instanceof ViewGroup) {
-                ViewGroup listView = (ViewGroup) parent;
-                shown = new WeakReference<>(listView);
-                addSearchField(listView);
-            }
+            // A list binds a row before putting it in place, and detaches one it is about to
+            // rebind, so the sheet is not reachable from the row while this runs. Waiting for
+            // the row to be attached is the only time the list can be found.
+            itemView.post(() -> decorate(itemView));
         } catch (Throwable exception) {
             Logger.printException(() -> "Could not narrow a comment row", exception);
         }
     }
 
+    /** Runs once the bound row is in place, which is the first moment the list can be read. */
+    private static void decorate(View itemView) {
+        try {
+            ViewParent parent = itemView.getParent();
+            if (!(parent instanceof ViewGroup)) return;
+            ViewGroup listView = (ViewGroup) parent;
+            if (shown.get() != listView) {
+                // A different sheet. Whatever was typed into the last one was about that
+                // video's comments, so it does not follow the reader to this one.
+                shown = new WeakReference<>(listView);
+                setQuery("");
+            }
+            addSearchField(listView);
+            narrowShownRows();
+        } catch (Throwable exception) {
+            Logger.printException(() -> "Could not put a box above the comments", exception);
+        }
+    }
+
     /**
-     * Puts the box above the comments, once per list. Its parent has to lay children out one
-     * under another for a box added there to land above the list rather than across it, so
-     * anything else is left alone and the box simply does not appear.
+     * Puts the box above the comments, once per list. Something above the list has to lay its
+     * children out one under another for a box added there to land above the list rather than
+     * across it, so the nearest few ancestors are tried and anything else is left alone.
      */
     private static void addSearchField(ViewGroup listView) {
+        View anchor = listView;
         ViewParent parent = listView.getParent();
-        if (!(parent instanceof LinearLayout)) return;
-        LinearLayout column = (LinearLayout) parent;
-        if (column.getOrientation() != LinearLayout.VERTICAL) return;
+        for (int level = 0; level < MAX_COLUMN_LEVELS && parent instanceof ViewGroup; level++) {
+            if (parent instanceof LinearLayout
+                    && ((LinearLayout) parent).getOrientation() == LinearLayout.VERTICAL) {
+                insertBox((LinearLayout) parent, anchor);
+                return;
+            }
+            anchor = (View) parent;
+            parent = parent.getParent();
+        }
+        if (!warnedNoColumn) {
+            warnedNoColumn = true;
+            ViewParent nearest = listView.getParent();
+            String name = nearest == null ? "none" : nearest.getClass().getName();
+            Logger.printInfo(() -> "Nothing above the comment list stacks its children, so the "
+                    + "search box has nowhere to go. Nearest parent: " + name);
+        }
+    }
+
+    /** Builds the box and puts it in {@code column}, directly above whatever holds the list. */
+    private static void insertBox(LinearLayout column, View anchor) {
         if (Boolean.TRUE.equals(DECORATED.get(column))) return;
         DECORATED.put(column, Boolean.TRUE);
 
@@ -131,7 +170,7 @@ public final class CommentSearch {
                 narrowShownRows();
             }
         });
-        column.addView(box, column.indexOfChild(listView));
+        column.addView(box, column.indexOfChild(anchor));
     }
 
     /**

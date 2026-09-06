@@ -5,11 +5,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import static org.robolectric.Shadows.shadowOf;
+
+import android.os.Looper;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import app.morphe.extension.shared.Utils;
@@ -106,6 +110,7 @@ public class CommentSearchTest {
             }
             CommentSearch.onCellBound(first, new Comment("Where is this filmed?", "traveller99", "Jo"));
             CommentSearch.onCellBound(second, new Comment("Great recipe", "cook", "Sam"));
+            shadowOf(Looper.getMainLooper()).idle();
 
             // Nothing typed: both rows stand at the height the list gave them.
             assertEquals(View.VISIBLE, first.getVisibility());
@@ -154,6 +159,131 @@ public class CommentSearchTest {
         }
     }
 
+    @Test public void theBoxWaitsUntilTheRowIsInTheList() {
+        try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup().visible()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            Settings.COMMENT_SEARCH.save(true);
+            CommentSearch.setQuery("");
+
+            LinearLayout column = new LinearLayout(activity);
+            column.setOrientation(LinearLayout.VERTICAL);
+            LinearLayout listView = new LinearLayout(activity);
+            listView.setOrientation(LinearLayout.VERTICAL);
+            column.addView(listView);
+            activity.setContentView(column);
+
+            // A list binds a row before it holds it, so this is the state every real bind runs
+            // in: there is nothing above the row to find yet.
+            View row = new View(activity);
+            row.setLayoutParams(new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, 120));
+            CommentSearch.onCellBound(row, new Comment("Great recipe", "cook", "Sam"));
+            shadowOf(Looper.getMainLooper()).idle();
+            assertEquals(1, column.getChildCount());
+
+            // Once the list holds it, the box goes in above the list.
+            listView.addView(row);
+            shadowOf(Looper.getMainLooper()).idle();
+            assertEquals(2, column.getChildCount());
+            assertTrue(column.getChildAt(0) instanceof EditText);
+            assertEquals(listView, column.getChildAt(1));
+        } finally {
+            CommentSearch.setQuery("");
+            Settings.COMMENT_SEARCH.save(false);
+        }
+    }
+
+    @Test public void theBoxLooksPastAWrapperForItsColumn() {
+        try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup().visible()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            Settings.COMMENT_SEARCH.save(true);
+            CommentSearch.setQuery("");
+
+            // The list is not always a direct child of the column that stacks the sheet.
+            LinearLayout column = new LinearLayout(activity);
+            column.setOrientation(LinearLayout.VERTICAL);
+            View heading = new View(activity);
+            column.addView(heading);
+            FrameLayout wrapper = new FrameLayout(activity);
+            LinearLayout listView = new LinearLayout(activity);
+            listView.setOrientation(LinearLayout.VERTICAL);
+            wrapper.addView(listView);
+            column.addView(wrapper);
+            activity.setContentView(column);
+
+            View row = new View(activity);
+            row.setLayoutParams(new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, 120));
+            listView.addView(row);
+            CommentSearch.onCellBound(row, new Comment("Great recipe", "cook", "Sam"));
+            shadowOf(Looper.getMainLooper()).idle();
+
+            // Above the wrapper the list sits in, and below whatever was already there.
+            assertEquals(3, column.getChildCount());
+            assertEquals(heading, column.getChildAt(0));
+            assertTrue(column.getChildAt(1) instanceof EditText);
+            assertEquals(wrapper, column.getChildAt(2));
+        } finally {
+            CommentSearch.setQuery("");
+            Settings.COMMENT_SEARCH.save(false);
+        }
+    }
+
+    @Test public void aSearchDoesNotFollowTheReaderToTheNextVideo() {
+        try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup().visible()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            Settings.COMMENT_SEARCH.save(true);
+            CommentSearch.setQuery("");
+
+            LinearLayout root = new LinearLayout(activity);
+            root.setOrientation(LinearLayout.VERTICAL);
+            activity.setContentView(root);
+
+            LinearLayout firstColumn = new LinearLayout(activity);
+            firstColumn.setOrientation(LinearLayout.VERTICAL);
+            LinearLayout firstList = new LinearLayout(activity);
+            firstList.setOrientation(LinearLayout.VERTICAL);
+            firstColumn.addView(firstList);
+            root.addView(firstColumn);
+
+            View row = new View(activity);
+            row.setLayoutParams(new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, 120));
+            firstList.addView(row);
+            CommentSearch.onCellBound(row, new Comment("Great recipe", "cook", "Sam"));
+            shadowOf(Looper.getMainLooper()).idle();
+            ((EditText) firstColumn.getChildAt(0)).setText("recipe");
+            assertEquals("recipe", CommentSearch.query());
+
+            // The next video opens its comments with a list of its own.
+            LinearLayout secondColumn = new LinearLayout(activity);
+            secondColumn.setOrientation(LinearLayout.VERTICAL);
+            LinearLayout secondList = new LinearLayout(activity);
+            secondList.setOrientation(LinearLayout.VERTICAL);
+            secondColumn.addView(secondList);
+            root.addView(secondColumn);
+
+            View other = new View(activity);
+            other.setLayoutParams(new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, 120));
+            secondList.addView(other);
+            CommentSearch.onCellBound(other, new Comment("Nothing alike", "someone", "Someone"));
+            shadowOf(Looper.getMainLooper()).idle();
+
+            // The box starts empty, and the row the old search hid is back at its own height.
+            assertEquals("", CommentSearch.query());
+            assertEquals("", ((EditText) secondColumn.getChildAt(0)).getText().toString());
+            assertEquals(View.VISIBLE, other.getVisibility());
+            assertEquals(120, other.getLayoutParams().height);
+        } finally {
+            CommentSearch.setQuery("");
+            Settings.COMMENT_SEARCH.save(false);
+        }
+    }
+
     @Test public void nothingIsTouchedWhileTheSwitchIsOff() {
         try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup().visible()) {
             var activity = controller.get();
@@ -170,6 +300,7 @@ public class CommentSearchTest {
             listView.addView(row);
 
             CommentSearch.onCellBound(row, new Comment("Great recipe", "cook", "Sam"));
+            shadowOf(Looper.getMainLooper()).idle();
             assertEquals(View.VISIBLE, row.getVisibility());
             assertEquals(120, row.getLayoutParams().height);
             // No box either, so the sheet looks exactly as TikTok drew it.
