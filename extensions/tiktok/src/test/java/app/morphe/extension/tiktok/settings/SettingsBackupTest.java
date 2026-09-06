@@ -234,6 +234,37 @@ public class SettingsBackupTest {
         assertTrue(FeatureGateLabStore.masterEnabled());
     }
 
+    @Test public void secondaryProcessCanReadButCannotOverwritePersistentSettings() {
+        var app = Utils.getContext();
+        Settings.REGION_SPOOF.save(true);
+        FeatureGateLabStore.setMasterEnabled(true);
+        FeatureGateLabStore.saveRule("abmock", "secondary_test", "BOOLEAN", "true", true);
+        var secondary = new android.content.ContextWrapper(app) {
+            @Override public android.content.pm.ApplicationInfo getApplicationInfo() {
+                android.content.pm.ApplicationInfo info = new android.content.pm.ApplicationInfo(
+                        super.getApplicationInfo());
+                info.processName = app.getPackageName() + ":secondary";
+                return info;
+            }
+        };
+        Utils.setContext(secondary);
+        try {
+            assertFalse(Utils.isMainProcess());
+            assertTrue(Settings.REGION_SPOOF.get());
+            assertTrue(FeatureGateLabStore.masterEnabled());
+            assertNotNull(FeatureGateLabStore.rule("abmock", "secondary_test", "BOOLEAN"));
+            Settings.REGION_SPOOF.save(false);
+            FeatureGateLabStore.setMasterEnabled(false);
+            FeatureGateLabStore.deleteRule("abmock", "secondary_test", "BOOLEAN");
+            assertTrue(Settings.REGION_SPOOF.get());
+            assertTrue(Setting.preferences.preferences.getBoolean(Settings.REGION_SPOOF.key, false));
+            assertTrue(FeatureGateLabStore.masterEnabled());
+            assertNotNull(FeatureGateLabStore.rule("abmock", "secondary_test", "BOOLEAN"));
+        } finally {
+            Utils.setContext(app);
+        }
+    }
+
     @Test public void anOlderCompleteInventoryUsesDefaultsForNewerSettings() throws Exception {
         Settings.MAX_VIDEO_SECONDS.save(75);
         JSONObject root = new JSONObject(SettingsBackup.create(false));

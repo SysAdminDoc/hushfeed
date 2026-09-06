@@ -281,6 +281,10 @@ public abstract class Setting<T> {
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static void migrateFromOldPreferences(SharedPrefCategory oldPrefs, Setting setting) {
+        if (!Utils.isMainProcess()) {
+            Logger.printInfo(() -> "Ignored settings migration from a secondary process: " + setting.key);
+            return;
+        }
         String settingKey = setting.key;
         if (!oldPrefs.preferences.contains(settingKey)) {
             return; // Nothing to do.
@@ -361,6 +365,10 @@ public abstract class Setting<T> {
      * Persistently saves the value.
      */
     public final void save(T newValue) {
+        if (!Utils.isMainProcess()) {
+            Logger.printInfo(() -> "Ignored persistent setting write from a secondary process: " + key);
+            return;
+        }
         newValue = coerce(Objects.requireNonNull(newValue));
         if (value.equals(newValue)) {
             return;
@@ -405,6 +413,9 @@ public abstract class Setting<T> {
     /** Apply a validated batch in one preference transaction. Call on a worker thread. */
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static synchronized void saveAll(Map<Setting<?>, Object> updates) throws java.io.IOException {
+        if (!Utils.isMainProcess()) {
+            throw new java.io.IOException("Persistent settings are writable only from the main process");
+        }
         Map<Setting<?>, Object> previous = new HashMap<>();
         Map<Setting<?>, Object> bounded = new HashMap<>();
         for (var entry : updates.entrySet()) {

@@ -10,6 +10,8 @@
 
 * Settings restore reports whether the two preference stores returned to their prior state. Rejected backups, complete rollback and recovery-required failures have separate feedback, and a verified Undo copy remains available when recovery is needed.
 
+* Persistent settings and Feature Gate Lab data now accept writes only from the package's main process. Secondary processes can still read current values, but stale snapshots cannot overwrite newer settings or consume migration state.
+
 * Settings text that said the wrong thing. The thumbs down block claimed it needed a restart, which it never did. The two region switches claimed one and never asked for it, and now they do, because TikTok reads the country at startup. A dozen summaries that talked about secure window flags, native seekbars, candidates and pages now say what actually happens.
 
 * Every message the patches show you is now in your own language, not just the settings screens. Blocking, saving, seeking, the confirm taps and the backup actions all spoke English on a German or Indonesian phone. The ones that name something, a handle or a file, are built so the translation decides the word order rather than having English word order with the name dropped in.

@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 
 public final class FeatureGateLabStore {
@@ -46,6 +47,7 @@ public final class FeatureGateLabStore {
     }
 
     public static void setMasterEnabled(boolean enabled) {
+        if (!canWrite()) return;
         SharedPreferences prefs = prefs();
         if (prefs != null) {
             prefs.edit().putBoolean(MASTER_KEY, enabled).apply();
@@ -60,6 +62,7 @@ public final class FeatureGateLabStore {
     }
 
     public static void acknowledgeWarning() {
+        if (!canWrite()) return;
         SharedPreferences prefs = prefs();
         if (prefs != null) {
             prefs.edit().putBoolean(WARNING_ACK_KEY, true).apply();
@@ -71,6 +74,7 @@ public final class FeatureGateLabStore {
         if (prefs == null || !prefs.getBoolean(MIGRATION_NOTICE_KEY, false)) {
             return false;
         }
+        if (!canWrite()) return false;
         prefs.edit().putBoolean(MIGRATION_NOTICE_KEY, false).apply();
         return true;
     }
@@ -96,6 +100,7 @@ public final class FeatureGateLabStore {
     }
 
     public static void saveRule(String manager, String key, String type, String value, boolean enabled) {
+        if (!canWrite()) return;
         SharedPreferences prefs = prefs();
         if (prefs == null) {
             return;
@@ -125,6 +130,7 @@ public final class FeatureGateLabStore {
     }
 
     public static void resetAllLabData() {
+        if (!canWrite()) return;
         SettingsManagerObservationRecorder.clear();
         SharedPreferences prefs = prefs();
         if (prefs != null) {
@@ -189,6 +195,9 @@ public final class FeatureGateLabStore {
 
     /** Replace configuration only; captured diagnostics are retained. Call on a worker thread. */
     public static void replaceSettings(List<Rule> rules, boolean master, boolean acknowledged) throws java.io.IOException {
+        if (!canWrite()) {
+            throw new java.io.IOException("Feature Gate Lab is writable only from the main process");
+        }
         SharedPreferences prefs = prefs();
         if (prefs == null) throw new java.io.IOException("Lab storage unavailable");
         SharedPreferences.Editor editor = prefs.edit();
@@ -340,6 +349,7 @@ public final class FeatureGateLabStore {
     }
 
     private static void deleteRuleById(String id) {
+        if (!canWrite()) return;
         SharedPreferences prefs = prefs();
         if (prefs == null) {
             return;
@@ -422,7 +432,7 @@ public final class FeatureGateLabStore {
 
     private static synchronized void ensureTargetVersion(SharedPreferences prefs) {
         String storedVersion = prefs.getString(STORED_TARGET_VERSION_KEY, "");
-        if (TARGET_VERSION.equals(storedVersion)) {
+        if (TARGET_VERSION.equals(storedVersion) || !Utils.isMainProcess()) {
             return;
         }
 
@@ -442,6 +452,12 @@ public final class FeatureGateLabStore {
 
     static boolean runtimeStorageAvailable() {
         return Utils.getContext() != null;
+    }
+
+    private static boolean canWrite() {
+        if (Utils.isMainProcess()) return true;
+        Logger.printInfo(() -> "Ignored Feature Gate Lab write from a secondary process");
+        return false;
     }
 
     private static String safe(String value) {

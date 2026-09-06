@@ -38,13 +38,21 @@ public class SharedPrefCategory {
         removeKey(key);
     }
 
+    private boolean canWrite() {
+        if (Utils.isMainProcess()) return true;
+        Logger.printInfo(() -> "Ignored persistent write from a secondary process: " + name);
+        return false;
+    }
+
     @SuppressLint("ApplySharedPref") // Must use commit to ensure default value is not saved to preferences.
     private void saveObjectAsString(@NonNull String key, @Nullable Object value) {
+        if (!canWrite()) return;
         preferences.edit().putString(key, (value == null ? null : value.toString())).commit();
     }
 
     @SuppressLint("ApplySharedPref") // Must use commit to ensure default value is not saved to preferences.
     public void clear() {
+        if (!canWrite()) return;
         preferences.edit().clear().commit();
     }
 
@@ -53,11 +61,13 @@ public class SharedPrefCategory {
      */
     @SuppressLint("ApplySharedPref") // Must use commit to ensure default value is not saved to preferences.
     public void removeKey(@NonNull String key) {
+        if (!canWrite()) return;
         preferences.edit().remove(Objects.requireNonNull(key)).commit();
     }
 
     @SuppressLint("ApplySharedPref") // Must use commit to ensure default value is not saved to preferences.
     public void saveBoolean(@NonNull String key, boolean value) {
+        if (!canWrite()) return;
         preferences.edit().putBoolean(key, value).commit();
     }
 

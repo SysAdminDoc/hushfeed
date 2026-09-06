@@ -21,6 +21,7 @@ import android.os.PersistableBundle;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Process;
 import android.preference.Preference;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
@@ -39,6 +40,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.lang.ref.WeakReference;
+import java.io.FileInputStream;
 import java.text.Bidi;
 import java.text.Collator;
 import java.text.Normalizer;
@@ -71,6 +73,7 @@ public class Utils {
 
     private static String versionName;
     private static String applicationLabel;
+    private static volatile String processName;
 
     @ColorInt
     private static int darkColor = Color.BLACK;
@@ -397,6 +400,33 @@ public class Utils {
             Logger.printException(() -> "Context is not set by extension hook, returning null");
         }
         return context;
+    }
+
+    /** Persistent preference writes are owned by the package's main process. */
+    public static boolean isMainProcess() {
+        Context appContext = context;
+        if (appContext == null) return true;
+        String packageName = appContext.getPackageName();
+        String declared = appContext.getApplicationInfo().processName;
+        if (declared != null && declared.startsWith(packageName + ":")) return false;
+        String actual = currentProcessName();
+        if (actual == null || actual.isEmpty() || packageName.equals(actual)) return true;
+        return !actual.startsWith(packageName + ":");
+    }
+
+    private static String currentProcessName() {
+        String cached = processName;
+        if (cached != null) return cached;
+        StringBuilder name = new StringBuilder();
+        try (FileInputStream input = new FileInputStream("/proc/" + Process.myPid() + "/cmdline")) {
+            int value;
+            while ((value = input.read()) > 0) name.append((char) value);
+        } catch (Exception ignored) {
+            return null;
+        }
+        cached = name.toString();
+        if (!cached.isEmpty()) processName = cached;
+        return cached;
     }
 
     public static void setContext(Context appContext) {
