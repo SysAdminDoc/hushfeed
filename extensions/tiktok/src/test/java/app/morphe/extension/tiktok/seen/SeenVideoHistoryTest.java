@@ -30,6 +30,60 @@ public class SeenVideoHistoryTest {
         drain();
     }
 
+    @Test public void clearingKeepsAWayBackUntilTheNextClear() throws Exception {
+        SeenVideoHistory.onPlayProgressChange("42", 5000, 10000);
+        SeenVideoHistory.onPlayProgressChange("43", 5000, 10000);
+        drain();
+        assertEquals(2, SeenVideoHistory.size());
+
+        SeenVideoHistory.clear();
+        drain();
+        assertEquals(0, SeenVideoHistory.size());
+        assertEquals(2, SeenVideoHistory.undoSize());
+        assertFalse(SeenVideoHistory.shouldHide("42"));
+
+        assertTrue(SeenVideoHistory.undoClear());
+        drain();
+        assertEquals(2, SeenVideoHistory.size());
+        assertTrue(SeenVideoHistory.shouldHide("42"));
+        assertTrue(SeenVideoHistory.shouldHide("43"));
+        // The way back is used up once it has been taken.
+        assertEquals(0, SeenVideoHistory.undoSize());
+        assertFalse(SeenVideoHistory.undoClear());
+    }
+
+    @Test public void whatWasPutBackSurvivesAReload() throws Exception {
+        SeenVideoHistory.onPlayProgressChange("77", 5000, 10000);
+        drain();
+        SeenVideoHistory.clear();
+        drain();
+        assertTrue(SeenVideoHistory.undoClear());
+        drain();
+
+        // The rows go back to the database, not just to memory: a reload finds them again.
+        Field started = SeenVideoHistory.class.getDeclaredField("LOAD_STARTED");
+        started.setAccessible(true);
+        ((AtomicBoolean) started.get(null)).set(false);
+        Field seen = SeenVideoHistory.class.getDeclaredField("SEEN");
+        seen.setAccessible(true);
+        ((java.util.Map<?, ?>) seen.get(null)).clear();
+
+        // The reload runs on the same worker, so the first read only starts it.
+        SeenVideoHistory.size();
+        drain();
+
+        assertEquals(1, SeenVideoHistory.size());
+        assertTrue(SeenVideoHistory.shouldHide("77"));
+    }
+
+    @Test public void nothingToClearMeansNothingToPutBack() throws Exception {
+        assertEquals(0, SeenVideoHistory.size());
+        SeenVideoHistory.clear();
+        drain();
+        assertEquals(0, SeenVideoHistory.undoSize());
+        assertFalse(SeenVideoHistory.undoClear());
+    }
+
     @Test public void refreshedPageRejectsTheVideoJustWatched() throws Exception {
         SeenVideoHistory.onPlayProgressChange("42", 5000, 10000);
         drain();

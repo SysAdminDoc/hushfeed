@@ -8,7 +8,6 @@
 package app.morphe.extension.tiktok.settings.preference;
 
 import app.morphe.extension.tiktok.settings.L10n;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.preference.Preference;
 import android.view.View;
@@ -18,21 +17,34 @@ import app.morphe.extension.tiktok.seen.SeenVideoHistory;
 
 @SuppressWarnings("deprecation")
 public final class ClearSeenVideoHistoryPreference extends Preference {
+    static final String CLEAR_SUMMARY = "Delete the local record of the videos you have watched.";
+    static final String UNDO_SUMMARY = "Cleared. Tap again to put the record back.";
+
     public ClearSeenVideoHistoryPreference(Context context) {
         super(context);
         setTitle("Clear the seen video history");
-        setSummary("Delete the local record of the videos you have watched.");
+        setSummary(CLEAR_SUMMARY);
+        // One tap clears it. Nothing is lost that cannot be put back, so the way back is
+        // the next tap rather than a dialog asking permission first.
         setOnPreferenceClickListener(preference -> {
-            new AlertDialog.Builder(context)
-                    .setTitle(L10n.t(context, "Clear the seen video history?"))
-                    .setMessage(L10n.t(context, "This deletes the local record only. Your TikTok account history "
-                            + "is not touched."))
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .setPositiveButton(L10n.t(context, "Clear"), (dialog, which) -> {
-                        SeenVideoHistory.clear();
-                        Utils.showToastShort(L10n.t(context, "Seen video history cleared"));
-                    })
-                    .show();
+            if (SeenVideoHistory.undoSize() > 0 && SeenVideoHistory.size() == 0) {
+                int restored = SeenVideoHistory.undoSize();
+                if (SeenVideoHistory.undoClear()) {
+                    Utils.showToastShort(L10n.f(context, "Put back %1$s videos", String.valueOf(restored)));
+                    setSummary(CLEAR_SUMMARY);
+                    return true;
+                }
+            }
+
+            int cleared = SeenVideoHistory.size();
+            SeenVideoHistory.clear();
+            if (cleared == 0) {
+                Utils.showToastShort(L10n.t(context, "There was nothing to clear"));
+                return true;
+            }
+            Utils.showToastLong(L10n.f(context, "Cleared %1$s videos. Tap again to put them back.",
+                    String.valueOf(cleared)));
+            setSummary(UNDO_SUMMARY);
             return true;
         });
     }

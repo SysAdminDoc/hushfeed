@@ -414,6 +414,8 @@
     <string name="mtp_897bb5f9">Kommagetrennte Ländercodes. Videos von dort werden ausgeblendet, egal was die Liste darüber sagt.</string>
     <!-- Match locale and timezone to country -->
     <string name="mtp_899a0b24">Sprache und Zeitzone an das Land anpassen</string>
+    <!-- Cleared. Tap again to put the record back. -->
+    <string name="mtp_8a41e5ae">Gelöscht. Tippe erneut, um alles zurückzuholen.</string>
     <!-- Hide activity status -->
     <string name="mtp_8aab1358">Aktivitätsstatus ausblenden</string>
     <!-- No preset selected -->
@@ -598,6 +600,8 @@
     <string name="mtp_c7ef2386">Zeilen mit vorgeschlagenen Konten ausblenden.</string>
     <!-- Show the current spoken caption while the other controls are hidden. -->
     <string name="mtp_c831e70b">Den aktuell gesprochenen Untertitel anzeigen, während die anderen Bedienelemente ausgeblendet sind.</string>
+    <!-- There was nothing to clear -->
+    <string name="mtp_c9210ce5">Es gab nichts zu löschen</string>
     <!-- Downloads -->
     <string name="mtp_c9822616">Downloads</string>
     <!-- Add a block button to the video player that blocks the account that posted the current video in one tap. An undo action is shown after each block. -->
@@ -680,6 +684,8 @@
     <string name="mtp_e3295d0d">Pfeil und Zähler in der rechten Spalte ausblenden</string>
     <!-- Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working. -->
     <string name="mtp_e3515af9">Hushfeed hat ein TikTok-Rätsel ausgeblendet. Schalte Rätsel-Dialoge ausblenden aus, wenn etwas nicht mehr funktioniert.</string>
+    <!-- Cleared %1$s videos. Tap again to put them back. -->
+    <string name="mtp_e39d8946">%1$s Videos gelöscht. Tippe erneut, um sie zurückzuholen.</string>
     <!-- The minimum or maximum favourites of a video to show. -->
     <string name="mtp_e3cc3455">Mindest- oder Höchstzahl an Favoriten, damit ein Video gezeigt wird.</string>
     <!-- Sticker destination -->
@@ -726,6 +732,8 @@
     <string name="mtp_edc735f7">Das Symbol zum Hinzufügen von Personen in der Kopfzeile des Posteingangs ausblenden.</string>
     <!-- Feature Gate Lab -->
     <string name="mtp_edfabd68">Feature Gate Lab</string>
+    <!-- Put back %1$s videos -->
+    <string name="mtp_eeb29cdc">%1$s Videos zurückgeholt</string>
     <!-- Always show publish date -->
     <string name="mtp_efaa1484">Veröffentlichungsdatum immer anzeigen</string>
     <!-- Keep a local record of what you have watched and drop those videos from later feed pages. -->

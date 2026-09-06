@@ -207,6 +207,7 @@
     <string name="mtp_87691ace">Hidden commenters</string>
     <string name="mtp_897bb5f9">Comma separated country codes. Videos posted from these are hidden, whatever the list above says.</string>
     <string name="mtp_899a0b24">Match locale and timezone to country</string>
+    <string name="mtp_8a41e5ae">Cleared. Tap again to put the record back.</string>
     <string name="mtp_8aab1358">Hide activity status</string>
     <string name="mtp_8aedd8db">No preset selected</string>
     <string name="mtp_8b61ae29">Reset settings</string>
@@ -299,6 +300,7 @@
     <string name="mtp_c7c15a60">Keep automatic advance enabled. Pauses and open dialogs still stop scrolling. Restart after enabling it; use this switch to turn it off.</string>
     <string name="mtp_c7ef2386">Hide suggested account rows.</string>
     <string name="mtp_c831e70b">Show the current spoken caption while the other controls are hidden.</string>
+    <string name="mtp_c9210ce5">There was nothing to clear</string>
     <string name="mtp_c9822616">Downloads</string>
     <string name="mtp_ca39d625">Add a block button to the video player that blocks the account that posted the current video in one tap. An undo action is shown after each block.</string>
     <string name="mtp_ca99e6ad">Filter comments by keyword</string>
@@ -340,6 +342,7 @@
     <string name="mtp_e263a49d">Remove the actions row from the share sheet.</string>
     <string name="mtp_e3295d0d">Hide the arrow and its count in the right column.</string>
     <string name="mtp_e3515af9">Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working.</string>
+    <string name="mtp_e39d8946">Cleared %1$s videos. Tap again to put them back.</string>
     <string name="mtp_e3cc3455">The minimum or maximum favourites of a video to show.</string>
     <string name="mtp_e462ae24">Sticker destination</string>
     <string name="mtp_e4734450">Save the latest available TikTok crash report for diagnostic export.</string>
@@ -363,6 +366,7 @@
     <string name="mtp_eced77e7">A hidden puzzle may be the cause.</string>
     <string name="mtp_edc735f7">Hide the add people icon in the Inbox header.</string>
     <string name="mtp_edfabd68">Feature Gate Lab</string>
+    <string name="mtp_eeb29cdc">Put back %1$s videos</string>
     <string name="mtp_efaa1484">Always show publish date</string>
     <string name="mtp_f015bae7">Keep a local record of what you have watched and drop those videos from later feed pages.</string>
     <string name="mtp_f0b984af">Hide Series</string>

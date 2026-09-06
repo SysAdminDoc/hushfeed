@@ -13,6 +13,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -54,6 +55,12 @@ public final class SeenVideoHistory {
     private static final AtomicBoolean LOAD_STARTED = new AtomicBoolean();
 
     private static volatile Database database;
+    /**
+     * The history as it was before the last clear. Clearing is one tap with no dialog, so
+     * the way back has to be kept until it is plainly no longer wanted: the next clear, or
+     * the end of the process.
+     */
+    private static volatile Map<String, Long> undo;
     private static volatile String callbackAid;
     private static volatile boolean callbackAidMarked;
 
@@ -110,6 +117,8 @@ public final class SeenVideoHistory {
 
     public static void clear() {
         synchronized (HISTORY_LOCK) {
+            ensureLoaded();
+            undo = new HashMap<>(SEEN);
             generation++;
             SEEN.clear();
             callbackAid = null;
@@ -121,6 +130,53 @@ public final class SeenVideoHistory {
                     Logger.printException(() -> "Seen video history clear failed", throwable);
                 }
             });
+        }
+    }
+
+    /** How many videos the last clear removed, or zero when there is nothing to put back. */
+    public static int undoSize() {
+        Map<String, Long> copy = undo;
+        return copy == null ? 0 : copy.size();
+    }
+
+    /**
+     * Puts the history back as it was before the last clear. True when something was
+     * restored. The rows are written again rather than the delete being deferred: a clear
+     * that a crash could undo on its own would be worse than no undo at all.
+     */
+    public static boolean undoClear() {
+        synchronized (HISTORY_LOCK) {
+            Map<String, Long> copy = undo;
+            if (copy == null || copy.isEmpty()) {
+                return false;
+            }
+            undo = null;
+            generation++;
+            SEEN.putAll(copy);
+            trimMemory();
+
+            Map<String, Long> rows = new HashMap<>(copy);
+            IO.execute(() -> {
+                try {
+                    SQLiteDatabase writable = getDatabase().getWritableDatabase();
+                    writable.beginTransaction();
+                    try {
+                        for (Map.Entry<String, Long> row : rows.entrySet()) {
+                            ContentValues values = new ContentValues();
+                            values.put(COLUMN_AID, row.getKey());
+                            values.put(COLUMN_LAST_SEEN, row.getValue());
+                            writable.insertWithOnConflict(
+                                    TABLE, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+                        }
+                        writable.setTransactionSuccessful();
+                    } finally {
+                        writable.endTransaction();
+                    }
+                } catch (Throwable throwable) {
+                    Logger.printException(() -> "Seen video history undo failed", throwable);
+                }
+            });
+            return true;
         }
     }
 
