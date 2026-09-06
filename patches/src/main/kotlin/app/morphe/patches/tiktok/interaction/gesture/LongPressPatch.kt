@@ -19,6 +19,7 @@ import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val EXTENSION = "Lapp/morphe/extension/tiktok/interaction/GestureActions;"
+private const val SEEK_EXTENSION = "Lapp/morphe/extension/tiktok/interaction/FeedSeek;"
 private const val MOTION_EVENT = "Landroid/view/MotionEvent;"
 
 /**
@@ -48,6 +49,24 @@ private object FeedLongPressFingerprint : Fingerprint(
 )
 
 /**
+ * PlayerController is one of the classes TikTok did not rename, and neither is this callback
+ * on it. It runs several times a second while a video plays and carries the source id, the
+ * position and the length, which is what an edge seek needs to know, and the controller it
+ * runs on is the one holding the player to seek. The other {@code onPlayProgressChange} on
+ * the class takes a single float and is empty, so the parameters pick the wanted one.
+ *
+ * "Block the author" and "Hide already seen videos" prepend to the same method. All three
+ * injections are prepends and do not interfere.
+ */
+private object PlayerProgressFingerprint : Fingerprint(
+    returnType = "V",
+    parameters = listOf("Ljava/lang/String;", "J", "J"),
+    custom = { method, classDef ->
+        method.name == "onPlayProgressChange" && classDef.endsWith("/PlayerController;")
+    },
+)
+
+/**
  * Runs before TikTok's own long press handling, which is the 2x hold and the quick share
  * sheet. When the setting asks for something else the gesture is swallowed here, so those
  * two features and their switches only ever see a long press when the setting is left on
@@ -57,8 +76,9 @@ private object FeedLongPressFingerprint : Fingerprint(
 val longPressPatch = bytecodePatch(
     name = "Long-press controls",
     description = "Lets a long press on a video keep TikTok's own action, do nothing, or " +
-        "open the video's comments. Brings Double-tap controls with it, which supplies the " +
-        "comment control. Supports TikTok 46.2.3.",
+        "open the video's comments, and can turn a press on the left or right third of the " +
+        "screen into a jump back or forward. Brings Double-tap controls with it, which " +
+        "supplies the comment control. Supports TikTok 46.2.3.",
     default = false,
 ) {
     compatibleWith(*AppCompatibilities.tiktok4623())
@@ -73,7 +93,7 @@ val longPressPatch = bytecodePatch(
             addInstructionsWithLabels(
                 0,
                 """
-                    invoke-static {}, $EXTENSION->onLongPress()Z
+                    invoke-static/range { p1 .. p1 }, $EXTENSION->onLongPress($MOTION_EVENT)Z
                     move-result v0
                     if-eqz v0, :original
                     return-void
@@ -81,6 +101,14 @@ val longPressPatch = bytecodePatch(
                 ExternalLabel("original", getInstruction(0)),
             )
         }
+
+        // p0 is the controller, p1 the source id, then the position and the length, each a
+        // pair of registers. The range form is what reaches them in a method this wide.
+        PlayerProgressFingerprint.method.addInstruction(
+            0,
+            "invoke-static/range { p0 .. p5 }, " +
+                "$SEEK_EXTENSION->recordProgress(Ljava/lang/Object;Ljava/lang/String;JJ)V",
+        )
 
         SettingsStatusLoadFingerprint.method.addInstruction(
             0,

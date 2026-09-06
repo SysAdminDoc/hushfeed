@@ -3,6 +3,7 @@ package app.morphe.extension.tiktok.interaction;
 import static org.junit.Assert.*;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import app.morphe.extension.shared.Utils;
@@ -34,6 +35,31 @@ public class GestureActionsTest {
     public static final class Clip {
         public final String aid;
         Clip(String id) { aid = id; }
+    }
+
+    /** A press at {@code x} across the screen, which is what decides the seek zone. */
+    private static MotionEvent press(float x) {
+        return MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, x, 10f, 0);
+    }
+
+    private static MotionEvent middleOf(android.app.Activity activity) {
+        return press(activity.getResources().getDisplayMetrics().widthPixels / 2f);
+    }
+
+    /** Stands in for TikTok's player, whose own seek(float) kept its name. */
+    public static final class FakePlayer {
+        public float sought = Float.NaN;
+        public void seek(float milliseconds) { sought = milliseconds; }
+    }
+
+    /** Stands in for PlayerController, whose getPlayerManager() kept its name. */
+    public static final class FakeController {
+        public final FakePlayer player = new FakePlayer();
+        public FakePlayer getPlayerManager() { return player; }
+    }
+
+    /** A controller whose shape changed out from under us. */
+    public static final class ShapelessController {
     }
 
     @Test public void commentsUseMatchingAttachedNativeControlAndFollowRebinding() {
@@ -106,28 +132,28 @@ public class GestureActionsTest {
             app.morphe.extension.tiktok.blockauthor.BlockAuthorPatch.setPlayingAweme("one");
 
             Settings.LONG_PRESS_ACTION.save("default");
-            assertFalse(GestureActions.onLongPress());
+            assertFalse(GestureActions.onLongPress(middleOf(activity)));
             assertEquals(0, clicks[0]);
 
             Settings.LONG_PRESS_ACTION.save("nothing");
-            assertTrue(GestureActions.onLongPress());
+            assertTrue(GestureActions.onLongPress(middleOf(activity)));
             assertEquals(0, clicks[0]);
 
             // Remapped to comments: the control bound to the video on screen is pressed.
             Settings.LONG_PRESS_ACTION.save("comments");
-            assertTrue(GestureActions.onLongPress());
+            assertTrue(GestureActions.onLongPress(middleOf(activity)));
             assertEquals(1, clicks[0]);
 
             // The control for a different video does not count, and the gesture is still
             // swallowed so a stale 2x hold cannot fire in its place.
             GestureActions.bindCommentView(owner, new Params("two"));
-            assertTrue(GestureActions.onLongPress());
+            assertTrue(GestureActions.onLongPress(middleOf(activity)));
             assertEquals(1, clicks[0]);
 
             // The two gestures do not share a setting.
             Settings.DOUBLE_TAP_ACTION.save("nothing");
             Settings.LONG_PRESS_ACTION.save("default");
-            assertFalse(GestureActions.onLongPress());
+            assertFalse(GestureActions.onLongPress(middleOf(activity)));
         } finally {
             Settings.DOUBLE_TAP_ACTION.save("default");
             Settings.LONG_PRESS_ACTION.save("default");
@@ -144,8 +170,103 @@ public class GestureActionsTest {
             ChoicePreference choice = (ChoicePreference) screen.findPreference("long_press_action");
             assertNotNull(choice);
             assertArrayEquals(new String[]{"default", "nothing", "comments"}, choice.getEntryValues());
+            // The edge seek rides on the same patch, so its two controls come with it.
+            assertNotNull(screen.findPreference("edge_seek"));
+            assertNotNull(screen.findPreference("edge_seek_seconds"));
         } finally {
             SettingsStatus.longPressEnabled = false;
+        }
+    }
+
+    @Test public void onlyTheOuterThirdsSeekAndOnlyWhenAskedTo() {
+        try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup().visible()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            int width = activity.getResources().getDisplayMetrics().widthPixels;
+            assertTrue("the screen has a width to divide", width > 0);
+            Settings.EDGE_SEEK_SECONDS.save(7);
+
+            // Off: every zone leaves the Long press action to decide, edges included.
+            Settings.EDGE_SEEK.save(false);
+            for (float at : new float[]{0.02f, 0.2f, 0.5f, 0.8f, 0.98f}) {
+                assertEquals(0, GestureActions.edgeSeekDelta(press(width * at)));
+            }
+
+            Settings.EDGE_SEEK.save(true);
+            assertEquals(-7000L, GestureActions.edgeSeekDelta(press(0f)));
+            assertEquals(-7000L, GestureActions.edgeSeekDelta(press(width * 0.3f)));
+            assertEquals(7000L, GestureActions.edgeSeekDelta(press(width * 0.7f)));
+            assertEquals(7000L, GestureActions.edgeSeekDelta(press(width - 1f)));
+
+            // The middle third keeps the Long press action.
+            assertEquals(0, GestureActions.edgeSeekDelta(press(width / 2f)));
+            assertEquals(0, GestureActions.edgeSeekDelta(press(width / 3f)));
+            assertEquals(0, GestureActions.edgeSeekDelta(press(width * 2f / 3f)));
+
+            // Both lines to the pixel, and the two zones are the same width.
+            int third = width / 3;
+            assertEquals(-7000L, GestureActions.edgeSeekDelta(press(third - 1)));
+            assertEquals(0, GestureActions.edgeSeekDelta(press(third)));
+            assertEquals(0, GestureActions.edgeSeekDelta(press(width - third - 1)));
+            assertEquals(7000L, GestureActions.edgeSeekDelta(press(width - third)));
+
+            // Nothing to act on: no event, and a distance of zero.
+            assertEquals(0, GestureActions.edgeSeekDelta(null));
+            Settings.EDGE_SEEK_SECONDS.save(0);
+            assertEquals(0, GestureActions.edgeSeekDelta(press(0f)));
+        } finally {
+            Settings.EDGE_SEEK.save(false);
+            Settings.EDGE_SEEK_SECONDS.save(5);
+        }
+    }
+
+    @Test public void anEdgePressMovesThePlayerAndStaysInsideTheVideo() {
+        try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup().visible()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            int width = activity.getResources().getDisplayMetrics().widthPixels;
+            Settings.EDGE_SEEK.save(true);
+            Settings.EDGE_SEEK_SECONDS.save(5);
+            Settings.LONG_PRESS_ACTION.save("default");
+
+            FakeController player = new FakeController();
+            FeedSeek.recordProgress(player, "source-1", 10_000L, 30_000L);
+
+            // Right edge: forward by the configured distance, and the press is swallowed so
+            // TikTok's own 2x hold does not start under the same finger.
+            assertTrue(GestureActions.onLongPress(press(width * 0.9f)));
+            assertEquals(15_000f, player.player.sought, 0.5f);
+
+            // A second press counts from where the first one landed, without waiting for the
+            // progress tick that would say so.
+            assertTrue(GestureActions.onLongPress(press(width * 0.9f)));
+            assertEquals(20_000f, player.player.sought, 0.5f);
+
+            // Left edge, and never before the start.
+            assertTrue(GestureActions.onLongPress(press(width * 0.05f)));
+            assertEquals(15_000f, player.player.sought, 0.5f);
+            for (int i = 0; i < 5; i++) assertTrue(GestureActions.onLongPress(press(0f)));
+            assertEquals(0f, player.player.sought, 0.5f);
+
+            // Never past the end either: landing on it would finish the video.
+            for (int i = 0; i < 10; i++) assertTrue(GestureActions.onLongPress(press(width - 1f)));
+            assertEquals(29_999f, player.player.sought, 0.5f);
+
+            // A tick with nothing playing does not replace the player that is.
+            player.player.sought = Float.NaN;
+            FeedSeek.recordProgress(null, "source-1", 1_000L, 30_000L);
+            FeedSeek.recordProgress(player, "", 1_000L, 30_000L);
+            FeedSeek.recordProgress(player, "source-1", 1_000L, 0L);
+            assertTrue(FeedSeek.seekBy(-1_000L));
+            assertEquals(28_999f, player.player.sought, 0.5f);
+
+            // A player we cannot reach is reported rather than pretended about.
+            FeedSeek.recordProgress(new ShapelessController(), "source-2", 5_000L, 30_000L);
+            assertFalse(FeedSeek.seekBy(1_000L));
+        } finally {
+            Settings.EDGE_SEEK.save(false);
+            Settings.EDGE_SEEK_SECONDS.save(5);
+            Settings.LONG_PRESS_ACTION.save("default");
         }
     }
 

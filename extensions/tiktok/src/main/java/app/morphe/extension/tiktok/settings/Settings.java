@@ -40,6 +40,8 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting SAVE_STORY = new BooleanSetting("save_story", FALSE);
     public static final StringSetting DOUBLE_TAP_ACTION = new StringSetting("double_tap_action", "default");
     public static final StringSetting LONG_PRESS_ACTION = new StringSetting("long_press_action", "default");
+    public static final BooleanSetting EDGE_SEEK = new BooleanSetting("edge_seek", FALSE);
+    public static final IntegerSetting EDGE_SEEK_SECONDS = new IntegerSetting("edge_seek_seconds", 5);
     public static final BooleanSetting CONFIRM_FOLLOW = new BooleanSetting("confirm_follow", FALSE);
     public static final BooleanSetting CONFIRM_LIKE = new BooleanSetting("confirm_like", FALSE);
     public static final StringSetting BLOCKED_CAPTION_WORDS = new StringSetting("blocked_caption_words", "");

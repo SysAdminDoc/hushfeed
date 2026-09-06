@@ -1,3 +1,7 @@
+## Unreleased
+
+* Press and hold the left or right third of the screen to jump back or forward. How far is up to you, five seconds to start with, and the middle third still does whatever Long press is set to. It rides on the Long-press controls patch and is off until you turn it on, because holding a video is also how TikTok starts playing it at double speed.
+
 ## 0.18.0 (2026-09-06)
 
 * Review pass over the story save, the search suggestions and the share host. Hiding the suggestions was guarding two methods that build the request rather than the two that make it and show it, so the page fetched exactly as before and only the display was dropped: it now guards the request and the hand-off to the screen, which is what the switch said it did. A story is kept with the play area that bound it, because the viewer binds the pages either side of the one you are looking at and a single last-seen story would be the neighbour's by the time you pressed. The story save also runs the quality, sound and subtitle settings the same way a feed download does, says what it did when a photo story stops part way, and hands the press back to TikTok when it is not going to save anything. The host box refuses anything that is not a host, since a "?" in it would have left every shared link pointing at a front page. The search switch was also unreachable unless another Interface patch happened to be installed.

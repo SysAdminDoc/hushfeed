@@ -67,6 +67,11 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
             addPreference(new ChoicePreference(context, "Long press", Settings.LONG_PRESS_ACTION,
                     new String[]{"TikTok default (2x hold, quick share)", "Do nothing", "Open comments"},
                     new String[]{"default", "nothing", "comments"}));
+            addPreference(new TogglePreference(context, "Seek from the edges",
+                    "Press and hold the left or right third of the screen to jump back or forward. "
+                            + "The middle third keeps the Long press action.", Settings.EDGE_SEEK));
+            addPreference(new NumberInputPreference(context, "Seek by",
+                    "How far each edge press moves the video.", Settings.EDGE_SEEK_SECONDS, 1, 60, "s"));
         }
         if (SettingsStatus.confirmInteractionsEnabled) {
             addPreference(new TogglePreference(context, "Confirm before following", "Tap the feed Follow button twice within four seconds.", Settings.CONFIRM_FOLLOW));

@@ -1,6 +1,8 @@
 package app.morphe.extension.tiktok.interaction;
 
+import android.content.Context;
 import android.graphics.Rect;
+import android.view.MotionEvent;
 import android.view.View;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
@@ -43,10 +45,43 @@ public final class GestureActions {
     }
 
     /**
+     * How far a long press at this point should move the video, in milliseconds. Zero when
+     * the press landed in the middle, when edge seeking is off, or when there is no screen
+     * to measure the press against.
+     */
+    static long edgeSeekDelta(MotionEvent event) {
+        if (event == null || !Settings.EDGE_SEEK.get()) return 0;
+        int seconds = Settings.EDGE_SEEK_SECONDS.get();
+        if (seconds <= 0) return 0;
+        Context context = Utils.getContext();
+        if (context == null) return 0;
+        int width = context.getResources().getDisplayMetrics().widthPixels;
+        if (width <= 0) return 0;
+
+        // Whole pixels, so a press exactly on a third lands on one side of the line every
+        // time. A screen width times a third does not, and 106.666664 sits below 106.66667.
+        int third = width / 3;
+        // The gesture listener sits on the cell's touch layer, which fills the window, so the
+        // press is placed against the screen rather than against a view we do not hold.
+        float x = event.getRawX();
+        if (x < third) return -seconds * 1000L;
+        if (x >= width - third) return seconds * 1000L;
+        return 0;
+    }
+
+    /**
      * Runs before TikTok's own long press handling. Returning true swallows the gesture,
      * which is what keeps the 2x hold and the quick share sheet from also firing.
      */
-    public static boolean onLongPress() {
+    public static boolean onLongPress(MotionEvent event) {
+        long delta = edgeSeekDelta(event);
+        if (delta != 0) {
+            if (!FeedSeek.seekBy(delta)) Utils.showToastShort("Nothing is playing to seek");
+            // The edge belongs to the seek whether or not it worked, so the 2x hold that would
+            // otherwise start under the finger does not fire on top of it.
+            return true;
+        }
+
         String action = Settings.LONG_PRESS_ACTION.get();
         if ("nothing".equals(action)) return true;
         if (!"comments".equals(action)) return false;

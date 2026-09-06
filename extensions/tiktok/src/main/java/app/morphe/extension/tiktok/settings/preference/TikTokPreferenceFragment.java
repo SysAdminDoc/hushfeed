@@ -312,6 +312,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     SettingsStatus.automaticClearDisplayEnabled && Settings.AUTOMATIC_CLEAR_DISPLAY.get(),
                     SettingsStatus.doubleTapEnabled && !"default".equals(Settings.DOUBLE_TAP_ACTION.get()),
                     SettingsStatus.longPressEnabled && !"default".equals(Settings.LONG_PRESS_ACTION.get()),
+                    SettingsStatus.longPressEnabled && Settings.EDGE_SEEK.get(),
                     SettingsStatus.confirmInteractionsEnabled && Settings.CONFIRM_FOLLOW.get(),
                     SettingsStatus.confirmInteractionsEnabled && Settings.CONFIRM_LIKE.get(),
                     SettingsStatus.sensitiveWarningsEnabled && Settings.HIDE_SENSITIVE_WARNINGS.get(),
