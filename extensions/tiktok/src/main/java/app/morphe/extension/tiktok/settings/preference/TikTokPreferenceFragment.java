@@ -590,6 +590,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
 
     private int countBehaviorSettings() {
         int count = countEnabled(
+                SettingsStatus.refreshRateEnabled && Settings.UNCAP_REFRESH_RATE.get(),
                 SettingsStatus.foldableSplitViewEnabled && Settings.FOLDABLE_SPLIT_VIEW.get(),
                 SettingsStatus.blockAuthorEnabled && Settings.BLOCK_AUTHOR_BUTTON.get(),
                 SettingsStatus.notInterestedEnabled && Settings.NOT_INTERESTED_BUTTON.get(),

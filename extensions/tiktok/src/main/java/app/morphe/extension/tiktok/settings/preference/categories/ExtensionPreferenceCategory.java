@@ -160,6 +160,16 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                     Settings.ENABLE_LIVE_SEARCH
             ));
         }
+        if (SettingsStatus.refreshRateEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Keep the screen's refresh rate",
+                    "Stop TikTok asking the screen to run at the frame rate of the video it is "
+                            + "playing. On a 90 or 120 Hz phone that ask slows the whole app down "
+                            + "to the video's rate, scrolling included.",
+                    Settings.UNCAP_REFRESH_RATE
+            ));
+        }
 
     }
 }

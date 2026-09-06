@@ -344,6 +344,8 @@ Add a button beside the block control to send feedback about the current video.	
 Use non-personalized search	Pakai pencarian nonpersonal
 Use TikTok's non-personalized search state instead of the saved account choice.	Pakai mode pencarian nonpersonal milik TikTok, bukan pilihan akun yang tersimpan.
 Show Live search	Tampilkan pencarian LIVE
+Keep the screen's refresh rate	Pertahankan laju penyegaran layar
+Stop TikTok asking the screen to run at the frame rate of the video it is playing. On a 90 or 120 Hz phone that ask slows the whole app down to the video's rate, scrolling included.	Hentikan TikTok meminta layar berjalan pada laju bingkai video yang sedang diputar. Di ponsel 90 atau 120 Hz, permintaan itu memperlambat seluruh aplikasi sampai ke laju videonya, termasuk saat menggulir.
 Show TikTok's search entry in the Live drawer where supported.	Tampilkan kolom cari TikTok di laci LIVE bila didukung.
 Do not translate languages	Bahasa yang tidak diterjemahkan
 No additional languages excluded	Tidak ada bahasa tambahan yang dikecualikan

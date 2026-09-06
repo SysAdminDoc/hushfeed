@@ -1865,6 +1865,34 @@
         }
       ],
       "options": []
+    },
+    {
+      "name": "Uncap the refresh rate",
+      "description": "Stops TikTok asking the screen to run at the frame rate of the video, which on a 90 or 120 Hz phone means everything else in the app runs at that rate too. With the switch on the window states no preference and the phone decides. Supports TikTok 46.2.3.",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
     }
   ]
 }

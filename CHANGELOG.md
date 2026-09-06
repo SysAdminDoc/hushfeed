@@ -1,5 +1,7 @@
 ## Unreleased
 
+* A switch to stop TikTok pulling the screen down to the frame rate of the video. When a video starts, the app asks the window to run at that video's rate, so a 30 fps clip puts a 120 Hz phone at 30 Hz for everything, scrolling included. With the switch on the window says it has no preference and the phone decides. It does not raise anything, it only stops the asking.
+
 * Review pass over the three new switches. The edge seek was moving whatever the player last reported, which after scrolling on to a photo post is the video before it, so a press did nothing visible and swallowed TikTok's own hold as well: the seek now names the video it means. Its zones were also measured across the display rather than across TikTok's window, which in a side by side split view made the whole screen a forward-seek. A video fitted to the screen says it sits in the middle, because one large enough to fill did not have to. Fitting also measures the window TikTok has rather than the whole display, which is the case the switch exists for.
 
 * The whole of a video, on screens that are not 9:16. TikTok picks a size for the video that fills the window, which on a folding phone opened up, a squarer screen or a split view means the sides or the ends are cut off. The switch takes the same arithmetic and the smaller scale, so the video sits inside the window whole. A tall phone looks exactly as it did, because the video already fits there.
