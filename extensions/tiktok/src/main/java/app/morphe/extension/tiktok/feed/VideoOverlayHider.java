@@ -39,6 +39,7 @@ import java.util.Map;
  *                         and the music disc, six id/eoh buttons in one LinearLayout
  *   id/ezp                the root of every feed survey card; the cell's survey ViewStubs
  *                         carry no inflatedId, so the card keeps its own layout id
+ *   id/twc                the strip across the top holding For You, Following and the rest
  * </pre>
  * The first two belong to TikTok's search dynamic feature module, so they resolve under
  * that module's package name rather than the app's. Views are re-hidden on every layout
@@ -55,6 +56,7 @@ public final class VideoOverlayHider {
     private static final String MUSIC_ID = "videomusiccoverblock";
     private static final String ACTION_BAR_ID = "kzj";
     private static final String SURVEY_ID = "ezp";
+    private static final String TAB_STRIP_ID = "twc";
 
     private static final int LEGACY_STATUS_BAR_FLAGS = View.SYSTEM_UI_FLAG_FULLSCREEN
             | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -149,15 +151,20 @@ public final class VideoOverlayHider {
             boolean music = Settings.HIDE_FEED_MUSIC.get();
             boolean actionBar = Settings.HIDE_FEED_ACTION_BAR.get();
             boolean surveys = Settings.HIDE_FEED_SURVEYS.get();
-            if (caption || music || actionBar || surveys || !HIDDEN_HERE.isEmpty()) {
+            // Clear display hides the tab strip when it starts and TikTok brings it back on
+            // the first swipe. Following the clear state here keeps it away until the tap
+            // that ends clear mode, which is what the mode is for.
+            boolean tabStrip = Settings.CLEAR_DISPLAY.get();
+            if (caption || music || actionBar || surveys || tabStrip || !HIDDEN_HERE.isEmpty()) {
                 ViewGroup root = activity.findViewById(android.R.id.content);
                 int[] ids = {
                         identifier(activity, APP_PACKAGE, CAPTION_ID),
                         identifier(activity, APP_PACKAGE, MUSIC_ID),
                         identifier(activity, APP_PACKAGE, ACTION_BAR_ID),
                         identifier(activity, APP_PACKAGE, SURVEY_ID),
+                        identifier(activity, APP_PACKAGE, TAB_STRIP_ID),
                 };
-                boolean[] hidden = {caption, music, actionBar, surveys};
+                boolean[] hidden = {caption, music, actionBar, surveys, tabStrip};
                 List<List<View>> found = viewsWithIds(root, ids);
                 for (int i = 0; i < ids.length; i++) {
                     for (View view : found.get(i)) {

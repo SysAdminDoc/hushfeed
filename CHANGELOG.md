@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Clear display keeps the top tab strip away. TikTok hid it when the mode started and brought it back on the first swipe; it now stays gone until the tap that ends the mode.
+
 * Show the handle instead of the name puts the creator's @username beside a video in place of the display name they chose. It works alongside the country switch, which still follows whichever of the two is showing.
 
 * Sponsored cards are gone from the search Top and Videos grids. Search results are not videos but cards, so the card's own ad flag decides, along with the multi-ad, AI and brand zone shapes and the video it wraps.

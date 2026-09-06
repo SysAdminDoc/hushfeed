@@ -157,6 +157,36 @@ public class VideoOverlayHiderTest {
     }
 
     @Test
+    public void clearDisplayKeepsTheTabStripAwayUntilItEnds() {
+        int tabStripId = 0x7f0a0011;
+        VideoOverlayHider.resolveForTests("twc", tabStripId);
+        try (var controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            Utils.setContext(activity);
+            LinearLayout root = new LinearLayout(activity);
+            View tabStrip = new View(activity);
+            tabStrip.setId(tabStripId);
+            root.addView(tabStrip);
+            activity.setContentView(root);
+
+            Settings.CLEAR_DISPLAY.save(true);
+            VideoOverlayHider.applyTo(activity);
+            assertEquals(View.GONE, tabStrip.getVisibility());
+
+            // TikTok puts the strip back on the first swipe; the next layout pass takes it
+            // away again, which is the whole point of the mode.
+            tabStrip.setVisibility(View.VISIBLE);
+            VideoOverlayHider.applyTo(activity);
+            assertEquals(View.GONE, tabStrip.getVisibility());
+
+            // The tap that leaves clear display brings it back.
+            Settings.CLEAR_DISPLAY.save(false);
+            VideoOverlayHider.applyTo(activity);
+            assertEquals(View.VISIBLE, tabStrip.getVisibility());
+        }
+    }
+
+    @Test
     public void theStatusBarComesBackOnlyIfThisClassHidIt() {
         try (var controller = Robolectric.buildActivity(Activity.class).setup()) {
             Activity activity = controller.get();
