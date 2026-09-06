@@ -6,24 +6,24 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
+import java.util.Collections;
 import java.util.List;
 
 final class RemoteMedia {
     private RemoteMedia() {}
     static String fetch(List<String> urls, File target, boolean image) throws IOException {
         IOException failure = new IOException("No media URL succeeded");
-        for (String url : urls) {
-            java.net.URLConnection opened = new URL(url).openConnection();
-            if (!(opened instanceof HttpURLConnection)) {
-                // Not an IOException, so letting this through as a cast would jump out of the
-                // loop and leave every remaining mirror untried.
-                failure.addSuppressed(new IOException("Media URL is not HTTP: " + url));
-                continue;
-            }
-            HttpURLConnection connection = (HttpURLConnection) opened;
-            connection.setConnectTimeout(15000);
-            connection.setReadTimeout(30000);
+        for (String url : urls == null ? Collections.<String>emptyList() : urls) {
+            HttpURLConnection connection = null;
             try {
+                URLConnection opened = new URL(url).openConnection();
+                if (!(opened instanceof HttpURLConnection)) {
+                    throw new IOException("Media URL is not HTTP");
+                }
+                connection = (HttpURLConnection) opened;
+                connection.setConnectTimeout(15000);
+                connection.setReadTimeout(30000);
                 if (connection.getResponseCode() != 200) throw new IOException("Media server returned " + connection.getResponseCode());
                 try (BufferedInputStream input = new BufferedInputStream(connection.getInputStream())) {
                     input.mark(32);
@@ -40,11 +40,25 @@ final class RemoteMedia {
                     if (expected >= 0 && count != expected) throw new IOException("Media download is incomplete");
                     return extension;
                 }
-            } catch (IOException exception) {
-                failure.addSuppressed(exception);
-            } finally { connection.disconnect(); }
+            } catch (IOException | RuntimeException exception) {
+                // URL parsing belongs to this mirror attempt. Keep the aggregate error useful
+                // without copying a signed URL or malformed query into logs.
+                failure.addSuppressed(new IOException(
+                        "Media mirror failed (" + exception.getClass().getSimpleName() + "): "
+                                + summarizeUrl(url)));
+            } finally {
+                if (connection != null) connection.disconnect();
+            }
         }
+        if (target != null) target.delete();
         throw failure;
+    }
+
+    private static String summarizeUrl(String url) {
+        if (url == null) return "null";
+        int query = url.indexOf('?');
+        String withoutQuery = query < 0 ? url : url.substring(0, query);
+        return withoutQuery.length() <= 96 ? withoutQuery : withoutQuery.substring(0, 96) + "...";
     }
 
     private static long contentLength(HttpURLConnection connection) {

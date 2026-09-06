@@ -10,6 +10,7 @@ import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.categories.DownloadsPreferenceCategory;
 import com.ss.android.ugc.aweme.base.model.UrlModel;
 import java.io.File;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.util.Base64;
@@ -267,7 +268,7 @@ public class AdvancedDownloadsTest {
         File temp = File.createTempFile("photo-test", ".tmp");
         try {
             String base = "http://127.0.0.1:" + server.getLocalPort();
-            assertEquals("png", RemoteMedia.fetch(List.of(base + "/bad", base + "/photo"), temp, true));
+            assertEquals("png", RemoteMedia.fetch(List.of("https://[bad", base + "/bad", base + "/photo"), temp, true));
             response.get(5, java.util.concurrent.TimeUnit.SECONDS);
             assertArrayEquals(png, Files.readAllBytes(temp.toPath()));
             MediaFileWriter.publish(RuntimeEnvironment.getApplication(), temp, "source.png", "image/png", "DCIM/OriginalPhotosTest", false);
@@ -275,6 +276,19 @@ public class AdvancedDownloadsTest {
             assertArrayEquals(png, Files.readAllBytes(saved.toPath()));
             assertTrue(saved.delete());
         } finally { server.close(); responder.join(1000); assertTrue(temp.delete()); }
+    }
+
+    @Test public void allMalformedMediaMirrorsReturnOneRedactedFailure() throws Exception {
+        File temp = File.createTempFile("media-failure", ".tmp");
+        try {
+            IOException failure = assertThrows(IOException.class,
+                    () -> RemoteMedia.fetch(List.of("https://[bad?token=secret"), temp, true));
+            assertFalse(failure.toString().contains("token=secret"));
+            assertFalse(failure.toString().contains("https://[bad"));
+            assertFalse("an all-invalid fetch must not leave a partial target", temp.exists());
+        } finally {
+            temp.delete();
+        }
     }
 
     @Test public void theStickerFormatChoicePicksTheContainerAndFallsBackToTheSource() {
