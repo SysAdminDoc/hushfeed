@@ -44,13 +44,23 @@ public class TapConfirmationTest {
         try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
             Utils.setContext(controller.get());
             View view = new View(controller.get());
-            var update = app.morphe.extension.tiktok.blockauthor.CurrentVideoAuthor.class.getDeclaredMethod("update", Object.class);
+            var tracker = app.morphe.extension.tiktok.blockauthor.CurrentVideoAuthor.class;
+            var update = tracker.getDeclaredMethod("update", Object.class);
             update.setAccessible(true);
+            var playing = tracker.getDeclaredMethod("onPlaying", String.class);
+            playing.setAccessible(true);
+
+            // A bind alone no longer means the video changed: the feed binds the items
+            // either side of the current one before the user reaches them. The player
+            // naming a video is what makes it current, so drive both here.
             update.invoke(null, new Params("one"));
+            playing.invoke(null, "one");
             assertFalse(TapConfirmation.allow(view, "follow", "one", true));
             update.invoke(null, new Params("two"));
+            playing.invoke(null, "two");
             assertNull(view.getForeground());
             update.invoke(null, new Params("one"));
+            playing.invoke(null, "one");
             assertFalse(TapConfirmation.allow(view, "follow", "one", true));
         }
     }

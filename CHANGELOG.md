@@ -1,3 +1,7 @@
+## 0.14.1 (2026-09-05)
+
+* The block button now blocks the creator of the video you are watching. It was following the feed's prefetch instead, so it usually targeted the account one video ahead. The same fix reaches Not interested, the follow and like confirmations, double tap to open comments, the sound button and caption tracking, which all read the same thing.
+
 ## 0.14.0 (2026-09-05)
 
 * Preserve exact numeric tokens in settings imports and reject hidden trailing data. Backup restore and Lab undo use the same parser.

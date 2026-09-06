@@ -50,6 +50,16 @@ val blockAuthorPatch = bytecodePatch(
                 "$EXTENSION_CLASS_DESCRIPTOR->setCurrentVideoParams(Ljava/lang/Object;)V",
         )
 
+        // A bind is not "this video is on screen": the feed binds the items either side of
+        // the current one before the user reaches them, so the tracker above would arm the
+        // next creator. The player names the video that is actually playing, which is what
+        // selects among the bound items. p1 is that id.
+        PlayerProgressAidFingerprint.method.addInstruction(
+            0,
+            "invoke-static/range { p1 .. p1 }, " +
+                "$EXTENSION_CLASS_DESCRIPTOR->setPlayingAweme(Ljava/lang/String;)V",
+        )
+
         // Assert the block endpoint still looks the way the extension expects. The
         // extension calls it by reflection, so without this the patch would install a
         // button that silently fails on a build that reshaped the API.

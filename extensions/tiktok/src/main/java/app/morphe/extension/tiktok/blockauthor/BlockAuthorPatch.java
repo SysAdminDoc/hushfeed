@@ -32,4 +32,22 @@ public final class BlockAuthorPatch {
             Logger.printException(() -> "Could not track the current video author", ex);
         }
     }
+
+    /**
+     * Called from {@code PlayerController.onPlayProgressChange} with the id of the video
+     * that is playing. This is what decides which of the bound items is on screen; the
+     * bind callback above runs for items the user has not reached yet.
+     *
+     * @param awemeId the playing video's id
+     */
+    public static void setPlayingAweme(String awemeId) {
+        try {
+            if (!Settings.BLOCK_AUTHOR_BUTTON.get()) {
+                return;
+            }
+            CurrentVideoAuthor.onPlaying(awemeId);
+        } catch (Throwable ex) {
+            Logger.printException(() -> "Could not track the playing video", ex);
+        }
+    }
 }

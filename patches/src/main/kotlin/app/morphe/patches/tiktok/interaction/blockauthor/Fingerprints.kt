@@ -39,3 +39,19 @@ internal object BlockServiceFingerprint : Fingerprint(
     name = "block",
     parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;", "I", "I"),
 )
+
+/**
+ * Reports playback progress for the video that is actually on screen, carrying its id in
+ * the first parameter. The bind callback above fires for items the feed has prefetched, so
+ * this is what decides which of them is current.
+ *
+ * The same method is hooked by "Hide already seen videos"; both injections are prepends
+ * and do not interfere.
+ */
+internal object PlayerProgressAidFingerprint : Fingerprint(
+    returnType = "V",
+    parameters = listOf("Ljava/lang/String;", "J", "J"),
+    custom = { method, classDef ->
+        method.name == "onPlayProgressChange" && classDef.endsWith("/PlayerController;")
+    },
+)
