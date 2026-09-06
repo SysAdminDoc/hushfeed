@@ -63,7 +63,8 @@ public final class TapConfirmation {
         ring = new GradientDrawable();
         ring.setColor(Color.TRANSPARENT);
         ring.setCornerRadius(1000);
-        ring.setStroke(Math.max(2, Math.round(2 * view.getResources().getDisplayMetrics().density)), 0xFFFF405C);
+        ring.setStroke(Math.max(2, Math.round(2 * view.getResources().getDisplayMetrics().density)),
+                app.morphe.extension.tiktok.settings.preference.SettingsUi.OVERLAY_ACCENT);
         view.setForeground(ring);
         int token = generation;
         MAIN.postDelayed(() -> { if (token == generation) clear(); }, 4000);

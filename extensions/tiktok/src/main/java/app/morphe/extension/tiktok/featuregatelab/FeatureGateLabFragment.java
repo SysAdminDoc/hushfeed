@@ -615,10 +615,10 @@ public final class FeatureGateLabFragment extends Fragment {
             if (tab == null) continue;
             boolean selected = i == selectedView;
             tab.setSelected(selected);
-            tab.setTextColor(selected ? Color.WHITE : SettingsUi.textSecondary());
+            tab.setTextColor(selected ? SettingsUi.badgeText() : SettingsUi.textSecondary());
             if (selected) {
                 GradientDrawable background = new GradientDrawable();
-                background.setColor(SettingsUi.accent());
+                background.setColor(SettingsUi.badgeFill());
                 background.setCornerRadius(FeatureGateLabUi.dp(tab.getContext(), 5));
                 tab.setBackground(background);
             } else {

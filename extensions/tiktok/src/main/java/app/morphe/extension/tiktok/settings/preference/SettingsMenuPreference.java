@@ -182,7 +182,7 @@ public final class SettingsMenuPreference extends Preference {
                     getContext(),
                     L10n.f(getContext(), "%s on", activeCount),
                     12,
-                    Color.WHITE,
+                    SettingsUi.badgeText(),
                     1
             );
             badge.setGravity(Gravity.CENTER);
@@ -193,7 +193,7 @@ public final class SettingsMenuPreference extends Preference {
                     SettingsUi.dp(getContext(), 5)
             );
             android.graphics.drawable.GradientDrawable badgeBackground = SettingsUi.roundedSurface(getContext(), 4, true);
-            badgeBackground.setColor(SettingsUi.LIGHT_ACCENT);
+            badgeBackground.setColor(SettingsUi.badgeFill());
             badge.setBackground(badgeBackground);
             accessory.addView(badge);
         }

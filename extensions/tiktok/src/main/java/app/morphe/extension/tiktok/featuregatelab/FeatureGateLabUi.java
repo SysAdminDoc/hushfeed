@@ -172,11 +172,19 @@ final class FeatureGateLabUi {
         return SettingsUi.dp(context, value);
     }
 
+    /**
+     * Read from the same place as every other colour on the screen. Reading the configuration
+     * here instead meant the warning could be painted for one theme while its surface was
+     * painted for the other.
+     */
     static int warningColor(Context context) {
-        int nightMode = context.getResources().getConfiguration().uiMode
-                & Configuration.UI_MODE_NIGHT_MASK;
-        return nightMode == Configuration.UI_MODE_NIGHT_YES ? 0xffffa45b : 0xffb45309;
+        return SettingsUi.isDarkMode() ? WARNING_DARK : WARNING_LIGHT;
     }
+
+    /** Amber on a dark surface, 9.6:1. */
+    private static final int WARNING_DARK = 0xFFFFA45B;
+    /** Burnt orange on a light one, 5.0:1. */
+    private static final int WARNING_LIGHT = 0xFFB45309;
 
     static void styleDialog(AlertDialog dialog) {
         SettingsUi.styleFramedDialog(dialog);

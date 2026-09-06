@@ -67,6 +67,27 @@ public final class SettingsUi {
 
     public static @ColorInt int accent() { return isDarkMode() ? ACCENT : LIGHT_ACCENT; }
 
+    /**
+     * What a filled chip is painted with. The plain accent is a light pink, and white on it is
+     * 3.1:1, under what small text needs. The darker accent carries white in either theme, so
+     * a badge and a selected pill use it and stay readable.
+     */
+    public static @ColorInt int badgeFill() { return LIGHT_ACCENT; }
+
+    /** Text on {@link #badgeFill()}: 6.4:1, the same in both themes. */
+    public static @ColorInt int badgeText() { return Color.WHITE; }
+
+    /**
+     * TikTok's own red, for the controls this patch draws over the app itself rather than in
+     * the settings screen. Those sit on the app's surfaces, not on ours.
+     */
+    public static final @ColorInt int OVERLAY_ACCENT = Color.rgb(254, 44, 85);
+
+    /** The same red, dark enough to read as text on a white surface (6.4:1 rather than 3.7:1). */
+    public static @ColorInt int overlayAccentOn(boolean darkSurface) {
+        return darkSurface ? OVERLAY_ACCENT : LIGHT_ACCENT;
+    }
+
     public static void stylePreferenceRow(View view) {
         Context context = view.getContext();
         view.setPaddingRelative(dp(context, 18), dp(context, 18), dp(context, 18), dp(context, 18));
