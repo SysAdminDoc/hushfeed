@@ -9,6 +9,7 @@ import app.morphe.extension.tiktok.settings.L10n;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,7 +26,7 @@ import java.util.concurrent.Executors;
  */
 final class AudioDownloads {
     private static final ExecutorService WORKER = Executors.newSingleThreadExecutor();
-    private static final Set<String> ACTIVE = ConcurrentHashMap.newKeySet();
+    private static final Set<String> ACTIVE = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
 
     private AudioDownloads() {}
 

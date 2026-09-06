@@ -14,7 +14,6 @@ import org.json.JSONObject;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -92,7 +91,7 @@ public final class FeatureGateLabStore {
                 result.add(rule);
             }
         }
-        result.sort((left, right) -> Long.compare(right.updatedAtMs, left.updatedAtMs));
+        Collections.sort(result, (left, right) -> Long.compare(right.updatedAtMs, left.updatedAtMs));
         return result;
     }
 

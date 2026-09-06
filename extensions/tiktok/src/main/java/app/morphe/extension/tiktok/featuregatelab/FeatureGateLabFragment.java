@@ -48,6 +48,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -533,7 +534,7 @@ public final class FeatureGateLabFragment extends Fragment {
         }
 
         if (selectedView == 2) {
-            visible.sort((left, right) -> {
+            Collections.sort(visible, (left, right) -> {
                 FeatureGateLabStore.Rule leftRule = rules.get(ruleIdentity(left));
                 FeatureGateLabStore.Rule rightRule = rules.get(ruleIdentity(right));
                 return Long.compare(
@@ -542,7 +543,7 @@ public final class FeatureGateLabFragment extends Fragment {
                 );
             });
         } else if (!query.isEmpty()) {
-            visible.sort((left, right) -> {
+            Collections.sort(visible, (left, right) -> {
                 int rank = Integer.compare(searchRanks.get(left), searchRanks.get(right));
                 return rank != 0 ? rank : left.title.compareToIgnoreCase(right.title);
             });

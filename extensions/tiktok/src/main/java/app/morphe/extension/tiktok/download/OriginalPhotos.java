@@ -18,7 +18,7 @@ import java.util.concurrent.ExecutorService;
 
 public final class OriginalPhotos {
     private static final ExecutorService WORKER = Executors.newSingleThreadExecutor();
-    private static final Set<String> ACTIVE = ConcurrentHashMap.newKeySet();
+    private static final Set<String> ACTIVE = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
     private OriginalPhotos() {}
 
     public static boolean start(Object aweme, Context context) {

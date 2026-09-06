@@ -9,6 +9,7 @@ package app.morphe.extension.tiktok.download;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -190,7 +191,7 @@ final class GifEncoder {
             }
             if (widest == null || widestSpread <= 0) break;
             final int channel = widestChannel;
-            widest.sort((left, right) ->
+            Collections.sort(widest, (left, right) ->
                     Integer.compare((left >> (channel * 8)) & 0xFF, (right >> (channel * 8)) & 0xFF));
             int middle = widest.size() / 2;
             List<Integer> tail = new ArrayList<>(widest.subList(middle, widest.size()));

@@ -18,7 +18,6 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -311,7 +310,8 @@ public final class FeatureGateCatalog {
             }
         }
         loaded += mergeStructuredObservations(result, byIdentity);
-        result.sort(Comparator.comparing(entry -> entry.title.toLowerCase(Locale.ROOT)));
+        Collections.sort(result, (left, right) ->
+                left.title.toLowerCase(Locale.ROOT).compareTo(right.title.toLowerCase(Locale.ROOT)));
         return new Snapshot(
                 Collections.unmodifiableList(result),
                 Collections.unmodifiableMap(byIdentity),

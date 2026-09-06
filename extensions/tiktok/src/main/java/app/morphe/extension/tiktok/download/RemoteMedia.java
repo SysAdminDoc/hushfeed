@@ -36,9 +36,7 @@ final class RemoteMedia {
                     if (extension == null) throw new IOException("Media server returned an unsupported format");
                     long count;
                     try (FileOutputStream output = new FileOutputStream(target)) { count = MediaFileWriter.copy(input, output); }
-                    // getContentLength is an int and answers -1 past 2 GB, which is exactly
-                    // the size worth checking.
-                    long expected = connection.getContentLengthLong();
+                    long expected = contentLength(connection);
                     if (expected >= 0 && count != expected) throw new IOException("Media download is incomplete");
                     return extension;
                 }
@@ -47,6 +45,16 @@ final class RemoteMedia {
             } finally { connection.disconnect(); }
         }
         throw failure;
+    }
+
+    private static long contentLength(HttpURLConnection connection) {
+        String header = connection.getHeaderField("Content-Length");
+        if (header == null) return -1L;
+        try {
+            return Long.parseLong(header.trim());
+        } catch (NumberFormatException ignored) {
+            return -1L;
+        }
     }
 
     private static String imageExtension(byte[] header) {

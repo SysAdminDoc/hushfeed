@@ -16,7 +16,7 @@ android {
     namespace = "app.morphe.extension.tiktok"
 
     defaultConfig {
-        minSdk = 22
+        minSdk = 23
     }
 
     compileOptions {

@@ -21,7 +21,7 @@ import org.json.JSONObject;
 
 final class VideoDownloads {
     private static final ExecutorService WORKER = Executors.newSingleThreadExecutor();
-    private static final Set<String> ACTIVE = ConcurrentHashMap.newKeySet();
+    private static final Set<String> ACTIVE = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
     private VideoDownloads() {}
 
     static boolean start(Object aweme, Context context) {

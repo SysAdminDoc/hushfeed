@@ -41,7 +41,7 @@ import java.util.concurrent.Executors;
 @SuppressWarnings("unused")
 public final class StoryDownloads {
     private static final ExecutorService WORKER = Executors.newSingleThreadExecutor();
-    private static final Set<String> ACTIVE = ConcurrentHashMap.newKeySet();
+    private static final Set<String> ACTIVE = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
 
     /** The story each play area is showing, and the view each play area put on screen. */
     private static final Map<Object, Object> STORIES = new WeakHashMap<>();

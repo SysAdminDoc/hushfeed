@@ -43,12 +43,21 @@ public final class FeedVisibility {
         boolean visible = true;
     }
 
+    private static PageState detailPage(Object page) {
+        PageState state = DETAIL_PAGES.get(page);
+        if (state == null) {
+            state = new PageState();
+            DETAIL_PAGES.put(page, state);
+        }
+        return state;
+    }
+
     public static void onDetailView(Object page, View view) {
-        DETAIL_PAGES.computeIfAbsent(page, ignored -> new PageState()).view = new WeakReference<>(view);
+        detailPage(page).view = new WeakReference<>(view);
     }
 
     public static void onDetailResume(Object page) {
-        DETAIL_PAGES.computeIfAbsent(page, ignored -> new PageState()).resumed = true;
+        detailPage(page).resumed = true;
     }
 
     public static void onDetailPause(Object page) {
@@ -57,7 +66,7 @@ public final class FeedVisibility {
     }
 
     public static void onDetailVisibility(Object page, boolean visible) {
-        DETAIL_PAGES.computeIfAbsent(page, ignored -> new PageState()).visible = visible;
+        detailPage(page).visible = visible;
     }
 
     public static void onDetailDestroyed(Object page) {

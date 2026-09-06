@@ -13,7 +13,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +108,7 @@ final class SettingsManagerObservationRecorder {
 
     static JSONArray exportJson() {
         List<Observation> snapshot = new ArrayList<>(OBSERVATIONS.values());
-        Collections.sort(snapshot, Comparator.comparing(observation -> observation.key));
+        Collections.sort(snapshot, (left, right) -> left.key.compareTo(right.key));
         JSONArray result = new JSONArray();
         for (Observation observation : snapshot) {
             result.put(observation.toJson());

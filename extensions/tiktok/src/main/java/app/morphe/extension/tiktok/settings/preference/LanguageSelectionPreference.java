@@ -29,7 +29,6 @@ import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -257,7 +256,7 @@ public final class LanguageSelectionPreference extends Preference {
 
         addBundledLanguages(unique);
         List<LanguageOption> result = new ArrayList<>(unique.values());
-        result.sort(Comparator.comparing(option -> option.name, String.CASE_INSENSITIVE_ORDER));
+        Collections.sort(result, (left, right) -> String.CASE_INSENSITIVE_ORDER.compare(left.name, right.name));
         return result;
     }
 

@@ -23,16 +23,25 @@ public final class GestureActions {
         String videoId;
     }
 
+    private static CommentControl commentControl(Object owner) {
+        CommentControl control = COMMENTS.get(owner);
+        if (control == null) {
+            control = new CommentControl();
+            COMMENTS.put(owner, control);
+        }
+        return control;
+    }
+
     public static void registerCommentView(Object owner, View view) {
         for (Map.Entry<Object, CommentControl> entry : COMMENTS.entrySet()) {
             if (entry.getKey() != owner && entry.getValue().view.get() == view) entry.getValue().view.clear();
         }
-        COMMENTS.computeIfAbsent(owner, ignored -> new CommentControl()).view = new WeakReference<>(view);
+        commentControl(owner).view = new WeakReference<>(view);
     }
 
     public static void bindCommentView(Object owner, Object params) {
         Object aweme = Reflect.property(params, "getAweme", "aweme");
-        COMMENTS.computeIfAbsent(owner, ignored -> new CommentControl()).videoId = Reflect.string(aweme, "getAid", "aid");
+        commentControl(owner).videoId = Reflect.string(aweme, "getAid", "aid");
     }
 
     public static boolean onDoubleTap() {

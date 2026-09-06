@@ -68,6 +68,18 @@ public final class SeenVideoHistory {
     private static volatile String callbackAid;
     private static volatile boolean callbackAidMarked;
 
+    private static void mergeSeen(String aid, long timestamp) {
+        for (;;) {
+            Long existing = SEEN.get(aid);
+            if (existing != null && existing >= timestamp) return;
+            if (existing == null) {
+                if (SEEN.putIfAbsent(aid, timestamp) == null) return;
+            } else if (SEEN.replace(aid, existing, timestamp)) {
+                return;
+            }
+        }
+    }
+
     private SeenVideoHistory() {
     }
 
@@ -197,7 +209,7 @@ public final class SeenVideoHistory {
             undo = null;
             generation++;
             for (Map.Entry<String, Long> row : copy.entrySet()) {
-                SEEN.merge(row.getKey(), row.getValue(), Math::max);
+                mergeSeen(row.getKey(), row.getValue());
             }
             trimMemory();
 
@@ -297,7 +309,7 @@ public final class SeenVideoHistory {
                             long persisted = cursor.getLong(seenColumn);
                             synchronized (HISTORY_LOCK) {
                                 if (generation != loadGeneration) break;
-                                SEEN.merge(aid, persisted, Math::max);
+                                mergeSeen(aid, persisted);
                                 trimMemory();
                             }
                         }
