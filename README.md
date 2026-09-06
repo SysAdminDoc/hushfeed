@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="CHANGELOG.md"><img alt="version" src="https://img.shields.io/badge/version-0.15.1-6f42c1.svg" /></a>
+  <a href="CHANGELOG.md"><img alt="version" src="https://img.shields.io/badge/version-0.16.0-6f42c1.svg" /></a>
   <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-GPLv3-blue.svg" /></a>
   <a href="https://www.android.com/"><img alt="platform" src="https://img.shields.io/badge/platform-Android-3ddc84.svg" /></a>
   <a href="https://github.com/MorpheApp/morphe-manager"><img alt="Morphe" src="https://img.shields.io/badge/works%20with-Morphe-00b894.svg" /></a>
@@ -12,7 +12,7 @@
 
 # Hushfeed
 
-Hushfeed is a set of TikTok patches for [Morphe](https://github.com/MorpheApp/morphe-manager). The idea is simple: fewer accidental taps, less noise, and more say over what the app puts in front of you. It runs on the global TikTok build, `com.zhiliaoapp.musically`, version [46.2.3](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/).
+Hushfeed is a set of TikTok patches for [Morphe](https://github.com/MorpheApp/morphe-manager). It cuts down accidental taps and gives you more say over what the app puts in front of you. It runs on the global TikTok build, `com.zhiliaoapp.musically`, version [46.2.3](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/).
 
 It started as a private fork of [icysymmetra's Metra patches](https://github.com/icysymmetra/tiktok-patches-for-morphe) and grew past them. Everything upstream ships is still here, along with the work from other community bundles and a long list of additions of its own. The result is 61 patches, each with its own switch in a settings screen that follows your phone's language.
 
@@ -37,7 +37,7 @@ The block, sound and Not interested controls, rendered in a local UI test:
 ## Install
 
 1. Get the TikTok 46.2.3 APK. Google Play only offers the newest build, so take it from [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/).
-2. Add Hushfeed as a source in Morphe Manager. The quickest way is this link on the phone: [Add Hushfeed to Morphe](https://morphe.software/add-source?github=SysAdminDoc/hushfeed). You can also download `patches-0.15.1.mpp` from the [latest release](https://github.com/SysAdminDoc/hushfeed/releases/latest) and load it as a local bundle.
+2. Add Hushfeed as a source in Morphe Manager. The quickest way is this link on the phone: [Add Hushfeed to Morphe](https://morphe.software/add-source?github=SysAdminDoc/hushfeed). You can also download `patches-0.16.0.mpp` from the [latest release](https://github.com/SysAdminDoc/hushfeed/releases/latest) and load it as a local bundle.
 3. Pick the patches you want and patch the APK. Keep the manager's existing signing key so TikTok stays logged in across updates.
 4. Open TikTok, go to Settings and privacy, and tap Hushfeed. Every patch you selected has its switches there.
 
@@ -112,13 +112,38 @@ The Settings patch adds the entry point; most patches depend on it and it's sele
 
 ## Settings tour
 
-Every screenshot below was rendered by the test suite, not taken on a phone.
+The settings pages use grouped controls on an AMOLED background. Light mode follows the phone, and larger text wraps across lines. These screenshots come from native Android views rendered by the local test suite. Enabled controls and values are test fixtures.
+
+<img src="assets/settings/settings.png" alt="Hushfeed settings home" width="260" /> <img src="assets/settings/playback.png" alt="Playback settings" width="260" /> <img src="assets/settings/playback-light.png" alt="Playback settings in light mode" width="260" />
+
+<details>
+<summary>Every settings page</summary>
+
+| Page | Screenshot |
+|---|---|
+| Feed filter | [View](assets/settings/feed_filter.png) |
+| Feed navigation | [View](assets/settings/feed_navigation.png) |
+| Interface | [View](assets/settings/interface.png) |
+| Comments and translation | [View](assets/settings/comments.png) |
+| Downloads | [View](assets/settings/downloads.png) |
+| Playback | [View](assets/settings/playback.png) |
+| Inbox | [View](assets/settings/inbox.png) |
+| Share sheet | [View](assets/settings/share.png) |
+| Region settings | [View](assets/settings/region.png) |
+| App behavior | [View](assets/settings/behavior.png) |
+| Diagnostics | [View](assets/settings/diagnostics.png) |
+| Feature Gate Lab | [View](assets/settings/lab.png) |
+| Gate details | [View](assets/settings/gate_details.png) |
+| Gate recording | [View](assets/settings/gate_recording.png) |
+
+</details>
+
 
 Select `Subtitle tools` in the patcher, then enable subtitle downloads in Downloads. Captioned videos and their SRT files share the same filename stem. Language names can use Unicode, and filename collisions keep separate tracks. Android 11 and later save the pair in Movies; Android 10 uses Download. The selected subfolder still applies. A failed subtitle transfer leaves the saved video intact and reports the partial result.
 
 Caption appearance and the clear display option are in Interface:
 
-<img src="assets/caption-settings.png" alt="Caption appearance settings" width="300" /> <img src="assets/subtitle-download-settings.png" alt="Subtitle download settings" width="300" />
+<img src="assets/settings/interface.png" alt="Caption appearance settings" width="300" /> <img src="assets/settings/downloads.png" alt="Subtitle download settings" width="300" />
 
 Inbox category switches identify New followers, Activity, Archive, Tako and Shop from native row data. They work with translated labels. Turning a switch off restores an already loaded row on the next layout.
 
@@ -126,33 +151,31 @@ Inbox category switches identify New followers, Activity, Archive, Tako and Shop
 
 Playback has an optional default speed for every new video. A manual choice lasts until you change videos. To add 2.5x, enter it in Speed menu choices and restart TikTok; an empty list restores TikTok's menu.
 
-<img src="assets/playback-speed-settings.png" alt="Default playback speed and custom menu settings" width="300" />
-
 Select `Automatic video advance` in the patcher, then enable Advance when a video ends in Playback and restart. The option re-enables native auto-scroll if TikTok turns it off. Use the Playback switch to disable it.
-
-<img src="assets/auto-advance-settings.png" alt="Automatic advance and playback settings" width="300" />
 
 Foldable controls are in App behavior. Settings save immediately. A notification tells you when to restart TikTok.
 
-<img src="assets/foldable-settings.png" alt="Foldable comment settings" width="300" />
+<img src="assets/settings/behavior.png" alt="Foldable comment settings" width="300" />
 
 Region spoof requires Override SIM details plus Match locale and timezone to country in Region settings. Each built-in country preset supplies a timezone. Country codes must be two ASCII letters. Locale scripts and extensions are retained, including when a legacy variant needs fallback handling. Restart TikTok after changing these settings. Enable the separate store-region option only if needed; it can affect search. GPS and the network address stay unchanged.
 
-<img src="assets/region-settings.png" alt="Country and region settings" width="300" />
+<img src="assets/settings/region.png" alt="Country and region settings" width="300" />
 
 Diagnostics includes Back up settings, Restore settings and Reset settings even without the logging patch. Backups include patch preferences and Feature Gate Lab rules with their enabled state. Choose a JSON file through Android's file picker. Invalid files leave settings unchanged. Restore and reset keep one undo copy inside TikTok; export a backup first if you plan to clear app data or reinstall, since that removes the undo copy too. Restart after restoring or resetting.
 
 Backups record which settings they contain, so missing entries are rejected. A complete backup from an older build uses defaults for controls added later. If saving fails, recovery attempts both preference stores and keeps the undo copy available.
 
-<img src="assets/settings-backup.png" alt="Settings backup, restore, reset and undo controls" width="300" />
+<img src="assets/settings/diagnostics.png" alt="Settings backup, restore, reset and undo controls" width="300" />
 
 Feature Gate Lab saves its master switch immediately. Its menu can reset overrides while the switch is off, reset all Lab data, or undo the last reset or import. Imported values stay disabled. Changes run in the background and report their result with a notification. The undo copy stores Lab configuration privately; full-reset undo also restores captured observations during the same app run. Other patch preferences are unchanged.
 
-<img src="assets/feature-gate-lab.png" alt="Feature Gate Lab with immediate master control and settings menu" width="300" />
+<img src="assets/settings/lab.png" alt="Feature Gate Lab with immediate master control and settings menu" width="300" />
 
 <br>
 
 ## Building from source
+
+Use JDK 21 or newer and an Android SDK configured through `local.properties`. GitHub Packages needs `GITHUB_ACTOR` and a `GITHUB_TOKEN` with `read:packages` access for the Morphe dependencies.
 
 Run the runtime tests, then build the Morphe patch bundle and metadata:
 
@@ -163,6 +186,8 @@ Run the runtime tests, then build the Morphe patch bundle and metadata:
 ```
 
 Run these tasks in this order. The Android build finishes with `verifyBundle`, which checks the patch list and all three DEX payloads against the checksum recorded by the Android build. You can also run `./gradlew :patches:verifyBundle` to inspect an existing bundle without rebuilding it.
+
+To save offscreen screenshots, run `./gradlew :extensions:tiktok:test -PscreenshotDir=<absolute-directory>`. The suite opens every settings section in dark and light themes, saves a value through the native picker, and exercises Lab search and overrides. A German fixture checks larger text at 360 dp width.
 
 Runtime tests cover feed marker and sound filters using both getter and field model shapes. Empty metadata and unrelated ids remain eligible; matching markers and sound phrases are rejected by their enabled filters.
 Legacy settings import tests cover complete JSON and older text fragments, rejecting invalid values before any preference changes.

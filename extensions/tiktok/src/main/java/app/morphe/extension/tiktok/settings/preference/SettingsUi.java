@@ -13,10 +13,13 @@ import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.RectF;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.RippleDrawable;
+import android.graphics.drawable.StateListDrawable;
 import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,34 +32,143 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Switch;
 
 import androidx.annotation.ColorInt;
 
 public final class SettingsUi {
-    public static final @ColorInt int ACCENT = Color.argb(255, 240, 45, 99);
-    public static final @ColorInt int DARK_BACKGROUND = Color.argb(255, 13, 13, 16);
-    public static final @ColorInt int DARK_SURFACE = Color.argb(255, 21, 21, 26);
-    public static final @ColorInt int DARK_SURFACE_LIFTED = Color.argb(255, 32, 32, 39);
-    public static final @ColorInt int DARK_BORDER = Color.argb(255, 55, 55, 63);
-    public static final @ColorInt int DARK_DIVIDER = Color.argb(255, 29, 29, 34);
-    public static final @ColorInt int DARK_TEXT_PRIMARY = Color.argb(255, 242, 242, 245);
-    public static final @ColorInt int DARK_TEXT_SECONDARY = Color.argb(255, 151, 151, 159);
+    public static final @ColorInt int ACCENT = Color.rgb(255, 79, 135);
+    public static final @ColorInt int DARK_BACKGROUND = Color.BLACK;
+    public static final @ColorInt int DARK_SURFACE = Color.rgb(17, 17, 21);
+    public static final @ColorInt int DARK_SURFACE_LIFTED = Color.rgb(27, 27, 33);
+    public static final @ColorInt int DARK_BORDER = Color.rgb(53, 53, 62);
+    public static final @ColorInt int DARK_DIVIDER = Color.rgb(41, 41, 48);
+    public static final @ColorInt int DARK_TEXT_PRIMARY = Color.rgb(245, 245, 247);
+    public static final @ColorInt int DARK_TEXT_SECONDARY = Color.rgb(168, 168, 179);
     public static final @ColorInt int DARK_TEXT_DISABLED = Color.argb(255, 109, 109, 118);
 
-    public static final @ColorInt int LIGHT_BACKGROUND = Color.WHITE;
+    public static final @ColorInt int LIGHT_BACKGROUND = Color.rgb(245, 245, 248);
     public static final @ColorInt int LIGHT_SURFACE = Color.WHITE;
     public static final @ColorInt int LIGHT_SURFACE_LIFTED = Color.argb(255, 250, 250, 250);
     public static final @ColorInt int LIGHT_BORDER = Color.argb(255, 210, 210, 210);
     public static final @ColorInt int LIGHT_DIVIDER = Color.argb(255, 224, 224, 224);
-    public static final @ColorInt int LIGHT_TEXT_PRIMARY = Color.BLACK;
-    public static final @ColorInt int LIGHT_TEXT_SECONDARY = Color.argb(255, 80, 80, 80);
+    public static final @ColorInt int LIGHT_TEXT_PRIMARY = Color.rgb(22, 22, 28);
+    public static final @ColorInt int LIGHT_TEXT_SECONDARY = Color.rgb(87, 87, 98);
     public static final @ColorInt int LIGHT_TEXT_DISABLED = Color.argb(255, 140, 140, 140);
+
+    public static final int LIGHT_ACCENT = Color.rgb(184, 22, 77);
 
     private SettingsUi() {
     }
 
     public static boolean isDarkMode() {
         return isDarkModeEnabled();
+    }
+
+    public static @ColorInt int accent() { return isDarkMode() ? ACCENT : LIGHT_ACCENT; }
+
+    public static void stylePreferenceRow(View view) {
+        Context context = view.getContext();
+        view.setPaddingRelative(dp(context, 18), dp(context, 18), dp(context, 18), dp(context, 18));
+        view.setMinimumHeight(dp(context, 84));
+        TextView title = view.findViewById(android.R.id.title);
+        if (title != null) {
+            if (title.getParent() instanceof View && title.getParent() != view) {
+                ((View) title.getParent()).setPadding(0, 0, 0, 0);
+            }
+            title.setTextSize(16);
+            title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+            title.setTextColor(title.isEnabled() ? textPrimary() : textDisabled());
+            title.setSingleLine(false);
+            title.setMaxLines(Integer.MAX_VALUE);
+            title.setEllipsize(null);
+        }
+        TextView summary = view.findViewById(android.R.id.summary);
+        if (summary != null) {
+            summary.setTextSize(14);
+            summary.setTextColor(summary.isEnabled() ? textSecondary() : textDisabled());
+            summary.setSingleLine(false);
+            summary.setMaxLines(Integer.MAX_VALUE);
+            summary.setEllipsize(null);
+            summary.setLineSpacing(dp(context, 2), 1f);
+            summary.setPadding(0, dp(context, 5), 0, 0);
+        }
+        styleSwitches(view);
+    }
+
+    public static void styleSwitches(View view) {
+        if (view instanceof Switch) styleSwitch((Switch) view);
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) styleSwitches(group.getChildAt(i));
+        }
+    }
+
+    public static void styleSwitch(Switch control) {
+        Context context = control.getContext();
+        StateListDrawable track = new StateListDrawable();
+        track.addState(new int[]{-android.R.attr.state_enabled}, switchShape(context, border(), 44, 26, 6));
+        track.addState(new int[]{android.R.attr.state_checked}, switchShape(context, accent(), 44, 26, 6));
+        track.addState(new int[]{}, switchShape(context, isDarkMode() ? Color.rgb(100, 100, 111) : Color.rgb(116, 116, 127), 44, 26, 6));
+        control.setTrackTintList(null);
+        control.setThumbTintList(null);
+        control.setTrackDrawable(track);
+        GradientDrawable thumb = switchShape(context, Color.WHITE, 20, 22, 4);
+        thumb.setStroke(dp(context, 1), isDarkMode() ? Color.rgb(225, 225, 230) : Color.rgb(116, 116, 127));
+        control.setThumbDrawable(thumb);
+        control.setSwitchMinWidth(dp(context, 44));
+        control.setThumbTextPadding(0);
+        control.setShowText(false);
+        control.setSplitTrack(false);
+        control.setMinimumHeight(dp(context, 48));
+    }
+
+    private static GradientDrawable switchShape(Context context, int color, int width, int height, int radius) {
+        GradientDrawable shape = new GradientDrawable();
+        shape.setColor(color);
+        shape.setCornerRadius(dp(context, radius));
+        shape.setSize(dp(context, width), dp(context, height));
+        return shape;
+    }
+
+    public static Drawable groupedRow(Context context, boolean first, boolean last) {
+        return new RippleDrawable(ColorStateList.valueOf((accent() & 0x00ffffff) | 0x26000000),
+                new GroupRowDrawable(context, first, last), new ColorDrawable(Color.WHITE));
+    }
+
+    private static final class GroupRowDrawable extends Drawable {
+        private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final boolean first, last;
+        private final float radius, inset;
+        GroupRowDrawable(Context context, boolean first, boolean last) {
+            this.first = first;
+            this.last = last;
+            radius = dp(context, 10);
+            inset = dp(context, 18);
+        }
+        @Override public void draw(Canvas canvas) {
+            Rect bounds = getBounds();
+            float top = bounds.top, bottom = bounds.bottom;
+            RectF frame = new RectF(bounds.left + 0.5f, first ? top + 0.5f : top - radius,
+                    bounds.right - 0.5f, last ? bottom - 0.5f : bottom + radius);
+            canvas.save();
+            canvas.clipRect(bounds);
+            paint.setStyle(Paint.Style.FILL);
+            paint.setColor(surface());
+            canvas.drawRoundRect(frame, radius, radius, paint);
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(1);
+            paint.setColor(border());
+            canvas.drawRoundRect(frame, radius, radius, paint);
+            if (!last) {
+                paint.setColor(divider());
+                canvas.drawLine(bounds.left + inset, bottom - 0.5f, bounds.right - inset, bottom - 0.5f, paint);
+            }
+            canvas.restore();
+        }
+        @Override public void setAlpha(int alpha) { paint.setAlpha(alpha); }
+        @Override public void setColorFilter(ColorFilter filter) { paint.setColorFilter(filter); }
+        @Override public int getOpacity() { return PixelFormat.TRANSLUCENT; }
     }
 
     public static int dp(Context context, int value) {
@@ -98,19 +210,19 @@ public final class SettingsUi {
     public static void styleTitleAndSummary(View view) {
         TextView title = view.findViewById(android.R.id.title);
         if (title != null) {
-            title.setTextColor(textPrimary());
+            title.setTextColor(title.isEnabled() ? textPrimary() : textDisabled());
         }
 
         TextView summary = view.findViewById(android.R.id.summary);
         if (summary != null) {
-            summary.setTextColor(textSecondary());
+            summary.setTextColor(summary.isEnabled() ? textSecondary() : textDisabled());
         }
     }
 
     public static void styleCategory(View view) {
         TextView title = view.findViewById(android.R.id.title);
         if (title != null) {
-            title.setTextColor(ACCENT);
+            title.setTextColor(accent());
             title.setTextSize(13);
             title.setTypeface(title.getTypeface(), Typeface.BOLD);
         }
@@ -119,6 +231,7 @@ public final class SettingsUi {
     public static TextView text(Context context, String value, float sizeSp, int color, int style) {
         TextView textView = new TextView(context);
         textView.setText(value);
+        textView.setIncludeFontPadding(false);
         textView.setTextColor(color);
         textView.setTextSize(sizeSp);
         textView.setTypeface(textView.getTypeface(), style);
@@ -164,7 +277,7 @@ public final class SettingsUi {
     public static void styleFramedDialog(Dialog dialog) {
         Window window = dialog.getWindow();
         if (window != null) {
-            window.setBackgroundDrawable(borderedSurface(dialog.getContext(), 6, true));
+            window.setBackgroundDrawable(borderedSurface(dialog.getContext(), 10, true));
             constrainDialogWindow(dialog, window);
         }
 
@@ -251,7 +364,7 @@ public final class SettingsUi {
             checkedTextView.setTextColor(textPrimary());
             checkedTextView.setCheckMarkDrawable(new DialogCheckMarkDrawable(checkedTextView.getContext()));
         } else if (view instanceof Button) {
-            ((Button) view).setTextColor(ACCENT);
+            ((Button) view).setTextColor(accent());
         } else if (view instanceof TextView) {
             ((TextView) view).setTextColor(textPrimary());
         }
@@ -268,13 +381,13 @@ public final class SettingsUi {
         if (button == null) {
             return;
         }
-        button.setTextColor(primary ? ACCENT : textSecondary());
+        button.setTextColor(primary ? accent() : textSecondary());
         button.setAllCaps(false);
         button.setTypeface(button.getTypeface(), primary ? Typeface.BOLD : Typeface.NORMAL);
     }
 
     public static void styleTextAction(TextView button, boolean primary) {
-        button.setTextColor(primary ? ACCENT : textSecondary());
+        button.setTextColor(primary ? accent() : textSecondary());
         button.setTypeface(button.getTypeface(), primary ? Typeface.BOLD : Typeface.NORMAL);
     }
 
@@ -282,7 +395,7 @@ public final class SettingsUi {
         editText.setTextColor(textPrimary());
         editText.setHintTextColor(textSecondary());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            editText.setBackgroundTintList(ColorStateList.valueOf(ACCENT));
+            editText.setBackgroundTintList(ColorStateList.valueOf(accent()));
         }
     }
 
@@ -293,7 +406,7 @@ public final class SettingsUi {
                     new int[]{-android.R.attr.state_enabled},
                     new int[]{}
             };
-            int[] colors = new int[]{ACCENT, textDisabled(), textSecondary()};
+            int[] colors = new int[]{accent(), textDisabled(), textSecondary()};
             button.setButtonTintList(new ColorStateList(states, colors));
         }
     }
@@ -323,7 +436,7 @@ public final class SettingsUi {
             RectF box = new RectF(left, top, left + boxSize, top + boxSize);
 
             if (checked) {
-                fill.setColor(ACCENT);
+                fill.setColor(accent());
                 canvas.drawRoundRect(box, radius, radius, fill);
                 stroke.setColor(Color.WHITE);
                 float unit = boxSize / 18f;

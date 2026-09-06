@@ -19,7 +19,6 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
 import android.provider.DocumentsContract;
-import android.graphics.drawable.ColorDrawable;
 import android.view.View;
 import android.view.Window;
 import android.widget.ListView;
@@ -52,6 +51,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
     private static final String ARG_SECTION = "morphe_settings_section";
     private static TikTokPreferenceFragment activeFragment;
     private static DownloadPathPreference pendingDownloadPathPreference;
+    private SettingsListAdapter styledAdapter;
 
     private enum Section {
         FEED_FILTER("Feed filter", "Ads, Shop, livestreams, and view limits."),
@@ -196,8 +196,9 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         if (list != null) {
             list.setBackgroundColor(SettingsUi.background());
             list.setCacheColorHint(SettingsUi.background());
-            list.setDivider(new ColorDrawable(SettingsUi.divider()));
-            list.setDividerHeight(1);
+            list.setDivider(null);
+            list.setDividerHeight(0);
+            list.setPadding(SettingsUi.dp(getActivity(), 16), 0, SettingsUi.dp(getActivity(), 16), SettingsUi.dp(getActivity(), 24));
             list.setClipToPadding(false);
             list.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
         }
@@ -207,8 +208,9 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             return;
         }
         Window window = activity.getWindow();
-        window.setStatusBarColor(SettingsUi.surface());
-        window.setNavigationBarColor(SettingsUi.surface());
+        window.setStatusBarColor(SettingsUi.background());
+        window.setNavigationBarColor(SettingsUi.background());
+        view.setBackgroundColor(SettingsUi.background());
 
         View decor = window.getDecorView();
         int visibility = decor.getSystemUiVisibility();
@@ -224,6 +226,23 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             }
         }
         decor.setSystemUiVisibility(visibility);
+    }
+
+    @Override public void onActivityCreated(Bundle state) {
+        super.onActivityCreated(state);
+        ListView list = getView().findViewById(android.R.id.list);
+        if (list != null && list.getAdapter() != null) {
+            styledAdapter = new SettingsListAdapter(list.getAdapter());
+            list.setAdapter(styledAdapter);
+        }
+    }
+
+    @Override public void onDestroyView() {
+        if (styledAdapter != null) {
+            styledAdapter.dispose();
+            styledAdapter = null;
+        }
+        super.onDestroyView();
     }
 
     private Section getRequestedSection() {
@@ -332,7 +351,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             ));
         }
         if (SettingsStatus.playbackQualityEnabled || SettingsStatus.playbackSpeedEnabled || SettingsStatus.autoAdvanceEnabled) {
-            addMenu(screen, Section.PLAYBACK, SettingsMenuPreference.Icon.BEHAVIOR,
+            addMenu(screen, Section.PLAYBACK, SettingsMenuPreference.Icon.PLAYBACK,
                     countEnabled(SettingsStatus.playbackQualityEnabled && !"auto".equals(Settings.PLAYBACK_QUALITY.get()),
                             SettingsStatus.playbackSpeedEnabled && Settings.DEFAULT_SPEED_ENABLED.get(),
                             SettingsStatus.playbackSpeedEnabled && !Settings.CUSTOM_SPEEDS.get().trim().isEmpty(),
@@ -342,7 +361,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                 || SettingsStatus.hideSuggestedAccountsEnabled
                 || SettingsStatus.hideInboxStoriesEnabled
                 || SettingsStatus.expandActivityListEnabled) {
-            addMenu(screen, Section.INBOX, SettingsMenuPreference.Icon.LAYOUT, countEnabled(
+            addMenu(screen, Section.INBOX, SettingsMenuPreference.Icon.INBOX, countEnabled(
                     (SettingsStatus.inboxFilterEnabled || SettingsStatus.hideInboxStoriesEnabled)
                             && Settings.HIDE_INBOX_STORIES.get(),
                     SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_NEW_FOLLOWERS.get(),
@@ -361,7 +380,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             ));
         }
         if (SettingsStatus.shareSheetEnabled) {
-            addMenu(screen, Section.SHARE, SettingsMenuPreference.Icon.BEHAVIOR, countEnabled(
+            addMenu(screen, Section.SHARE, SettingsMenuPreference.Icon.SHARE, countEnabled(
                     Settings.SHARE_CONFIRM_SEND.get(),
                     Settings.HIDE_SHARE_CONTACTS.get(),
                     Settings.HIDE_SHARE_CHANNELS.get(),
@@ -411,7 +430,22 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             SettingsMenuPreference.Icon icon,
             int activeCount
     ) {
-        String description = L10n.t(getActivity(), section.description);
+        String menuDescription;
+        switch (section) {
+            case FEED_FILTER: menuDescription = "Choose what reaches your feed"; break;
+            case FEED_NAVIGATION: menuDescription = "Arrange your feed and bottom tabs"; break;
+            case INTERFACE: menuDescription = "Captions, gestures and on-screen controls"; break;
+            case COMMENTS: menuDescription = "Filters, translation and copy options"; break;
+            case DOWNLOADS: menuDescription = "Quality, files and subtitles"; break;
+            case PLAYBACK: menuDescription = "Quality, speed and automatic advance"; break;
+            case INBOX: menuDescription = "Choose which rows and controls appear"; break;
+            case SHARE: menuDescription = "People, shortcuts and sending controls"; break;
+            case REGION: menuDescription = "Country and network preferences"; break;
+            case BEHAVIOR: menuDescription = "Links, privacy and player tools"; break;
+            case DIAGNOSTICS: menuDescription = "Backups and troubleshooting"; break;
+            default: menuDescription = section.description;
+        }
+        String description = L10n.t(getActivity(), menuDescription);
         if (description.endsWith(".")) {
             description = description.substring(0, description.length() - 1);
         }

@@ -173,6 +173,9 @@ public final class FeatureGateLabFragment extends Fragment {
         LinearLayout masterRow = new LinearLayout(context);
         masterRow.setOrientation(LinearLayout.HORIZONTAL);
         masterRow.setGravity(Gravity.CENTER_VERTICAL);
+        masterRow.setPadding(FeatureGateLabUi.dp(context, 16), FeatureGateLabUi.dp(context, 12),
+                FeatureGateLabUi.dp(context, 16), FeatureGateLabUi.dp(context, 12));
+        masterRow.setBackground(SettingsUi.borderedSurface(context, 10, false));
         LinearLayout masterText = new LinearLayout(context);
         masterText.setOrientation(LinearLayout.VERTICAL);
         masterText.addView(FeatureGateLabUi.body(context, "Enable overrides"), FeatureGateLabUi.matchWrap());
@@ -180,6 +183,8 @@ public final class FeatureGateLabFragment extends Fragment {
         masterRow.addView(masterText, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         master = new Switch(context);
         master.setChecked(FeatureGateLabStore.masterEnabled());
+        master.setContentDescription("Enable overrides");
+        SettingsUi.styleSwitch(master);
         masterRow.addView(master, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 FeatureGateLabUi.dp(context, 48)
@@ -192,7 +197,7 @@ public final class FeatureGateLabFragment extends Fragment {
         );
         warning.setTextColor(FeatureGateLabUi.warningColor(context));
         LinearLayout.LayoutParams warningParams = FeatureGateLabUi.matchWrap();
-        warningParams.setMargins(0, 0, 0, FeatureGateLabUi.dp(context, 8));
+        warningParams.setMargins(FeatureGateLabUi.dp(context, 4), FeatureGateLabUi.dp(context, 14), FeatureGateLabUi.dp(context, 4), FeatureGateLabUi.dp(context, 16));
         controls.addView(warning, warningParams);
 
         LinearLayout searchRow = new LinearLayout(context);
@@ -202,6 +207,8 @@ public final class FeatureGateLabFragment extends Fragment {
         searchRow.setBackground(SettingsUi.borderedSurface(context, 6, false));
         search = new EditText(context);
         search.setSingleLine(true);
+        search.setTextSize(16);
+        search.setContentDescription("Search words or key");
         search.setHint("Search words or key");
         search.setBackgroundColor(Color.TRANSPARENT);
         search.setTextColor(SettingsUi.textPrimary());
@@ -244,6 +251,7 @@ public final class FeatureGateLabFragment extends Fragment {
             LinearLayout tabContainer = new LinearLayout(context);
             tabContainer.setOrientation(LinearLayout.VERTICAL);
             tabContainer.setGravity(Gravity.CENTER);
+            tabContainer.setFocusable(true);
             tabContainer.setOnClickListener(view -> onSourceSelected(position));
 
             TextView tab = FeatureGateLabUi.text(
@@ -255,7 +263,7 @@ public final class FeatureGateLabFragment extends Fragment {
             );
             tab.setGravity(Gravity.CENTER);
             tab.setMinWidth(FeatureGateLabUi.dp(context, 72));
-            tab.setMinHeight(FeatureGateLabUi.dp(context, 36));
+            tab.setMinHeight(FeatureGateLabUi.dp(context, 46));
             tab.setPadding(
                     FeatureGateLabUi.dp(context, 14),
                     0,
@@ -272,7 +280,7 @@ public final class FeatureGateLabFragment extends Fragment {
             ));
             sourceTabs.addView(tabContainer, new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
-                    FeatureGateLabUi.dp(context, 38)
+                    FeatureGateLabUi.dp(context, 48)
             ));
         }
         sourceScroller.addView(sourceTabs, new HorizontalScrollView.LayoutParams(
@@ -296,10 +304,11 @@ public final class FeatureGateLabFragment extends Fragment {
             final int position = i;
             TextView tab = FeatureGateLabUi.text(context, VIEW_LABELS[i], 14, SettingsUi.textSecondary(), Typeface.BOLD);
             tab.setGravity(Gravity.CENTER);
-            tab.setMinHeight(FeatureGateLabUi.dp(context, 40));
+            tab.setMinHeight(FeatureGateLabUi.dp(context, 48));
+            tab.setFocusable(true);
             tab.setOnClickListener(view -> onViewSelected(position));
             viewTabLabels[i] = tab;
-            viewTabs.addView(tab, new LinearLayout.LayoutParams(0, FeatureGateLabUi.dp(context, 40), 1f));
+            viewTabs.addView(tab, new LinearLayout.LayoutParams(0, FeatureGateLabUi.dp(context, 48), 1f));
         }
         controls.addView(viewTabs, FeatureGateLabUi.matchWrap());
 
@@ -307,6 +316,7 @@ public final class FeatureGateLabFragment extends Fragment {
         resultRow.setOrientation(LinearLayout.HORIZONTAL);
         resultRow.setGravity(Gravity.CENTER_VERTICAL);
         count = FeatureGateLabUi.label(context, "Loading gates...");
+        count.setGravity(Gravity.CENTER_VERTICAL);
         resultRow.addView(count, new LinearLayout.LayoutParams(0, FeatureGateLabUi.dp(context, 44), 1f));
         filterButton = FeatureGateLabUi.text(context, "", 14, SettingsUi.textPrimary(), Typeface.BOLD);
         filterButton.setGravity(Gravity.CENTER);
@@ -317,10 +327,11 @@ public final class FeatureGateLabFragment extends Fragment {
                 0
         );
         filterButton.setBackground(SettingsUi.borderedSurface(context, 6, false));
+        filterButton.setFocusable(true);
         filterButton.setOnClickListener(view -> showFilterPicker());
         resultRow.addView(filterButton, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
-                FeatureGateLabUi.dp(context, 36)
+                FeatureGateLabUi.dp(context, 48)
         ));
         controls.addView(resultRow, FeatureGateLabUi.matchWrap());
 
@@ -329,8 +340,11 @@ public final class FeatureGateLabFragment extends Fragment {
 
         FrameLayout listContainer = new FrameLayout(context);
         list = new ListView(context);
-        list.setDividerHeight(FeatureGateLabUi.dp(context, 1));
-        list.setDivider(new android.graphics.drawable.ColorDrawable(SettingsUi.divider()));
+        list.setDivider(null);
+        list.setDividerHeight(0);
+        list.setPadding(FeatureGateLabUi.dp(context, 16), 0, FeatureGateLabUi.dp(context, 16), FeatureGateLabUi.dp(context, 24));
+        list.setClipToPadding(false);
+        list.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_OVERLAY);
         adapter = new GateAdapter(context, visible);
         list.setAdapter(adapter);
         list.setOnItemClickListener((parent, view, position, id) -> openDetail(visible.get(position)));
@@ -600,10 +614,11 @@ public final class FeatureGateLabFragment extends Fragment {
             TextView tab = viewTabLabels[i];
             if (tab == null) continue;
             boolean selected = i == selectedView;
+            tab.setSelected(selected);
             tab.setTextColor(selected ? Color.WHITE : SettingsUi.textSecondary());
             if (selected) {
                 GradientDrawable background = new GradientDrawable();
-                background.setColor(SettingsUi.ACCENT);
+                background.setColor(SettingsUi.accent());
                 background.setCornerRadius(FeatureGateLabUi.dp(tab.getContext(), 5));
                 tab.setBackground(background);
             } else {
@@ -615,9 +630,10 @@ public final class FeatureGateLabFragment extends Fragment {
             View indicator = sourceTabIndicators[i];
             if (tab == null || indicator == null) continue;
             boolean selected = i == selectedSource;
-            tab.setTextColor(selected ? SettingsUi.ACCENT : SettingsUi.textSecondary());
+            tab.setSelected(selected);
+            tab.setTextColor(selected ? SettingsUi.accent() : SettingsUi.textSecondary());
             tab.setTypeface(Typeface.DEFAULT, selected ? Typeface.BOLD : Typeface.NORMAL);
-            indicator.setBackgroundColor(selected ? SettingsUi.ACCENT : Color.TRANSPARENT);
+            indicator.setBackgroundColor(selected ? SettingsUi.accent() : Color.TRANSPARENT);
         }
         if (filterButton != null) filterButton.setText("Filter: " + FILTER_LABELS[selectedFilter]);
     }
@@ -638,6 +654,8 @@ public final class FeatureGateLabFragment extends Fragment {
         if (FeatureGateLabStore.masterEnabled() == checked) return;
         if (CHANGING.get()) {
             master.setChecked(FeatureGateLabStore.masterEnabled());
+        master.setContentDescription("Enable overrides");
+        SettingsUi.styleSwitch(master);
             Utils.showToastLong("A Lab change is already running");
             return;
         }
@@ -931,6 +949,8 @@ public final class FeatureGateLabFragment extends Fragment {
             new Handler(Looper.getMainLooper()).post(() -> {
                 CHANGING.set(false);
                 if (master != null) master.setChecked(FeatureGateLabStore.masterEnabled());
+        master.setContentDescription("Enable overrides");
+        SettingsUi.styleSwitch(master);
                 rebuild();
                 Utils.showToastLong(notice);
             });
@@ -1086,20 +1106,22 @@ public final class FeatureGateLabFragment extends Fragment {
                 LinearLayout row = new LinearLayout(context);
                 row.setOrientation(LinearLayout.HORIZONTAL);
                 row.setGravity(Gravity.CENTER_VERTICAL);
-                row.setMinimumHeight(FeatureGateLabUi.dp(context, 64));
+                row.setMinimumHeight(FeatureGateLabUi.dp(context, 84));
                 row.setPadding(
                         FeatureGateLabUi.dp(context, 16),
-                        FeatureGateLabUi.dp(context, 7),
                         FeatureGateLabUi.dp(context, 16),
-                        FeatureGateLabUi.dp(context, 7)
+                        FeatureGateLabUi.dp(context, 16),
+                        FeatureGateLabUi.dp(context, 16)
                 );
 
                 LinearLayout textColumn = new LinearLayout(context);
                 textColumn.setOrientation(LinearLayout.VERTICAL);
                 TextView title = FeatureGateLabUi.text(context, "", 15, SettingsUi.textPrimary(), Typeface.BOLD);
-                title.setSingleLine(true);
-                title.setEllipsize(TextUtils.TruncateAt.END);
+                title.setMaxLines(2);
                 TextView key = FeatureGateLabUi.label(context, "");
+                key.setTextSize(12);
+                key.setTypeface(Typeface.MONOSPACE);
+                key.setPadding(0, FeatureGateLabUi.dp(context, 6), 0, 0);
                 key.setSingleLine(true);
                 key.setEllipsize(TextUtils.TruncateAt.MIDDLE);
                 textColumn.addView(title, FeatureGateLabUi.matchWrap());
@@ -1148,12 +1170,14 @@ public final class FeatureGateLabFragment extends Fragment {
                 shownValue = "No current value";
             }
             holder.value.setText(shownValue);
+            holder.value.setVisibility(entry.loaded || rule != null ? View.VISIBLE : View.GONE);
+            convertView.setBackground(SettingsUi.groupedRow(context, position == 0, position == entries.size() - 1));
 
             String state;
             int stateColor;
             if (rule != null && rule.enabled && FeatureGateLabRuntime.isTriggered(entry.manager, entry.key, entry.type)) {
                 state = "Getter used";
-                stateColor = SettingsUi.ACCENT;
+                stateColor = SettingsUi.accent();
             } else if (rule != null && rule.enabled) {
                 state = "Waiting";
                 stateColor = FeatureGateLabUi.warningColor(context);

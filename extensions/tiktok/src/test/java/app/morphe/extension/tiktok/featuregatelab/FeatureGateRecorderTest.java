@@ -67,12 +67,18 @@ public class FeatureGateRecorderTest {
         FeatureGateLearnMode.observe("test", "new_after_full_baseline", "INT", 1);
         assertEquals(1, new JSONObject(FeatureGateLearnMode.stopAndBuildReport()).getInt("gate_count"));
     }
-    @Test public void controlStartsImmediatelyAndStopShowsTheReport() throws Exception {
+    @Test @Config(qualifiers = "w480dp-h960dp-night-mdpi")
+    public void controlStartsImmediatelyAndStopShowsTheReport() throws Exception { captureReport(true); }
+
+    @Test @Config(qualifiers = "w480dp-h960dp-notnight-mdpi")
+    public void reportRemainsReadableInLightTheme() throws Exception { captureReport(false); }
+
+    private void captureReport(boolean dark) throws Exception {
         try (var owner = Robolectric.buildActivity(
-                app.morphe.extension.tiktok.interaction.GestureActionsTest.TestActivity.class).setup().visible()) {
+                app.morphe.extension.tiktok.settings.SettingsPagesTest.PageActivity.class).setup().visible()) {
             var activity = owner.get();
             Utils.setContext(activity);
-            Utils.setIsDarkModeEnabled(true);
+            Utils.setIsDarkModeEnabled(dark);
             FeatureGateRecorderPreference control = new FeatureGateRecorderPreference(activity);
             control.getOnPreferenceClickListener().onPreferenceClick(control);
             assertTrue(FeatureGateLearnMode.isRecording());
@@ -84,7 +90,8 @@ public class FeatureGateRecorderTest {
             assertTrue(dialog.isShowing());
             assertTrue(FeatureGateLearnMode.lastReport().contains("circle_search_block"));
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
-            app.morphe.extension.tiktok.UiCapture.save(dialog.getWindow().getDecorView(), "gate-recording.png");
+            app.morphe.extension.tiktok.UiCapture.save(dialog.getWindow().getDecorView(),
+                    dark ? "gate-recording.png" : "gate-recording-light.png");
             dialog.dismiss();
         }
     }

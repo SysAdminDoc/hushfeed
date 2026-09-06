@@ -14,6 +14,8 @@
     <string name="mtp_05b1f47b">Die Suchschaltfläche oben rechts im Feed ausblenden.</string>
     <!-- Always show the publish date in video author information. Requires restart. -->
     <string name="mtp_05fb4457">Das Veröffentlichungsdatum immer in den Angaben zum Video-Ersteller anzeigen. Erfordert einen Neustart.</string>
+    <!-- Choose what reaches your feed -->
+    <string name="mtp_06298345">Wähle aus, was in deinem Feed erscheint</string>
     <!-- Promotions, popups, publish dates, and feed controls. -->
     <string name="mtp_072d0415">Werbeaktionen, Popups, Veröffentlichungsdaten und Feed-Bedienelemente.</string>
     <!-- Playback -->
@@ -110,6 +112,8 @@
     <string name="mtp_23085188">Feed-Navigation</string>
     <!-- Clear -->
     <string name="mtp_2470de02">Löschen</string>
+    <!-- Source code and releases -->
+    <string name="mtp_2586a1b2">Quellcode und Versionen</string>
     <!-- Could not open settings section -->
     <string name="mtp_25b18284">Einstellungsbereich konnte nicht geöffnet werden</string>
     <!-- Blocked comment words -->
@@ -122,6 +126,8 @@
     <string name="mtp_26d44819">Neue TikTok-Tabs blockieren</string>
     <!-- Save SRT files with the video. Paired saves use Movies on Android 11+, Download on Android 10, and your video folder on older versions. -->
     <string name="mtp_278ddcd2">SRT-Dateien zusammen mit dem Video speichern. Gemeinsame Speicherungen nutzen Movies ab Android 11, Download auf Android 10 und deinen Videoordner auf älteren Versionen.</string>
+    <!-- Quality, speed and automatic advance -->
+    <string name="mtp_284b7608">Qualität, Tempo und automatischer Wechsel</string>
     <!-- Maximum video length -->
     <string name="mtp_292e8969">Maximale Videolänge</string>
     <!-- videos -->
@@ -204,6 +210,8 @@
     <string name="mtp_459690e3">TikTok-Shop-Updates und Gutschein-Nachrichten ausblenden.</string>
     <!-- Advance when a video ends -->
     <string name="mtp_46694aa8">Weiterschalten, wenn ein Video endet</string>
+    <!-- Choose which rows and controls appear -->
+    <string name="mtp_469b5030">Wähle sichtbare Zeilen und Bedienelemente</string>
     <!-- Do you wish to proceed? -->
     <string name="mtp_4797a16e">Möchtest du fortfahren?</string>
     <!-- Window width needed to enable the layout. Restart after changing. -->
@@ -246,6 +254,8 @@
     <string name="mtp_58862793">ms</string>
     <!-- Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains. -->
     <string name="mtp_5906f00b">Das geteilte Layout auf breiteren Bildschirmen verwenden. Starte TikTok nach dem Ändern dieser Option oder nach dem Aufklappen neu, falls das alte Layout bleibt.</string>
+    <!-- Captions, gestures and on-screen controls -->
+    <string name="mtp_597f3933">Untertitel, Gesten und Bildschirmelemente</string>
     <!-- Hide message requests -->
     <string name="mtp_59dbc567">Nachrichtenanfragen ausblenden</string>
     <!-- Hide Live entrance -->
@@ -278,6 +288,8 @@
     <string name="mtp_66b64e3a">Gate-Flags suchen und überschreiben</string>
     <!-- Hide browsing and LIVE puzzle dialogs. Login and account verification remain available. -->
     <string name="mtp_67a09fe0">Rätsel-Dialoge beim Stöbern und in LIVE ausblenden. Anmeldung und Kontobestätigung bleiben verfügbar.</string>
+    <!-- Country and network preferences -->
+    <string name="mtp_6887a6db">Land und Netzwerkeinstellungen</string>
     <!-- Remove watermark -->
     <string name="mtp_69494ab7">Wasserzeichen entfernen</string>
     <!-- Disable long-press repost -->
@@ -306,6 +318,8 @@
     <string name="mtp_73ce080f">Ordnerauswahl ist nicht verfügbar</string>
     <!-- Allowed loaded tabs -->
     <string name="mtp_74e040b4">Erlaubte geladene Tabs</string>
+    <!-- Filters, translation and copy options -->
+    <string name="mtp_756e6d98">Filter, Übersetzung und Kopieroptionen</string>
     <!-- Save subtitles beside videos -->
     <string name="mtp_756fd16b">Untertitel neben Videos speichern</string>
     <!-- Play videos TikTok has classified without the overlay asking to be tapped through first. -->
@@ -350,6 +364,8 @@
     <string name="mtp_82887b09">Schaltfläche „Kein Interesse“</string>
     <!-- Caption background -->
     <string name="mtp_83006131">Untertitel-Hintergrund</string>
+    <!-- People, shortcuts and sending controls -->
+    <string name="mtp_83cb0298">Kontakte, Verknüpfungen und Versandoptionen</string>
     <!-- Operator name -->
     <string name="mtp_844cf862">Name des Netzbetreibers</string>
     <!-- Filter offline fallback videos -->
@@ -362,6 +378,8 @@
     <string name="mtp_85b815b7">Jede Direktnachrichten-Unterhaltung ausblenden. Der Posteingang bleibt leer, abgesehen von allem, was sonst noch eingeschaltet ist.</string>
     <!-- Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically. -->
     <string name="mtp_862b35d8">Platzhalter: {creator}, {date}, {video_id}. Die Dateiendung bleibt automatisch erhalten.</string>
+    <!-- Links, privacy and player tools -->
+    <string name="mtp_86dc08f0">Links, Datenschutz und Wiedergabewerkzeuge</string>
     <!-- Hide floating promotions -->
     <string name="mtp_87263e90">Schwebende Werbeaktionen ausblenden</string>
     <!-- Hidden commenters -->
@@ -414,6 +432,8 @@
     <string name="mtp_9612acd1">Store-Region überschreiben (experimentell)</string>
     <!-- Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list. -->
     <string name="mtp_963f0c36">Bis zu 8 Geschwindigkeiten von 0,5 bis 3, durch Kommas getrennt. Beispiel: 0.5, 1, 1.5, 2, 2.5, 3. Leer lassen für TikToks Liste. Nach dem Ändern der Liste neu starten.</string>
+    <!-- YOUR EXPERIENCE -->
+    <string name="mtp_97e9c8d1">DEIN TIKTOK</string>
     <!-- Min/Max likes -->
     <string name="mtp_988562c2">Min./Max. Likes</string>
     <!-- Device language, then original -->
@@ -432,6 +452,8 @@
     <string name="mtp_9db1aed7">Öffne die TikTok-Startseite, damit geladene untere Tabs erkannt werden.</string>
     <!-- Hide the column on the right: avatar, like, comments, favourite, share and the music disc. -->
     <string name="mtp_9e44cc17">Die Spalte rechts ausblenden: Avatar, Like, Kommentare, Favorit, Teilen und die Musikscheibe.</string>
+    <!-- Make TikTok yours. -->
+    <string name="mtp_9f0249ca">Mach TikTok zu deinem TikTok.</string>
     <!-- Custom offline videos -->
     <string name="mtp_a131a4e1">Eigene Offline-Videos</string>
     <!-- Hide the status bar -->
@@ -462,6 +484,8 @@
     <string name="mtp_aea77cee">Platzhalter: {creator}, {date}, {video_id}, {index}. Die Dateiendung bleibt automatisch erhalten.</string>
     <!-- Keep the clock and status icons off the screen while TikTok is open. Swipe down from the top to peek at them. -->
     <string name="mtp_af25c3b0">Uhr und Statussymbole ausblenden, solange TikTok geöffnet ist. Wische von oben nach unten, um sie kurz zu sehen.</string>
+    <!-- Arrange your feed and bottom tabs -->
+    <string name="mtp_af86ae2d">Ordne deine Feed-Tabs und unteren Tabs an</string>
     <!-- Stop feature gate recording -->
     <string name="mtp_afb994a9">Feature-Gate-Aufzeichnung beenden</string>
     <!-- Copy only the comment text when using TikTok's copy comment action. -->
@@ -516,6 +540,8 @@
     <string name="mtp_c4bd9416">Einstellungen sichern</string>
     <!-- Hide the music line -->
     <string name="mtp_c62af816">Musikzeile ausblenden</string>
+    <!-- %s on -->
+    <string name="mtp_c6ab25cc">%s aktiv</string>
     <!-- Show TikTok's search entry in the Live drawer where supported. -->
     <string name="mtp_c719c108">TikToks Sucheingang im Live-Bereich anzeigen, wo das unterstützt wird.</string>
     <!-- Hide videos that belong to a paid Series. -->
@@ -544,6 +570,8 @@
     <string name="mtp_ce7851e8">Dateiname für Kommentar-Medien</string>
     <!-- Operator MCC/MNC -->
     <string name="mtp_d01962e4">Netzbetreiber MCC/MNC</string>
+    <!-- Quality, files and subtitles -->
+    <string name="mtp_d0be8882">Qualität, Dateien und Untertitel</string>
     <!-- Tokens: {date}, {media_id}. Works for image and video stickers. -->
     <string name="mtp_d12727a3">Platzhalter: {date}, {media_id}. Gilt für Bild- und Video-Sticker.</string>
     <!-- Comma separated names exactly as the share sheet shows them: friends in the Send to row, share targets such as Facebook, and actions such as Create group or Repost. Stable keys such as copy, save and dislike also work before the sheet opens. -->
@@ -676,6 +704,8 @@
     <string name="mtp_fa72c423">Verzögerung der freien Ansicht</string>
     <!-- Restore defaults immediately. Your current settings are kept for Undo. -->
     <string name="mtp_fac17af0">Standardwerte sofort wiederherstellen. Deine aktuellen Einstellungen bleiben zum Rückgängigmachen erhalten.</string>
+    <!-- Backups and troubleshooting -->
+    <string name="mtp_fb6c8ed4">Sicherungen und Fehlerdiagnose</string>
     <!-- Automatic -->
     <string name="mtp_fb91d6b3">Automatisch</string>
     <!-- The minimum or maximum likes of a video to show. -->

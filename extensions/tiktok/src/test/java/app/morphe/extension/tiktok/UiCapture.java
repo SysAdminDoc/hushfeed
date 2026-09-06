@@ -10,9 +10,11 @@ import java.io.FileOutputStream;
 public final class UiCapture {
     private UiCapture() {}
     public static void save(View view, String name) throws Exception {
+        save(view, name, 480, 960);
+    }
+    public static void save(View view, String name, int width, int height) throws Exception {
         String directory = System.getProperty("morphe.screenshotDir");
         if (directory == null) return;
-        int width = 480, height = 960;
         view.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
                 View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY));
         view.layout(0, 0, width, height);

@@ -37,11 +37,22 @@ public final class FeatureGateRecorderPreference extends Preference {
         text.setTextIsSelectable(true);
         text.setTextColor(SettingsUi.textPrimary());
         text.setTextSize(13);
+        text.setTypeface(android.graphics.Typeface.MONOSPACE);
+        text.setLineSpacing(SettingsUi.dp(context, 3), 1f);
+        text.setBackground(SettingsUi.borderedSurface(context, 8, false));
         int padding = SettingsUi.dp(context, 16);
         text.setPadding(padding, padding, padding, padding);
+        scroll.setPadding(padding, 0, padding, 0);
         scroll.addView(text);
+        scroll.setFillViewport(true);
+        scroll.setMinimumHeight(SettingsUi.dp(context, Math.min(540,
+                context.getResources().getConfiguration().screenHeightDp * 3 / 5)));
+        TextView title = SettingsUi.text(context,
+                L10n.f(context, "Recorded gate reads (%d)", FeatureGateLearnMode.lastCandidateCount()),
+                28, SettingsUi.textPrimary(), 1);
+        title.setPadding(padding, padding, padding, SettingsUi.dp(context, 12));
         AlertDialog.Builder builder = new AlertDialog.Builder(context)
-                .setTitle(L10n.f(context, "Recorded gate reads (%d)", FeatureGateLearnMode.lastCandidateCount()))
+                .setCustomTitle(title)
                 .setView(scroll).setPositiveButton(L10n.t(context, "Close"), null)
                 .setNegativeButton(L10n.t(context, "Save JSON"), (ignored, which) -> GateReportExport.save(context, report));
         if (report.length() <= GateReportExport.MAX_CLIPBOARD_CHARS) {
@@ -49,7 +60,9 @@ public final class FeatureGateRecorderPreference extends Preference {
         }
         AlertDialog dialog = builder.create();
         dialog.show();
-        SettingsUi.styleFramedDialog(dialog);
+        SettingsUi.styleStandardAlertDialog(dialog);
+        SettingsUi.styleActionButton(dialog.getButton(AlertDialog.BUTTON_NEGATIVE), true);
+        SettingsUi.styleActionButton(dialog.getButton(AlertDialog.BUTTON_POSITIVE), false);
     }
 
     private void refresh() {

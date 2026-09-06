@@ -19,6 +19,11 @@ public final class ChoicePreference extends ListPreference {
         setSummary("%s");
     }
 
+    @Override protected void showDialog(android.os.Bundle state) {
+        super.showDialog(state);
+        SettingsUi.styleStandardAlertDialog((android.app.AlertDialog) getDialog());
+    }
+
     @Override protected void onBindView(View view) {
         super.onBindView(view);
         app.morphe.extension.tiktok.Utils.setTitleAndSummaryColor(view);

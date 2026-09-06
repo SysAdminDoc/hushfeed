@@ -1,3 +1,10 @@
+## 0.16.0 (2026-09-06)
+
+* Settings now use AMOLED backgrounds, grouped rows and larger page headings. Each section has its own icon, with active counts on the home page.
+* Feature Gate Lab, gate details and recording reports follow the same layout. Switches, value pickers and long labels stay readable in both themes.
+* Native preference actions and saved values stay intact. English and German labels wrap with the phone's text size.
+* Updated the settings screenshots and added navigation, value-saving and theme coverage to the local runtime tests.
+
 ## 0.15.1 (2026-09-06)
 
 * The repository is public. Morphe Manager can add it as a source straight from the project page.

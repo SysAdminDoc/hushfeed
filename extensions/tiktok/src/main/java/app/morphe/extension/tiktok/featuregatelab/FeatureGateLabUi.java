@@ -54,47 +54,19 @@ final class FeatureGateLabUi {
     }
 
     static FrameLayout header(Context context, String title, Runnable onBack, Runnable onMenu) {
-        FrameLayout toolbar = new FrameLayout(context);
-        toolbar.setMinimumHeight(dp(context, 52));
-        toolbar.setBackgroundColor(SettingsUi.background());
-
-        View back = iconButton(
-                context,
-                "icon_arrow_left_ltr",
-                android.R.drawable.ic_media_previous,
-                "Back",
-                onBack
-        );
-        FrameLayout.LayoutParams backParams = new FrameLayout.LayoutParams(dp(context, 48), dp(context, 48));
-        backParams.gravity = Gravity.START | Gravity.CENTER_VERTICAL;
-        toolbar.addView(back, backParams);
-
-        TextView heading = text(context, title, 17, SettingsUi.textPrimary(), Typeface.BOLD);
-        heading.setGravity(Gravity.CENTER);
-        heading.setSingleLine(true);
-        heading.setEllipsize(android.text.TextUtils.TruncateAt.END);
-        FrameLayout.LayoutParams headingParams = new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-        );
-        headingParams.leftMargin = dp(context, 56);
-        headingParams.rightMargin = dp(context, 56);
-        toolbar.addView(heading, headingParams);
-
+        FrameLayout frame = new FrameLayout(context);
+        frame.setPadding(dp(context, 16), 0, dp(context, 16), dp(context, 24));
+        LinearLayout header = app.morphe.extension.tiktok.settings.preference.SettingsHeaderPreference.createHeader(context, title, onBack);
+        ((TextView) header.findViewWithTag("metra_page_title")).setTextSize(onMenu == null ? 40 : 28);
         if (onMenu != null) {
-            View menu = iconButton(
-                    context,
-                    "icon_ellipsis_horizontal",
-                    android.R.drawable.ic_menu_more,
-                    "More options",
-                    onMenu
-            );
-            FrameLayout.LayoutParams menuParams = new FrameLayout.LayoutParams(dp(context, 48), dp(context, 48));
-            menuParams.gravity = Gravity.END | Gravity.CENTER_VERTICAL;
-            toolbar.addView(menu, menuParams);
+            View menu = iconButton(context, "icon_ellipsis_horizontal", android.R.drawable.ic_menu_more,
+                    "More options", onMenu);
             menu.setTag("feature_gate_menu");
+            ((LinearLayout) header.findViewWithTag("metra_toolbar")).addView(menu,
+                    new LinearLayout.LayoutParams(dp(context, 48), dp(context, 48)));
         }
-        return toolbar;
+        frame.addView(header, new FrameLayout.LayoutParams(-1, -2));
+        return frame;
     }
 
     static View clearSearchButton(Context context, Runnable onClear) {
@@ -117,7 +89,24 @@ final class FeatureGateLabUi {
         View icon = createTuxIcon(context, rawIconName);
         if (icon == null) {
             ImageButton fallback = new ImageButton(context);
-            fallback.setImageResource(fallbackDrawable);
+            if ("icon_ellipsis_horizontal".equals(rawIconName)) {
+                fallback.setImageDrawable(new android.graphics.drawable.Drawable() {
+                    private final android.graphics.Paint paint = new android.graphics.Paint(3);
+                    @Override public void draw(android.graphics.Canvas canvas) {
+                        paint.setColor(SettingsUi.textPrimary());
+                        float cx = getBounds().exactCenterX();
+                        float cy = getBounds().exactCenterY();
+                        for (int i = -1; i <= 1; i++) canvas.drawCircle(cx, cy + dp(context, 6) * i, dp(context, 2), paint);
+                    }
+                    @Override public int getIntrinsicWidth() { return dp(context, 24); }
+                    @Override public int getIntrinsicHeight() { return dp(context, 24); }
+                    @Override public void setAlpha(int alpha) { paint.setAlpha(alpha); }
+                    @Override public void setColorFilter(android.graphics.ColorFilter filter) { paint.setColorFilter(filter); }
+                    @Override public int getOpacity() { return android.graphics.PixelFormat.TRANSLUCENT; }
+                });
+            } else {
+                fallback.setImageResource(fallbackDrawable);
+            }
             fallback.setColorFilter(SettingsUi.textPrimary());
             fallback.setScaleType(ImageButton.ScaleType.CENTER);
             icon = fallback;
@@ -130,6 +119,7 @@ final class FeatureGateLabUi {
             icon.setBackgroundColor(0x00000000);
         }
         icon.setContentDescription(description);
+        icon.setFocusable(true);
         icon.setOnClickListener(view -> action.run());
         return icon;
     }
@@ -163,11 +153,11 @@ final class FeatureGateLabUi {
     }
 
     static TextView label(Context context, String text) {
-        return FeatureGateLabUi.text(context, text, 13, SettingsUi.textSecondary(), Typeface.NORMAL);
+        return FeatureGateLabUi.text(context, text, 14, SettingsUi.textSecondary(), Typeface.NORMAL);
     }
 
     static TextView body(Context context, String text) {
-        return FeatureGateLabUi.text(context, text, 15, SettingsUi.textPrimary(), Typeface.NORMAL);
+        return FeatureGateLabUi.text(context, text, 16, SettingsUi.textPrimary(), Typeface.NORMAL);
     }
 
     static LinearLayout.LayoutParams matchWrap() {
@@ -200,10 +190,10 @@ final class FeatureGateLabUi {
             RadioButton radio = (RadioButton) view;
             radio.setTextColor(SettingsUi.textPrimary());
             if (Build.VERSION.SDK_INT >= 21) {
-                radio.setButtonTintList(ColorStateList.valueOf(SettingsUi.ACCENT));
+                radio.setButtonTintList(ColorStateList.valueOf(SettingsUi.accent()));
             }
         } else if (view instanceof Button) {
-            ((Button) view).setTextColor(SettingsUi.ACCENT);
+            ((Button) view).setTextColor(SettingsUi.accent());
         } else if (view instanceof TextView) {
             ((TextView) view).setTextColor(SettingsUi.textPrimary());
         }

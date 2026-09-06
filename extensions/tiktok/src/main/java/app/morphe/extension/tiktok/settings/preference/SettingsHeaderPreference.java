@@ -62,7 +62,7 @@ public final class SettingsHeaderPreference extends Preference {
         this.heading = L10n.t(context, heading);
         this.detail = L10n.t(context, detail);
         this.backAction = backAction;
-        setSelectable(kind != Kind.CAPTION);
+        setSelectable(false);
         setOrder(kind == Kind.CAPTION ? -900 : -1000);
     }
 
@@ -78,93 +78,66 @@ public final class SettingsHeaderPreference extends Preference {
     }
 
     private View createMasterHeader() {
-        Context context = getContext();
-        LinearLayout container = new LinearLayout(context);
-        container.setOrientation(LinearLayout.VERTICAL);
-        container.setPadding(
-                SettingsUi.dp(context, 8),
-                SettingsUi.dp(context, 18),
-                SettingsUi.dp(context, 22),
-                SettingsUi.dp(context, 10)
-        );
-        container.setBackgroundColor(SettingsUi.background());
-
-        LinearLayout topRow = new LinearLayout(context);
-        topRow.setGravity(Gravity.CENTER_VERTICAL);
-        topRow.setOrientation(LinearLayout.HORIZONTAL);
-
-        ImageView back = new ImageView(context);
-        back.setContentDescription(L10n.t(context, "Back"));
-        back.setImageDrawable(new BackDrawable());
-        back.setOnClickListener(view -> {
-            if (backAction != null) {
-                backAction.run();
-            }
-        });
-        int buttonSize = SettingsUi.dp(context, 40);
-        topRow.addView(back, new LinearLayout.LayoutParams(buttonSize, buttonSize));
-
-        TextView kicker = SettingsUi.text(context, "HUSHFEED", 12.5f, SettingsUi.ACCENT, 1);
-        LinearLayout.LayoutParams kickerParams = new LinearLayout.LayoutParams(0, -2, 1);
-        kickerParams.leftMargin = SettingsUi.dp(context, 4);
-        topRow.addView(kicker, kickerParams);
-        container.addView(topRow, new LinearLayout.LayoutParams(-1, -2));
-
-        TextView title = SettingsUi.text(context, heading, 32, SettingsUi.textPrimary(), 1);
-        LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(-1, -2);
-        titleParams.leftMargin = SettingsUi.dp(context, 14);
-        titleParams.topMargin = SettingsUi.dp(context, 2);
-        container.addView(title, titleParams);
-
-        TextView menuLabel = SettingsUi.text(context, L10n.t(context, "MENUS"), 12.5f, SettingsUi.textDisabled(), 1);
-        LinearLayout.LayoutParams menuLabelParams = new LinearLayout.LayoutParams(-1, -2);
-        menuLabelParams.leftMargin = SettingsUi.dp(context, 14);
-        menuLabelParams.topMargin = SettingsUi.dp(context, 18);
-        container.addView(menuLabel, menuLabelParams);
-        return container;
+        LinearLayout header = createHeader(getContext(), heading, backAction);
+        TextView subtitle = SettingsUi.text(getContext(), L10n.t(getContext(), "Make TikTok yours."),
+                14, SettingsUi.textSecondary(), 0);
+        LinearLayout.LayoutParams subtitleParams = new LinearLayout.LayoutParams(-1, -2);
+        subtitleParams.topMargin = SettingsUi.dp(getContext(), 12);
+        header.addView(subtitle, subtitleParams);
+        TextView label = SettingsUi.text(getContext(), L10n.t(getContext(), "YOUR EXPERIENCE"),
+                11, SettingsUi.textSecondary(), 1);
+        label.setLetterSpacing(0.15f);
+        LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(-1, -2);
+        labelParams.topMargin = SettingsUi.dp(getContext(), 38);
+        labelParams.bottomMargin = SettingsUi.dp(getContext(), 12);
+        header.addView(label, labelParams);
+        return header;
     }
 
-    private View createSectionHeader() {
-        Context context = getContext();
-        LinearLayout container = new LinearLayout(context);
-        container.setGravity(Gravity.CENTER_VERTICAL);
-        container.setOrientation(LinearLayout.HORIZONTAL);
-        container.setMinimumHeight(SettingsUi.dp(context, 56));
-        container.setPadding(
-                SettingsUi.dp(context, 8),
-                0,
-                SettingsUi.dp(context, 16),
-                0
-        );
-        container.setBackgroundColor(SettingsUi.background());
-        container.setOnClickListener(view -> {
-            if (backAction != null) {
-                backAction.run();
-            }
-        });
+    private View createSectionHeader() { return createHeader(getContext(), heading, backAction); }
 
+    /** Shared app-owned heading used by settings and the Lab. Parent supplies the 16 dp gutter. */
+    public static LinearLayout createHeader(Context context, String title, Runnable onBack) {
+        LinearLayout header = new LinearLayout(context);
+        header.setTag("metra_page_header");
+        header.setOrientation(LinearLayout.VERTICAL);
+        header.setPadding(SettingsUi.dp(context, 8), SettingsUi.dp(context, 8), SettingsUi.dp(context, 8), 0);
+        header.setBackgroundColor(SettingsUi.background());
+        LinearLayout toolbar = new LinearLayout(context);
+        toolbar.setTag("metra_toolbar");
+        toolbar.setGravity(Gravity.CENTER_VERTICAL);
         ImageView back = new ImageView(context);
         back.setContentDescription(L10n.t(context, "Back"));
         back.setImageDrawable(new BackDrawable());
-        int buttonSize = SettingsUi.dp(context, 40);
-        container.addView(back, new LinearLayout.LayoutParams(buttonSize, buttonSize));
-
-        TextView title = SettingsUi.text(context, heading, 17, SettingsUi.textPrimary(), 1);
-        LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(0, -2, 1);
-        titleParams.leftMargin = SettingsUi.dp(context, 4);
-        container.addView(title, titleParams);
-        return container;
+        back.setOnClickListener(view -> { if (onBack != null) onBack.run(); });
+        back.setFocusable(true);
+        back.setBackground(new android.graphics.drawable.RippleDrawable(
+                android.content.res.ColorStateList.valueOf(SettingsUi.divider()), null,
+                SettingsUi.roundedSurface(context, 6, false)));
+        LinearLayout.LayoutParams backParams = new LinearLayout.LayoutParams(SettingsUi.dp(context, 48), SettingsUi.dp(context, 48));
+        backParams.setMarginStart(SettingsUi.dp(context, -12));
+        toolbar.addView(back, backParams);
+        TextView brand = SettingsUi.text(context, "HUSHFEED", 12, SettingsUi.accent(), 1);
+        brand.setLetterSpacing(0.12f);
+        LinearLayout.LayoutParams brandParams = new LinearLayout.LayoutParams(0, -2, 1);
+        brandParams.setMarginStart(SettingsUi.dp(context, 8));
+        toolbar.addView(brand, brandParams);
+        header.addView(toolbar, new LinearLayout.LayoutParams(-1, -2));
+        TextView heading = SettingsUi.text(context, title, 40, SettingsUi.textPrimary(), 1);
+        heading.setTag("metra_page_title");
+        if (android.os.Build.VERSION.SDK_INT >= 28) heading.setAccessibilityHeading(true);
+        LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(-1, -2);
+        titleParams.topMargin = SettingsUi.dp(context, 24);
+        header.addView(heading, titleParams);
+        return header;
     }
 
     private View createCaption() {
         Context context = getContext();
-        TextView caption = SettingsUi.text(context, detail, 13.5f, SettingsUi.textSecondary(), 0);
-        caption.setPadding(
-                SettingsUi.dp(context, 22),
-                SettingsUi.dp(context, 12),
-                SettingsUi.dp(context, 22),
-                SettingsUi.dp(context, 8)
-        );
+        TextView caption = SettingsUi.text(context, detail, 14, SettingsUi.textSecondary(), 0);
+        caption.setLineSpacing(SettingsUi.dp(context, 3), 1f);
+        caption.setPadding(SettingsUi.dp(context, 8), SettingsUi.dp(context, 12),
+                SettingsUi.dp(context, 8), SettingsUi.dp(context, 32));
         caption.setBackgroundColor(SettingsUi.background());
         return caption;
     }

@@ -7,6 +7,7 @@
     <string name="mtp_040017e1">App behavior</string>
     <string name="mtp_05b1f47b">Hide the search button in the top right corner of the feed.</string>
     <string name="mtp_05fb4457">Always show the publish date in video author information. Requires restart.</string>
+    <string name="mtp_06298345">Choose what reaches your feed</string>
     <string name="mtp_072d0415">Promotions, popups, publish dates, and feed controls.</string>
     <string name="mtp_07f24a54">Playback</string>
     <string name="mtp_083bee8c">Capture crash reports locally</string>
@@ -55,12 +56,14 @@
     <string name="mtp_22f8d1a0">Add a button beside the block control to send feedback about the current video.</string>
     <string name="mtp_23085188">Feed navigation</string>
     <string name="mtp_2470de02">Clear</string>
+    <string name="mtp_2586a1b2">Source code and releases</string>
     <string name="mtp_25b18284">Could not open settings section</string>
     <string name="mtp_25fb6907">Blocked comment words</string>
     <string name="mtp_268d2381">Show seekbar</string>
     <string name="mtp_26a1e172">Includes all Morphe diagnostic events.</string>
     <string name="mtp_26d44819">Block new TikTok tabs</string>
     <string name="mtp_278ddcd2">Save SRT files with the video. Paired saves use Movies on Android 11+, Download on Android 10, and your video folder on older versions.</string>
+    <string name="mtp_284b7608">Quality, speed and automatic advance</string>
     <string name="mtp_292e8969">Maximum video length</string>
     <string name="mtp_29aa6432">videos</string>
     <string name="mtp_2b9b7e37">Hide feed save button</string>
@@ -102,6 +105,7 @@
     <string name="mtp_4588ebc9">Hide the floating promotional badge over the feed.</string>
     <string name="mtp_459690e3">Hide TikTok Shop updates and coupon messages.</string>
     <string name="mtp_46694aa8">Advance when a video ends</string>
+    <string name="mtp_469b5030">Choose which rows and controls appear</string>
     <string name="mtp_4797a16e">Do you wish to proceed?</string>
     <string name="mtp_481c2c5e">Window width needed to enable the layout. Restart after changing.</string>
     <string name="mtp_482cfe09">Photo destination</string>
@@ -123,6 +127,7 @@
     <string name="mtp_58241508">%d languages excluded</string>
     <string name="mtp_58862793">ms</string>
     <string name="mtp_5906f00b">Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.</string>
+    <string name="mtp_597f3933">Captions, gestures and on-screen controls</string>
     <string name="mtp_59dbc567">Hide message requests</string>
     <string name="mtp_5aa5954c">Hide Live entrance</string>
     <string name="mtp_5b1688ea">Hide the Activity row of likes and comments on your posts.</string>
@@ -139,6 +144,7 @@
     <string name="mtp_6501fe45">Hide playlist videos</string>
     <string name="mtp_66b64e3a">Search and override gate flags</string>
     <string name="mtp_67a09fe0">Hide browsing and LIVE puzzle dialogs. Login and account verification remain available.</string>
+    <string name="mtp_6887a6db">Country and network preferences</string>
     <string name="mtp_69494ab7">Remove watermark</string>
     <string name="mtp_6a8a62af">Disable long-press repost</string>
     <string name="mtp_6ac7d0d2">Copy comments without username</string>
@@ -153,6 +159,7 @@
     <string name="mtp_72fc6e50">Expand activity list</string>
     <string name="mtp_73ce080f">Folder picker is not available</string>
     <string name="mtp_74e040b4">Allowed loaded tabs</string>
+    <string name="mtp_756e6d98">Filters, translation and copy options</string>
     <string name="mtp_756fd16b">Save subtitles beside videos</string>
     <string name="mtp_75d69716">Play videos TikTok has classified without the overlay asking to be tapped through first.</string>
     <string name="mtp_76f7af05">Video filename</string>
@@ -175,12 +182,14 @@
     <string name="mtp_81d49b36">Hide tabs TikTok adds later unless you allow them.</string>
     <string name="mtp_82887b09">Not interested button</string>
     <string name="mtp_83006131">Caption background</string>
+    <string name="mtp_83cb0298">People, shortcuts and sending controls</string>
     <string name="mtp_844cf862">Operator name</string>
     <string name="mtp_84bc2c9c">Filter offline fallback videos</string>
     <string name="mtp_8521ca7f">MENUS</string>
     <string name="mtp_8526c3dd">Hide AI generated videos</string>
     <string name="mtp_85b815b7">Hide every direct message conversation. Leaves the Inbox empty apart from whatever else is still switched on.</string>
     <string name="mtp_862b35d8">Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.</string>
+    <string name="mtp_86dc08f0">Links, privacy and player tools</string>
     <string name="mtp_87263e90">Hide floating promotions</string>
     <string name="mtp_87691ace">Hidden commenters</string>
     <string name="mtp_899a0b24">Match locale and timezone to country</string>
@@ -207,6 +216,7 @@
     <string name="mtp_95bcf060">Open profile and story website links in your system browser instead of TikTok\'s in-app browser.</string>
     <string name="mtp_9612acd1">Override store region (experimental)</string>
     <string name="mtp_963f0c36">Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok\'s list. Restart after changing this list.</string>
+    <string name="mtp_97e9c8d1">YOUR EXPERIENCE</string>
     <string name="mtp_988562c2">Min/Max likes</string>
     <string name="mtp_98cee4e8">Device language, then original</string>
     <string name="mtp_9905ff49">Recover the settings saved before the last restore or reset.</string>
@@ -216,6 +226,7 @@
     <string name="mtp_9c047d1a">Subtitle language</string>
     <string name="mtp_9db1aed7">Open TikTok home to detect loaded bottom tabs.</string>
     <string name="mtp_9e44cc17">Hide the column on the right: avatar, like, comments, favourite, share and the music disc.</string>
+    <string name="mtp_9f0249ca">Make TikTok yours.</string>
     <string name="mtp_a131a4e1">Custom offline videos</string>
     <string name="mtp_a34153a7">Hide the status bar</string>
     <string name="mtp_a34b0b3b">Blocked creators</string>
@@ -231,6 +242,7 @@
     <string name="mtp_ae469cc0">Country, operator, locale and timezone.</string>
     <string name="mtp_aea77cee">Tokens: {creator}, {date}, {video_id}, {index}. The file extension is kept automatically.</string>
     <string name="mtp_af25c3b0">Keep the clock and status icons off the screen while TikTok is open. Swipe down from the top to peek at them.</string>
+    <string name="mtp_af86ae2d">Arrange your feed and bottom tabs</string>
     <string name="mtp_afb994a9">Stop feature gate recording</string>
     <string name="mtp_affe5c75">Copy only the comment text when using TikTok\'s copy comment action.</string>
     <string name="mtp_b0662ffd">Disable analytics and tracking</string>
@@ -258,6 +270,7 @@
     <string name="mtp_c2b2c4eb">Hide story from feed.</string>
     <string name="mtp_c4bd9416">Back up settings</string>
     <string name="mtp_c62af816">Hide the music line</string>
+    <string name="mtp_c6ab25cc">%s on</string>
     <string name="mtp_c719c108">Show TikTok\'s search entry in the Live drawer where supported.</string>
     <string name="mtp_c7903c14">Hide videos that belong to a paid Series.</string>
     <string name="mtp_c7bbb260">Hide the description under the creator\'s name on the feed.</string>
@@ -272,6 +285,7 @@
     <string name="mtp_cdfc6e09">Back</string>
     <string name="mtp_ce7851e8">Comment media filename</string>
     <string name="mtp_d01962e4">Operator MCC/MNC</string>
+    <string name="mtp_d0be8882">Quality, files and subtitles</string>
     <string name="mtp_d12727a3">Tokens: {date}, {media_id}. Works for image and video stickers.</string>
     <string name="mtp_d15d9461">Comma separated names exactly as the share sheet shows them: friends in the Send to row, share targets such as Facebook, and actions such as Create group or Repost. Stable keys such as copy, save and dislike also work before the sheet opens.</string>
     <string name="mtp_d1a5c52c">No additional languages excluded</string>
@@ -338,6 +352,7 @@
     <string name="mtp_f95c5cf7">Use the selected country and operator values. Restart TikTok after changing region settings.</string>
     <string name="mtp_fa72c423">Clear display delay</string>
     <string name="mtp_fac17af0">Restore defaults immediately. Your current settings are kept for Undo.</string>
+    <string name="mtp_fb6c8ed4">Backups and troubleshooting</string>
     <string name="mtp_fb91d6b3">Automatic</string>
     <string name="mtp_fc01767d">The minimum or maximum likes of a video to show.</string>
     <string name="mtp_fcf580da">Stop TikTok reporting that you viewed a story or a profile, that you are typing. Online status is unchanged. It cannot undo what the server has already recorded.</string>
