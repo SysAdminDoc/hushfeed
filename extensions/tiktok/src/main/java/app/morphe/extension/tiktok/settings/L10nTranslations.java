@@ -24,13 +24,20 @@ public final class L10nTranslations {
     }
 
     /** The language tags with a table, lower case, in the order they are tried. */
-    static final String[] LANGUAGES = {"de"};
+    static final String[] LANGUAGES = {"de", "in"};
 
-    /** The table for one language tag, or null when nothing was translated into it. */
+    /**
+     * The table for one language tag, or null when nothing was translated into it.
+     * A language with two ISO codes answers to both, because Android reports the
+     * legacy one and a desktop JVM reports the new one.
+     */
     static Map<String, String> of(String language) {
         switch (language) {
             case "de":
                 return buildDe();
+            case "in":
+            case "id":
+                return buildIn();
             default:
                 return null;
         }
@@ -875,5 +882,846 @@ public final class L10nTranslations {
                 "us, gb, jp, ...");
         table.put("videos",
                 "Videos");
+    }
+
+    private static Map<String, String> buildIn() {
+        Map<String, String> table = new HashMap<>(808);
+        fillIn0(table);
+        fillIn1(table);
+        fillIn2(table);
+        fillIn3(table);
+        fillIn4(table);
+        fillIn5(table);
+        fillIn6(table);
+        return table;
+    }
+
+    private static void fillIn0(Map<String, String> table) {
+        table.put("%d languages excluded",
+                "%d bahasa dikecualikan");
+        table.put("%s on",
+                "%s aktif");
+        table.put("A hidden puzzle may be the cause.",
+                "Teka-teki yang disembunyikan bisa jadi penyebabnya.");
+        table.put("A tap on a person in the Send to row only selects them. A second tap on the same person within four seconds sends the video.",
+                "Satu ketukan pada orang di baris Kirim ke hanya memilihnya. Ketukan kedua pada orang yang sama dalam empat detik mengirim videonya.");
+        table.put("About Hushfeed",
+                "Tentang Hushfeed");
+        table.put("Add a block button to the video player that blocks the account that posted the current video in one tap. An undo action is shown after each block.",
+                "Tambahkan tombol blokir di pemutar video yang memblokir akun pengunggah video ini dalam satu ketukan. Aksi untuk mengurungkan muncul setelah tiap pemblokiran.");
+        table.put("Add a button beside the block control to send feedback about the current video.",
+                "Tambahkan tombol di samping kontrol blokir untuk mengirim masukan tentang video ini.");
+        table.put("Adds a custom option to TikTok's offline videos menu after restart.",
+                "Menambahkan opsi khusus ke menu video offline TikTok setelah mulai ulang.");
+        table.put("Ads, Shop, livestreams, and view limits.",
+                "Iklan, Shop, siaran LIVE, dan batas tayangan.");
+        table.put("Advance when a video ends",
+                "Lanjut saat video berakhir");
+        table.put("All available languages",
+                "Semua bahasa yang tersedia");
+        table.put("All loaded tabs",
+                "Semua tab yang dimuat");
+        table.put("Allow screenshots and Circle to Search",
+                "Izinkan tangkapan layar dan Circle to Search");
+        table.put("Allowed bottom tabs",
+                "Tab bawah yang diizinkan");
+        table.put("Allowed loaded tabs",
+                "Tab yang diizinkan");
+        table.put("Also apply these filters to downloaded videos TikTok uses when the feed cannot load enough new items.",
+                "Terapkan filter ini juga ke video terunduh yang TikTok pakai saat feed tidak bisa memuat cukup konten baru.");
+        table.put("Also override TikTok's region getters. Keeps your interface language. Requires Override SIM details and a restart; IP address and account rules still apply.",
+                "Timpa juga pembaca wilayah milik TikTok. Bahasa antarmukamu tidak berubah. Perlu Timpa detail SIM dan mulai ulang; aturan alamat IP dan akun tetap berlaku.");
+        table.put("Always show publish date",
+                "Selalu tampilkan tanggal unggah");
+        table.put("Always show the publish date in video author information. Requires restart.",
+                "Selalu tampilkan tanggal unggah di informasi pembuat video. Perlu mulai ulang.");
+        table.put("App behavior",
+                "Perilaku aplikasi");
+        table.put("Apply to video downloads and image downloads.",
+                "Berlaku untuk unduhan video dan unduhan gambar.");
+        table.put("Arrange your feed and bottom tabs",
+                "Atur feed dan tab bawahmu");
+        table.put("Auto translate comments",
+                "Terjemahkan komentar otomatis");
+        table.put("Auto translate, quick reactions, and copy options.",
+                "Terjemahan otomatis, reaksi cepat, dan opsi salin.");
+        table.put("Automatic",
+                "Otomatis");
+        table.put("Automatic clear display",
+                "Tampilan bersih otomatis");
+        table.put("Automatically translates loaded comment batches using TikTok's translation system.",
+                "Menerjemahkan komentar yang dimuat secara otomatis lewat sistem terjemahan TikTok.");
+        table.put("Back",
+                "Kembali");
+        table.put("Back up settings",
+                "Cadangkan pengaturan");
+        table.put("Backups and troubleshooting",
+                "Cadangan dan pemecahan masalah");
+        table.put("Black",
+                "Hitam");
+        table.put("Block new TikTok tabs",
+                "Blokir tab TikTok yang baru");
+        table.put("Block new bottom tabs",
+                "Blokir tab bawah yang baru");
+        table.put("Blocked caption words",
+                "Kata yang diblokir di keterangan");
+        table.put("Blocked comment words",
+                "Kata komentar yang diblokir");
+        table.put("Blocked creators",
+                "Kreator yang diblokir");
+        table.put("Blocked sound ids",
+                "Id suara yang diblokir");
+        table.put("Blocked sound names",
+                "Nama suara yang diblokir");
+        table.put("Browse",
+                "Telusuri");
+        table.put("Cancel",
+                "Batal");
+        table.put("Caption background",
+                "Latar keterangan");
+        table.put("Caption text size",
+                "Ukuran teks keterangan");
+        table.put("Captions, gestures and on-screen controls",
+                "Keterangan, gestur, dan kontrol di layar");
+        table.put("Capture crash reports locally",
+                "Rekam laporan mogok di perangkat");
+        table.put("Choose 1-1000 videos. Values outside this range use the nearest valid limit. Restart TikTok after saving.",
+                "Pilih 1 sampai 1000 video. Nilai di luar rentang ini memakai batas sah terdekat. Mulai ulang TikTok setelah menyimpan.");
+        table.put("Choose a backup file. Your current settings are kept for Undo.",
+                "Pilih berkas cadangan. Pengaturanmu yang sekarang disimpan untuk Urungkan.");
+        table.put("Choose what reaches your feed",
+                "Pilih apa yang sampai ke feed-mu");
+        table.put("Choose which loaded TikTok bottom navigation tabs should stay visible.",
+                "Pilih tab navigasi bawah TikTok mana yang tetap terlihat.");
+        table.put("Choose which loaded TikTok feed tabs should stay visible.",
+                "Pilih tab feed TikTok mana yang tetap terlihat.");
+        table.put("Choose which rows and controls appear",
+                "Pilih baris dan kontrol yang muncul");
+        table.put("Clear",
+                "Hapus");
+        table.put("Clear buffered events and saved crash reports.",
+                "Hapus peristiwa yang tertahan dan laporan mogok yang tersimpan.");
+        table.put("Clear diagnostic data",
+                "Hapus data diagnostik");
+        table.put("Clear display delay",
+                "Jeda tampilan bersih");
+        table.put("Clear the seen video history",
+                "Hapus riwayat video yang sudah ditonton");
+        table.put("Clear the seen video history?",
+                "Hapus riwayat video yang sudah ditonton?");
+        table.put("Cleared %1$s videos. Tap again to put them back.",
+                "%1$s video terhapus. Ketuk lagi untuk mengembalikannya.");
+        table.put("Cleared. Tap again to put the record back.",
+                "Terhapus. Ketuk lagi untuk mengembalikan catatannya.");
+        table.put("Close",
+                "Tutup");
+        table.put("Comma separated account handles or user ids. These accounts are always skipped.",
+                "Nama pengguna atau id pengguna dipisahkan koma. Akun ini selalu dilewati.");
+    }
+
+    private static void fillIn1(Map<String, String> table) {
+        table.put("Comma separated account handles or user ids. These accounts are always skipped. An entry between slashes, like /^news_/, is a pattern matched against the handle and the display name.",
+                "Nama pengguna atau id pengguna dipisahkan koma. Akun ini selalu dilewati. Entri di antara garis miring, seperti /^news_/, adalah pola yang dicocokkan dengan nama pengguna dan nama tampilan.");
+        table.put("Comma separated country codes, like GB, IE. Videos posted from anywhere else are hidden. Leave empty for all countries.",
+                "Kode negara dipisahkan koma, seperti GB, IE. Video dari tempat lain disembunyikan. Kosongkan untuk semua negara.");
+        table.put("Comma separated country codes. Videos posted from these are hidden, whatever the list above says.",
+                "Kode negara dipisahkan koma. Video dari negara ini disembunyikan, apa pun isi daftar di atas.");
+        table.put("Comma separated list of any other Inbox row titles to hide, matched exactly. Use this for anything not listed above.",
+                "Daftar judul baris Kotak Masuk lain yang ingin disembunyikan, dipisahkan koma dan dicocokkan persis. Pakai ini untuk apa pun yang tidak ada di atas.");
+        table.put("Comma separated names exactly as the share sheet shows them: friends in the Send to row, share targets such as Facebook, and actions such as Create group or Repost. Stable keys such as copy, save and dislike also work before the sheet opens.",
+                "Nama dipisahkan koma, persis seperti yang ditampilkan menu bagikan: teman di baris Kirim ke, tujuan berbagi seperti Facebook, dan aksi seperti Buat grup atau Bagikan ulang. Kunci tetap seperti copy, save, dan dislike juga berlaku sebelum menunya terbuka.");
+        table.put("Comma separated sound ids recorded by the player's sound button. Remove one to unblock it.",
+                "Id suara dipisahkan koma yang direkam tombol suara di pemutar. Hapus salah satu untuk membuka blokirnya.");
+        table.put("Comma separated usernames or display names whose comments are hidden.",
+                "Nama pengguna atau nama tampilan dipisahkan koma yang komentarnya disembunyikan.");
+        table.put("Comma separated words or phrases. Matching captions are skipped. Case doesn't matter.",
+                "Kata atau frasa dipisahkan koma. Keterangan yang cocok akan dilewati. Huruf besar kecil tidak berpengaruh.");
+        table.put("Comma separated words to match against a sound's name, like saxophone. Case does not matter.",
+                "Kata dipisahkan koma untuk dicocokkan dengan nama suara, misalnya saxophone. Huruf besar kecil tidak berpengaruh.");
+        table.put("Comma separated. A comment is hidden if its text contains any of them. Case does not matter.",
+                "Dipisahkan koma. Sebuah komentar disembunyikan jika teksnya memuat salah satunya. Huruf besar kecil tidak berpengaruh.");
+        table.put("Comment media filename",
+                "Nama berkas media komentar");
+        table.put("Comments and translation",
+                "Komentar dan terjemahan");
+        table.put("Comments beside the video",
+                "Komentar di samping video");
+        table.put("Compare gate reads with their previous values. Last recording: %d gates.",
+                "Bandingkan pembacaan gate dengan nilai sebelumnya. Rekaman terakhir: %d gate.");
+        table.put("Confirm before following",
+                "Konfirmasi sebelum mengikuti");
+        table.put("Confirm before liking",
+                "Konfirmasi sebelum menyukai");
+        table.put("Confirm before sending to a friend",
+                "Konfirmasi sebelum mengirim ke teman");
+        table.put("Confirm before sending, and hidden people and options.",
+                "Konfirmasi sebelum mengirim, serta orang dan opsi yang disembunyikan.");
+        table.put("Continue supported videos from where you stopped when you scroll back to them.",
+                "Lanjutkan video yang didukung dari titik terakhir saat kamu menggulir kembali ke video itu.");
+        table.put("Copy a quick report or save the full report as a file.",
+                "Salin laporan ringkas atau simpan laporan lengkap sebagai berkas.");
+        table.put("Copy comments without username",
+                "Salin komentar tanpa nama pengguna");
+        table.put("Copy only the comment text when using TikTok's copy comment action.",
+                "Salin teks komentarnya saja saat memakai aksi salin komentar milik TikTok.");
+        table.put("Copy report",
+                "Salin laporan");
+        table.put("Could not open settings section",
+                "Bagian pengaturan tidak bisa dibuka");
+        table.put("Country ISO",
+                "ISO negara");
+        table.put("Country and network preferences",
+                "Preferensi negara dan jaringan");
+        table.put("Country, operator, locale and timezone.",
+                "Negara, operator, lokal, dan zona waktu.");
+        table.put("Current: %1$s %2$s",
+                "Saat ini: %1$s %2$s");
+        table.put("Custom SIM details",
+                "Detail SIM khusus");
+        table.put("Custom offline videos",
+                "Batas video offline khusus");
+        table.put("Dark",
+                "Gelap");
+        table.put("Days to remember a video. Zero removes the age limit. History keeps at most 10,000 videos.",
+                "Jumlah hari sebuah video diingat. Nol menghapus batas usia. Riwayat menyimpan paling banyak 10.000 video.");
+        table.put("Default playback speed",
+                "Kecepatan pemutaran bawaan");
+        table.put("Delete the local record of the videos you have watched.",
+                "Hapus catatan di perangkat tentang video yang sudah kamu tonton.");
+        table.put("Device language, then original",
+                "Bahasa perangkat, lalu bahasa asli");
+        table.put("Diagnostics",
+                "Diagnostik");
+        table.put("Disable analytics and tracking",
+                "Matikan analitik dan pelacakan");
+        table.put("Disable long-press quick share",
+                "Matikan bagikan cepat lewat tekan lama");
+        table.put("Disable long-press repost",
+                "Matikan bagikan ulang lewat tekan lama");
+        table.put("Do not translate languages",
+                "Bahasa yang tidak diterjemahkan");
+        table.put("Do nothing",
+                "Tidak melakukan apa pun");
+        table.put("Do you wish to proceed?",
+                "Mau lanjut?");
+        table.put("Double tap",
+                "Ketuk dua kali");
+        table.put("Download original photos",
+                "Unduh foto asli");
+        table.put("Downloads",
+                "Unduhan");
+        table.put("Enable diagnostic logging",
+                "Aktifkan pencatatan diagnostik");
+        table.put("Enable hold-and-slide 2x lock",
+                "Aktifkan kunci 2x tahan lalu geser");
+        table.put("Example: 310260",
+                "Contoh: 310260");
+        table.put("Example: T-Mobile",
+                "Contoh: T-Mobile");
+        table.put("Expand activity list",
+                "Bentangkan daftar aktivitas");
+        table.put("Export diagnostic report",
+                "Ekspor laporan diagnostik");
+        table.put("Feature Gate Lab",
+                "Feature Gate Lab");
+        table.put("Feed filter",
+                "Filter feed");
+        table.put("Feed navigation",
+                "Navigasi feed");
+        table.put("Feed tabs, bottom tabs, and Tako AI.",
+                "Tab feed, tab bawah, dan Tako AI.");
+        table.put("Filter bottom tabs",
+                "Filter tab bawah");
+        table.put("Filter comments by keyword",
+                "Filter komentar berdasarkan kata kunci");
+        table.put("Filter feed tabs",
+                "Filter tab feed");
+        table.put("Filter offline fallback videos",
+                "Filter video offline cadangan");
+        table.put("Filters, translation and copy options",
+                "Filter, terjemahan, dan opsi salin");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
+        table.put("Folder picker is not available",
+                "Pemilih folder tidak tersedia");
+        table.put("Folder picker is not available on this device",
+                "Pemilih folder tidak tersedia di perangkat ini");
+        table.put("For You",
+                "For You");
+        table.put("Forget seen videos after",
+                "Lupakan video yang sudah ditonton setelah");
+        table.put("Ghost mode",
+                "Mode senyap");
+        table.put("Hidden commenters",
+                "Pengomentar yang disembunyikan");
+        table.put("Hide AI generated videos",
+                "Sembunyikan video buatan AI");
+        table.put("Hide CAPTCHA popups",
+                "Sembunyikan popup CAPTCHA");
+        table.put("Hide LIVE replays",
+                "Sembunyikan tayangan ulang LIVE");
+        table.put("Hide Live entrance",
+                "Sembunyikan pintu masuk LIVE");
+        table.put("Hide Series",
+                "Sembunyikan Series");
+        table.put("Hide Tako AI",
+                "Sembunyikan Tako AI");
+        table.put("Hide TikTok Shop",
+                "Sembunyikan TikTok Shop");
+        table.put("Hide TikTok Shop updates and coupon messages.",
+                "Sembunyikan info terbaru TikTok Shop dan pesan kupon.");
+        table.put("Hide TikTok Tako",
+                "Sembunyikan TikTok Tako");
+        table.put("Hide TikTok shop from feed.",
+                "Sembunyikan TikTok Shop dari feed.");
+        table.put("Hide TikTok's exposed quick emoji row in supported comment inputs.",
+                "Sembunyikan baris emoji cepat yang TikTok tampilkan di kolom komentar yang mendukungnya.");
+        table.put("Hide activity",
+                "Sembunyikan aktivitas");
+        table.put("Hide activity status",
+                "Sembunyikan status aktivitas");
+        table.put("Hide add people",
+                "Sembunyikan tambah orang");
+        table.put("Hide archive",
+                "Sembunyikan arsip");
+        table.put("Hide bottom tabs TikTok adds later unless you allow them.",
+                "Sembunyikan tab bawah yang TikTok tambahkan kemudian, kecuali kamu mengizinkannya.");
+        table.put("Hide browsing and LIVE puzzle dialogs. Login, account verification and any puzzle raised over a follow, like, comment or repost stay visible.",
+                "Sembunyikan dialog teka-teki saat menjelajah dan saat LIVE. Teka-teki untuk masuk, verifikasi akun, dan yang muncul saat mengikuti, menyukai, berkomentar, atau membagikan ulang tetap terlihat.");
+        table.put("Hide comment popup ads",
+                "Sembunyikan iklan popup di komentar");
+        table.put("Hide comments made of an image or a sticker instead of words.",
+                "Sembunyikan komentar yang berupa gambar atau stiker, bukan kata-kata.");
+        table.put("Hide comments that contain any of the words below, or that come from the accounts below.",
+                "Sembunyikan komentar yang memuat salah satu kata di bawah, atau yang berasal dari akun di bawah.");
+        table.put("Hide controls after each video starts. Tap to restore them.",
+                "Sembunyikan kontrol setelah tiap video mulai. Ketuk untuk memunculkannya lagi.");
+        table.put("Hide conversations",
+                "Sembunyikan percakapan");
+        table.put("Hide every direct message conversation. Leaves the Inbox empty apart from whatever else is still switched on.",
+                "Sembunyikan semua percakapan pesan langsung. Kotak Masuk jadi kosong kecuali apa pun yang masih kamu aktifkan.");
+        table.put("Hide feed follow button",
+                "Sembunyikan tombol ikuti di feed");
+        table.put("Hide feed save button",
+                "Sembunyikan tombol simpan di feed");
+        table.put("Hide feed search button",
+                "Sembunyikan tombol cari di feed");
+        table.put("Hide floating promotion badges, coins, and timer banners on the homepage.",
+                "Sembunyikan lencana promosi mengambang, koin, dan spanduk penghitung waktu di beranda.");
+        table.put("Hide floating promotions",
+                "Sembunyikan promosi mengambang");
+        table.put("Hide image video",
+                "Sembunyikan video foto");
+        table.put("Hide image video from feed.",
+                "Sembunyikan video foto dari feed.");
+        table.put("Hide inserted cards",
+                "Sembunyikan kartu sisipan");
+        table.put("Hide livestreams",
+                "Sembunyikan siaran LIVE");
+        table.put("Hide livestreams from feed.",
+                "Sembunyikan siaran LIVE dari feed.");
+        table.put("Hide message requests",
+                "Sembunyikan permintaan pesan");
+        table.put("Hide new followers",
+                "Sembunyikan pengikut baru");
+        table.put("Hide paid partnerships",
+                "Sembunyikan kemitraan berbayar");
+        table.put("Hide people and options by name",
+                "Sembunyikan orang dan opsi berdasarkan nama");
+        table.put("Hide picture comments",
+                "Sembunyikan komentar bergambar");
+        table.put("Hide playlist videos",
+                "Sembunyikan video playlist");
+        table.put("Hide promotional music",
+                "Sembunyikan musik promosi");
+        table.put("Hide quick comment reactions",
+                "Sembunyikan reaksi komentar cepat");
+        table.put("Hide rows by title",
+                "Sembunyikan baris berdasarkan judul");
+        table.put("Hide search",
+                "Sembunyikan pencarian");
+        table.put("Hide sharing apps",
+                "Sembunyikan aplikasi berbagi");
+        table.put("Hide stories tray",
+                "Sembunyikan deret Story");
+        table.put("Hide story",
+                "Sembunyikan Story");
+        table.put("Hide story from feed.",
+                "Sembunyikan Story dari feed.");
+        table.put("Hide suggested account rows.",
+                "Sembunyikan baris akun yang disarankan.");
+        table.put("Hide suggested accounts",
+                "Sembunyikan akun yang disarankan");
+        table.put("Hide surveys",
+                "Sembunyikan survei");
+        table.put("Hide tabs TikTok adds later unless you allow them.",
+                "Sembunyikan tab yang TikTok tambahkan kemudian, kecuali kamu mengizinkannya.");
+        table.put("Hide the \"Search this image\" prompt TikTok shows over videos when it spots something to shop for.",
+                "Sembunyikan ajakan \"Cari gambar ini\" yang TikTok tampilkan di atas video saat menemukan sesuatu yang bisa dibeli.");
+        table.put("Hide the Activity row of likes and comments on your posts.",
+                "Sembunyikan baris Aktivitas berisi suka dan komentar pada unggahanmu.");
+        table.put("Hide the Archive row.",
+                "Sembunyikan baris Arsip.");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
+        table.put("Hide the Live button in the top left corner of the feed.",
+                "Sembunyikan tombol LIVE di pojok kiri atas feed.");
+        table.put("Hide the Message requests row.",
+                "Sembunyikan baris Permintaan pesan.");
+        table.put("Hide the New followers row.",
+                "Sembunyikan baris Pengikut baru.");
+        table.put("Hide the Send to row",
+                "Sembunyikan baris Kirim ke");
+        table.put("Hide the Tako AI feed bubble above the profile button.",
+                "Sembunyikan gelembung Tako AI di feed, tepat di atas tombol profil.");
+        table.put("Hide the TikTok Tako assistant conversation.",
+                "Sembunyikan percakapan asisten TikTok Tako.");
+        table.put("Hide the action bar",
+                "Sembunyikan bilah aksi");
+        table.put("Hide the activity status control in the Inbox header.",
+                "Sembunyikan kontrol status aktivitas di header Kotak Masuk.");
+        table.put("Hide the add people icon in the Inbox header.",
+                "Sembunyikan ikon tambah orang di header Kotak Masuk.");
+        table.put("Hide the arrow and its count in the right column.",
+                "Sembunyikan ikon panah dan angkanya di kolom kanan.");
+        table.put("Hide the avatar and follow button",
+                "Sembunyikan foto profil dan tombol ikuti");
+        table.put("Hide the bookmark and its count in the right column.",
+                "Sembunyikan ikon markah dan angkanya di kolom kanan.");
+        table.put("Hide the caption",
+                "Sembunyikan keterangan");
+        table.put("Hide the column on the right: avatar, like, comments, favourite, share and the music disc.",
+                "Sembunyikan kolom di sebelah kanan: foto profil, suka, komentar, favorit, bagikan, dan piringan musik.");
+        table.put("Hide the comments button",
+                "Sembunyikan tombol komentar");
+        table.put("Hide the counts on the right column",
+                "Sembunyikan angka di kolom kanan");
+        table.put("Hide the creator's picture and the plus button at the top of the right column.",
+                "Sembunyikan foto kreator dan tombol tambah di bagian atas kolom kanan.");
+        table.put("Hide the description under the creator's name on the feed.",
+                "Sembunyikan deskripsi di bawah nama kreator pada feed.");
+        table.put("Hide the event badge",
+                "Sembunyikan lencana acara");
+        table.put("Hide the favourite button",
+                "Sembunyikan tombol favorit");
+        table.put("Hide the floating promotional badge over the feed.",
+                "Sembunyikan lencana promosi yang mengambang di atas feed.");
+        table.put("Hide the friend recommendation card and the other cards TikTok slots between videos.",
+                "Sembunyikan kartu rekomendasi teman dan kartu lain yang TikTok selipkan di antara video.");
+        table.put("Hide the heart and its count in the right column.",
+                "Sembunyikan ikon hati dan angkanya di kolom kanan.");
+        table.put("Hide the like button",
+                "Sembunyikan tombol suka");
+        table.put("Hide the music disc",
+                "Sembunyikan piringan musik");
+        table.put("Hide the music line",
+                "Sembunyikan baris musik");
+        table.put("Hide the numbers under the like, comment, favourite and share buttons. The buttons stay.",
+                "Sembunyikan angka di bawah tombol suka, komentar, favorit, dan bagikan. Tombolnya tetap ada.");
+        table.put("Hide the playlist bar",
+                "Sembunyikan bilah playlist");
+        table.put("Hide the playlist bar along the bottom of videos that belong to a series.",
+                "Sembunyikan bilah playlist di bagian bawah video yang termasuk sebuah seri.");
+        table.put("Hide the plus button under the creator's avatar on the action rail.",
+                "Sembunyikan tombol tambah di bawah foto profil kreator pada kolom aksi.");
+        table.put("Hide the question cards TikTok slides over a video near its end.",
+                "Sembunyikan kartu pertanyaan yang TikTok munculkan menjelang akhir video.");
+        table.put("Hide the row of story avatars across the top of the Inbox.",
+                "Sembunyikan baris foto profil Story di bagian atas Kotak Masuk.");
+        table.put("Hide the save button on the action rail.",
+                "Sembunyikan tombol simpan pada kolom aksi.");
+        table.put("Hide the search button in the top right corner of the feed.",
+                "Sembunyikan tombol cari di pojok kanan atas feed.");
+        table.put("Hide the search icon in the Inbox header.",
+                "Sembunyikan ikon cari di header Kotak Masuk.");
+        table.put("Hide the share button",
+                "Sembunyikan tombol bagikan");
+        table.put("Hide the speech bubble and its count in the right column.",
+                "Sembunyikan gelembung komentar dan angkanya di kolom kanan.");
+        table.put("Hide the spinning music cover and the track name beside the caption.",
+                "Sembunyikan sampul musik yang berputar dan nama lagu di samping keterangan.");
+        table.put("Hide the spinning record at the bottom of the right column.",
+                "Sembunyikan piringan yang berputar di bagian bawah kolom kanan.");
+        table.put("Hide the status bar",
+                "Sembunyikan bilah status");
+        table.put("Hide verified accounts",
+                "Sembunyikan akun terverifikasi");
+        table.put("Hide video actions",
+                "Sembunyikan aksi video");
+        table.put("Hide videos carrying TikTok's AI generated label.",
+                "Sembunyikan video yang membawa label buatan AI dari TikTok.");
+        table.put("Hide videos marked as paid partnership or branded content.",
+                "Sembunyikan video yang ditandai sebagai kemitraan berbayar atau konten bermerek.");
+        table.put("Hide videos posted as part of a playlist.",
+                "Sembunyikan video yang diunggah sebagai bagian dari playlist.");
+        table.put("Hide videos posted by verified accounts.",
+                "Sembunyikan video yang diunggah akun terverifikasi.");
+        table.put("Hide videos that belong to a paid Series.",
+                "Sembunyikan video yang termasuk Series berbayar.");
+        table.put("Hide videos you have already seen",
+                "Sembunyikan video yang sudah kamu tonton");
+        table.put("Hide visual search prompt",
+                "Sembunyikan ajakan pencarian visual");
+        table.put("Highest",
+                "Tertinggi");
+        table.put("Home",
+                "Beranda");
+        table.put("Hushfeed cannot read the creator pattern %1$s",
+                "Hushfeed tidak bisa membaca pola kreator %1$s");
+        table.put("Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working.",
+                "Hushfeed menyembunyikan satu teka-teki TikTok. Matikan Sembunyikan popup CAPTCHA kalau ada yang berhenti berfungsi.");
+        table.put("Inbox",
+                "Kotak Masuk");
+        table.put("Included diagnostics",
+                "Diagnostik yang disertakan");
+        table.put("Includes all Morphe diagnostic events.",
+                "Mencakup semua peristiwa diagnostik Morphe.");
+        table.put("Interface",
+                "Tampilan");
+        table.put("Keep a local record of what you have watched and drop those videos from later feed pages.",
+                "Simpan catatan tontonanmu di perangkat dan buang video itu dari halaman feed berikutnya.");
+        table.put("Keep automatic advance enabled. Pauses and open dialogs still stop scrolling. Restart after enabling it; use this switch to turn it off.",
+                "Biarkan lanjut otomatis tetap aktif. Jeda dan dialog yang terbuka tetap menghentikan gulir. Mulai ulang setelah mengaktifkannya; pakai sakelar ini untuk mematikannya.");
+        table.put("Keep captions in clear display",
+                "Pertahankan keterangan saat tampilan bersih");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
+        table.put("Keep holding Like from opening TikTok's repost action.",
+                "Cegah menahan tombol Suka membuka aksi bagikan ulang milik TikTok.");
+        table.put("Keep long-pressing Share from opening TikTok's quick-share interaction.",
+                "Cegah tekan lama pada Bagikan membuka bagikan cepat milik TikTok.");
+        table.put("Keep the clock and status icons off the screen while TikTok is open. Swipe down from the top to peek at them.",
+                "Sembunyikan jam dan ikon status selama TikTok terbuka. Geser dari atas untuk mengintipnya.");
+        table.put("Leave maximum empty to keep it unlimited.",
+                "Kosongkan nilai maksimum agar tetap tanpa batas.");
+        table.put("Links, privacy and player tools",
+                "Tautan, privasi, dan perkakas pemutar");
+        table.put("Long press",
+                "Tekan lama");
+        table.put("Lower values require more likes per view. Zero disables this rule. One candidate may be kept to avoid an empty page.",
+                "Nilai lebih kecil menuntut lebih banyak suka per tayangan. Nol mematikan aturan ini. Satu video bisa dipertahankan supaya halaman tidak kosong.");
+        table.put("Lowest",
+                "Terendah");
+        table.put("MENUS",
+                "MENU");
+        table.put("Make TikTok yours.",
+                "Jadikan TikTok milikmu.");
+        table.put("Match locale and timezone to country",
+                "Samakan lokal dan zona waktu dengan negara");
+        table.put("Maximum",
+                "Maksimum");
+        table.put("Maximum video length",
+                "Durasi video maksimum");
+        table.put("Maximum views per like",
+                "Tayangan maksimum per suka");
+        table.put("Min/Max comments",
+                "Komentar min/maks");
+        table.put("Min/Max favourites",
+                "Favorit min/maks");
+        table.put("Min/Max likes",
+                "Suka min/maks");
+        table.put("Min/Max shares",
+                "Bagikan min/maks");
+        table.put("Min/Max views",
+                "Tayangan min/maks");
+        table.put("Minimum",
+                "Minimum");
+        table.put("Never from these countries",
+                "Tidak pernah dari negara ini");
+        table.put("No additional languages excluded",
+                "Tidak ada bahasa tambahan yang dikecualikan");
+        table.put("No limit",
+                "Tanpa batas");
+        table.put("No preset selected",
+                "Tidak ada praset yang dipilih");
+        table.put("Not interested button",
+                "Tombol tidak tertarik");
+        table.put("Offline videos limit",
+                "Batas video offline");
+        table.put("On mobile data",
+                "Saat memakai data seluler");
+        table.put("Only enable when recording logs to report an issue. Leaving it on for too long can make TikTok feel laggy and may lead to crashes.",
+                "Aktifkan hanya saat merekam log untuk melaporkan masalah. Membiarkannya menyala terlalu lama bisa membuat TikTok terasa berat dan berpotensi mogok.");
+        table.put("Only from these countries",
+                "Hanya dari negara ini");
+        table.put("Only internal storage folders are supported",
+                "Hanya folder penyimpanan internal yang didukung");
+        table.put("Open TikTok home feed to detect loaded tabs.",
+                "Buka feed beranda TikTok untuk mendeteksi tab yang dimuat.");
+        table.put("Open TikTok home to detect loaded bottom tabs.",
+                "Buka beranda TikTok untuk mendeteksi tab bawah yang dimuat.");
+        table.put("Open comments",
+                "Buka komentar");
+        table.put("Open external links directly",
+                "Buka tautan luar secara langsung");
+        table.put("Open profile and story website links in your system browser instead of TikTok's in-app browser.",
+                "Buka tautan situs di profil dan Story lewat peramban sistemmu, bukan peramban dalam aplikasi TikTok.");
+        table.put("Operator MCC/MNC",
+                "MCC/MNC operator");
+        table.put("Operator name",
+                "Nama operator");
+        table.put("Original language",
+                "Bahasa asli");
+        table.put("Override SIM details",
+                "Timpa detail SIM");
+        table.put("Override store region (experimental)",
+                "Timpa wilayah toko (eksperimental)");
+        table.put("Path, watermark, and offline videos.",
+                "Lokasi simpan, tanda air, dan video offline.");
+        table.put("People, shortcuts and sending controls",
+                "Orang, pintasan, dan kontrol pengiriman");
+        table.put("Photo destination",
+                "Lokasi simpan foto");
+        table.put("Photo filename",
+                "Nama berkas foto");
+        table.put("Play videos TikTok has classified without the overlay asking to be tapped through first.",
+                "Putar video yang diklasifikasi TikTok tanpa lapisan yang harus diketuk lebih dulu.");
+        table.put("Playback",
+                "Pemutaran");
+        table.put("Promotions, popups, publish dates, and feed controls.",
+                "Promosi, popup, tanggal unggah, dan kontrol feed.");
+        table.put("Put back %1$s videos",
+                "%1$s video dikembalikan");
+        table.put("Quality, files and subtitles",
+                "Kualitas, berkas, dan subtitle");
+        table.put("Quality, speed and automatic advance",
+                "Kualitas, kecepatan, dan lanjut otomatis");
+        table.put("Recorded gate reads (%d)",
+                "Pembacaan gate yang terekam (%d)");
+        table.put("Recover the settings saved before the last restore or reset.",
+                "Ambil kembali pengaturan yang tersimpan sebelum pemulihan atau penyetelan ulang terakhir.");
+        table.put("Region settings",
+                "Pengaturan wilayah");
+        table.put("Remove ads from feed.",
+                "Hapus iklan dari feed.");
+        table.put("Remove feed ads",
+                "Hapus iklan di feed");
+        table.put("Remove secure window flags. Restart TikTok after changing.",
+                "Hapus flag jendela aman. Mulai ulang TikTok setelah mengubahnya.");
+        table.put("Remove the Share via row.",
+                "Hapus baris Bagikan lewat.");
+        table.put("Remove the actions row from the share sheet.",
+                "Hapus baris aksi dari menu bagikan.");
+        table.put("Remove the row of friends from the top of the share sheet.",
+                "Hapus baris teman dari bagian atas menu bagikan.");
+        table.put("Remove tracking parameters from shared links.",
+                "Hapus parameter pelacakan dari tautan yang dibagikan.");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
+        table.put("Remove watermark",
+                "Hapus tanda air");
+        table.put("Reset settings",
+                "Setel ulang pengaturan");
+        table.put("Restore defaults immediately. Your current settings are kept for Undo.",
+                "Kembalikan ke bawaan sekarang juga. Pengaturanmu yang sekarang disimpan untuk Urungkan.");
+        table.put("Restore settings",
+                "Pulihkan pengaturan");
+        table.put("Resume videos after scrolling",
+                "Lanjutkan video setelah menggulir");
+        table.put("Return after using a TikTok feature to see every gate read during the recording.",
+                "Kembali ke sini setelah memakai fitur TikTok untuk melihat semua gate yang dibaca selama perekaman.");
+        table.put("Rows, stories tray, and header controls.",
+                "Baris, deret Story, dan kontrol header.");
+        table.put("SIM country preset",
+                "Praset negara SIM");
+        table.put("Sanitize sharing links",
+                "Bersihkan tautan berbagi");
+        table.put("Save",
+                "Simpan");
+        table.put("Save JSON",
+                "Simpan JSON");
+        table.put("Save SRT files with the video. Paired saves use Movies on Android 11+, Download on Android 10, and your video folder on older versions.",
+                "Simpan berkas SRT bersama videonya. Penyimpanan berpasangan memakai Movies di Android 11+, Download di Android 10, dan folder videomu di versi lama.");
+        table.put("Save every photo in the post directly from its source URL, without rendering it again.",
+                "Simpan setiap foto dalam unggahan langsung dari URL sumbernya, tanpa dirender ulang.");
+        table.put("Save patch settings and Feature Gate Lab rules to a JSON file.",
+                "Simpan pengaturan patch dan aturan Feature Gate Lab ke berkas JSON.");
+        table.put("Save subtitles beside videos",
+                "Simpan subtitle bersama video");
+        table.put("Save the latest available TikTok crash report for diagnostic export.",
+                "Simpan laporan mogok TikTok terbaru yang tersedia untuk diekspor sebagai diagnostik.");
+        table.put("Search and override gate flags",
+                "Cari dan timpa flag gate");
+        table.put("Search local TikTok gate metadata and configure isolated typed overrides.",
+                "Cari metadata gate TikTok yang tersimpan di perangkat dan atur penimpaan bertipe secara terpisah.");
+        table.put("Seconds. Zero keeps every length. If only quality rules reject a page, keep the nearest allowed candidate.",
+                "Dalam detik. Nol berarti semua durasi ditampilkan. Jika hanya aturan kualitas yang menolak satu halaman, video terdekat yang masih diizinkan tetap dipertahankan.");
+        table.put("Seen video history cleared",
+                "Riwayat video yang sudah ditonton dihapus");
+        table.put("Seen video history cleared. Tap again to put it back.",
+                "Riwayat video yang sudah ditonton dihapus. Ketuk lagi untuk mengembalikannya.");
+        table.put("Seen video history put back",
+                "Riwayat video yang sudah ditonton dikembalikan");
+        table.put("Settings",
+                "Pengaturan");
+        table.put("Settings backup and diagnostic reports.",
+                "Cadangan pengaturan dan laporan diagnostik.");
+        table.put("Settings saved. Restart TikTok to apply all changes.",
+                "Pengaturan tersimpan. Mulai ulang TikTok untuk menerapkan semua perubahan.");
+        table.put("Share sheet",
+                "Menu bagikan");
+        table.put("Sharing, playback, and gestures.",
+                "Berbagi, pemutaran, dan gestur.");
+        table.put("Show @username beside a video instead of the display name the creator chose.",
+                "Tampilkan @namapengguna di samping video, bukan nama tampilan pilihan kreator.");
+        table.put("Show Live search",
+                "Tampilkan pencarian LIVE");
+        table.put("Show TikTok's search entry in the Live drawer where supported.",
+                "Tampilkan kolom cari TikTok di laci LIVE bila didukung.");
+        table.put("Show a video preview thumbnail while dragging the seekbar.",
+                "Tampilkan pratinjau video saat bilah progres digeser.");
+        table.put("Show block button on videos",
+                "Tampilkan tombol blokir di video");
+        table.put("Show seekbar",
+                "Tampilkan bilah progres");
+        table.put("Show seekbar thumbnail",
+                "Tampilkan pratinjau bilah progres");
+        table.put("Show the country a video was posted from next to the creator's name.",
+                "Tampilkan negara asal unggahan video di sebelah nama kreator.");
+        table.put("Show the current spoken caption while the other controls are hidden.",
+                "Tampilkan teks ucapan yang sedang berjalan meski kontrol lain disembunyikan.");
+        table.put("Show the handle instead of the name",
+                "Tampilkan nama pengguna, bukan nama tampilan");
+        table.put("Show the native seekbar on videos where TikTok would normally hide it.",
+                "Tampilkan bilah progres bawaan pada video yang biasanya disembunyikan TikTok.");
+        table.put("Show the whole Activity and New followers lists instead of stopping at a View all button.",
+                "Tampilkan seluruh daftar Aktivitas dan Pengikut baru, bukan berhenti di tombol Lihat semua.");
+        table.put("Show where a video was posted",
+                "Tampilkan asal unggahan video");
+        table.put("Skip blocked sounds",
+                "Lewati suara yang diblokir");
+        table.put("Skip content warnings",
+                "Lewati peringatan konten");
+        table.put("Skip recorded LIVE broadcasts in the feed.",
+                "Lewati rekaman siaran LIVE di feed.");
+        table.put("Skip videos marked as using promotional music.",
+                "Lewati video yang ditandai memakai musik promosi.");
+        table.put("Skip videos that use a sound blocked with the player's sound button, or named below.",
+                "Lewati video yang memakai suara yang diblokir lewat tombol suara di pemutar, atau yang namanya ada di bawah.");
+        table.put("Source code and releases",
+                "Kode sumber dan rilis");
+        table.put("Speed menu choices",
+                "Pilihan di menu kecepatan");
+        table.put("Split comment minimum width",
+                "Lebar minimum tata letak terbagi");
+        table.put("Start each new video at your default. A manual choice lasts until the video changes.",
+                "Mulai tiap video baru pada kecepatan pilihanmu. Pilihan manual bertahan sampai videonya berganti.");
+        table.put("Start feature gate recording",
+                "Mulai merekam feature gate");
+        table.put("Sticker destination",
+                "Lokasi simpan stiker");
+        table.put("Stop ByteDance AppLog events, AppsFlyer attribution, explicit Firebase screen reports and crash reporting from being sent. TikTok's own diagnostics go quiet with them.",
+                "Hentikan pengiriman peristiwa AppLog ByteDance, atribusi AppsFlyer, laporan layar Firebase, dan laporan mogok. Diagnostik milik TikTok ikut diam bersamanya.");
+        table.put("Stop TikTok reporting that you viewed a story or a profile, that you are typing. Online status is unchanged. It cannot undo what the server has already recorded.",
+                "Hentikan TikTok melaporkan bahwa kamu melihat Story atau profil, dan bahwa kamu sedang mengetik. Status online tidak berubah. Ini tidak bisa membatalkan yang sudah tercatat di server.");
+        table.put("Stop feature gate recording",
+                "Hentikan rekaman feature gate");
+        table.put("Stop the brand animation that plays over the comments when what someone typed matches an advertiser's trigger.",
+                "Hentikan animasi merek yang muncul di atas komentar saat ketikan seseorang cocok dengan pemicu pengiklan.");
+        table.put("Stop video looping",
+                "Hentikan pengulangan video");
+        table.put("Stop videos at the end instead of replaying them.",
+                "Hentikan video di akhir, bukan memutarnya ulang.");
+        table.put("Subtitle language",
+                "Bahasa subtitle");
+        table.put("Tap the feed Follow button twice within four seconds.",
+                "Ketuk tombol Ikuti di feed dua kali dalam empat detik.");
+        table.put("Tap the like heart twice within four seconds. Removing a like stays immediate.",
+                "Ketuk ikon hati dua kali dalam empat detik. Membatalkan suka tetap langsung berlaku.");
+    }
+
+    private static void fillIn6(Map<String, String> table) {
+        table.put("The minimum or maximum comments on a video to show.",
+                "Jumlah komentar minimum atau maksimum agar video ditampilkan.");
+        table.put("The minimum or maximum favourites of a video to show.",
+                "Jumlah favorit minimum atau maksimum agar video ditampilkan.");
+        table.put("The minimum or maximum likes of a video to show.",
+                "Jumlah suka minimum atau maksimum agar video ditampilkan.");
+        table.put("The minimum or maximum shares of a video to show.",
+                "Jumlah bagikan minimum atau maksimum agar video ditampilkan.");
+        table.put("The minimum or maximum views of a video to show.",
+                "Jumlah tayangan minimum atau maksimum agar video ditampilkan.");
+        table.put("The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks. Takes effect after a restart.",
+                "Jempol ke bawah pada tiap komentar memblokir akun yang menulisnya, bukan menandai tidak suka. Komentarnya meredup, muncul spanduk untuk mengurungkan, dan ketukan kedua membuka blokirnya. Berlaku setelah mulai ulang.");
+        table.put("There was nothing to clear",
+                "Tidak ada yang bisa dihapus");
+        table.put("There was nothing to put back",
+                "Tidak ada yang bisa dikembalikan");
+        table.put("This deletes the local record only. Your TikTok account history is not touched.",
+                "Ini hanya menghapus catatan di perangkat. Riwayat akun TikTok-mu tidak disentuh.");
+        table.put("Thumbs down blocks the commenter",
+                "Jempol ke bawah memblokir pengomentar");
+        table.put("TikTok default",
+                "Bawaan TikTok");
+        table.put("TikTok default (2x hold, quick share)",
+                "Bawaan TikTok (tahan 2x, bagikan cepat)");
+        table.put("TikTok patches for Morphe, built on the Metra patches by icysymmetra and the community sets before them. Tap to open the project page.",
+                "Patch TikTok untuk Morphe, dibangun di atas patch Metra buatan icysymmetra dan kumpulan komunitas sebelumnya. Ketuk untuk membuka halaman proyek.");
+        table.put("TikTok refused the follow: %1$s",
+                "TikTok menolak permintaan mengikuti: %1$s");
+        table.put("Tokens: {creator}, {date}, {video_id}, {index}. The file extension is kept automatically.",
+                "Token: {creator}, {date}, {video_id}, {index}. Ekstensi berkas dipertahankan otomatis.");
+        table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
+                "Token: {creator}, {date}, {video_id}. Ekstensi berkas dipertahankan otomatis.");
+        table.put("Tokens: {date}, {media_id}. Works for image and video stickers.",
+                "Token: {date}, {media_id}. Berlaku untuk stiker gambar dan video.");
+        table.put("Transparent",
+                "Transparan");
+        table.put("Undo last restore",
+                "Urungkan pemulihan terakhir");
+        table.put("Unlimited",
+                "Tanpa batas");
+        table.put("Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.",
+                "Sampai 8 kecepatan dari 0,5 hingga 3, dipisahkan koma. Contoh: 0.5, 1, 1.5, 2, 2.5, 3. Kosongkan untuk memakai daftar TikTok. Mulai ulang setelah mengubah daftar ini.");
+        table.put("Use 0 for TikTok's size, or 12 to 48 sp. Applies to the next caption.",
+                "Pakai 0 untuk ukuran bawaan TikTok, atau 12 sampai 48 sp. Berlaku untuk keterangan berikutnya.");
+        table.put("Use TikTok's native hold, slide down, and release gesture to lock 2x speed.",
+                "Pakai gestur bawaan TikTok, tahan lalu geser ke bawah dan lepas, untuk mengunci kecepatan 2x.");
+        table.put("Use TikTok's non-personalized search state instead of the saved account choice.",
+                "Pakai mode pencarian nonpersonal milik TikTok, bukan pilihan akun yang tersimpan.");
+        table.put("Use a default playback speed",
+                "Pakai kecepatan pemutaran bawaan");
+        table.put("Use non-personalized search",
+                "Pakai pencarian nonpersonal");
+        table.put("Use the preset for TikTok's account and store region getters too. May affect search. Requires the locale option and a restart.",
+                "Pakai praset itu untuk pembaca wilayah akun dan toko TikTok juga. Bisa memengaruhi pencarian. Perlu opsi lokal dan mulai ulang.");
+        table.put("Use the selected country and operator values. Restart TikTok after changing region settings.",
+                "Pakai nilai negara dan operator yang dipilih. Mulai ulang TikTok setelah mengubah pengaturan wilayah.");
+        table.put("Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.",
+                "Pakai tata letak terbagi pada layar yang lebih lebar. Mulai ulang TikTok setelah mengubah opsi ini atau setelah membuka lipatan jika tata letak lama masih muncul.");
+        table.put("Video destination",
+                "Lokasi simpan video");
+        table.put("Video download quality",
+                "Kualitas unduhan video");
+        table.put("Video filename",
+                "Nama berkas video");
+        table.put("Video playback quality",
+                "Kualitas pemutaran video");
+        table.put("Video quality, speed and automatic advance.",
+                "Kualitas video, kecepatan, dan lanjut otomatis.");
+        table.put("Wait before hiding the controls.",
+                "Tunggu sebelum kontrol disembunyikan.");
+        table.put("Window width needed to enable the layout. Restart after changing.",
+                "Lebar jendela yang dibutuhkan agar tata letak ini aktif. Mulai ulang setelah mengubahnya.");
+        table.put("YOUR EXPERIENCE",
+                "PENGALAMANMU");
+        table.put("code %1$s",
+                "kode %1$s");
+        table.put("days",
+                "hari");
+        table.put("dp",
+                "dp");
+        table.put("ms",
+                "md");
+        table.put("sp",
+                "sp");
+        table.put("us, gb, jp, ...",
+                "us, gb, jp, ...");
+        table.put("videos",
+                "video");
     }
 }

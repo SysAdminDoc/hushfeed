@@ -1,5 +1,5 @@
 # Settings text, English on the left, German on the right, one entry per line, tab separated.
-# scripts/gen-l10n.py turns this into res/values/strings.xml and res/values-de/strings.xml.
+# scripts/gen-l10n.py turns this into a table inside L10nTranslations.java.
 # Keep %s and %d placeholders, {tokens} and product names as they are.
 Settings	Einstellungen
 Back	Zurück

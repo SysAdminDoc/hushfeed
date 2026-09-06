@@ -55,8 +55,9 @@ import org.robolectric.annotation.Config;
 public class SettingsL10nTest {
     public static final class TestActivity extends PreferenceActivity {}
 
-    /** The table the generator wrote, which is what the app carries. */
+    /** The tables the generator wrote, which are what the app carries. */
     private static final Map<String, String> GERMAN = L10nTranslations.of("de");
+    private static final Map<String, String> INDONESIAN = L10nTranslations.of("in");
 
     @After
     public void resetStatus() throws Exception {
@@ -77,15 +78,18 @@ public class SettingsL10nTest {
     public void aCountrySpecificLocaleFallsBackToItsLanguage() {
         // The tables are named by language; Austrian German gets the German table.
         assertEquals("Beschreibung ausblenden",
-                L10n.t(germanContext("de", "AT"), "Hide the caption"));
+                L10n.t(contextFor("de", "AT"), "Hide the caption"));
         assertEquals("Beschreibung ausblenden",
-                L10n.t(germanContext("de", ""), "Hide the caption"));
+                L10n.t(contextFor("de", ""), "Hide the caption"));
+        // Indonesian arrives as either ISO code depending on the runtime, and both find it.
+        assertEquals("Sembunyikan keterangan", L10n.t(contextFor("in", "ID"), "Hide the caption"));
+        assertEquals("Sembunyikan keterangan", L10n.t(contextFor("id", "ID"), "Hide the caption"));
         // A language with no table keeps the English.
-        assertEquals("Hide the caption", L10n.t(germanContext("fr", "FR"), "Hide the caption"));
+        assertEquals("Hide the caption", L10n.t(contextFor("fr", "FR"), "Hide the caption"));
     }
 
     /** A context whose resources report one locale, which is what the lookup reads. */
-    private static Context germanContext(String language, String country) {
+    private static Context contextFor(String language, String country) {
         Configuration configuration = new Configuration(
                 RuntimeEnvironment.getApplication().getResources().getConfiguration());
         configuration.setLocale(new Locale(language, country));
@@ -116,18 +120,46 @@ public class SettingsL10nTest {
     }
 
     @Test
-    public void theTableIsKeyedByTheEnglishTextItself() {
-        assertFalse(GERMAN.isEmpty());
-        assertEquals("Beschreibung ausblenden", GERMAN.get("Hide the caption"));
-        // Nothing is translated to nothing: an empty value would blank a label.
-        for (Map.Entry<String, String> entry : GERMAN.entrySet()) {
-            assertFalse("empty key", entry.getKey().isEmpty());
-            assertFalse("empty translation of: " + entry.getKey(), entry.getValue().isEmpty());
+    @Config(sdk = 28, qualifiers = "in-rID")
+    public void indonesianShowsOnARealPreferenceUnderTheIndonesianLocale() {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            TogglePreference toggle = new TogglePreference(activity, "Hide the caption",
+                    "Hide the description under the creator's name on the feed.", Settings.HIDE_FEED_CAPTION);
+            assertEquals("Sembunyikan keterangan", toggle.getTitle().toString());
+            assertEquals("Sembunyikan deskripsi di bawah nama kreator pada feed.",
+                    toggle.getSummary().toString());
+            assertEquals("Saat ini: 3 video",
+                    L10n.f(activity, "Current: %1$s %2$s", "3", L10n.t(activity, "videos")));
         }
     }
 
     @Test
-    public void everySettingsStringHasAGermanEntry() throws Exception {
+    public void everyTableIsKeyedByTheEnglishTextItself() {
+        assertEquals("Beschreibung ausblenden", GERMAN.get("Hide the caption"));
+        assertEquals("Sembunyikan keterangan", INDONESIAN.get("Hide the caption"));
+        for (String language : L10nTranslations.LANGUAGES) {
+            Map<String, String> table = L10nTranslations.of(language);
+            assertFalse(language, table.isEmpty());
+            // Nothing is translated to nothing: an empty value would blank a label.
+            for (Map.Entry<String, String> entry : table.entrySet()) {
+                assertFalse("empty key in " + language, entry.getKey().isEmpty());
+                assertFalse("empty translation of: " + entry.getKey(), entry.getValue().isEmpty());
+            }
+        }
+    }
+
+    @Test
+    public void everyTableCoversTheSameEnglish() {
+        // A language that is missing entries the others have would show a half English screen.
+        for (String language : L10nTranslations.LANGUAGES) {
+            assertEquals("keys of " + language, GERMAN.keySet(), L10nTranslations.of(language).keySet());
+        }
+    }
+
+    @Test
+    public void everySettingsStringHasATranslationEntry() throws Exception {
         Set<String> english = new LinkedHashSet<>(GERMAN.keySet());
         Set<String> shown = collectEverything();
         List<String> missing = new ArrayList<>();
@@ -145,9 +177,21 @@ public class SettingsL10nTest {
     @Test
     @Config(sdk = 28, qualifiers = "de")
     public void nothingOnTheScreensStaysEnglishUnderTheGermanLocale() throws Exception {
-        // Words German spells the same way, like Transparent, cannot tell the two apart.
+        assertNothingStaysEnglish("de", GERMAN, "Beschreibung ausblenden");
+    }
+
+    @Test
+    @Config(sdk = 28, qualifiers = "in-rID")
+    public void nothingOnTheScreensStaysEnglishUnderTheIndonesianLocale() throws Exception {
+        assertNothingStaysEnglish("in-rID", INDONESIAN, "Sembunyikan keterangan");
+    }
+
+    private void assertNothingStaysEnglish(String qualifier, Map<String, String> table,
+                                           String expected) throws Exception {
+        // Words the language spells the same way, like Transparent in German, cannot tell
+        // the two apart, so only the entries that actually change are evidence.
         Set<String> english = new LinkedHashSet<>();
-        for (Map.Entry<String, String> entry : GERMAN.entrySet()) {
+        for (Map.Entry<String, String> entry : table.entrySet()) {
             if (!entry.getValue().equals(entry.getKey())) {
                 english.add(entry.getKey());
             }
@@ -159,8 +203,8 @@ public class SettingsL10nTest {
                 untranslated.add(text);
             }
         }
-        assertEquals("still English under de: " + untranslated, 0, untranslated.size());
-        assertTrue(shown.contains("Beschreibung ausblenden"));
+        assertEquals("still English under " + qualifier + ": " + untranslated, 0, untranslated.size());
+        assertTrue(shown.contains(expected));
     }
 
     private Set<String> collectEverything() throws Exception {

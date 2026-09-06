@@ -104,7 +104,7 @@ The Settings patch adds the entry point; most patches depend on it and it's sele
 | `Region spoof` | Matches locale country, timezone and native region getters to the SIM preset while preserving the interface language. Store-region overrides have a separate experimental switch. IP address and server account rules still apply. |
 | `SIM spoof` | Replaces SIM country and operator values reported to TikTok and provides country presets. TikTok may still use IP address, account history, language, and other region signals. |
 | `Sanitize sharing links` | Removes tracking parameters from TikTok links before they are shared. |
-| `Settings` | Adds the Hushfeed settings screen inside TikTok. The screen follows the phone's language where a translation exists; English and German ship today. |
+| `Settings` | Adds the Hushfeed settings screen inside TikTok. The screen follows the phone's language where a translation exists; English, German and Indonesian ship today. |
 | `Hide content warnings` | Adds an option to play videos TikTok has classified without the warning overlay asking to be tapped through first. |
 | `Show author region` | Adds an option to show the country a video was posted from next to the creator's name on the feed. A second switch shows the creator's @handle in place of their display name. |
 | `Show seekbar` | Shows TikTok's native video seekbar where it would normally be hidden. |
@@ -205,14 +205,14 @@ Morphe reads `patches-bundle.json` from this repository, downloads the `.mpp` re
 
 ### Adding a language to the settings screen
 
-The English text in the code is the key. Each language is one tab separated table under `extensions/tiktok/src/main/l10n/`, `de.tsv` for German, with the English on the left and the translation on the right. Copy it to `<language code>.tsv`, translate the right hand column, then run:
+The English text in the code is the key. Each language is one tab separated table under `extensions/tiktok/src/main/l10n/`, `de.tsv` for German and `in.tsv` for Indonesian, with the English on the left and the translation on the right. Copy one to `<language code>.tsv`, translate the right hand column, then run:
 
 ```bash
 python scripts/gen-l10n.py
 ./gradlew :extensions:tiktok:test
 ```
 
-The script writes `L10nTranslations.java`, which the extension carries with its own code, and the tests fail on any settings text that has no entry, so a missing line shows up before it ships. The translations used to go into TikTok's own resources, but merging a few hundred strings into a table of 74,765 pushed patching past the memory Morphe Manager allows by default.
+The script writes `L10nTranslations.java`, which the extension carries with its own code, and the tests fail on any settings text that has no entry or that a language is missing, so a gap shows up before it ships. Name the file with the code Android reports, which for the three languages that have two is the older one: `in` rather than `id`. The generator makes the table answer to both. The translations used to go into TikTok's own resources, but merging a few hundred strings into a table of 74,765 pushed patching past the memory Morphe Manager allows by default.
 
 <br>
 

@@ -28,6 +28,12 @@ JAVA = os.path.join(ROOT, "extensions", "tiktok", "src", "main", "java", "app", 
 # and few enough methods to stay readable.
 CHUNK = 60
 
+# Three languages have two ISO codes, and the two runtimes disagree about which one to give
+# back. Android's Locale.getLanguage() answers with the legacy code, a JVM since 17 answers
+# with the new one, so the same table has to be reachable under both or the tests and the
+# phone read different tables.
+ALIASES = {"in": "id", "id": "in", "iw": "he", "he": "iw", "ji": "yi", "yi": "ji"}
+
 
 def read(path):
     entries = {}
@@ -98,11 +104,20 @@ def main():
     lines.append("    static final String[] LANGUAGES = {%s};"
                  % ", ".join(literal(lang.lower()) for lang in languages))
     lines.append("")
-    lines.append("    /** The table for one language tag, or null when nothing was translated into it. */")
+    lines.append("    /**")
+    lines.append("     * The table for one language tag, or null when nothing was translated into it.")
+    lines.append("     * A language with two ISO codes answers to both, because Android reports the")
+    lines.append("     * legacy one and a desktop JVM reports the new one.")
+    lines.append("     */")
     lines.append("    static Map<String, String> of(String language) {")
     lines.append("        switch (language) {")
     for lang in languages:
-        lines.append("            case %s:" % literal(lang.lower()))
+        labels = [lang.lower()]
+        alias = ALIASES.get(lang.lower())
+        if alias and alias not in [other.lower() for other in languages]:
+            labels.append(alias)
+        for label in labels:
+            lines.append("            case %s:" % literal(label))
         lines.append("                return build%s();" % java_name(lang).capitalize())
     lines.append("            default:")
     lines.append("                return null;")
