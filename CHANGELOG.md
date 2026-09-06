@@ -1,4 +1,4 @@
-## Unreleased
+## 0.19.0 (2026-09-06)
 
 * A box above the comments that narrows them to what you are looking for, by what a comment says or who said it. Nothing is taken out of TikTok's list: comments that do not match are collapsed where they sit, so clearing the box brings them all back and paging, replies and counts never know anything happened.
 
