@@ -193,6 +193,63 @@ public final class FeedItemsFilter {
         return aweme instanceof Aweme && getFilterReason(LATE_FOLLOW_FILTERS, (Aweme) aweme) != null;
     }
 
+    /**
+     * The Friends tab, which is its own feed and does not arrive as a FeedItemList. Its
+     * response holds a list of FriendsFeed wrappers, each carrying the video in a real named
+     * {@code aweme} field, and a LIVE card carries a {@code roomStruct} instead. Every
+     * consumer reads that list straight off the field, so it is filtered where the response
+     * is built rather than at any one delivery point.
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static void filterFriendsFeed(Object response) {
+        try {
+            if (response == null) return;
+
+            List<IFilter> activeFilters = getActiveFilters(CONTENT_FILTERS);
+            boolean hideLive = Settings.HIDE_LIVE.get();
+            if (activeFilters.isEmpty() && !hideLive) return;
+
+            Object raw = Reflect.readField(response, "friendFeedData");
+            if (!(raw instanceof List)) return;
+            List items = (List) raw;
+            if (items.isEmpty()) return;
+
+            ArrayList kept = new ArrayList(items.size());
+            Map<String, Integer> reasonCounts = BaseSettings.DEBUG.get() ? new HashMap<>() : null;
+            for (Object entry : items) {
+                String reason = friendsFeedReason(entry, activeFilters, hideLive);
+                if (reason == null) {
+                    kept.add(entry);
+                } else {
+                    incrementReason(reasonCounts, reason);
+                }
+            }
+            if (kept.size() == items.size()) return;
+
+            Field field = Reflect.field(response.getClass(), "friendFeedData");
+            if (field == null) return;
+            field.set(response, kept);
+
+            final int before = items.size();
+            final int after = kept.size();
+            final String reasons = reasonCounts == null ? "" : " reasons=" + reasonCounts;
+            Logger.printInfo(() -> "[Morphe TikTok FeedFilter] filter(FriendsFeedResponse): size "
+                + before + " -> " + after + " (removed=" + (before - after) + ")" + reasons);
+        } catch (Throwable throwable) {
+            Logger.printException(() -> "Could not filter the Friends feed", throwable);
+        }
+    }
+
+    /** Why a Friends tab entry is dropped, or null to keep it. */
+    private static String friendsFeedReason(Object entry, List<IFilter> activeFilters, boolean hideLive) {
+        if (entry == null) return null;
+        if (hideLive && Reflect.readField(entry, "roomStruct") != null) return "LiveFilter";
+
+        Object aweme = Reflect.readField(entry, "aweme");
+        if (!(aweme instanceof Aweme)) return null;
+        return getFilterReason(activeFilters, (Aweme) aweme);
+    }
+
     public static List filterLateInsertedAds(String source, List items) {
         String insertionSource = source == null ? "unknown" : source;
         return filterAdOnlyAwemeList("FeedInsertion:" + insertionSource, items);

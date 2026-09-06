@@ -294,6 +294,24 @@ internal object SearchResultRequestIdFingerprint : Fingerprint(
     parameters = listOf("Ljava/lang/String;"),
 )
 
+/**
+ * The Friends tab is its own feed and never arrives as a FeedItemList. Its response carries
+ * FriendsFeed wrappers in a real named `friendFeedData` field, and every consumer reads that
+ * field directly: `setRequestId` on the same class, which is what the search grid is hooked
+ * on, has no callers at all in 46.2.3. The constructor is the one point every response passes
+ * through with its items already stored.
+ */
+internal object FriendsFeedResponseFingerprint : Fingerprint(
+    definingClass = "Lcom/ss/android/ugc/aweme/friendstab/api/FriendsFeedResponse;",
+    name = "<init>",
+    returnType = "V",
+    parameters = listOf(
+        "I", "Z", "Ljava/util/List;", "Ljava/lang/String;", "Ljava/lang/String;",
+        "Lcom/ss/android/ugc/aweme/feed/model/LogPbBean;", "I", "Ljava/util/List;",
+        "Ljava/util/List;", "Ljava/lang/String;",
+    ),
+)
+
 internal object TakoAiFeedButtonSetVisibleFingerprint : Fingerprint(
     definingClass = "/feed/assem/tikbot/TakoAssem;",
     name = "bq",

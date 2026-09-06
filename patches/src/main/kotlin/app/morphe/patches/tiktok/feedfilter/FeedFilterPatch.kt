@@ -126,6 +126,26 @@ val feedFilterPatch = bytecodePatch(
             "invoke-static/range {p0 .. p0}, $EXTENSION_CLASS_DESCRIPTOR->filterSearchAds(Ljava/lang/Object;)V",
         )
 
+        // The Friends tab is a separate feed with its own response type, so none of the
+        // hooks above ever see it. Filtering happens as the response is built, because every
+        // later reader takes the list straight off the field.
+        FriendsFeedResponseFingerprint.method.apply {
+            val returns = implementation!!.instructions.withIndex()
+                .filter { it.value.opcode == Opcode.RETURN_VOID }
+                .map { it.index }
+                .toList()
+            check(returns.isNotEmpty()) {
+                "Feed filter: the Friends feed response constructor does not return."
+            }
+            returns.asReversed().forEach { index ->
+                addInstruction(
+                    index,
+                    "invoke-static/range {p0 .. p0}, " +
+                        "$EXTENSION_CLASS_DESCRIPTOR->filterFriendsFeed(Ljava/lang/Object;)V",
+                )
+            }
+        }
+
         // Opening a video from a profile hands the list to the detail pager once, which the
         // event above covers. Scrolling past that video refills the pager through the profile
         // detail panel's own two delivery methods, and those never saw the profile filter.
