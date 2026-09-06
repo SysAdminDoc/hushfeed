@@ -19,6 +19,12 @@ public final class RememberClearDisplayPatch {
     private static String currentId;
     private static Runnable pending;
     private static boolean posting;
+    /**
+     * Whether the app is in clear display right now. The persisted setting cannot answer
+     * this: {@link #rememberClearDisplayEvent} is the only thing that writes it and it
+     * returns early for anything posted from here, which is the whole automatic path.
+     */
+    private static volatile boolean clearNow;
     private static boolean observingPreferences;
     private static WeakReference<View> window = new WeakReference<>(null);
     private static final SharedPreferences.OnSharedPreferenceChangeListener PREFERENCES = (preferences, key) -> {
@@ -58,7 +64,8 @@ public final class RememberClearDisplayPatch {
 
     // Kept for already-patched first-frame hooks.
     public static boolean getClearDisplayState() {
-        return !Settings.AUTOMATIC_CLEAR_DISPLAY.get() && Settings.CLEAR_DISPLAY.get();
+        clearNow = !Settings.AUTOMATIC_CLEAR_DISPLAY.get() && Settings.CLEAR_DISPLAY.get();
+        return clearNow;
     }
 
     public static void onFirstFrame(Object controller) {
@@ -108,7 +115,13 @@ public final class RememberClearDisplayPatch {
         MAIN.postDelayed(pending, Math.max(0, Math.min(30000, Settings.AUTOMATIC_CLEAR_DISPLAY_DELAY.get())));
     }
 
+    /** Whether the controls are hidden right now, automatically or by the user. */
+    public static boolean isClearDisplayNow() {
+        return clearNow;
+    }
+
     private static void emit(Consumer<Boolean> event, boolean clear) {
+        clearNow = clear;
         posting = true;
         try { event.accept(clear); }
         catch (RuntimeException error) { Logger.printException(() -> "Could not change clear display", error); }
@@ -126,6 +139,7 @@ public final class RememberClearDisplayPatch {
         Object type = Reflect.readField(event, "LIZIZ");
         if (!(clear instanceof Boolean) || !(type instanceof Integer)) return;
         if ((Integer) type == 3 || (Integer) type == 9) return;
+        clearNow = (Boolean) clear;
         if (posting) return;
         cancelOnMain();
         Settings.CLEAR_DISPLAY.save((Boolean) clear);

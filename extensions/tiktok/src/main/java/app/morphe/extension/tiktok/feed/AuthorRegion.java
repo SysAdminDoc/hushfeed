@@ -108,23 +108,20 @@ public final class AuthorRegion {
                 return;
             }
 
-            boolean wantsRegion = Settings.SHOW_AUTHOR_REGION.get();
-            boolean wantsHandle = Settings.SHOW_AUTHOR_HANDLE.get();
-            if ((!wantsRegion && !wantsHandle) || !FeedVisibility.isOnFeed(activity)) {
+            if (!FeedVisibility.isOnFeed(activity)) {
                 restore();
                 return;
             }
 
             // Resolving the text first keeps the view tree search off the layout path for
             // every video that has nothing to show.
-            String region = wantsRegion ? region() : null;
-            String handle = wantsHandle ? handle() : null;
-            if (region == null && handle == null) {
+            String[] wanted = decoration(CurrentVideoAuthor.getAweme());
+            if (wanted == null) {
                 restore();
                 return;
             }
 
-            decorate(findName(activity.findViewById(android.R.id.content)), handle, region);
+            decorate(findName(activity.findViewById(android.R.id.content)), wanted[0], wanted[1]);
         } catch (Throwable ex) {
             Logger.printException(() -> "Could not show the author region", ex);
         }
@@ -208,8 +205,7 @@ public final class AuthorRegion {
     }
 
     /** The two letter country the current video was posted from, upper case. */
-    private static String region() {
-        Object aweme = CurrentVideoAuthor.getAweme();
+    private static String region(Object aweme) {
         if (aweme == null) {
             regionAweme = new WeakReference<>(null);
             regionValue = null;
@@ -226,9 +222,19 @@ public final class AuthorRegion {
         return regionValue;
     }
 
+    /**
+     * The handle and the country to show for the video on screen, in that order, or null
+     * when neither switch asks for anything this video can supply. Each switch only ever
+     * reads its own value: turning the country on must not start showing handles.
+     */
+    static String[] decoration(Object aweme) {
+        String handle = Settings.SHOW_AUTHOR_HANDLE.get() ? handle(aweme) : null;
+        String region = Settings.SHOW_AUTHOR_REGION.get() ? region(aweme) : null;
+        return handle == null && region == null ? null : new String[]{handle, region};
+    }
+
     /** The creator's @name for the current video, without the at sign. */
-    private static String handle() {
-        Object aweme = CurrentVideoAuthor.getAweme();
+    private static String handle(Object aweme) {
         if (aweme == null) {
             handleAweme = new WeakReference<>(null);
             handleValue = null;

@@ -18,6 +18,7 @@ import android.view.WindowInsetsController;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.tiktok.cleardisplay.RememberClearDisplayPatch;
 import app.morphe.extension.tiktok.settings.Settings;
 
 import java.lang.ref.WeakReference;
@@ -156,9 +157,10 @@ public final class VideoOverlayHider {
             boolean actionBar = Settings.HIDE_FEED_ACTION_BAR.get();
             boolean surveys = Settings.HIDE_FEED_SURVEYS.get();
             // Clear display hides the tab strip when it starts and TikTok brings it back on
-            // the first swipe. Following the clear state here keeps it away until the tap
-            // that ends clear mode, which is what the mode is for.
-            boolean tabStrip = Settings.CLEAR_DISPLAY.get();
+            // the first swipe. Following the live state keeps it away until the tap that ends
+            // the mode. The persisted setting cannot be used here: the automatic path never
+            // writes it, so it would answer false for exactly the case this is meant to fix.
+            boolean tabStrip = RememberClearDisplayPatch.isClearDisplayNow();
             boolean[] rail = railButtonsWanted();
             boolean anyRail = false;
             for (boolean one : rail) {

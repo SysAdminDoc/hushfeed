@@ -157,6 +157,13 @@ public final class FeedItemsFilter {
             if (!isSearchAd(card)) kept.add(card);
         }
         if (kept.size() == items.size()) return;
+        if (kept.isEmpty()) {
+            // Every card on the page looked like an advert. A whole page of them is far
+            // less likely than one of the card shapes being wrong, and an empty grid gives
+            // the user nothing to go on, so the page is left alone.
+            Logger.printException(() -> "Every search result looked like an advert, so none were removed");
+            return;
+        }
 
         Field field = Reflect.field(searchResult.getClass(), "mItems");
         if (field == null) return;

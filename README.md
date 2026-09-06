@@ -232,7 +232,7 @@ Only the global package is declared in the compatibility metadata. TikTok change
 - `patches/`: Kotlin patch definitions, fingerprints and shared patch utilities.
 - `extensions/`: Java extension code the patches inject into TikTok, with the Robolectric tests beside it.
 - `extensions/tiktok/src/main/l10n/`: the settings translation tables.
-- `scripts/`: the translation generator and release helpers.
+- `scripts/`: the translation generator, the whole-bundle apply check and release helpers.
 - `patches-list.json`: generated patch metadata.
 - `patches-bundle.json`: the Morphe source index for the published bundle.
 

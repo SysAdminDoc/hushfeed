@@ -36,6 +36,37 @@ public class AutomaticClearDisplayTest {
         Settings.AUTOMATIC_CLEAR_DISPLAY.save(true);
         Settings.AUTOMATIC_CLEAR_DISPLAY_DELAY.save(1000);
     }
+    @Test public void theAutomaticPathReportsClearDisplayEvenThoughItNeverWritesTheSetting() {
+        // rememberClearDisplayEvent is the only writer of the setting, and it returns early
+        // for anything posted from here, so the setting stays false through the whole
+        // automatic path. Anything that needs to know whether the controls are hidden has
+        // to ask for the live state instead.
+        assertFalse(RememberClearDisplayPatch.isClearDisplayNow());
+
+        List<Boolean> events = new ArrayList<>();
+        RememberClearDisplayPatch.firstFrame("auto", () -> true, events::add);
+        assertFalse("the controls are still up during the delay", RememberClearDisplayPatch.isClearDisplayNow());
+
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(1000));
+        assertEquals(List.of(false, true), events);
+        assertTrue("the controls are hidden now", RememberClearDisplayPatch.isClearDisplayNow());
+        assertFalse("and the setting still says nothing", Settings.CLEAR_DISPLAY.get());
+
+        // This is what the tab strip hide reads, which is why it cannot read the setting.
+        assertNotEquals(RememberClearDisplayPatch.isClearDisplayNow(), Settings.CLEAR_DISPLAY.get());
+    }
+
+    @Test public void aTapThatLeavesClearDisplayIsReportedToo() {
+        List<Boolean> events = new ArrayList<>();
+        RememberClearDisplayPatch.firstFrame("auto", () -> true, events::add);
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(1000));
+        assertTrue(RememberClearDisplayPatch.isClearDisplayNow());
+
+        // TikTok posts its own event when the user taps to bring the controls back.
+        RememberClearDisplayPatch.rememberClearDisplayEvent(new Event(false, 1));
+        assertFalse(RememberClearDisplayPatch.isClearDisplayNow());
+    }
+
     @Test public void waitsAndDoesNotRearmRepeatedFirstFrame() {
         List<Boolean> events = new ArrayList<>();
         RememberClearDisplayPatch.firstFrame("one", () -> true, events::add);

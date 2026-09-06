@@ -1,5 +1,6 @@
 package app.morphe.extension.tiktok.feed;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -14,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.tiktok.settings.Settings;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +33,49 @@ import org.robolectric.annotation.Config;
 public class AuthorRegionTest {
     private static final int NAME_ID = 0x7f0a0001;
     private static final int POST_TIME_ID = 0x7f0a0002;
+
+    /** Stands in for the Aweme the player says is on screen. */
+    public static final class Clip {
+        public final String aid;
+        public final String region;
+        public final Author author;
+
+        Clip(String aid, String handle, String nickname, String region) {
+            this.aid = aid;
+            this.region = region;
+            this.author = new Author(handle, nickname);
+        }
+    }
+
+    public static final class Author {
+        public final String uid = "1234";
+        public final String uniqueId;
+        public final String nickname;
+
+        Author(String uniqueId, String nickname) {
+            this.uniqueId = uniqueId;
+            this.nickname = nickname;
+        }
+    }
+
+    /** A row that says how many times its text was written, not just what it says. */
+    public static final class CountingTextView extends TextView {
+        int writes;
+
+        CountingTextView(Context context) {
+            super(context);
+        }
+
+        @Override
+        public void setText(CharSequence text, BufferType type) {
+            super.setText(text, type);
+            writes++;
+        }
+    }
+
+    private static Clip playing(String aid, String handle, String nickname, String region) {
+        return new Clip(aid, handle, nickname, region);
+    }
 
     private Context context;
 
@@ -181,6 +226,61 @@ public class AuthorRegionTest {
 
         AuthorRegion.restore();
         assertEquals("alice", name.getText().toString());
+    }
+
+    @Test
+    public void eachSwitchOnlyEverAsksForItsOwnValue() {
+        Clip video = playing("one", "samsmith", "Sam Smith", "GB");
+
+        Settings.SHOW_AUTHOR_HANDLE.save(false);
+        Settings.SHOW_AUTHOR_REGION.save(false);
+        assertNull(AuthorRegion.decoration(video));
+
+        // The country switch on its own must not start replacing names with handles.
+        Settings.SHOW_AUTHOR_REGION.save(true);
+        assertArrayEquals(new String[]{null, "GB"}, AuthorRegion.decoration(video));
+
+        Settings.SHOW_AUTHOR_HANDLE.save(true);
+        Settings.SHOW_AUTHOR_REGION.save(false);
+        assertArrayEquals(new String[]{"samsmith", null}, AuthorRegion.decoration(video));
+
+        Settings.SHOW_AUTHOR_REGION.save(true);
+        assertArrayEquals(new String[]{"samsmith", "GB"}, AuthorRegion.decoration(video));
+    }
+
+    @Test
+    public void aVideoWithNothingToShowAsksForNothing() {
+        Settings.SHOW_AUTHOR_HANDLE.save(true);
+        Settings.SHOW_AUTHOR_REGION.save(true);
+
+        assertNull(AuthorRegion.decoration(playing("two", null, "Nobody", null)));
+
+        // A handle with no country still gives the handle.
+        assertArrayEquals(new String[]{"someone", null},
+                AuthorRegion.decoration(playing("three", "someone", "Some One", null)));
+    }
+
+    @Test
+    public void aSettledRowIsNotWrittenAgainOnEveryLayoutPass() {
+        // This runs from a global layout listener, so writing on every pass would ask for
+        // another layout, and another.
+        LinearLayout row = new LinearLayout(context);
+        CountingTextView name = new CountingTextView(context);
+        name.setId(NAME_ID);
+        name.setText("alice");
+        TextView postTime = new TextView(context);
+        postTime.setId(POST_TIME_ID);
+        row.addView(name);
+        row.addView(postTime);
+
+        AuthorRegion.decorate(name, null, "US");
+        int afterFirst = name.writes;
+        assertEquals("alice · US", name.getText().toString());
+
+        for (int i = 0; i < 5; i++) AuthorRegion.decorate(name, null, "US");
+        assertEquals(afterFirst, name.writes);
+
+        AuthorRegion.restore();
     }
 
     @Test

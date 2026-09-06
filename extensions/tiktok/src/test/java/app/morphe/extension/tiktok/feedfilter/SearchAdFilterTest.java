@@ -169,6 +169,22 @@ public class SearchAdFilterTest {
     }
 
     @Test
+    public void aPageThatLooksEntirelyLikeAdvertsIsLeftAlone() {
+        // A whole page of adverts is far less likely than one of the card shapes being
+        // wrong, and an empty grid gives the user nothing to go on.
+        Card first = plain();
+        first.adOrContainAd = true;
+        Card second = plain();
+        second.multiAdCard = new Object();
+
+        List items = new ArrayList<>(Arrays.asList(first, second));
+        Result result = new Result(items);
+        FeedItemsFilter.filterSearchAds(result);
+
+        assertSame(items, result.mItems);
+    }
+
+    @Test
     public void aResponseWithNoItemsIsSurvivable() {
         FeedItemsFilter.filterSearchAds(null);
         FeedItemsFilter.filterSearchAds(new Object());

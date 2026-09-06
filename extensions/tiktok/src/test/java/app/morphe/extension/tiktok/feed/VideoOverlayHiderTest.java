@@ -29,6 +29,17 @@ import org.robolectric.annotation.Config;
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
 public class VideoOverlayHiderTest {
+    /** Stands in for the clear display event TikTok posts. */
+    public static final class ClearEvent {
+        public boolean LIZ;
+        public int LIZIZ;
+
+        ClearEvent(boolean clear, int type) {
+            LIZ = clear;
+            LIZIZ = type;
+        }
+    }
+
     private Context context;
 
     @Before
@@ -225,7 +236,17 @@ public class VideoOverlayHiderTest {
             root.addView(tabStrip);
             activity.setContentView(root);
 
-            Settings.CLEAR_DISPLAY.save(true);
+            // The hider follows the live clear display state, not the stored setting: the
+            // automatic path never writes that one. AutomaticClearDisplayTest covers the
+            // automatic transition itself.
+            Settings.CLEAR_DISPLAY.save(false);
+            app.morphe.extension.tiktok.cleardisplay.RememberClearDisplayPatch
+                    .rememberClearDisplayEvent(new ClearEvent(true, 1));
+
+            // The two disagree on purpose: the live state says the controls are hidden, the
+            // stored setting says nothing. Reading the setting here would leave the strip up.
+            Settings.CLEAR_DISPLAY.save(false);
+
             VideoOverlayHider.applyTo(activity);
             assertEquals(View.GONE, tabStrip.getVisibility());
 
@@ -236,7 +257,8 @@ public class VideoOverlayHiderTest {
             assertEquals(View.GONE, tabStrip.getVisibility());
 
             // The tap that leaves clear display brings it back.
-            Settings.CLEAR_DISPLAY.save(false);
+            app.morphe.extension.tiktok.cleardisplay.RememberClearDisplayPatch
+                    .rememberClearDisplayEvent(new ClearEvent(false, 1));
             VideoOverlayHider.applyTo(activity);
             assertEquals(View.VISIBLE, tabStrip.getVisibility());
         }
