@@ -87,6 +87,46 @@ public class PlaybackQualityTest {
         assertNull(PlaybackQuality.filterJson(null));
     }
 
+    @Test public void mobileDataOnlyEverLowersTheQuality() {
+        // The ceiling applies on a metered connection.
+        assertEquals("360", PlaybackQuality.effectiveMode("highest", "360", true));
+        assertEquals("720", PlaybackQuality.effectiveMode("auto", "720", true));
+        assertEquals("lowest", PlaybackQuality.effectiveMode("1080", "lowest", true));
+
+        // It never raises it, however the two choices are set.
+        assertEquals("360", PlaybackQuality.effectiveMode("360", "1080", true));
+        assertEquals("lowest", PlaybackQuality.effectiveMode("lowest", "highest", true));
+        assertEquals("480", PlaybackQuality.effectiveMode("480", "highest", true));
+    }
+
+    @Test public void anUnmeteredConnectionKeepsTheMainChoice() {
+        assertEquals("highest", PlaybackQuality.effectiveMode("highest", "360", false));
+        assertEquals("auto", PlaybackQuality.effectiveMode("auto", "lowest", false));
+        assertEquals("1080", PlaybackQuality.effectiveMode("1080", "360", false));
+    }
+
+    @Test public void noLimitOnMobileDataChangesNothing() {
+        assertEquals("highest", PlaybackQuality.effectiveMode("highest", "off", true));
+        assertEquals("auto", PlaybackQuality.effectiveMode("auto", "off", true));
+        assertEquals("360", PlaybackQuality.effectiveMode("360", null, true));
+    }
+
+    @Test public void aMeteredCeilingPicksTheLowerGear() throws Exception {
+        Utils.setContext(RuntimeEnvironment.getApplication());
+        String original = new JSONObject(model()).toString();
+
+        // Same stub, same model: only the connection differs.
+        Settings.PLAYBACK_QUALITY.save(PlaybackQuality.effectiveMode("highest", "360", false));
+        JSONObject unmetered = new JSONObject(PlaybackQuality.filterJson(original));
+        assertEquals("1080p", unmetered.getJSONObject("dynamic_video")
+                .getJSONArray("dynamic_video_list").getJSONObject(0).getString("gear_name"));
+
+        Settings.PLAYBACK_QUALITY.save(PlaybackQuality.effectiveMode("highest", "360", true));
+        JSONObject metered = new JSONObject(PlaybackQuality.filterJson(original));
+        assertEquals("360p", metered.getJSONObject("dynamic_video")
+                .getJSONArray("dynamic_video_list").getJSONObject(0).getString("gear_name"));
+    }
+
     @Test public void standalonePatchShowsPlaybackChoice() throws Exception {
         try (var controller = Robolectric.buildActivity(AdvancedDownloadsTest.TestActivity.class).setup()) {
             var activity = controller.get();
@@ -97,6 +137,7 @@ public class PlaybackQualityTest {
             var screen = activity.getPreferenceManager().createPreferenceScreen(activity);
             new PlaybackPreferenceCategory(activity, screen);
             assertNotNull(screen.findPreference("playback_quality"));
+            assertNotNull(screen.findPreference("playback_quality_metered"));
             activity.setPreferenceScreen(screen);
             Shadows.shadowOf(Looper.getMainLooper()).idle();
             app.morphe.extension.tiktok.UiCapture.save(activity.getWindow().getDecorView(), "playback-settings.png");

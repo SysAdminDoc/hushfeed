@@ -320,6 +320,8 @@
     <string name="mtp_756e6d98">Filter, Übersetzung und Kopieroptionen</string>
     <!-- Save subtitles beside videos -->
     <string name="mtp_756fd16b">Untertitel neben Videos speichern</string>
+    <!-- On mobile data -->
+    <string name="mtp_75761aa5">Bei mobilen Daten</string>
     <!-- Play videos TikTok has classified without the overlay asking to be tapped through first. -->
     <string name="mtp_75d69716">Von TikTok eingestufte Videos abspielen, ohne dass erst eine Warnung weggetippt werden muss.</string>
     <!-- Video filename -->
@@ -444,6 +446,8 @@
     <string name="mtp_99e74774">Liste weiterer Posteingangs-Zeilentitel, durch Kommas getrennt, die genau übereinstimmend ausgeblendet werden. Nutze das für alles, was oben nicht aufgeführt ist.</string>
     <!-- Hide suggested accounts -->
     <string name="mtp_9a58f55f">Vorgeschlagene Konten ausblenden</string>
+    <!-- No limit -->
+    <string name="mtp_9ad329f1">Keine Grenze</string>
     <!-- Blocked caption words -->
     <string name="mtp_9b23a9fd">Gesperrte Wörter in Beschreibungen</string>
     <!-- Subtitle language -->

@@ -25,7 +25,7 @@ It started as a private fork of [icysymmetra's Metra patches](https://github.com
 - **An inbox you choose.** A switch for every Inbox row and header control, stories tray, suggested accounts, message requests and conversations.
 - **Comments on your terms.** Keyword and account filters, thumbs down that blocks the commenter, quick reactions hidden, comments beside the video on wide screens, translation with language exclusions.
 - **Downloads worth keeping.** Pick the quality, save original photos, combine separate audio tracks when TikTok serves them apart, save subtitles as SRT beside the video, name files with tokens, choose a folder per media type, remove the watermark.
-- **Playback the way you want it.** Default speed and a custom speed menu, quality choice, stop looping, resume after scrolling, automatic advance, the native seekbar and its thumbnail, hold and slide for 2x.
+- **Playback the way you want it.** Default speed and a custom speed menu, quality choice with a separate cap on mobile data, stop looping, resume after scrolling, automatic advance, the native seekbar and its thumbnail, hold and slide for 2x.
 - **Privacy.** Ghost mode stops story view, profile view and typing reports. Telemetry to ByteDance, AppsFlyer and Firebase can be switched off. Screenshots and Circle to Search work again.
 - **Region.** SIM, locale and timezone presets, with an optional store region override.
 - **Under the hood.** Feature Gate Lab exposes TikTok's own A/B flags with recording and typed overrides. Settings back up to a JSON file with restore, reset and undo. Diagnostics export a report.
@@ -51,7 +51,7 @@ The Settings patch adds the entry point; most patches depend on it and it's sele
 | `Automatic video advance` | Keeps native automatic advance enabled. TikTok still checks pauses, dialogs, gestures and whether another video is available. Turn it off in Playback to stop advance started by this option. |
 | `Foldable split comment view` | Enables comments beside the video from a configurable window width (600 dp by default). Off by default, with multi-window and picture-in-picture restrictions preserved. Restart after changing its settings or unfolding if TikTok keeps the old layout. |
 | `Subtitle tools` | Saves captions as SRT files beside downloaded videos. Choose original, device or all available languages, adjust caption size and background, and keep the current caption visible in clear display. |
-| `Playback quality` | Chooses the lowest, highest or a target video quality for regular and adaptive playback. Download quality has its own setting. |
+| `Playback quality` | Chooses the lowest, highest or a target video quality for regular and adaptive playback. A second choice caps quality on mobile data, and only ever lowers it. Download quality has its own setting. |
 | `Advanced downloads` | Selects a video quality or target resolution and combines separate audio tracks when needed. An optional Photo Mode downloader saves source images directly, preserving their bytes and format. |
 | `Long-press controls` | Lets a long press on a video keep TikTok's own action, do nothing, or open the video's comments. Brings `Double-tap controls` with it, which supplies the comment control. |
 | `Double-tap controls` | Changes feed double taps to do nothing or open comments for the current video. TikTok's normal action is the default. |

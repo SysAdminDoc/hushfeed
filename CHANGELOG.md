@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Playback quality has a second choice for mobile data. It is a ceiling, so it lowers what plays on a metered connection and never raises it.
+
 * Ads no longer come back in the profile video viewer. Opening a video from a profile was filtered, but scrolling past it refilled the viewer through the profile detail panel's own two delivery methods, which nothing was watching.
 
 * Follow diagnostics ships. The patch was in the tree but hidden, so nothing built it, which is why nobody could attribute a follow that quietly failed. It now reads the server's `status_code` and `status_msg` off the answer, says once per session when TikTok refused a follow and why, notes whether a puzzle was hidden just before, and writes the whole exchange to the diagnostic report when logging is on.

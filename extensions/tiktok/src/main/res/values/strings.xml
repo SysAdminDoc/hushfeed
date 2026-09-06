@@ -160,6 +160,7 @@
     <string name="mtp_74e040b4">Allowed loaded tabs</string>
     <string name="mtp_756e6d98">Filters, translation and copy options</string>
     <string name="mtp_756fd16b">Save subtitles beside videos</string>
+    <string name="mtp_75761aa5">On mobile data</string>
     <string name="mtp_75d69716">Play videos TikTok has classified without the overlay asking to be tapped through first.</string>
     <string name="mtp_76f7af05">Video filename</string>
     <string name="mtp_77e35762">Allow screenshots and Circle to Search</string>
@@ -222,6 +223,7 @@
     <string name="mtp_9905ff49">Recover the settings saved before the last restore or reset.</string>
     <string name="mtp_99e74774">Comma separated list of any other Inbox row titles to hide, matched exactly. Use this for anything not listed above.</string>
     <string name="mtp_9a58f55f">Hide suggested accounts</string>
+    <string name="mtp_9ad329f1">No limit</string>
     <string name="mtp_9b23a9fd">Blocked caption words</string>
     <string name="mtp_9c047d1a">Subtitle language</string>
     <string name="mtp_9db1aed7">Open TikTok home to detect loaded bottom tabs.</string>

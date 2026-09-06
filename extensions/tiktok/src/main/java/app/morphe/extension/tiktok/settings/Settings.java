@@ -31,6 +31,7 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting AUTOMATIC_CLEAR_DISPLAY = new BooleanSetting("automatic_clear_display", FALSE);
     public static final IntegerSetting AUTOMATIC_CLEAR_DISPLAY_DELAY = new IntegerSetting("automatic_clear_display_delay", 1000);
     public static final StringSetting PLAYBACK_QUALITY = new StringSetting("playback_quality", "auto");
+    public static final StringSetting PLAYBACK_QUALITY_METERED = new StringSetting("playback_quality_metered", "off");
     public static final StringSetting DOWNLOAD_VIDEO_QUALITY = new StringSetting("download_video_quality", "auto");
     public static final BooleanSetting DOWNLOAD_ORIGINAL_PHOTOS = new BooleanSetting("download_original_photos", FALSE);
     public static final StringSetting DOUBLE_TAP_ACTION = new StringSetting("double_tap_action", "default");

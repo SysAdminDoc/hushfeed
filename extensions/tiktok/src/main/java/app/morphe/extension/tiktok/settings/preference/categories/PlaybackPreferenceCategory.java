@@ -50,6 +50,9 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
             addPreference(new ChoicePreference(context, "Video playback quality", Settings.PLAYBACK_QUALITY,
                     new String[]{"Automatic", "Highest", "Lowest", "1080p", "720p", "540p", "480p", "360p"},
                     new String[]{"auto", "highest", "lowest", "1080", "720", "540", "480", "360"}));
+            addPreference(new ChoicePreference(context, "On mobile data", Settings.PLAYBACK_QUALITY_METERED,
+                    new String[]{"No limit", "Highest", "Lowest", "1080p", "720p", "540p", "480p", "360p"},
+                    new String[]{"off", "highest", "lowest", "1080", "720", "540", "480", "360"}));
         }
     }
 }

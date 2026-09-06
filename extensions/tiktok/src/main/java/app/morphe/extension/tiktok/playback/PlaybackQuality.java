@@ -1,6 +1,10 @@
 package app.morphe.extension.tiktok.playback;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.download.QualitySelector;
 import app.morphe.extension.tiktok.settings.Settings;
 import java.util.ArrayList;
@@ -13,21 +17,77 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public final class PlaybackQuality {
+    /**
+     * How long the metered answer is reused. Every parsed video model asks, and the answer
+     * comes from a system service, so it is not worth a binder call each time.
+     */
+    static final long METERED_CACHE_MS = 5_000L;
+
     private static volatile JsonCache cache;
+    private static volatile MeteredState meteredState;
+
     private PlaybackQuality() {}
 
+    /**
+     * The quality that applies right now. The mobile data choice is a ceiling: it lowers what
+     * plays on a metered connection and never raises it, so setting 360p everywhere and 720p
+     * on mobile data still gives 360p.
+     */
+    public static String mode() {
+        return effectiveMode(Settings.PLAYBACK_QUALITY.get(), Settings.PLAYBACK_QUALITY_METERED.get(), isMetered());
+    }
+
+    static String effectiveMode(String mode, String meteredMode, boolean metered) {
+        if (!metered || meteredMode == null || "off".equals(meteredMode)) return mode;
+        return ceiling(meteredMode) < ceiling(mode) ? meteredMode : mode;
+    }
+
+    /** The tallest video a mode allows. Lower is more restrictive. */
+    private static int ceiling(String mode) {
+        if (mode == null) return Integer.MAX_VALUE;
+        switch (mode) {
+            case "lowest": return 0;
+            case "highest": return Integer.MAX_VALUE - 1;
+            case "auto": return Integer.MAX_VALUE;
+            default:
+                try {
+                    return Integer.parseInt(mode);
+                } catch (NumberFormatException ignored) {
+                    return Integer.MAX_VALUE;
+                }
+        }
+    }
+
+    private static boolean isMetered() {
+        long now = System.currentTimeMillis();
+        MeteredState cached = meteredState;
+        if (cached != null && now - cached.atMs <= METERED_CACHE_MS) return cached.metered;
+
+        boolean metered = false;
+        try {
+            Context context = Utils.getContext();
+            ConnectivityManager manager = context == null ? null
+                    : (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            metered = manager != null && manager.isActiveNetworkMetered();
+        } catch (Throwable ignored) {
+            // No permission or no service: treat the connection as unmetered and change nothing.
+        }
+        meteredState = new MeteredState(metered, now);
+        return metered;
+    }
+
     public static List<?> filter(List<?> original) {
-        Object selected = QualitySelector.choose(original, Settings.PLAYBACK_QUALITY.get());
+        Object selected = QualitySelector.choose(original, mode());
         return selected == null ? original : new ArrayList<>(Collections.singletonList(selected));
     }
 
     public static Object cacheModel(Object original) {
         // Native parsed objects can retain a previous quality. Rebuild them from the filtered model.
-        return "auto".equals(Settings.PLAYBACK_QUALITY.get()) ? original : null;
+        return "auto".equals(mode()) ? original : null;
     }
 
     public static Map<?, ?> filterMap(Map<?, ?> original) {
-        String mode = Settings.PLAYBACK_QUALITY.get();
+        String mode = mode();
         if (original == null || "auto".equals(mode)) return original;
         Object raw = original.get("dynamic_video");
         if (!(raw instanceof Map<?, ?>)) return original;
@@ -45,7 +105,7 @@ public final class PlaybackQuality {
     }
 
     public static String filterJson(String original) {
-        String mode = Settings.PLAYBACK_QUALITY.get();
+        String mode = mode();
         if (original == null || "auto".equals(mode)) return original;
         JsonCache previous = cache;
         if (previous != null && previous.mode.equals(mode) && previous.source.equals(original)) return previous.result;
@@ -115,6 +175,12 @@ public final class PlaybackQuality {
                 if (url instanceof String) urlList.add((String) url);
             }
         }
+    }
+
+    private static final class MeteredState {
+        final boolean metered;
+        final long atMs;
+        MeteredState(boolean metered, long atMs) { this.metered = metered; this.atMs = atMs; }
     }
 
     private static final class JsonCache {
