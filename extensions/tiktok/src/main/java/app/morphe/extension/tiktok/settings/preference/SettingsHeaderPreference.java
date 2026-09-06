@@ -104,7 +104,7 @@ public final class SettingsHeaderPreference extends Preference {
         int buttonSize = SettingsUi.dp(context, 40);
         topRow.addView(back, new LinearLayout.LayoutParams(buttonSize, buttonSize));
 
-        TextView kicker = SettingsUi.text(context, "METRA PATCHES", 12.5f, SettingsUi.ACCENT, 1);
+        TextView kicker = SettingsUi.text(context, "HUSHFEED", 12.5f, SettingsUi.ACCENT, 1);
         LinearLayout.LayoutParams kickerParams = new LinearLayout.LayoutParams(0, -2, 1);
         kickerParams.leftMargin = SettingsUi.dp(context, 4);
         topRow.addView(kicker, kickerParams);

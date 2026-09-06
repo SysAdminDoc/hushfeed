@@ -1,3 +1,9 @@
+## 0.15.0 (2026-09-06)
+
+* The project has its own name. The bundle, the entry in TikTok's settings and the settings screen now say Hushfeed. The repository moved to SysAdminDoc/hushfeed, the source index points at its releases, and the about row links to the project page instead of a donation link.
+* Settings backups are written with the hushfeed-settings tag. Backups and the undo copy made under the old tag still restore.
+* Everything listed under 0.14.1 ships for the first time in this release.
+
 ## 0.14.1 (2026-09-05)
 
 * The settings screen follows the phone's language. German ships with this release, and a translation table plus a generator make the next language a single file. Falls back to English for anything untranslated.
@@ -160,6 +166,8 @@
 * **inbox:** stop hiding every conversation when only message requests are switched off
 * **inbox:** match the suggested accounts section, which uses none of the row title ids
 * **inbox:** resolve view ids once instead of on every layout pass
+
+Everything below this line is the release history of icysymmetra/tiktok-patches-for-morphe, which Hushfeed was forked from.
 
 # [0.7.0](https://github.com/icysymmetra/tiktok-patches-for-morphe/compare/v0.6.1...v0.7.0) (2026-08-23)
 

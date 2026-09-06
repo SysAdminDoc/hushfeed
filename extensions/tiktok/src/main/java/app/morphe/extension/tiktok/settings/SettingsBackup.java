@@ -24,6 +24,9 @@ import org.json.JSONObject;
 /** File-backed settings snapshots. Call file and preference writes on a worker thread. */
 public final class SettingsBackup {
     public static final int MAX_BYTES = 2 * 1024 * 1024;
+    /** The format tag written today, and the one backups made before the rename carry. */
+    public static final String FORMAT = "hushfeed-settings";
+    public static final String LEGACY_FORMAT = "metra-settings";
     private SettingsBackup() {}
 
     private static boolean included(Setting<?> setting) {
@@ -42,7 +45,7 @@ public final class SettingsBackup {
         }
         JSONObject lab = FeatureGateLabStore.exportSettings();
         if (defaults) lab.put("rules", new JSONArray()).put("master", false).put("acknowledged", false);
-        String text = new JSONObject().put("format", "metra-settings").put("schema", 1)
+        String text = new JSONObject().put("format", FORMAT).put("schema", 1)
                 .put("target", FeatureGateLabStore.TARGET_VERSION).put("settings", values)
                 .put("setting_keys", keys)
                 .put("lab", lab).toString(2);
@@ -89,7 +92,10 @@ public final class SettingsBackup {
     }
 
     private static AtomicFile undoFile(Context context) {
-        return new AtomicFile(new File(context.getFilesDir(), "metra-settings-undo.json"));
+        File current = new File(context.getFilesDir(), "hushfeed-settings-undo.json");
+        File legacy = new File(context.getFilesDir(), "metra-settings-undo.json");
+        // An undo copy saved before the rename stays usable until the next restore writes the new file.
+        return new AtomicFile(!current.isFile() && legacy.isFile() ? legacy : current);
     }
 
     private static void writeUndo(Context context, String text) throws IOException {
@@ -109,7 +115,8 @@ public final class SettingsBackup {
         if (text == null || text.getBytes(StandardCharsets.UTF_8).length > MAX_BYTES) throw new IOException("Invalid backup size");
         Settings.REGION_SPOOF.get();
         JSONObject root = SettingsJson.parseObject(text);
-        if (!"metra-settings".equals(root.optString("format")) || !Integer.valueOf(1).equals(root.get("schema"))
+        String format = root.optString("format");
+        if (!(FORMAT.equals(format) || LEGACY_FORMAT.equals(format)) || !Integer.valueOf(1).equals(root.get("schema"))
                 || !FeatureGateLabStore.TARGET_VERSION.equals(root.optString("target"))) {
             throw new JSONException("Unsupported settings backup or TikTok version");
         }

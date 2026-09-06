@@ -37,7 +37,7 @@ public class TikTokActivityHook {
             Constructor entryConstructor = entryClazz.getConstructor(entryInfoClazz);
             Constructor entryInfoConstructor = entryInfoClazz.getDeclaredConstructors()[0];
             Object buttonInfo = entryInfoConstructor.newInstance(
-                    "Metra patches", null, (View.OnClickListener) view -> startSettingsActivity(), "morphe");
+                    "Hushfeed", null, (View.OnClickListener) view -> startSettingsActivity(), "morphe");
             return entryConstructor.newInstance(buttonInfo);
         } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException |
                  InstantiationException e) {

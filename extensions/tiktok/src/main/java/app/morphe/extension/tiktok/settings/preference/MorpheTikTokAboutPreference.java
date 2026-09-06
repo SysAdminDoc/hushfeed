@@ -34,12 +34,12 @@ public class MorpheTikTokAboutPreference extends Preference {
     public MorpheTikTokAboutPreference(Context context) {
         super(context);
 
-        setTitle("Support my work");
-        setSummary("If you enjoy these patches, I would really appreciate the support. It genuinely means a lot to me.");
+        setTitle("About Hushfeed");
+        setSummary("TikTok patches for Morphe, built on the Metra patches by icysymmetra and the community sets before them. Tap to open the project page.");
         setIcon(new HeartDrawable());
 
         setOnPreferenceClickListener(pref -> {
-            app.morphe.extension.shared.Utils.openLink("https://ko-fi.com/P5P5YOUU7");
+            app.morphe.extension.shared.Utils.openLink("https://github.com/SysAdminDoc/hushfeed");
             return true;
         });
     }

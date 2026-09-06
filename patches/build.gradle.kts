@@ -4,12 +4,12 @@ group = "app.morphe"
 
 patches {
     about {
-        name = "Metra TikTok Patches"
-        description = "Metra patches for TikTok 46.2.3, built for Morphe."
-        source = "https://github.com/icysymmetra/tiktok-patches-for-morphe"
-        author = "icysymmetra"
-        contact = "na"
-        website = "https://github.com/icysymmetra/tiktok-patches-for-morphe"
+        name = "Hushfeed"
+        description = "Hushfeed patches for TikTok 46.2.3, built for Morphe. Fewer accidental taps, less noise, more control over the feed, inbox, comments and downloads."
+        source = "https://github.com/SysAdminDoc/hushfeed"
+        author = "SysAdminDoc"
+        contact = "https://github.com/SysAdminDoc/hushfeed/issues"
+        website = "https://github.com/SysAdminDoc/hushfeed"
         license = "GNU General Public License v3.0, with additional GPL section 7 requirements"
     }
 }

@@ -1,4 +1,4 @@
-rootProject.name = "tiktok-patches-for-morphe"
+rootProject.name = "hushfeed"
 
 pluginManagement {
     repositories {

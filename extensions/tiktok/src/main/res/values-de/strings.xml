@@ -44,8 +44,6 @@
     <string name="mtp_0f588f89">Die Zeile „Nachrichtenanfragen“ ausblenden.</string>
     <!-- Hide the search icon in the Inbox header. -->
     <string name="mtp_0f853c60">Das Suchsymbol in der Kopfzeile des Posteingangs ausblenden.</string>
-    <!-- If you enjoy these patches, I would really appreciate the support. It genuinely means a lot to me. -->
-    <string name="mtp_0fe492ed">Wenn dir diese Patches gefallen, freue ich mich sehr über Unterstützung. Sie bedeutet mir wirklich viel.</string>
     <!-- Use a default playback speed -->
     <string name="mtp_0ffd88db">Standard-Wiedergabegeschwindigkeit verwenden</string>
     <!-- dp -->
@@ -340,6 +338,8 @@
     <string name="mtp_7f2c7a1d">Schnelle Kommentar-Reaktionen ausblenden</string>
     <!-- This deletes the local record only. Your TikTok account history is not touched. -->
     <string name="mtp_7f4e4d4b">Das löscht nur die lokale Aufzeichnung. Dein TikTok-Kontoverlauf bleibt unberührt.</string>
+    <!-- TikTok patches for Morphe, built on the Metra patches by icysymmetra and the community sets before them. Tap to open the project page. -->
+    <string name="mtp_8118ac81">TikTok-Patches für Morphe, aufgebaut auf den Metra-Patches von icysymmetra und den Community-Sammlungen davor. Tippe, um die Projektseite zu öffnen.</string>
     <!-- Hide TikTok shop from feed. -->
     <string name="mtp_8130e84e">TikTok Shop aus dem Feed ausblenden.</string>
     <!-- Included diagnostics -->
@@ -446,8 +446,8 @@
     <string name="mtp_a80b24b3">Untere Tabs ausblenden, die TikTok später hinzufügt, sofern du sie nicht erlaubst.</string>
     <!-- Hide verified accounts -->
     <string name="mtp_a83cdea6">Verifizierte Konten ausblenden</string>
-    <!-- Support my work -->
-    <string name="mtp_a86b8394">Unterstütze meine Arbeit</string>
+    <!-- About Hushfeed -->
+    <string name="mtp_a99a545c">Über Hushfeed</string>
     <!-- Maximum views per like -->
     <string name="mtp_ab42d099">Maximale Aufrufe pro Like</string>
     <!-- Comma separated account handles or user ids. These accounts are always skipped. -->

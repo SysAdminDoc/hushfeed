@@ -1,6 +1,8 @@
 /*
- * Copyright 2026 icysymmetra/tiktok-patches-for-morphe contributors
- * https://github.com/icysymmetra/tiktok-patches-for-morphe
+ * Copyright 2026 Hushfeed contributors
+ * https://github.com/SysAdminDoc/hushfeed
+ *
+ * Built on icysymmetra/tiktok-patches-for-morphe (GPL-3.0).
  */
 package app.morphe.patches.tiktok.interaction.feedtoolbar
 

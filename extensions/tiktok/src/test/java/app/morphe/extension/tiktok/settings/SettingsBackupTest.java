@@ -261,7 +261,7 @@ public class SettingsBackupTest {
             Shadows.shadowOf(activity.getContentResolver()).registerOutputStream(uri, output);
             fragment.onActivityResult(7311, android.app.Activity.RESULT_OK, new Intent().setData(uri));
             waitFor("Settings backup saved");
-            assertEquals("metra-settings", new JSONObject(output.toString(StandardCharsets.UTF_8)).getString("format"));
+            assertEquals("hushfeed-settings", new JSONObject(output.toString(StandardCharsets.UTF_8)).getString("format"));
             Settings.MAX_VIDEO_SECONDS.save(73);
             Shadows.shadowOf(activity.getContentResolver()).registerInputStream(uri, new ByteArrayInputStream(output.toByteArray()));
             fragment.onActivityResult(7312, android.app.Activity.RESULT_OK, new Intent().setData(uri));

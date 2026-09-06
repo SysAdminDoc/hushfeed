@@ -1,7 +1,8 @@
 /*
- * Copyright (c) 2026 Metra TikTok Patches
- * https://github.com/icysymmetra/tiktok-patches-for-morphe
+ * Copyright 2026 Hushfeed contributors
+ * https://github.com/SysAdminDoc/hushfeed
  *
+ * Built on icysymmetra/tiktok-patches-for-morphe (GPL-3.0).
  * Follows hxreborn/hxreborn-tiktok-patches (GPL-3.0).
  */
 package app.morphe.extension.tiktok.inbox;

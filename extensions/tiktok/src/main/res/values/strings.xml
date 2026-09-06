@@ -22,7 +22,6 @@
     <string name="mtp_0d955898">Highest</string>
     <string name="mtp_0f588f89">Hide the Message requests row.</string>
     <string name="mtp_0f853c60">Hide the search icon in the Inbox header.</string>
-    <string name="mtp_0fe492ed">If you enjoy these patches, I would really appreciate the support. It genuinely means a lot to me.</string>
     <string name="mtp_0ffd88db">Use a default playback speed</string>
     <string name="mtp_104dcd60">dp</string>
     <string name="mtp_115880e7">us, gb, jp, ...</string>
@@ -170,6 +169,7 @@
     <string name="mtp_7ca54f00">The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks. Takes effect after a restart.</string>
     <string name="mtp_7f2c7a1d">Hide quick comment reactions</string>
     <string name="mtp_7f4e4d4b">This deletes the local record only. Your TikTok account history is not touched.</string>
+    <string name="mtp_8118ac81">TikTok patches for Morphe, built on the Metra patches by icysymmetra and the community sets before them. Tap to open the project page.</string>
     <string name="mtp_8130e84e">Hide TikTok shop from feed.</string>
     <string name="mtp_81bf8db8">Included diagnostics</string>
     <string name="mtp_81d49b36">Hide tabs TikTok adds later unless you allow them.</string>
@@ -223,7 +223,7 @@
     <string name="mtp_a5ffd7d6">Show Live search</string>
     <string name="mtp_a80b24b3">Hide bottom tabs TikTok adds later unless you allow them.</string>
     <string name="mtp_a83cdea6">Hide verified accounts</string>
-    <string name="mtp_a86b8394">Support my work</string>
+    <string name="mtp_a99a545c">About Hushfeed</string>
     <string name="mtp_ab42d099">Maximum views per like</string>
     <string name="mtp_ac461220">Comma separated account handles or user ids. These accounts are always skipped.</string>
     <string name="mtp_ad24fc00">Hide image video from feed.</string>

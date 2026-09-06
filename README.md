@@ -1,53 +1,50 @@
 <p align="center">
-  <img src="assets/readme-header.png" alt="Metra TikTok Patches" width="290"/>
+  <img src="assets/readme-header.png" alt="Hushfeed" width="580"/>
 </p>
 
 <p align="center">
+  <a href="CHANGELOG.md"><img alt="version" src="https://img.shields.io/badge/version-0.15.0-6f42c1.svg" /></a>
   <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-GPLv3-blue.svg" /></a>
-  <a href="CHANGELOG.md"><img alt="version" src="https://img.shields.io/badge/version-0.14.1-6f42c1.svg" /></a>
-  <a href="https://github.com/MorpheApp/morphe-cli"><img alt="source" src="https://img.shields.io/badge/source-Morphe-00b894.svg" /></a>
   <a href="https://www.android.com/"><img alt="platform" src="https://img.shields.io/badge/platform-Android-3ddc84.svg" /></a>
+  <a href="https://github.com/MorpheApp/morphe-manager"><img alt="Morphe" src="https://img.shields.io/badge/works%20with-Morphe-00b894.svg" /></a>
   <a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/"><img alt="TikTok 46.2.3" src="https://img.shields.io/badge/TikTok-46.2.3-ff0050.svg" /></a>
 </p>
 
-# Metra TikTok Patches
+# Hushfeed
 
-## This fork
+Hushfeed is a set of TikTok patches for [Morphe](https://github.com/MorpheApp/morphe-manager). The idea is simple: fewer accidental taps, less noise, and more say over what the app puts in front of you. It runs on the global TikTok build, `com.zhiliaoapp.musically`, version [46.2.3](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/).
 
-This is a private working copy of [icysymmetra/tiktok-patches-for-morphe](https://github.com/icysymmetra/tiktok-patches-for-morphe) with a few patches of my own on top. It builds the same bundle, so everything upstream ships is still here. What's added:
+It started as a private fork of [icysymmetra's Metra patches](https://github.com/icysymmetra/tiktok-patches-for-morphe) and grew past them. Everything upstream ships is still here, along with the work from other community bundles and a long list of additions of its own. The result is 61 patches, each with its own switch in a settings screen that follows your phone's language.
 
-- `Block author button`: one tap blocks whoever posted the current video, with an undo banner. Long press the button to move it. A second button blocks the current sound.
-- `Hide inbox items`: a switch for every row and header control on the Inbox tab, plus a Clear all control for suggested accounts. System categories follow TikTok's row data, so their switches work in every language and leave conversations with the same title alone.
-- `Comment tools`: hide comments by keyword or by account, and block a commenter with the thumbs down on their comment.
-- `Hide video overlays`: switches for the "Search this image" prompt and the top left Live entrance.
-- `Share sheet tools`: a second tap is needed before a video goes to a friend, and people or share options can be hidden by name, or the whole Send to row.
-- Feed filters include blocked caption phrases and creator handles, maximum video length, promotional music, LIVE replays and views per like. The sound blocklist and existing content switches remain available.
+## What it does
 
-Duration and engagement limits keep the closest eligible video if they would empty a page. Creator blocks, blocked words and other content filters always win, so a page containing only blocked content stays empty.
+- **Block from the feed.** One tap blocks whoever posted the video you're watching, with an undo banner. A second button blocks the current sound. A Not interested button sits beside them.
+- **Guard rails against accidental taps.** Follow and like need a second tap within four seconds. Sending a video to a friend from the share sheet does too. Long press and double tap can be remapped or switched off.
+- **A quieter feed.** Hide ads, Shop, livestreams, LIVE replays, stories, image posts, paid partnerships, AI labelled videos, verified accounts, series, playlists, promotional music, videos you've already seen, and anything matching your own caption words, creator handles, sound names, length or engagement rules.
+- **A quieter screen.** Hide the caption, the music line, the action column, survey cards, the status bar, the visual search prompt, the Live entrance, floating promotions and the CAPTCHA puzzles. Clear display can turn itself on after each video starts.
+- **An inbox you choose.** A switch for every Inbox row and header control, stories tray, suggested accounts, message requests and conversations.
+- **Comments on your terms.** Keyword and account filters, thumbs down that blocks the commenter, quick reactions hidden, comments beside the video on wide screens, translation with language exclusions.
+- **Downloads worth keeping.** Pick the quality, save original photos, combine separate audio tracks when TikTok serves them apart, save subtitles as SRT beside the video, name files with tokens, choose a folder per media type, remove the watermark.
+- **Playback the way you want it.** Default speed and a custom speed menu, quality choice, stop looping, resume after scrolling, automatic advance, the native seekbar and its thumbnail, hold and slide for 2x.
+- **Privacy.** Ghost mode stops story view, profile view and typing reports. Telemetry to ByteDance, AppsFlyer and Firebase can be switched off. Screenshots and Circle to Search work again.
+- **Region.** SIM, locale and timezone presets, with an optional store region override.
+- **Under the hood.** Feature Gate Lab exposes TikTok's own A/B flags with recording and typed overrides. Settings back up to a JSON file with restore, reset and undo. Diagnostics export a report.
 
-The block, sound and Not interested controls (rendered in a local UI test):
+The block, sound and Not interested controls, rendered in a local UI test:
 
 ![Overlay controls](assets/overlay-controls.png)
 
-Select `Subtitle tools` in the patcher, then enable subtitle downloads in Downloads. Captioned videos and their SRT files share the same filename stem. Language names can use Unicode, and filename collisions keep separate tracks. Android 11 and later save the pair in Movies; Android 10 uses Download. The selected subfolder still applies. A failed subtitle transfer leaves the saved video intact and reports the partial result.
+## Install
 
-Caption appearance and the clear display option are in Interface. These views were rendered in local UI tests:
+1. Get the TikTok 46.2.3 APK. Google Play only offers the newest build, so take it from [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/).
+2. Download `patches-0.15.0.mpp` from the [latest release](https://github.com/SysAdminDoc/hushfeed/releases/latest). The repository is private, so sign in with an account that has access.
+3. In Morphe Manager add the bundle as a local source, pick the patches you want, and patch the APK. Keep the manager's existing signing key so TikTok stays logged in across updates.
+4. Open TikTok, go to Settings and privacy, and tap Hushfeed. Every patch you selected has its switches there.
 
-<img src="assets/caption-settings.png" alt="Caption appearance settings" width="300" /> <img src="assets/subtitle-download-settings.png" alt="Subtitle download settings" width="300" />
-
-Releases are built and versioned by hand here; the upstream release workflow isn't used. The bundle lands in `patches/build/libs/`.
-
-<br>
-
-**This repository is a Morphe patch source for TikTok.**
-
-**It continues the work from earlier community TikTok patch sets, including ReVanced, with the patches adapted for Morphe and tested against newer TikTok builds. The current target is the global TikTok package, `com.zhiliaoapp.musically`, on [TikTok `46.2.3`](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/).**
-
-The goal is to keep the existing patch set usable while adding more TikTok-focused features over time. Some features are small fixes, some are quality-of-life changes, and some need deeper testing because TikTok changes its internals often.
+The Settings patch adds the entry point; most patches depend on it and it's selected by default. `patches-bundle.json` in the repository root is the source index Morphe reads for the published bundle.
 
 <br>
-
-## Available Patches
+## Patches
 
 | Patch | Description |
 |---|---|
@@ -105,13 +102,23 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Region spoof` | Matches locale country, timezone and native region getters to the SIM preset while preserving the interface language. Store-region overrides have a separate experimental switch. IP address and server account rules still apply. |
 | `SIM spoof` | Replaces SIM country and operator values reported to TikTok and provides country presets. TikTok may still use IP address, account history, language, and other region signals. |
 | `Sanitize sharing links` | Removes tracking parameters from TikTok links before they are shared. |
-| `Settings` | Adds the Metra patches settings screen inside TikTok. The screen follows the phone's language where a translation exists; English and German ship today. |
+| `Settings` | Adds the Hushfeed settings screen inside TikTok. The screen follows the phone's language where a translation exists; English and German ship today. |
 | `Hide content warnings` | Adds an option to play videos TikTok has classified without the warning overlay asking to be tapped through first. |
 | `Show author region` | Adds an option to show the country a video was posted from next to the creator's name on the feed. |
 | `Show seekbar` | Shows TikTok's native video seekbar where it would normally be hidden. |
 | `Show seekbar thumbnail` | Shows TikTok's video preview thumbnail while dragging the seekbar. |
 | `Stop video looping` | Stops a completed video instead of automatically replaying it. |
 | `Translate comments` | Adds comment translation controls using TikTok's translation system, with selectable language exclusions. |
+
+## Settings tour
+
+Every screenshot below was rendered by the test suite, not taken on a phone.
+
+Select `Subtitle tools` in the patcher, then enable subtitle downloads in Downloads. Captioned videos and their SRT files share the same filename stem. Language names can use Unicode, and filename collisions keep separate tracks. Android 11 and later save the pair in Movies; Android 10 uses Download. The selected subfolder still applies. A failed subtitle transfer leaves the saved video intact and reports the partial result.
+
+Caption appearance and the clear display option are in Interface:
+
+<img src="assets/caption-settings.png" alt="Caption appearance settings" width="300" /> <img src="assets/subtitle-download-settings.png" alt="Subtitle download settings" width="300" />
 
 Inbox category switches identify New followers, Activity, Archive, Tako and Shop from native row data. They work with translated labels. Turning a switch off restores an already loaded row on the next layout.
 
@@ -143,27 +150,9 @@ Feature Gate Lab saves its master switch immediately. Its menu can reset overrid
 
 <img src="assets/feature-gate-lab.png" alt="Feature Gate Lab with immediate master control and settings menu" width="300" />
 
-## Download
-
-Download the `.mpp` bundle from [this fork's releases](https://github.com/SysAdminDoc/tiktok-patches-for-morphe/releases). This repository is private, so sign in with an account that has access. Use the bundle with Morphe Manager on the device, targeting global TikTok 46.2.3 and keeping the existing signing key.
-
 <br>
 
-## Planned Work
-
-Open to feature requests.
-
-<br>
-
-## Supported Target
-
-- App: TikTok
-- Version: [`46.2.3`](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/)
-- Package: `com.zhiliaoapp.musically`
-
-Only the global package is declared in Morphe compatibility metadata. The JP package may share some internals, but it is not advertised as supported unless it gets its own proof pass again.
-
-## Building
+## Building from source
 
 Run the runtime tests, then build the Morphe patch bundle and metadata:
 
@@ -200,28 +189,49 @@ The script writes the string resources the Settings patch adds to TikTok, and th
 
 <br>
 
-## Project Structure
+<br>
 
-- `patches/`: Kotlin patch definitions, fingerprints, and shared patch utilities.
-- `extensions/`: Java extension code injected into TikTok by the patches.
-- `patches-list.json`: Generated patch metadata.
-- `patches-bundle.json`: Morphe source metadata for the published release bundle.
+## Supported target
+
+- App: TikTok, the global package `com.zhiliaoapp.musically`
+- Version: [46.2.3](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/)
+
+Only the global package is declared in the compatibility metadata. TikTok changes its internals often, so each release is tied to the exact version it was checked against. Newer builds may patch, but nothing is promised until the fingerprints have been run against them.
+
+<br>
+
+## Project structure
+
+- `patches/`: Kotlin patch definitions, fingerprints and shared patch utilities.
+- `extensions/`: Java extension code the patches inject into TikTok, with the Robolectric tests beside it.
+- `extensions/tiktok/src/main/l10n/`: the settings translation tables.
+- `scripts/`: the translation generator and release helpers.
+- `patches-list.json`: generated patch metadata.
+- `patches-bundle.json`: the Morphe source index for the published bundle.
 
 ## Credits
 
-- Thanks to [@lyyako](https://github.com/lyyako) for the original contributions behind the simplified sanitize sharing links hook, show seekbar patch, anti-recording patch, `Open external links directly`, and `Always show publish date`.
-- Thanks to [@oscski](https://github.com/oscski) for the original contribution behind `Disable long-press repost`.
+Hushfeed stands on a lot of other people's work, and the licence asks that this stays visible.
+
+- [icysymmetra/tiktok-patches-for-morphe](https://github.com/icysymmetra/tiktok-patches-for-morphe), the Metra patches this project was forked from. Most of the original patch set, the settings framework and the Feature Gate Lab come from there, as does the release history below 0.8.0 in the changelog.
+- [ReVanced](https://gitlab.com/revanced/revanced-patches), whose TikTok patches the whole lineage continues, and [RookieEnough/De-Vanced](https://github.com/RookieEnough/De-Vanced), which upstream was built from.
+- [hxreborn/hxreborn-tiktok-patches](https://github.com/hxreborn/hxreborn-tiktok-patches) for the inbox injectors, the telemetry patch, the risk control CAPTCHA hook and several feed card filters.
+- [BlueDragon4251/tiktok-patches-for-morphe](https://github.com/BlueDragon4251/tiktok-patches-for-morphe) for the seen video filter, the gate recorder and the download quality ideas.
+- [eduardo3677-ai/tiktok-patches-for-morphe](https://github.com/eduardo3677-ai/tiktok-patches-for-morphe) for Ghost mode.
+- [@lyyako](https://github.com/lyyako) for the sanitize sharing links hook, the seekbar patch, the anti-recording patch, `Open external links directly` and `Always show publish date`.
+- [@oscski](https://github.com/oscski) for `Disable long-press repost`.
+- The [Morphe](https://github.com/MorpheApp) team for the patcher, the manager and the patches template.
+
+Files that came from another project keep their original notices, and files written here say so in their header.
 
 ## Notes
 
-- The source is based on [RookieEnough/De-Vanced](https://github.com/RookieEnough/De-Vanced) and the [Morphe patches template](https://github.com/MorpheApp/morphe-patches-template).
-- It is not affiliated with TikTok, ByteDance, or Morphe.
-- TikTok changes often, so compatibility is intentionally tied to the exact version and packages listed above.
+- Hushfeed is not affiliated with TikTok, ByteDance or Morphe. "For Morphe" describes compatibility, nothing more.
+- Patching a client TikTok didn't ship is your call. Some accounts see risk control puzzles or find that follows don't land on patched builds; the diagnostics patch exists to make that visible.
+- Bugs and ideas go in the [issue tracker](https://github.com/SysAdminDoc/hushfeed/issues). Include the TikTok version, the patch involved, and what you expected.
 
 <br>
 
 ## License
 
-This project reuses the GPLv3 licensing from the projects it was built on.
-
-See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+GPLv3, inherited from the projects Hushfeed was built on. See [LICENSE](LICENSE) and [NOTICE](NOTICE).

@@ -1,5 +1,5 @@
 {
-  "version": "v0.14.1",
+  "version": "v0.15.0",
   "appNames": {
     "com.zhiliaoapp.musically": "TikTok"
   },
@@ -1502,7 +1502,7 @@
     },
     {
       "name": "Settings",
-      "description": "Adds the Metra patches settings menu to TikTok. Supports TikTok 46.2.3.",
+      "description": "Adds the Hushfeed settings screen to TikTok. Supports TikTok 46.2.3.",
       "use": true,
       "dependencies": [
         "BytecodePatch",

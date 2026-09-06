@@ -49,7 +49,7 @@ public final class SettingsBackupPreference extends Preference {
     private static void pickFile(TikTokPreferenceFragment fragment, int action) {
         Intent intent = new Intent(action == EXPORT ? Intent.ACTION_CREATE_DOCUMENT : Intent.ACTION_OPEN_DOCUMENT)
                 .addCategory(Intent.CATEGORY_OPENABLE).setType("application/json");
-        if (action == EXPORT) intent.putExtra(Intent.EXTRA_TITLE, "metra-settings-" + System.currentTimeMillis() + ".json");
+        if (action == EXPORT) intent.putExtra(Intent.EXTRA_TITLE, "hushfeed-settings-" + System.currentTimeMillis() + ".json");
         try { fragment.startActivityForResult(intent, action); }
         catch (RuntimeException error) {
             Logger.printException(() -> "Could not open settings file picker", error);
