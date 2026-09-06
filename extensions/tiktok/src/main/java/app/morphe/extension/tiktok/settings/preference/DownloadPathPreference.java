@@ -70,7 +70,8 @@ public class DownloadPathPreference extends DialogPreference {
     public void applyPickedPath(String path) {
         try {
             setValue(DownloadDestination.validate(path, kind));
-            app.morphe.extension.shared.Utils.showToastShort("Download path updated");
+            app.morphe.extension.shared.Utils.showToastShort(
+                    app.morphe.extension.tiktok.settings.L10n.t("Download path updated"));
         } catch (IllegalArgumentException ex) {
             app.morphe.extension.shared.Utils.showToastLong(ex.getMessage());
         }

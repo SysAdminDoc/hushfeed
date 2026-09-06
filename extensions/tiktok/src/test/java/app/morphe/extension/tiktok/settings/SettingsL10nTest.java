@@ -65,6 +65,47 @@ public class SettingsL10nTest {
         setEveryStatus(false);
     }
 
+    /**
+     * The reflection above only reaches preference titles and summaries. A toast is a string
+     * literal at a call site, so nothing checked those until this: the runtime feedback was
+     * English on every phone while the settings around it were translated.
+     *
+     * <p>Feature Gate Lab is left out on purpose. It is a developer tool and its screens are
+     * English by choice, which the row that opens it says.
+     */
+    @Test public void everyRuntimeToastGoesThroughTheTable() throws Exception {
+        java.io.File root = new java.io.File("src/main/java/app/morphe/extension/tiktok");
+        if (!root.isDirectory()) root = new java.io.File(
+                "extensions/tiktok/src/main/java/app/morphe/extension/tiktok");
+        assertTrue("could not find the source tree from " + new java.io.File(".").getAbsolutePath(),
+                root.isDirectory());
+
+        java.util.regex.Pattern raw = java.util.regex.Pattern.compile(
+                "showToast(?:Short|Long)\\s*\\(\\s*\"");
+        java.util.List<String> offenders = new java.util.ArrayList<>();
+        java.nio.file.Path base = root.toPath();
+        try (java.util.stream.Stream<java.nio.file.Path> files =
+                     java.nio.file.Files.walk(base)) {
+            for (java.nio.file.Path file : files.filter(p -> p.toString().endsWith(".java"))
+                    .collect(java.util.stream.Collectors.toList())) {
+                if (file.toString().replace('\\', '/').contains("/featuregatelab/")) continue;
+                String[] lines = new String(java.nio.file.Files.readAllBytes(file),
+                        java.nio.charset.StandardCharsets.UTF_8).split("\n");
+                for (int index = 0; index < lines.length; index++) {
+                    if (raw.matcher(lines[index]).find()) {
+                        offenders.add(base.relativize(file) + ":" + (index + 1) + "  "
+                                + lines[index].trim());
+                    }
+                }
+            }
+        }
+
+        assertTrue("a toast is shown to the reader, so it belongs in the translation table. "
+                        + "Wrap it in L10n.t, or L10n.f when it carries a value:\n"
+                        + String.join("\n", offenders),
+                offenders.isEmpty());
+    }
+
     @Test
     public void everyLanguageTheBundleCarriesHasATable() {
         assertNotNull("German", L10nTranslations.of("de"));

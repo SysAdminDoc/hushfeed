@@ -199,7 +199,8 @@ public class SimPresetPreference extends Preference {
             Logger.printException(() -> "Invalid SIM preset refused: "
                     + preset.country + " / " + preset.operatorName + " / "
                     + preset.mccMnc + " / " + preset.iso);
-            app.morphe.extension.shared.Utils.showToastLong("Invalid SIM preset");
+            app.morphe.extension.shared.Utils.showToastLong(
+                app.morphe.extension.tiktok.settings.L10n.t("Invalid SIM preset"));
             return false;
         }
 
@@ -212,9 +213,10 @@ public class SimPresetPreference extends Preference {
                 + preset.operatorName + " / " + preset.mccMnc + " / " + preset.iso);
 
         if (Settings.SIM_SPOOF.get()) {
-            app.morphe.extension.shared.Utils.showToastLong("SIM preset saved. Restart TikTok to apply it.");
+            app.morphe.extension.shared.Utils.showToastLong(
+                    app.morphe.extension.tiktok.settings.L10n.t("SIM preset saved. Restart TikTok to apply it."));
         } else {
-            app.morphe.extension.shared.Utils.showToastShort("SIM preset saved");
+            app.morphe.extension.shared.Utils.showToastShort(app.morphe.extension.tiktok.settings.L10n.t("SIM preset saved"));
         }
 
         return true;

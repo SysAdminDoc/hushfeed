@@ -21,7 +21,9 @@ public final class FeatureGateRecorderPreference extends Preference {
                 showReport(context, FeatureGateLearnMode.stopAndBuildReport());
             } else {
                 FeatureGateLearnMode.begin();
-                app.morphe.extension.shared.Utils.showToastShort("Recording gate reads. Use a feature, then return here to stop.");
+                app.morphe.extension.shared.Utils.showToastShort(
+                        app.morphe.extension.tiktok.settings.L10n.t(
+                                "Recording gate reads. Use a feature, then return here to stop."));
             }
             refresh();
             notifyChanged();

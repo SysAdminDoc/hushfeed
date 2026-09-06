@@ -3,6 +3,7 @@ package app.morphe.extension.tiktok.settings.preference.categories;
 import android.content.Context;
 import android.preference.PreferenceScreen;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.settings.L10n;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.ChoicePreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
@@ -41,7 +42,7 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
             speeds.setOnPreferenceChangeListener((preference, value) -> {
                 try { PlaybackSpeedPatch.parseMenuSpeeds(value.toString()); return true; }
                 catch (IllegalArgumentException error) {
-                    Utils.showToastShort("Enter up to 8 comma-separated speeds from 0.5 to 3");
+                    Utils.showToastShort(L10n.t("Enter up to 8 comma-separated speeds from 0.5 to 3"));
                     return false;
                 }
             });

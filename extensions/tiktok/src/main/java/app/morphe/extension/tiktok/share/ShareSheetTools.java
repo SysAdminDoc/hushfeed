@@ -20,6 +20,7 @@ import android.view.ViewTreeObserver;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.settings.L10n;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -322,7 +323,7 @@ public final class ShareSheetTools {
         cell.setForeground(ring);
         cell.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
 
-        Utils.showToastShort("Tap " + name + " again to send");
+        Utils.showToastShort(L10n.f("Tap %1$s again to send", name));
 
         final long stamp = armedAtMs;
         Utils.runOnMainThreadDelayed(() -> {

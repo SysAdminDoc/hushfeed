@@ -10,6 +10,7 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import app.morphe.extension.tiktok.settings.L10n;
 
 public final class NotInterested {
     private static final AtomicBoolean IN_FLIGHT = new AtomicBoolean();
@@ -25,7 +26,7 @@ public final class NotInterested {
         Object video = CurrentVideoAuthor.getAweme();
         String id = Reflect.string(video, "getAid", "aid");
         if (id == null) {
-            Utils.showToastShort("No video selected");
+            Utils.showToastShort(L10n.t("No video selected"));
             return;
         }
         if (!IN_FLIGHT.compareAndSet(false, true)) return;
@@ -33,10 +34,10 @@ public final class NotInterested {
         // after acquiring it so a tap racing that completion cannot send twice.
         if (id.equals(lastSubmittedId)) {
             IN_FLIGHT.set(false);
-            Utils.showToastShort("Already marked as not interested");
+            Utils.showToastShort(L10n.t("Already marked as not interested"));
             return;
         }
-        Utils.showToastShort("Sending feedback");
+        Utils.showToastShort(L10n.t("Sending feedback"));
         Utils.runOnBackgroundThread(() -> {
             boolean success = false;
             try {

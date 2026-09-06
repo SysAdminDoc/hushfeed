@@ -9,6 +9,7 @@ import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.blockauthor.CurrentVideoAuthor;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.settings.L10n;
 import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -39,7 +40,7 @@ public final class GestureActions {
         if ("nothing".equals(action)) return true;
         if (!"comments".equals(action)) return false;
         if (!openComments(Reflect.string(CurrentVideoAuthor.getAweme(), "getAid", "aid"))) {
-            Utils.showToastShort("Comments aren't available for this video");
+            Utils.showToastShort(L10n.t("Comments aren't available for this video"));
         }
         return true;
     }
@@ -79,7 +80,7 @@ public final class GestureActions {
         if (delta != 0) {
             // Named, so a post that never reported progress cannot move the video before it.
             String videoId = Reflect.string(CurrentVideoAuthor.getAweme(), "getAid", "aid");
-            if (!FeedSeek.seekBy(videoId, delta)) Utils.showToastShort("Nothing is playing to seek");
+            if (!FeedSeek.seekBy(videoId, delta)) Utils.showToastShort(L10n.t("Nothing is playing to seek"));
             // The edge belongs to the seek whether or not it worked, so the 2x hold that would
             // otherwise start under the finger does not fire on top of it.
             return true;
@@ -89,7 +90,7 @@ public final class GestureActions {
         if ("nothing".equals(action)) return true;
         if (!"comments".equals(action)) return false;
         if (!openComments(Reflect.string(CurrentVideoAuthor.getAweme(), "getAid", "aid"))) {
-            Utils.showToastShort("Comments aren't available for this video");
+            Utils.showToastShort(L10n.t("Comments aren't available for this video"));
         }
         return true;
     }

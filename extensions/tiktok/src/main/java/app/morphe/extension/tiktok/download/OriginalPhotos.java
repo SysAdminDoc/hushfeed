@@ -5,6 +5,7 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.settings.L10n;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,14 +35,15 @@ public final class OriginalPhotos {
                 != android.content.pm.PackageManager.PERMISSION_GRANTED) return false;
         List<List<String>> photos = sources(aweme);
         if (photos.isEmpty()) {
-            Utils.showToastShort("Original photo URLs aren't available; using TikTok's download");
+            Utils.showToastShort(L10n.t(
+                    "The original photos aren't available, so TikTok's own save runs instead"));
             return false;
         }
         String id = Reflect.string(aweme, "getAid", "aid");
         if (id == null) return false;
         if (!ACTIVE.add(id)) return true;
         Context app = context.getApplicationContext();
-        Utils.showToastShort("Saving " + photos.size() + " original photos");
+        Utils.showToastShort(L10n.f("Saving %1$s original photos", photos.size()));
         WORKER.execute(() -> {
             int saved = 0;
             try {
@@ -57,11 +59,11 @@ public final class OriginalPhotos {
                         if (!temp.delete()) Logger.printInfo(() -> "Could not remove original photo temporary file");
                     }
                 }
-                Utils.showToastShort("Saved " + saved + " original photos");
+                Utils.showToastShort(L10n.f("Saved %1$s original photos", saved));
             } catch (IOException | RuntimeException exception) {
                 int completed = saved;
                 Logger.printException(() -> "Original photo download failed after " + completed + " photos", exception);
-                Utils.showToastLong("Saved " + saved + " photos. Download failed; try again.");
+                Utils.showToastLong(L10n.f("Saved %1$s photos. The rest failed, so try again.", saved));
             } finally {
                 ACTIVE.remove(id);
             }

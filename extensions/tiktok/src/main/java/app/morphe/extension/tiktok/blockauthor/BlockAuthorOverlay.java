@@ -263,7 +263,7 @@ public final class BlockAuthorOverlay {
     private static void onBlockSoundTapped() {
         CurrentVideoSound sound = CurrentVideoSound.get();
         if (sound == null || !sound.isUsable()) {
-            Utils.showToastShort("No sound to block on this video");
+            Utils.showToastShort(L10n.t("No sound to block on this video"));
             return;
         }
 
@@ -281,7 +281,7 @@ public final class BlockAuthorOverlay {
             } else {
                 Settings.BLOCKED_SOUND_NAMES.save(SoundIdentity.withoutEntry(Settings.BLOCKED_SOUND_NAMES.get(), sound.name));
             }
-            Utils.showToastShort("Unblocked " + sound.label());
+            Utils.showToastShort(L10n.f("Unblocked %1$s", sound.label()));
         });
     }
 
@@ -338,7 +338,7 @@ public final class BlockAuthorOverlay {
             dragging = true;
             view.setAlpha(0.75f);
             view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-            Utils.showToastShort("Drag to move, release to place");
+            Utils.showToastShort(L10n.t("Drag to move, release to place"));
             return true;
         });
 
@@ -472,7 +472,7 @@ public final class BlockAuthorOverlay {
 
         VideoAuthor author = CurrentVideoAuthor.get();
         if (author == null || !author.isUsable()) {
-            Utils.showToastShort("No account to block on this video");
+            Utils.showToastShort(L10n.t("No account to block on this video"));
             return;
         }
 
@@ -486,8 +486,9 @@ public final class BlockAuthorOverlay {
             if (success) {
                 showUndo(author);
             } else {
-                Utils.showToastLong("Could not block " + author.label()
-                        + (message == null ? "" : ": " + message));
+                Utils.showToastLong(message == null || message.isEmpty()
+                        ? L10n.f("Could not block %1$s", author.label())
+                        : L10n.f("Could not block %1$s: %2$s", author.label(), message));
             }
         });
     }

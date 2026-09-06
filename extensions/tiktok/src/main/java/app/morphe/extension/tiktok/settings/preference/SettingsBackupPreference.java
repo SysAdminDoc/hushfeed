@@ -28,7 +28,7 @@ public final class SettingsBackupPreference extends Preference {
         setTitle(title);
         setSummary(summary);
         setOnPreferenceClickListener(preference -> {
-            if (BUSY.get()) { Utils.showToastShort("A settings operation is already running"); return true; }
+            if (BUSY.get()) { Utils.showToastShort(L10n.t("A settings operation is already running")); return true; }
             if (action == RESET || action == UNDO) run(fragment, action, null);
             else pickFile(fragment, action);
             return true;
@@ -66,7 +66,7 @@ public final class SettingsBackupPreference extends Preference {
         try { fragment.startActivityForResult(intent, action); }
         catch (RuntimeException error) {
             Logger.printException(() -> "Could not open settings file picker", error);
-            Utils.showToastLong("File picker unavailable: " + error.getMessage());
+            Utils.showToastLong(L10n.t("The file picker is not available on this device."));
         }
     }
 
@@ -99,7 +99,8 @@ public final class SettingsBackupPreference extends Preference {
                         : L10n.t("Settings saved. Restart TikTok to apply all changes."));
             } catch (Exception error) {
                 Logger.printException(() -> "Settings backup operation failed", error);
-                Utils.showToastLong("Settings operation failed: " + error.getMessage());
+                Utils.showToastLong(L10n.t(
+                    "That settings change did not go through. Nothing was altered."));
             } finally {
                 Utils.runOnMainThread(() -> {
                     if (action != EXPORT) AbstractPreferenceFragment.settingImportInProgress = false;

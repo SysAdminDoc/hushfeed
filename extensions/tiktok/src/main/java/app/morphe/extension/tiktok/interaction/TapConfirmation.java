@@ -11,6 +11,7 @@ import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.blockauthor.CurrentVideoAuthor;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.settings.L10n;
 import java.lang.ref.WeakReference;
 
 public final class TapConfirmation {
@@ -68,7 +69,7 @@ public final class TapConfirmation {
         view.setForeground(ring);
         int token = generation;
         MAIN.postDelayed(() -> { if (token == generation) clear(); }, 4000);
-        Utils.showToastShort("Tap again to " + action);
+        Utils.showToastShort(L10n.f("Tap again to %1$s", action));
         return false;
     }
 

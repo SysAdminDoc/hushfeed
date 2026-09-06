@@ -5,6 +5,7 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.settings.L10n;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import java.io.File;
 import java.io.IOException;
@@ -58,7 +59,7 @@ final class AudioDownloads {
                 write(app, aweme, fetched);
             } catch (IOException | RuntimeException exception) {
                 Logger.printException(() -> "Sound download failed", exception);
-                Utils.showToastLong("The sound couldn't be saved.");
+                Utils.showToastLong(L10n.t("The sound couldn't be saved."));
             } finally {
                 if (fetched != null && !fetched.delete()) {
                     Logger.printInfo(() -> "Could not remove sound temporary file");
@@ -82,10 +83,10 @@ final class AudioDownloads {
             String path = audioPath(DownloadsPatch.getVideoDownloadPath());
             MediaFileWriter.publish(app, output, DownloadFilenameFormatter.formatSelectedAudioName(aweme),
                     "audio/mp4", path, true);
-            Utils.showToastShort("Sound saved to " + path);
+            Utils.showToastShort(L10n.f("Sound saved to %1$s", path));
         } catch (IOException | RuntimeException exception) {
             Logger.printException(() -> "Sound save failed", exception);
-            Utils.showToastLong("The sound couldn't be saved.");
+            Utils.showToastLong(L10n.t("The sound couldn't be saved."));
         } finally {
             if (output != null && !output.delete()) {
                 Logger.printInfo(() -> "Could not remove sound temporary file");

@@ -16,24 +16,25 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import app.morphe.extension.tiktok.settings.L10n;
 
 final class GateReportExport {
     static final int MAX_CLIPBOARD_CHARS = 60000;
 
     static boolean copy(Context context, String report) {
         if (report.length() > MAX_CLIPBOARD_CHARS) {
-            Utils.showToastShort("Use Save JSON for this large report");
+            Utils.showToastShort(L10n.t("Use Save JSON for this large report"));
             return false;
         }
         try {
             ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
             if (clipboard == null) throw new IllegalStateException("Clipboard is unavailable");
             clipboard.setPrimaryClip(ClipData.newPlainText("Feature gate recording", report));
-            Utils.showToastShort("Copied feature gate report");
+            Utils.showToastShort(L10n.t("Copied feature gate report"));
             return true;
         } catch (RuntimeException error) {
             Logger.printException(() -> "Could not copy gate report", error);
-            Utils.showToastShort("Could not copy report. Use Save JSON.");
+            Utils.showToastShort(L10n.t("Could not copy report. Use Save JSON."));
             return false;
         }
     }
@@ -42,10 +43,10 @@ final class GateReportExport {
         Context app = context.getApplicationContext();
         Utils.runOnBackgroundThread(() -> {
             try {
-                Utils.showToastLong("Report saved to " + write(app, report));
+                Utils.showToastLong(L10n.f("Report saved to %1$s", write(app, report)));
             } catch (IOException | RuntimeException error) {
                 Logger.printException(() -> "Could not save gate report", error);
-                Utils.showToastLong("Could not save report: " + error.getMessage());
+                Utils.showToastLong(L10n.t("The report could not be saved."));
             }
         });
     }

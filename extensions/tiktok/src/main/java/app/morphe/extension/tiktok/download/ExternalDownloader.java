@@ -14,6 +14,7 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.settings.L10n;
 import app.morphe.extension.tiktok.share.ShareUrlSanitizer;
 
 /**
@@ -33,7 +34,8 @@ public final class ExternalDownloader {
 
         String url = shareUrl(aweme);
         if (url == null) {
-            Utils.showToastShort("This video has no link to send; using TikTok's download");
+            Utils.showToastShort(L10n.t(
+                    "This video has no link to send, so TikTok's own save runs instead"));
             return false;
         }
 
@@ -48,7 +50,7 @@ public final class ExternalDownloader {
             context.startActivity(send);
             return true;
         } catch (ActivityNotFoundException notInstalled) {
-            Utils.showToastShort(target + " isn't installed or doesn't take links");
+            Utils.showToastShort(L10n.f("%1$s isn't installed or doesn't take links", target));
             return false;
         } catch (RuntimeException exception) {
             Logger.printException(() -> "Could not hand the link to " + target, exception);

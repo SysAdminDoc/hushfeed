@@ -5,6 +5,7 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.settings.L10n;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import java.io.File;
 import java.io.IOException;
@@ -54,7 +55,8 @@ final class VideoDownloads {
         boolean dash = selected != null && Boolean.TRUE.equals(Reflect.invoke(video, "hasDashBitrate"));
         List<String> audioUrls = dash ? audioUrls(video, selected) : Collections.emptyList();
         if (videoUrls.isEmpty() || (dash && !muted && audioUrls.isEmpty())) {
-            Utils.showToastShort("This quality isn't available as a complete download; using TikTok's download");
+            Utils.showToastShort(L10n.t(
+                    "This quality isn't available as a complete file, so TikTok's own save runs instead"));
             return false;
         }
         String id = Reflect.string(aweme, "getAid", "aid");
@@ -114,7 +116,7 @@ final class VideoDownloads {
                                 + (saved == captions.size() ? "" : ". Some subtitles couldn't be saved."));
             } catch (IOException | RuntimeException exception) {
                 Logger.printException(() -> "Selected-quality download failed", exception);
-                Utils.showToastLong("Video download failed. Try again or choose Automatic.");
+                Utils.showToastLong(L10n.t("The video couldn't be saved. Try again, or choose Automatic."));
             } finally {
                 for (File file : temporary) if (!file.delete()) Logger.printInfo(() -> "Could not remove video temporary file");
                 ACTIVE.remove(id);

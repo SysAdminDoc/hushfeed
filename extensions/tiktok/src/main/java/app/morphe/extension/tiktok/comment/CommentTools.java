@@ -23,6 +23,7 @@ import app.morphe.extension.tiktok.blockauthor.BlockAuthorService;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.blockauthor.VideoAuthor;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.settings.L10n;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -226,7 +227,7 @@ public final class CommentTools {
         try {
             View cell = cellOf(touched);
             if (cell == null) {
-                Utils.showToastShort("Could not read who posted this comment");
+                Utils.showToastShort(L10n.t("Could not read who posted this comment"));
                 return;
             }
             toggleBlock(cell);
@@ -296,7 +297,7 @@ public final class CommentTools {
         }
         Object user = comment == null ? null : Reflect.property(comment, "getUser", "user");
         if (user == null) {
-            Utils.showToastShort("Could not read who posted this comment");
+            Utils.showToastShort(L10n.t("Could not read who posted this comment"));
             return;
         }
 
@@ -308,7 +309,7 @@ public final class CommentTools {
                         Reflect.string(user, "getNickname", "nickname")),
                 Reflect.string(comment, "getCid", "cid"));
         if (!author.isUsable()) {
-            Utils.showToastShort("Could not read who posted this comment");
+            Utils.showToastShort(L10n.t("Could not read who posted this comment"));
             return;
         }
 
@@ -325,8 +326,9 @@ public final class CommentTools {
         BlockAuthorService.block(author, (success, message) -> {
             blockInFlight = false;
             if (!success) {
-                Utils.showToastLong("Could not block " + author.label()
-                        + (message == null ? "" : ": " + message));
+                Utils.showToastLong(message == null || message.isEmpty()
+                        ? L10n.f("Could not block %1$s", author.label())
+                        : L10n.f("Could not block %1$s: %2$s", author.label(), message));
                 return;
             }
 
@@ -354,15 +356,16 @@ public final class CommentTools {
         BlockAuthorService.unblock(author, (success, message) -> {
             blockInFlight = false;
             if (!success) {
-                Utils.showToastLong("Could not unblock " + author.label()
-                        + (message == null ? "" : ": " + message));
+                Utils.showToastLong(message == null || message.isEmpty()
+                        ? L10n.f("Could not unblock %1$s", author.label())
+                        : L10n.f("Could not unblock %1$s: %2$s", author.label(), message));
                 return;
             }
             if (author.uid != null) {
                 BLOCKED_UIDS.remove(author.uid);
             }
             applyBlockedState(cell);
-            Utils.showToastShort("Unblocked " + author.label());
+            Utils.showToastShort(L10n.f("Unblocked %1$s", author.label()));
         });
     }
 

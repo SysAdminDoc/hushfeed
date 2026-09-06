@@ -64,7 +64,9 @@ public class SimSpoofPreferenceCategory extends ConditionalPreferenceCategory {
 
         countryIsoPreference.setOnPreferenceChangeListener((preference, newValue) -> {
             if (!app.morphe.extension.tiktok.spoof.region.RegionSpoof.validCountry(newValue.toString())) {
-                app.morphe.extension.shared.Utils.showToastShort("Enter a valid two-letter country code");
+                app.morphe.extension.shared.Utils.showToastShort(
+                        app.morphe.extension.tiktok.settings.L10n.t(
+                                "Enter a valid two-letter country code"));
                 return false;
             }
             simPresetPreference.refreshSummary(
