@@ -45,6 +45,8 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
                     new String[]{"auto", "highest", "lowest", "1080", "720", "540", "480", "360"}));
             addPreference(new TogglePreference(context, "Download original photos",
                     "Save every photo in the post directly from its source URL, without rendering it again.", Settings.DOWNLOAD_ORIGINAL_PHOTOS));
+            addPreference(new TogglePreference(context, "Save the sound as well",
+                    "Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.", Settings.DOWNLOAD_AUDIO_TRACK));
         }
         addPreference(new DownloadPathPreference(
                 context,

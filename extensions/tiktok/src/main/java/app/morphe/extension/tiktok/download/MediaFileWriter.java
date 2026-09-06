@@ -25,9 +25,16 @@ final class MediaFileWriter {
             values.put(MediaStore.MediaColumns.MIME_TYPE, mime);
             values.put(MediaStore.MediaColumns.RELATIVE_PATH, path);
             values.put(MediaStore.MediaColumns.IS_PENDING, 1);
-            Uri collection = "application/x-subrip".equals(mime)
-                    ? MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-                    : DownloadDestination.collectionUri(path, video);
+            Uri collection;
+            if ("application/x-subrip".equals(mime)) {
+                collection = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+            } else if (mime.startsWith("audio/")) {
+                // Sound goes in the audio collection whatever folder the video chose; the
+                // video collection rejects it.
+                collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+            } else {
+                collection = DownloadDestination.collectionUri(path, video);
+            }
             Uri uri = resolver.insert(collection, values);
             if (uri == null) throw new IOException("Could not create gallery entry");
             try {

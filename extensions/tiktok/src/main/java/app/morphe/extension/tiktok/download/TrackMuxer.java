@@ -34,6 +34,25 @@ final class TrackMuxer {
         if (output.length() == 0) throw new IOException("Video muxer wrote an empty file");
     }
 
+    /** Copies just the sound into its own MP4 container, which is what an .m4a is. */
+    static void audioOnly(File source, File output) throws IOException {
+        MediaExtractor sound = new MediaExtractor();
+        MediaMuxer muxer = null;
+        try {
+            sound.setDataSource(source.getAbsolutePath());
+            MediaFormat audioFormat = select(sound, "audio/");
+            muxer = new MediaMuxer(output.getAbsolutePath(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+            int audioTrack = muxer.addTrack(audioFormat);
+            muxer.start();
+            copy(sound, muxer, audioTrack);
+            muxer.stop();
+        } finally {
+            sound.release();
+            if (muxer != null) muxer.release();
+        }
+        if (output.length() == 0) throw new IOException("Audio muxer wrote an empty file");
+    }
+
     private static MediaFormat select(MediaExtractor extractor, String prefix) throws IOException {
         for (int i = 0; i < extractor.getTrackCount(); i++) {
             MediaFormat format = extractor.getTrackFormat(i);

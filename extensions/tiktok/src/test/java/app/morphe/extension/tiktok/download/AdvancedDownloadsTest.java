@@ -142,6 +142,48 @@ public class AdvancedDownloadsTest {
         } finally { assertTrue(video.delete()); assertTrue(audio.delete()); assertTrue(output.delete()); }
     }
 
+    @Test public void soundIsCopiedIntoItsOwnContainerAndSilentVideoIsRejected() throws Exception {
+        File media = File.createTempFile("sound-source", ".mp4"), output = File.createTempFile("sound-result", ".m4a");
+        try {
+            var source = org.robolectric.shadows.util.DataSource.toDataSource(media.getAbsolutePath());
+            org.robolectric.shadows.ShadowMediaExtractor.addTrack(source,
+                    android.media.MediaFormat.createVideoFormat("video/avc", 1080, 1920), new byte[]{1, 2, 3});
+            // A video with no sound has nothing to save, and that has to say so rather than
+            // leaving an empty file behind.
+            assertThrows(java.io.IOException.class, () -> TrackMuxer.audioOnly(media, output));
+            org.robolectric.shadows.ShadowMediaExtractor.addTrack(source,
+                    android.media.MediaFormat.createAudioFormat("audio/mp4a-latm", 44100, 2), new byte[]{7, 8, 9});
+            TrackMuxer.audioOnly(media, output);
+            // Only the sound is written: the picture track stays behind.
+            assertArrayEquals(new byte[]{7, 8, 9}, Files.readAllBytes(output.toPath()));
+        } finally { assertTrue(media.delete()); assertTrue(output.delete()); }
+    }
+
+    @Test public void theSoundTakesTheVideoNameWithAnAudioExtension() {
+        Utils.setContext(RuntimeEnvironment.getApplication());
+        Settings.DOWNLOAD_VIDEO_FILENAME_TEMPLATE.save("{creator}_{video_id}");
+        Post post = new Post(List.of(new Photo("https://example.com/one")));
+        assertEquals("unknown_unknown.mp4", DownloadFilenameFormatter.formatSelectedVideoName(post));
+        assertEquals("unknown_unknown.m4a", DownloadFilenameFormatter.formatSelectedAudioName(post));
+    }
+
+    @Test public void soundGoesToTheAudioTreeOnlyWhereTheGalleryDemandsIt() {
+        // Android 10 and later refuse an audio file in the video collection, so the folder
+        // name is mirrored under Music. Older versions write real files side by side.
+        int sdk = android.os.Build.VERSION.SDK_INT;
+        try {
+            org.robolectric.util.ReflectionHelpers.setStaticField(android.os.Build.VERSION.class, "SDK_INT", 28);
+            assertEquals("Movies/TikTok", AudioDownloads.audioPath("Movies/TikTok"));
+            org.robolectric.util.ReflectionHelpers.setStaticField(android.os.Build.VERSION.class, "SDK_INT", 29);
+            assertEquals("Music/TikTok", AudioDownloads.audioPath("Movies/TikTok"));
+            assertEquals("Music/TikTok/Sounds", AudioDownloads.audioPath("Download/TikTok/Sounds"));
+            // A destination with no folder of its own still gets one.
+            assertEquals("Music/TikTok", AudioDownloads.audioPath("Movies"));
+        } finally {
+            org.robolectric.util.ReflectionHelpers.setStaticField(android.os.Build.VERSION.class, "SDK_INT", sdk);
+        }
+    }
+
     @Test public void failedMirrorFallsBackAndGalleryGetsExactOriginalBytes() throws Exception {
         byte[] png = Base64.getDecoder().decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/l9sAAAAASUVORK5CYII=");
         ServerSocket server = new ServerSocket(0, 2, java.net.InetAddress.getByName("127.0.0.1"));

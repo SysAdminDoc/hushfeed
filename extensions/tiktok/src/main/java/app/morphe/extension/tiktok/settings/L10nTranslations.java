@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(808);
+        Map<String, String> table = new HashMap<>(812);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -703,6 +703,8 @@ public final class L10nTranslations {
                 "Untertitel neben Videos speichern");
         table.put("Save the latest available TikTok crash report for diagnostic export.",
                 "Den neuesten verfügbaren TikTok-Absturzbericht für den Diagnose-Export speichern.");
+        table.put("Save the sound as well",
+                "Ton ebenfalls speichern");
         table.put("Search and override gate flags",
                 "Gate-Flags suchen und überschreiben");
         table.put("Search local TikTok gate metadata and configure isolated typed overrides.",
@@ -789,11 +791,11 @@ public final class L10nTranslations {
                 "Untertitelsprache");
         table.put("Tap the feed Follow button twice within four seconds.",
                 "Tippe die Folgen-Schaltfläche im Feed innerhalb von vier Sekunden zweimal an.");
-        table.put("Tap the like heart twice within four seconds. Removing a like stays immediate.",
-                "Tippe das Like-Herz innerhalb von vier Sekunden zweimal an. Das Entfernen eines Likes bleibt sofort.");
     }
 
     private static void fillDe6(Map<String, String> table) {
+        table.put("Tap the like heart twice within four seconds. Removing a like stays immediate.",
+                "Tippe das Like-Herz innerhalb von vier Sekunden zweimal an. Das Entfernen eines Likes bleibt sofort.");
         table.put("The minimum or maximum comments on a video to show.",
                 "Mindest- oder Höchstzahl an Kommentaren, damit ein Video gezeigt wird.");
         table.put("The minimum or maximum favourites of a video to show.",
@@ -866,6 +868,8 @@ public final class L10nTranslations {
                 "Wartezeit, bevor die Bedienelemente ausgeblendet werden.");
         table.put("Window width needed to enable the layout. Restart after changing.",
                 "Fensterbreite, ab der das Layout aktiv wird. Nach dem Ändern neu starten.");
+        table.put("Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.",
+                "Den Ton des Videos daneben als .m4a speichern. Ab Android 10 wird Audio getrennt abgelegt, also landet die Datei unter Music im Ordner mit dem Namen deines Videoordners.");
         table.put("YOUR EXPERIENCE",
                 "DEIN TIKTOK");
         table.put("code %1$s",
@@ -885,7 +889,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(808);
+        Map<String, String> table = new HashMap<>(812);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1544,6 +1548,8 @@ public final class L10nTranslations {
                 "Simpan subtitle bersama video");
         table.put("Save the latest available TikTok crash report for diagnostic export.",
                 "Simpan laporan mogok TikTok terbaru yang tersedia untuk diekspor sebagai diagnostik.");
+        table.put("Save the sound as well",
+                "Simpan suaranya juga");
         table.put("Search and override gate flags",
                 "Cari dan timpa flag gate");
         table.put("Search local TikTok gate metadata and configure isolated typed overrides.",
@@ -1630,11 +1636,11 @@ public final class L10nTranslations {
                 "Bahasa subtitle");
         table.put("Tap the feed Follow button twice within four seconds.",
                 "Ketuk tombol Ikuti di feed dua kali dalam empat detik.");
-        table.put("Tap the like heart twice within four seconds. Removing a like stays immediate.",
-                "Ketuk ikon hati dua kali dalam empat detik. Membatalkan suka tetap langsung berlaku.");
     }
 
     private static void fillIn6(Map<String, String> table) {
+        table.put("Tap the like heart twice within four seconds. Removing a like stays immediate.",
+                "Ketuk ikon hati dua kali dalam empat detik. Membatalkan suka tetap langsung berlaku.");
         table.put("The minimum or maximum comments on a video to show.",
                 "Jumlah komentar minimum atau maksimum agar video ditampilkan.");
         table.put("The minimum or maximum favourites of a video to show.",
@@ -1707,6 +1713,8 @@ public final class L10nTranslations {
                 "Tunggu sebelum kontrol disembunyikan.");
         table.put("Window width needed to enable the layout. Restart after changing.",
                 "Lebar jendela yang dibutuhkan agar tata letak ini aktif. Mulai ulang setelah mengubahnya.");
+        table.put("Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.",
+                "Simpan suara video di sebelahnya sebagai .m4a. Android 10 ke atas menyimpan audio secara terpisah, jadi berkasnya masuk ke Music dengan nama folder yang sama seperti folder videomu.");
         table.put("YOUR EXPERIENCE",
                 "PENGALAMANMU");
         table.put("code %1$s",

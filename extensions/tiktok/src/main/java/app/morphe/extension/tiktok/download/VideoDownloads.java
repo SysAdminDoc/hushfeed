@@ -90,6 +90,14 @@ final class VideoDownloads {
         return file;
     }
 
+    /** Every address the video itself can be fetched from, best first. */
+    static List<String> sourceUrls(Object video) {
+        List<String> found = urls(Reflect.property(video, "getDownloadNoWatermarkAddr", "downloadNoWatermarkAddr"));
+        if (found.isEmpty()) found = urls(Reflect.property(video, "getDownloadAddr", "downloadAddr"));
+        if (found.isEmpty()) found = urls(Reflect.property(video, "getPlayAddr", "playAddr"));
+        return found;
+    }
+
     static List<String> audioUrls(Object video, Object gear) {
         Object raw = Reflect.readField(video, "bitRateAudio");
         if (!(raw instanceof List<?>)) return Collections.emptyList();

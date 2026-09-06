@@ -132,6 +132,11 @@ public final class DownloadFilenameFormatter {
         return formatSourceName(aweme, 1, "mp4", false);
     }
 
+    /** The sound takes the video's own name, so the pair sorts together. */
+    static String formatSelectedAudioName(Object aweme) {
+        return formatSourceName(aweme, 1, "m4a", false);
+    }
+
     private static String formatSourceName(Object aweme, int index, String extension, boolean photo) {
         Object author = invoke(aweme, "getAuthor");
         String creator = firstNonBlank(invokeString(author, "getUniqueId"), invokeString(author, "getNickname"), "unknown");

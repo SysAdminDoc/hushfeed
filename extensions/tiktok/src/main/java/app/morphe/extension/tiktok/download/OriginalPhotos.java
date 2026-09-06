@@ -21,6 +21,9 @@ public final class OriginalPhotos {
     private OriginalPhotos() {}
 
     public static boolean start(Object aweme, Context context) {
+        // The sound is saved beside whichever download handles the video, so it runs first
+        // and does not decide who that is.
+        AudioDownloads.start(aweme, context);
         if (VideoDownloads.start(aweme, context)) return true;
         if (!Settings.DOWNLOAD_ORIGINAL_PHOTOS.get() || context == null) return false;
         if (Reflect.property(aweme, "getPhotoModeImageInfo", "photoModeImageInfo") == null) return false;
