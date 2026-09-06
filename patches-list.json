@@ -1558,7 +1558,7 @@
     },
     {
       "name": "Sanitize sharing links",
-      "description": "Removes tracking parameters from TikTok links before they are shared.",
+      "description": "Removes tracking parameters from TikTok links before they are shared, and can put a host of your choosing in place of tiktok.com.",
       "use": true,
       "dependencies": [
         "BytecodePatch"

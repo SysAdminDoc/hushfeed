@@ -40,6 +40,14 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                 "Remove tracking parameters from shared links.",
                 BaseSettings.SANITIZE_SHARING_LINKS
         ));
+        addPreference(new app.morphe.extension.tiktok.settings.preference.InputTextPreference(
+                context,
+                "Share links through another host",
+                "A host to put in place of tiktok.com when you share or copy a link, like "
+                        + "vxtiktok.com. Leave it empty to share TikTok's own links. Only TikTok "
+                        + "links are changed, and only the host: nothing is sent anywhere new.",
+                Settings.CUSTOM_SHARE_DOMAIN
+        ));
         if (SettingsStatus.externalBrowserEnabled) {
             addPreference(new TogglePreference(
                     context,

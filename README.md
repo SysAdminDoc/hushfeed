@@ -104,7 +104,7 @@ The Settings patch adds the entry point; most patches depend on it and it's sele
 | `Resume videos after scrolling` | Restores a video's prior playback position when returning to it in the feed. |
 | `Region spoof` | Matches locale country, timezone and native region getters to the SIM preset while preserving the interface language. Store-region overrides have a separate experimental switch. IP address and server account rules still apply. |
 | `SIM spoof` | Replaces SIM country and operator values reported to TikTok and provides country presets. TikTok may still use IP address, account history, language, and other region signals. |
-| `Sanitize sharing links` | Removes tracking parameters from TikTok links before they are shared. |
+| `Sanitize sharing links` | Removes tracking parameters from shared links, and can put a host of your choosing in place of tiktok.com so a link shows a preview where TikTok's own does not. |
 | `Settings` | Adds the Hushfeed settings screen inside TikTok. The screen follows the phone's language where a translation exists; English, German and Indonesian ship today. |
 | `Hide content warnings` | Adds an option to play videos TikTok has classified without the warning overlay asking to be tapped through first. |
 | `Show author region` | Adds an option to show the country a video was posted from next to the creator's name on the feed. A second switch shows the creator's @handle in place of their display name. |

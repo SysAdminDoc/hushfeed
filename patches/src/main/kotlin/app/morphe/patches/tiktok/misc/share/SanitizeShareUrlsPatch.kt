@@ -14,7 +14,7 @@ private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/sha
 @Suppress("unused")
 val sanitizeShareUrlsPatch = bytecodePatch(
     name = "Sanitize sharing links",
-    description = "Removes tracking parameters from TikTok links before they are shared.",
+    description = "Removes tracking parameters from TikTok links before they are shared, and can put a host of your choosing in place of tiktok.com.",
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
@@ -29,7 +29,7 @@ val sanitizeShareUrlsPatch = bytecodePatch(
             addInstructions(
                 0,
                 """
-                    invoke-static {v$urlRegister}, $EXTENSION_CLASS_DESCRIPTOR->stripAllQueryParams(Ljava/lang/String;)Ljava/lang/String;
+                    invoke-static {v$urlRegister}, $EXTENSION_CLASS_DESCRIPTOR->rewriteShareUrl(Ljava/lang/String;)Ljava/lang/String;
                     move-result-object v0
                     return-object v0
                 """,
