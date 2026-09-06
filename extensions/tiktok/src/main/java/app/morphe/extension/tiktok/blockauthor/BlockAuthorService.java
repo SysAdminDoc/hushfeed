@@ -67,8 +67,14 @@ public final class BlockAuthorService {
     private BlockAuthorService() {
     }
 
+    public enum Result {
+        CONFIRMED,
+        REJECTED,
+        UNCONFIRMED
+    }
+
     public interface Callback {
-        void onResult(boolean success, String message);
+        void onResult(Result result, String message);
     }
 
     /** Blocks {@code author}. Runs on a background thread. */
@@ -83,29 +89,31 @@ public final class BlockAuthorService {
 
     private static void submit(VideoAuthor author, int blockType, Callback callback) {
         Utils.runOnBackgroundThread(() -> {
-            boolean success = false;
+            Result result = Result.UNCONFIRMED;
             String message = null;
 
             try {
-                success = execute(author, blockType);
-                if (!success) {
+                result = execute(author, blockType);
+                if (result == Result.REJECTED) {
                     message = "TikTok rejected the request";
+                } else if (result == Result.UNCONFIRMED) {
+                    message = "TikTok's response could not be confirmed";
                 }
             } catch (UnsupportedOperationException ex) {
-                message = ex.getMessage();
+                message = "TikTok's response could not be confirmed";
                 Logger.printInfo(() -> "Block endpoint unavailable: " + ex.getMessage());
             } catch (Throwable ex) {
-                message = "Request failed";
+                message = "Request failed; TikTok's response could not be confirmed";
                 Logger.printException(() -> "Block request failed", ex);
             }
 
-            final boolean result = success;
+            final Result finalResult = result;
             final String finalMessage = message;
-            Utils.runOnMainThread(() -> callback.onResult(result, finalMessage));
+            Utils.runOnMainThread(() -> callback.onResult(finalResult, finalMessage));
         });
     }
 
-    private static boolean execute(VideoAuthor author, int blockType) throws Exception {
+    private static Result execute(VideoAuthor author, int blockType) throws Exception {
         Method block = blockMethod();
         Object service = service();
 
@@ -117,7 +125,7 @@ public final class BlockAuthorService {
 
         Object call = block.invoke(service, uid, secUid, blockType, SOURCE_UNSPECIFIED);
         if (call == null) {
-            return false;
+            return Result.UNCONFIRMED;
         }
 
         // Mirrors TikTok's own call site: execute synchronously, then read the status code
@@ -127,19 +135,18 @@ public final class BlockAuthorService {
         execute.setAccessible(true);
         Object response = execute.invoke(call);
         if (response == null) {
-            return false;
+            return Result.UNCONFIRMED;
         }
 
         Integer status = statusCodeOf(response);
         if (status == null) {
-            // Body shape unknown: a request that came back without throwing is the best
-            // signal available.
-            return true;
+            return Result.UNCONFIRMED;
         }
         if (status != 0) {
             Logger.printInfo(() -> "Block request refused with status " + status);
+            return Result.REJECTED;
         }
-        return status == 0;
+        return Result.CONFIRMED;
     }
 
     /**
@@ -148,6 +155,9 @@ public final class BlockAuthorService {
      * the body is located by declared type.
      */
     private static Integer statusCodeOf(Object response) {
+        if (response == null) {
+            return null;
+        }
         Object body = Reflect.invoke(response, "body");
         if (body == null) {
             body = findBlockStruct(response);
@@ -165,7 +175,19 @@ public final class BlockAuthorService {
         if (status == null) {
             status = Reflect.readField(body, "statusCode");
         }
-        return status instanceof Number ? ((Number) status).intValue() : null;
+        if (!(status instanceof Number)) {
+            return null;
+        }
+        double numeric = ((Number) status).doubleValue();
+        if (Double.isNaN(numeric) || Double.isInfinite(numeric) || numeric != Math.rint(numeric)
+                || numeric < Integer.MIN_VALUE || numeric > Integer.MAX_VALUE) {
+            return null;
+        }
+        long integral = ((Number) status).longValue();
+        if (integral < Integer.MIN_VALUE || integral > Integer.MAX_VALUE || (double) integral != numeric) {
+            return null;
+        }
+        return (int) integral;
     }
 
     /**

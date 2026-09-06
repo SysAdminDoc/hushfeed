@@ -479,12 +479,14 @@ public final class BlockAuthorOverlay {
         requestInFlight = true;
         setButtonEnabled(false);
 
-        BlockAuthorService.block(author, (success, message) -> {
+        BlockAuthorService.block(author, (result, message) -> {
             requestInFlight = false;
             setButtonEnabled(true);
 
-            if (success) {
+            if (result == BlockAuthorService.Result.CONFIRMED) {
                 showUndo(author);
+            } else if (result == BlockAuthorService.Result.UNCONFIRMED) {
+                Utils.showToastLong(L10n.f("Could not confirm block for %1$s", author.label()));
             } else {
                 Utils.showToastLong(message == null || message.isEmpty()
                         ? L10n.f("Could not block %1$s", author.label())
@@ -508,8 +510,10 @@ public final class BlockAuthorOverlay {
     private static void showUndo(VideoAuthor author) {
         showUndoBanner(L10n.f("Blocked %1$s", author.label()),
                 () -> BlockAuthorService.unblock(author,
-                        (success, message) -> Utils.showToastShort(success
+                        (result, message) -> Utils.showToastShort(result == BlockAuthorService.Result.CONFIRMED
                                 ? L10n.f("Unblocked %1$s", author.label())
+                                : result == BlockAuthorService.Result.UNCONFIRMED
+                                ? L10n.f("Could not confirm unblock for %1$s", author.label())
                                 : L10n.f("Could not unblock %1$s", author.label()))));
     }
 

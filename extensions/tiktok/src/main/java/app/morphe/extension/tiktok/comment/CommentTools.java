@@ -323,9 +323,13 @@ public final class CommentTools {
 
     private static void block(View cell, VideoAuthor author) {
         blockInFlight = true;
-        BlockAuthorService.block(author, (success, message) -> {
+        BlockAuthorService.block(author, (result, message) -> {
             blockInFlight = false;
-            if (!success) {
+            if (result != BlockAuthorService.Result.CONFIRMED) {
+                if (result == BlockAuthorService.Result.UNCONFIRMED) {
+                    Utils.showToastLong(L10n.f("Could not confirm block for %1$s", author.label()));
+                    return;
+                }
                 Utils.showToastLong(message == null || message.isEmpty()
                         ? L10n.f("Could not block %1$s", author.label())
                         : L10n.f("Could not block %1$s: %2$s", author.label(), message));
@@ -341,23 +345,32 @@ public final class CommentTools {
             View root = cell.getRootView();
             BlockAuthorOverlay.showUndoBanner(root instanceof ViewGroup ? (ViewGroup) root : null,
                     L10n.f("Blocked %1$s", author.label()), () -> {
-                        if (author.uid != null) {
-                            BLOCKED_UIDS.remove(author.uid);
-                        }
-                        applyBlockedState(cell);
-                        BlockAuthorService.unblock(author, (undone, ignored) -> Utils.showToastShort(
-                                undone
+                        BlockAuthorService.unblock(author, (undoResult, undoMessage) -> {
+                            if (undoResult == BlockAuthorService.Result.CONFIRMED) {
+                                if (author.uid != null) {
+                                    BLOCKED_UIDS.remove(author.uid);
+                                }
+                                applyBlockedState(cell);
+                            }
+                            Utils.showToastShort(undoResult == BlockAuthorService.Result.CONFIRMED
                                         ? L10n.f("Unblocked %1$s", author.label())
-                                        : L10n.f("Could not unblock %1$s", author.label())));
+                                        : undoResult == BlockAuthorService.Result.UNCONFIRMED
+                                        ? L10n.f("Could not confirm unblock for %1$s", author.label())
+                                        : L10n.f("Could not unblock %1$s", author.label()));
+                    });
                     });
         });
     }
 
     private static void unblock(View cell, VideoAuthor author) {
         blockInFlight = true;
-        BlockAuthorService.unblock(author, (success, message) -> {
+        BlockAuthorService.unblock(author, (result, message) -> {
             blockInFlight = false;
-            if (!success) {
+            if (result != BlockAuthorService.Result.CONFIRMED) {
+                if (result == BlockAuthorService.Result.UNCONFIRMED) {
+                    Utils.showToastLong(L10n.f("Could not confirm unblock for %1$s", author.label()));
+                    return;
+                }
                 Utils.showToastLong(message == null || message.isEmpty()
                         ? L10n.f("Could not unblock %1$s", author.label())
                         : L10n.f("Could not unblock %1$s: %2$s", author.label(), message));

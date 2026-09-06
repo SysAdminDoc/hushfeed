@@ -101,6 +101,8 @@ Copy only the comment text when using TikTok's copy comment action.	Salin teks k
 Copy report	Salin laporan
 Could not block %1$s	%1$s tidak bisa diblokir
 Could not block %1$s: %2$s	%1$s tidak bisa diblokir: %2$s
+Could not confirm block for %1$s	Pemblokiran %1$s tidak dapat dikonfirmasi
+Could not confirm unblock for %1$s	Pembukaan blokir %1$s tidak dapat dikonfirmasi
 Could not copy report. Use Save JSON.	Laporan tidak bisa disalin. Pakai Simpan JSON.
 Could not open settings section	Bagian pengaturan tidak bisa dibuka
 Could not read who posted this comment	Tidak bisa membaca siapa yang menulis komentar ini

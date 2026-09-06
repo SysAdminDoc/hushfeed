@@ -101,6 +101,8 @@ Copy only the comment text when using TikTok's copy comment action.	Beim Kopiere
 Copy report	Bericht kopieren
 Could not block %1$s	%1$s konnte nicht blockiert werden
 Could not block %1$s: %2$s	%1$s konnte nicht blockiert werden: %2$s
+Could not confirm block for %1$s	Die Blockierung von %1$s konnte nicht bestätigt werden
+Could not confirm unblock for %1$s	Die Aufhebung der Blockierung von %1$s konnte nicht bestätigt werden
 Could not copy report. Use Save JSON.	Bericht konnte nicht kopiert werden. Nutze „JSON speichern“.
 Could not open settings section	Einstellungsbereich konnte nicht geöffnet werden
 Could not read who posted this comment	Konnte nicht lesen, wer diesen Kommentar geschrieben hat

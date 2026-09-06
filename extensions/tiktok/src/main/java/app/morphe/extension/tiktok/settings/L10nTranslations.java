@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1080);
+        Map<String, String> table = new HashMap<>(1084);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -54,6 +54,7 @@ public final class L10nTranslations {
         fillDe6(table);
         fillDe7(table);
         fillDe8(table);
+        fillDe9(table);
         return table;
     }
 
@@ -259,6 +260,10 @@ public final class L10nTranslations {
                 "%1$s konnte nicht blockiert werden");
         table.put("Could not block %1$s: %2$s",
                 "%1$s konnte nicht blockiert werden: %2$s");
+        table.put("Could not confirm block for %1$s",
+                "Die Blockierung von %1$s konnte nicht bestätigt werden");
+        table.put("Could not confirm unblock for %1$s",
+                "Die Aufhebung der Blockierung von %1$s konnte nicht bestätigt werden");
         table.put("Could not copy report. Use Save JSON.",
                 "Bericht konnte nicht kopiert werden. Nutze „JSON speichern“.");
         table.put("Could not open settings section",
@@ -297,13 +302,13 @@ public final class L10nTranslations {
                 "Schnelles Teilen abschalten");
         table.put("Disable long-press repost",
                 "Reposten bei langem Drücken abschalten");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("Dismissed %1$s suggested accounts",
                 "%1$s Kontovorschläge entfernt");
         table.put("Dismissed one suggested account",
                 "Ein Kontovorschlag entfernt");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("Do not translate languages",
                 "Sprachen nicht übersetzen");
         table.put("Do nothing",
@@ -420,13 +425,13 @@ public final class L10nTranslations {
                 "Jede Direktnachrichten-Unterhaltung ausblenden. Der Posteingang bleibt leer, abgesehen von allem, was sonst noch eingeschaltet ist.");
         table.put("Hide feed follow button",
                 "Folgen-Schaltfläche im Feed ausblenden");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Hide feed save button",
                 "Speichern-Schaltfläche im Feed ausblenden");
         table.put("Hide feed search button",
                 "Suchschaltfläche im Feed ausblenden");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Hide floating promotion badges, coins, and timer banners on the homepage.",
                 "Schwebende Werbe-Abzeichen, Münzen und Timer-Banner auf der Startseite ausblenden.");
         table.put("Hide floating promotions",
@@ -543,13 +548,13 @@ public final class L10nTranslations {
                 "Like-Button ausblenden");
         table.put("Hide the music disc",
                 "Musikplatte ausblenden");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Hide the music line",
                 "Musikzeile ausblenden");
         table.put("Hide the numbers under the like, comment, favourite and share buttons. The buttons stay.",
                 "Blendet die Zahlen unter Like, Kommentar, Favorit und Teilen aus. Die Buttons bleiben.");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("Hide the playlist bar",
                 "Playlist-Leiste ausblenden");
         table.put("Hide the playlist bar along the bottom of videos that belong to a series.",
@@ -666,13 +671,13 @@ public final class L10nTranslations {
                 "Maximale Videolänge");
         table.put("Maximum views per like",
                 "Maximale Aufrufe pro Like");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("Media",
                 "Medien");
         table.put("Min/Max comments",
                 "Min/Max Kommentare");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("Min/Max favourites",
                 "Min/Max Favoriten");
         table.put("Min/Max likes",
@@ -789,13 +794,13 @@ public final class L10nTranslations {
                 "Die Aktionszeile aus dem Teilen-Menü entfernen.");
         table.put("Remove the ads TikTok puts between videos.",
                 "Die Werbung entfernen, die TikTok zwischen die Videos setzt.");
+    }
+
+    private static void fillDe6(Map<String, String> table) {
         table.put("Remove the row of friends from the top of the share sheet.",
                 "Die Freundesreihe oben im Teilen-Menü entfernen.");
         table.put("Remove tracking parameters from shared links.",
                 "Tracking-Parameter aus geteilten Links entfernen.");
-    }
-
-    private static void fillDe6(Map<String, String> table) {
         table.put("Remove watermark",
                 "Wasserzeichen entfernen");
         table.put("Report saved to %1$s",
@@ -912,13 +917,13 @@ public final class L10nTranslations {
                 "Beim Ziehen der Fortschrittsleiste ein Vorschaubild des Videos anzeigen.");
         table.put("Show block button on videos",
                 "Blockieren-Schaltfläche auf Videos anzeigen");
+    }
+
+    private static void fillDe7(Map<String, String> table) {
         table.put("Show seekbar",
                 "Fortschrittsleiste anzeigen");
         table.put("Show seekbar thumbnail",
                 "Vorschaubild beim Ziehen");
-    }
-
-    private static void fillDe7(Map<String, String> table) {
         table.put("Show the country a video was posted from next to the creator's name.",
                 "Das Land, aus dem ein Video veröffentlicht wurde, neben dem Namen des Creators anzeigen.");
         table.put("Show the current spoken caption while the other controls are hidden.",
@@ -1035,13 +1040,13 @@ public final class L10nTranslations {
                 "Der Sticker konnte nicht gespeichert werden");
         table.put("The story couldn't be saved.",
                 "Die Story konnte nicht gespeichert werden.");
+    }
+
+    private static void fillDe8(Map<String, String> table) {
         table.put("The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks.",
                 "Der Daumen runter an jedem Kommentar blockiert das Konto dahinter, statt zu disliken. Der Kommentar wird blasser, ein Banner bietet den Weg zurück, und ein zweiter Tipp hebt die Blockierung auf.");
         table.put("The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks. Takes effect after a restart.",
                 "Der Daumen runter an jedem Kommentar blockiert das Konto, das ihn geschrieben hat, statt ihn abzulehnen. Der Kommentar wird abgedunkelt, ein Rückgängig-Banner folgt, und ein zweites Tippen hebt die Blockierung auf. Wirkt nach einem Neustart.");
-    }
-
-    private static void fillDe8(Map<String, String> table) {
         table.put("The video couldn't be saved. Try again, or choose Automatic.",
                 "Das Video konnte nicht gespeichert werden. Versuche es noch einmal oder wähle Automatisch.");
         table.put("There was nothing to clear",
@@ -1158,6 +1163,9 @@ public final class L10nTranslations {
                 "oder");
         table.put("sp",
                 "sp");
+    }
+
+    private static void fillDe9(Map<String, String> table) {
         table.put("us, gb, jp, ...",
                 "us, gb, jp, ...");
         table.put("videos",
@@ -1165,7 +1173,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1080);
+        Map<String, String> table = new HashMap<>(1084);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1175,6 +1183,7 @@ public final class L10nTranslations {
         fillIn6(table);
         fillIn7(table);
         fillIn8(table);
+        fillIn9(table);
         return table;
     }
 
@@ -1380,6 +1389,10 @@ public final class L10nTranslations {
                 "%1$s tidak bisa diblokir");
         table.put("Could not block %1$s: %2$s",
                 "%1$s tidak bisa diblokir: %2$s");
+        table.put("Could not confirm block for %1$s",
+                "Pemblokiran %1$s tidak dapat dikonfirmasi");
+        table.put("Could not confirm unblock for %1$s",
+                "Pembukaan blokir %1$s tidak dapat dikonfirmasi");
         table.put("Could not copy report. Use Save JSON.",
                 "Laporan tidak bisa disalin. Pakai Simpan JSON.");
         table.put("Could not open settings section",
@@ -1418,13 +1431,13 @@ public final class L10nTranslations {
                 "Matikan bagikan cepat lewat tekan lama");
         table.put("Disable long-press repost",
                 "Matikan bagikan ulang lewat tekan lama");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("Dismissed %1$s suggested accounts",
                 "%1$s akun saran dihapus");
         table.put("Dismissed one suggested account",
                 "Satu akun saran dihapus");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("Do not translate languages",
                 "Bahasa yang tidak diterjemahkan");
         table.put("Do nothing",
@@ -1541,13 +1554,13 @@ public final class L10nTranslations {
                 "Sembunyikan semua percakapan pesan langsung. Kotak Masuk jadi kosong kecuali apa pun yang masih kamu aktifkan.");
         table.put("Hide feed follow button",
                 "Sembunyikan tombol ikuti di feed");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Hide feed save button",
                 "Sembunyikan tombol simpan di feed");
         table.put("Hide feed search button",
                 "Sembunyikan tombol cari di feed");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Hide floating promotion badges, coins, and timer banners on the homepage.",
                 "Sembunyikan lencana promosi mengambang, koin, dan spanduk penghitung waktu di beranda.");
         table.put("Hide floating promotions",
@@ -1664,13 +1677,13 @@ public final class L10nTranslations {
                 "Sembunyikan tombol suka");
         table.put("Hide the music disc",
                 "Sembunyikan piringan musik");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Hide the music line",
                 "Sembunyikan baris musik");
         table.put("Hide the numbers under the like, comment, favourite and share buttons. The buttons stay.",
                 "Sembunyikan angka di bawah tombol suka, komentar, favorit, dan bagikan. Tombolnya tetap ada.");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("Hide the playlist bar",
                 "Sembunyikan bilah playlist");
         table.put("Hide the playlist bar along the bottom of videos that belong to a series.",
@@ -1787,13 +1800,13 @@ public final class L10nTranslations {
                 "Durasi video maksimum");
         table.put("Maximum views per like",
                 "Tayangan maksimum per suka");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("Media",
                 "Media");
         table.put("Min/Max comments",
                 "Komentar min/maks");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("Min/Max favourites",
                 "Favorit min/maks");
         table.put("Min/Max likes",
@@ -1910,13 +1923,13 @@ public final class L10nTranslations {
                 "Hapus baris aksi dari menu bagikan.");
         table.put("Remove the ads TikTok puts between videos.",
                 "Hapus iklan yang TikTok sisipkan di antara video.");
+    }
+
+    private static void fillIn6(Map<String, String> table) {
         table.put("Remove the row of friends from the top of the share sheet.",
                 "Hapus baris teman dari bagian atas menu bagikan.");
         table.put("Remove tracking parameters from shared links.",
                 "Hapus parameter pelacakan dari tautan yang dibagikan.");
-    }
-
-    private static void fillIn6(Map<String, String> table) {
         table.put("Remove watermark",
                 "Hapus tanda air");
         table.put("Report saved to %1$s",
@@ -2033,13 +2046,13 @@ public final class L10nTranslations {
                 "Tampilkan pratinjau video saat bilah progres digeser.");
         table.put("Show block button on videos",
                 "Tampilkan tombol blokir di video");
+    }
+
+    private static void fillIn7(Map<String, String> table) {
         table.put("Show seekbar",
                 "Tampilkan bilah progres");
         table.put("Show seekbar thumbnail",
                 "Tampilkan pratinjau video di bilah progres");
-    }
-
-    private static void fillIn7(Map<String, String> table) {
         table.put("Show the country a video was posted from next to the creator's name.",
                 "Tampilkan negara asal unggahan video di sebelah nama kreator.");
         table.put("Show the current spoken caption while the other controls are hidden.",
@@ -2156,13 +2169,13 @@ public final class L10nTranslations {
                 "Stikernya tidak bisa disimpan");
         table.put("The story couldn't be saved.",
                 "Story-nya tidak bisa disimpan.");
+    }
+
+    private static void fillIn8(Map<String, String> table) {
         table.put("The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks.",
                 "Jempol ke bawah pada tiap komentar memblokir akun penulisnya, bukan memberi dislike. Komentarnya meredup, ada spanduk untuk membatalkan, dan ketukan kedua membuka blokirnya.");
         table.put("The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks. Takes effect after a restart.",
                 "Jempol ke bawah pada tiap komentar memblokir akun yang menulisnya, bukan menandai tidak suka. Komentarnya meredup, muncul spanduk untuk mengurungkan, dan ketukan kedua membuka blokirnya. Berlaku setelah mulai ulang.");
-    }
-
-    private static void fillIn8(Map<String, String> table) {
         table.put("The video couldn't be saved. Try again, or choose Automatic.",
                 "Videonya tidak bisa disimpan. Coba lagi, atau pilih Otomatis.");
         table.put("There was nothing to clear",
@@ -2279,6 +2292,9 @@ public final class L10nTranslations {
                 "atau");
         table.put("sp",
                 "sp");
+    }
+
+    private static void fillIn9(Map<String, String> table) {
         table.put("us, gb, jp, ...",
                 "us, gb, jp, ...");
         table.put("videos",
