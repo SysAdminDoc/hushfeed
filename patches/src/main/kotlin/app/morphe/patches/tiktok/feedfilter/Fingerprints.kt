@@ -281,6 +281,19 @@ internal object ProfileDetailAdEventFingerprint : Fingerprint(
     },
 )
 
+/**
+ * The search page's own result list. It arrives parsed, then this method walks its items to
+ * stamp the request id on each, which makes it the one place every result passes through
+ * before the grid sees it. The field it walks is read directly by forty other methods, so
+ * there is nothing later to hook.
+ */
+internal object SearchResultRequestIdFingerprint : Fingerprint(
+    definingClass = "Lcom/ss/android/ugc/aweme/search/pages/result/topsearch/core/model/SearchMixFeedList;",
+    name = "setRequestId",
+    returnType = "V",
+    parameters = listOf("Ljava/lang/String;"),
+)
+
 internal object TakoAiFeedButtonSetVisibleFingerprint : Fingerprint(
     definingClass = "/feed/assem/tikbot/TakoAssem;",
     name = "bq",

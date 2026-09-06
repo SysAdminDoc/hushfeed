@@ -119,6 +119,13 @@ val feedFilterPatch = bytecodePatch(
 
         ProfileDetailAdEventFingerprint.method.filterProfileDetailAdEvent()
 
+        // The search grids are not Aweme lists, so their cards are filtered on the parsed
+        // response instead, before the forty places that read them get a look.
+        SearchResultRequestIdFingerprint.method.addInstructions(
+            0,
+            "invoke-static/range {p0 .. p0}, $EXTENSION_CLASS_DESCRIPTOR->filterSearchAds(Ljava/lang/Object;)V",
+        )
+
         // Opening a video from a profile hands the list to the detail pager once, which the
         // event above covers. Scrolling past that video refills the pager through the profile
         // detail panel's own two delivery methods, and those never saw the profile filter.

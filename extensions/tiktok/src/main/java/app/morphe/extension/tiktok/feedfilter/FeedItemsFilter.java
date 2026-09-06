@@ -11,6 +11,9 @@ import com.ss.android.ugc.aweme.feed.panel.BaseListFragmentPanel;
 import com.ss.android.ugc.aweme.follow.presenter.FollowFeed;
 import com.ss.android.ugc.aweme.follow.presenter.FollowFeedList;
 
+import app.morphe.extension.tiktok.blockauthor.Reflect;
+
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,6 +49,8 @@ public final class FeedItemsFilter {
         new LikeCountFilter()
     );
     private static final List<IFilter> LATE_FOLLOW_FILTERS = List.of(ADS_FILTER);
+    /** The card shapes TikTok uses for a bought search result. */
+    private static final String[] SEARCH_AD_FIELDS = {"multiAdCard", "aiAdCard", "brandZoneCard"};
 
     private static final int CACHE_SOURCE_COLD_CACHE = 0;
     private static final int CACHE_SOURCE_FEED_UNCONSUMED = 1;
@@ -125,6 +130,56 @@ public final class FeedItemsFilter {
 
     public static List filterProfileAds(List items) {
         return filterAdOnlyAwemeList("ProfileAwemeList", items);
+    }
+
+    /**
+     * The Top and Videos grids on the search page. Their cards are not Awemes, so the app's
+     * own verdict on each one is the reliable test, with the wrapped video checked as well
+     * for anything the card itself does not admit to.
+     *
+     * Called on the parsed response before anything reads its items.
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static void filterSearchAds(Object searchResult) {
+        if (searchResult == null || !ADS_FILTER.getEnabled()) return;
+
+        Object raw = Reflect.readField(searchResult, "mItems");
+        if (!(raw instanceof List)) return;
+        List items = (List) raw;
+        if (items.isEmpty()) return;
+
+        ArrayList kept = new ArrayList(items.size());
+        for (Object card : items) {
+            if (!isSearchAd(card)) kept.add(card);
+        }
+        if (kept.size() == items.size()) return;
+
+        Field field = Reflect.field(searchResult.getClass(), "mItems");
+        if (field == null) return;
+        try {
+            field.set(searchResult, kept);
+        } catch (Exception exception) {
+            Logger.printException(() -> "Could not filter the search results", exception);
+            return;
+        }
+
+        int before = items.size();
+        int after = kept.size();
+        Logger.printInfo(() -> "[Morphe TikTok FeedFilter] filter(SearchMixFeedList): size "
+            + before + " -> " + after + " (removed=" + (before - after) + ")");
+    }
+
+    /** True when the card is an advert, by its own admission or by the video it wraps. */
+    static boolean isSearchAd(Object card) {
+        if (card == null) return false;
+        if (Boolean.TRUE.equals(Reflect.invoke(card, "isAdOrContainAd"))) return true;
+
+        for (String name : SEARCH_AD_FIELDS) {
+            if (Reflect.readField(card, name) != null) return true;
+        }
+
+        Object aweme = Reflect.readField(card, "aweme");
+        return aweme instanceof Aweme && getFilterReason(LATE_FOLLOW_FILTERS, (Aweme) aweme) != null;
     }
 
     public static List filterLateInsertedAds(String source, List items) {
