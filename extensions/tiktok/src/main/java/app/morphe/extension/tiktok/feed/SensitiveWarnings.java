@@ -106,15 +106,6 @@ public final class SensitiveWarnings {
     }
 
     private static Field findField(Class<?> type, String name) {
-        while (type != null && type != Object.class) {
-            try {
-                Field field = type.getDeclaredField(name);
-                field.setAccessible(true);
-                return field;
-            } catch (NoSuchFieldException ignored) {
-                type = type.getSuperclass();
-            }
-        }
-        return null;
+        return Reflect.field(type, name);
     }
 }

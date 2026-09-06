@@ -89,22 +89,48 @@ public class GestureActionsTest {
         }
     }
 
-    @Test public void longPressFollowsItsOwnSettingAndSwallowsWhenRemapped() {
+    @Test public void longPressFollowsItsOwnSettingAndOpensTheCurrentVideosComments() {
         try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup().visible()) {
-            Utils.setContext(controller.get());
+            var activity = controller.get();
+            Utils.setContext(activity);
+            FrameLayout root = new FrameLayout(activity);
+            View comments = new View(activity);
+            root.addView(comments);
+            activity.setContentView(root);
+            int[] clicks = {0};
+            comments.setOnClickListener(view -> clicks[0]++);
+            Object owner = new Object();
+            GestureActions.registerCommentView(owner, comments);
+            GestureActions.bindCommentView(owner, new Params("one"));
+            app.morphe.extension.tiktok.blockauthor.BlockAuthorPatch.setCurrentVideoParams(new Params("one"));
+            app.morphe.extension.tiktok.blockauthor.BlockAuthorPatch.setPlayingAweme("one");
+
             Settings.LONG_PRESS_ACTION.save("default");
             assertFalse(GestureActions.onLongPress());
+            assertEquals(0, clicks[0]);
+
             Settings.LONG_PRESS_ACTION.save("nothing");
             assertTrue(GestureActions.onLongPress());
-            // Remapped to comments with nothing registered: still swallowed, never TikTok's
-            // own action, so a stale 2x hold cannot fire from an unavailable comment control.
+            assertEquals(0, clicks[0]);
+
+            // Remapped to comments: the control bound to the video on screen is pressed.
             Settings.LONG_PRESS_ACTION.save("comments");
             assertTrue(GestureActions.onLongPress());
+            assertEquals(1, clicks[0]);
+
+            // The control for a different video does not count, and the gesture is still
+            // swallowed so a stale 2x hold cannot fire in its place.
+            GestureActions.bindCommentView(owner, new Params("two"));
+            assertTrue(GestureActions.onLongPress());
+            assertEquals(1, clicks[0]);
+
             // The two gestures do not share a setting.
             Settings.DOUBLE_TAP_ACTION.save("nothing");
             Settings.LONG_PRESS_ACTION.save("default");
             assertFalse(GestureActions.onLongPress());
+        } finally {
             Settings.DOUBLE_TAP_ACTION.save("default");
+            Settings.LONG_PRESS_ACTION.save("default");
         }
     }
 
@@ -118,6 +144,26 @@ public class GestureActionsTest {
             ChoicePreference choice = (ChoicePreference) screen.findPreference("long_press_action");
             assertNotNull(choice);
             assertArrayEquals(new String[]{"default", "nothing", "comments"}, choice.getEntryValues());
+        } finally {
+            SettingsStatus.longPressEnabled = false;
+        }
+    }
+
+    @Test public void everyOverlayAndWarningSwitchIsReachable() {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            SettingsStatus.videoOverlaysEnabled = true;
+            SettingsStatus.sensitiveWarningsEnabled = true;
+            PreferenceScreen screen = activity.getPreferenceManager().createPreferenceScreen(activity);
+            new InterfacePreferenceCategory(activity, screen);
+            for (String key : new String[]{"hide_feed_caption", "hide_feed_music", "hide_feed_action_bar",
+                    "hide_feed_surveys", "hide_status_bar", "hide_sensitive_warnings"}) {
+                assertNotNull(key, screen.findPreference(key));
+            }
+        } finally {
+            SettingsStatus.videoOverlaysEnabled = false;
+            SettingsStatus.sensitiveWarningsEnabled = false;
         }
     }
 }

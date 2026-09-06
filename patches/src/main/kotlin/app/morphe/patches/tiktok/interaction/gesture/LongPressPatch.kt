@@ -55,7 +55,8 @@ private object FeedLongPressFingerprint : Fingerprint(
 val longPressPatch = bytecodePatch(
     name = "Long-press controls",
     description = "Lets a long press on a video keep TikTok's own action, do nothing, or " +
-        "open the video's comments. Supports TikTok 46.2.3.",
+        "open the video's comments. Brings Double-tap controls with it, which supplies the " +
+        "comment control. Supports TikTok 46.2.3.",
     default = false,
 ) {
     compatibleWith(*AppCompatibilities.tiktok4623())

@@ -1164,7 +1164,7 @@
     },
     {
       "name": "Hide video overlays",
-      "description": "Hides the visual search prompt TikTok lays over videos, the Live entrance in the top left corner, the caption and the music line, each with its own switch. Supports TikTok 46.2.3.",
+      "description": "Hides the visual search prompt TikTok lays over videos, the Live entrance in the top left corner, the caption, the music line, the action column on the right, the survey cards and the status bar, each with its own switch. Supports TikTok 46.2.3.",
       "use": false,
       "dependencies": [
         "BytecodePatch"
@@ -1220,7 +1220,7 @@
     },
     {
       "name": "Long-press controls",
-      "description": "Lets a long press on a video keep TikTok's own action, do nothing, or open the video's comments. Supports TikTok 46.2.3.",
+      "description": "Lets a long press on a video keep TikTok's own action, do nothing, or open the video's comments. Brings Double-tap controls with it, which supplies the comment control. Supports TikTok 46.2.3.",
       "use": false,
       "dependencies": [
         "BytecodePatch",

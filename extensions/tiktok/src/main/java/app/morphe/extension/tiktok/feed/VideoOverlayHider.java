@@ -6,6 +6,7 @@ package app.morphe.extension.tiktok.feed;
 
 import android.app.Activity;
 import android.os.Build;
+import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -60,14 +61,24 @@ public final class VideoOverlayHider {
     private static final Map<String, Integer> RESOLVED_IDS = new HashMap<>();
 
     /**
-     * Views this class hid, so turning a switch back off restores them and a view
-     * TikTok hid for its own reasons is never forced back on.
+     * Views this class hid, with the visibility each had before, so turning a switch back
+     * off restores exactly that and a view TikTok hid for its own reasons is never forced
+     * back on.
      */
-    private static final Map<View, Boolean> HIDDEN_HERE = new WeakHashMap<>();
+    private static final Map<View, Integer> HIDDEN_HERE = new WeakHashMap<>();
+
+    /**
+     * How long a status bar may stay visible before it is hidden again on Android 11 and
+     * up. A swipe from the top shows the bar transiently and the system takes it away by
+     * itself, so re-hiding inside this window would only snap a peek shut. TikTok's own
+     * show calls are caught by the layout pass after the window ends.
+     */
+    static final long STATUS_BAR_PEEK_MS = 4000L;
 
     private static WeakReference<Activity> activityReference = new WeakReference<>(null);
     /** Whether this class, rather than TikTok, is the one holding the status bar away. */
     private static boolean statusBarHiddenHere;
+    private static long statusBarHiddenAt;
     private static ViewTreeObserver.OnGlobalLayoutListener listener;
 
     private VideoOverlayHider() {
@@ -105,9 +116,16 @@ public final class VideoOverlayHider {
     }
 
     private static void apply() {
+        Activity activity = activityReference.get();
+        if (activity != null) {
+            applyTo(activity);
+        }
+    }
+
+    /** One pass over {@code activity}, the same one the layout listener runs. */
+    static void applyTo(Activity activity) {
         try {
-            Activity activity = activityReference.get();
-            if (activity == null || activity.isFinishing()) {
+            if (activity.isFinishing()) {
                 return;
             }
 
@@ -120,21 +138,30 @@ public final class VideoOverlayHider {
                 hide(activity, APP_PACKAGE, LIVE_ENTRANCE_ID);
             }
 
-            // These two are ordinary feed furniture rather than a prompt, so they come back
-            // when the switch goes off instead of staying gone until the next video.
-            setHidden(view(activity, APP_PACKAGE, CAPTION_ID), Settings.HIDE_FEED_CAPTION.get());
-            setHidden(view(activity, APP_PACKAGE, MUSIC_ID), Settings.HIDE_FEED_MUSIC.get());
-
-            // The feed keeps the neighbouring cells inflated too, so the first match is
-            // not always the cell on screen. Every cell's column and survey card is covered.
-            ViewGroup root = activity.findViewById(android.R.id.content);
-            int actionBarId = identifier(activity, APP_PACKAGE, ACTION_BAR_ID);
-            int surveyId = identifier(activity, APP_PACKAGE, SURVEY_ID);
-            for (View view : viewsWithId(root, actionBarId)) {
-                setHidden(view, Settings.HIDE_FEED_ACTION_BAR.get());
-            }
-            for (View view : viewsWithId(root, surveyId)) {
-                setHidden(view, Settings.HIDE_FEED_SURVEYS.get());
+            // These are ordinary feed furniture rather than a prompt, so they come back
+            // when their switch goes off instead of staying gone until the next video. The
+            // feed keeps the neighbouring cells inflated too, so the first match is not
+            // always the cell on screen: every cell is covered in one walk of the tree,
+            // and the walk is skipped while nothing is on and nothing is left to restore.
+            boolean caption = Settings.HIDE_FEED_CAPTION.get();
+            boolean music = Settings.HIDE_FEED_MUSIC.get();
+            boolean actionBar = Settings.HIDE_FEED_ACTION_BAR.get();
+            boolean surveys = Settings.HIDE_FEED_SURVEYS.get();
+            if (caption || music || actionBar || surveys || !HIDDEN_HERE.isEmpty()) {
+                ViewGroup root = activity.findViewById(android.R.id.content);
+                int[] ids = {
+                        identifier(activity, APP_PACKAGE, CAPTION_ID),
+                        identifier(activity, APP_PACKAGE, MUSIC_ID),
+                        identifier(activity, APP_PACKAGE, ACTION_BAR_ID),
+                        identifier(activity, APP_PACKAGE, SURVEY_ID),
+                };
+                boolean[] hidden = {caption, music, actionBar, surveys};
+                List<List<View>> found = viewsWithIds(root, ids);
+                for (int i = 0; i < ids.length; i++) {
+                    for (View view : found.get(i)) {
+                        setHidden(view, hidden[i]);
+                    }
+                }
             }
 
             setStatusBarHidden(activity, Settings.HIDE_STATUS_BAR.get());
@@ -157,21 +184,40 @@ public final class VideoOverlayHider {
 
     /** Every descendant of {@code root} carrying {@code id}, in tree order. */
     static List<View> viewsWithId(View root, int id) {
-        List<View> found = new ArrayList<>();
-        if (id != 0 && root != null) {
-            collect(root, id, found);
+        return viewsWithIds(root, new int[]{id}).get(0);
+    }
+
+    /**
+     * One walk of the tree under {@code root} collecting the views for several ids at
+     * once. The result holds one list per id, in the order given; an id of zero, which is
+     * what an unresolved name gives, matches nothing.
+     */
+    static List<List<View>> viewsWithIds(View root, int[] ids) {
+        List<List<View>> found = new ArrayList<>(ids.length);
+        boolean anyId = false;
+        for (int id : ids) {
+            found.add(new ArrayList<>());
+            anyId |= id != 0;
+        }
+        if (anyId && root != null) {
+            collect(root, ids, found);
         }
         return found;
     }
 
-    private static void collect(View view, int id, List<View> found) {
-        if (view.getId() == id) {
-            found.add(view);
+    private static void collect(View view, int[] ids, List<List<View>> found) {
+        int viewId = view.getId();
+        if (viewId != View.NO_ID) {
+            for (int i = 0; i < ids.length; i++) {
+                if (ids[i] == viewId) {
+                    found.get(i).add(view);
+                }
+            }
         }
         if (view instanceof ViewGroup) {
             ViewGroup group = (ViewGroup) view;
             for (int i = 0, count = group.getChildCount(); i < count; i++) {
-                collect(group.getChildAt(i), id, found);
+                collect(group.getChildAt(i), ids, found);
             }
         }
     }
@@ -189,19 +235,26 @@ public final class VideoOverlayHider {
         }
         View decor = window.getDecorView();
         if (hidden) {
-            if (!isStatusBarHidden(decor)) {
-                statusBarHiddenHere = true;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    WindowInsetsController controller = decor.getWindowInsetsController();
-                    if (controller != null) {
-                        controller.setSystemBarsBehavior(
-                                WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
-                        controller.hide(WindowInsets.Type.statusBars());
-                    }
-                } else {
-                    decor.setSystemUiVisibility(decor.getSystemUiVisibility() | LEGACY_STATUS_BAR_FLAGS);
-                }
+            if (isStatusBarHidden(decor)) {
+                return;
             }
+            long now = SystemClock.uptimeMillis();
+            if (!rehideAllowed(now)) {
+                return;
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                WindowInsetsController controller = decor.getWindowInsetsController();
+                if (controller == null) {
+                    return;
+                }
+                controller.setSystemBarsBehavior(
+                        WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                controller.hide(WindowInsets.Type.statusBars());
+            } else {
+                decor.setSystemUiVisibility(decor.getSystemUiVisibility() | LEGACY_STATUS_BAR_FLAGS);
+            }
+            statusBarHiddenHere = true;
+            statusBarHiddenAt = now;
             return;
         }
         if (statusBarHiddenHere) {
@@ -215,6 +268,14 @@ public final class VideoOverlayHider {
                 decor.setSystemUiVisibility(decor.getSystemUiVisibility() & ~LEGACY_STATUS_BAR_FLAGS);
             }
         }
+    }
+
+    /**
+     * False while a hide this class issued is younger than the peek window: the bar is
+     * either a swipe peek the system will end by itself, or the request is still landing.
+     */
+    static boolean rehideAllowed(long now) {
+        return !statusBarHiddenHere || now - statusBarHiddenAt >= STATUS_BAR_PEEK_MS;
     }
 
     private static boolean isStatusBarHidden(View decor) {
@@ -238,16 +299,23 @@ public final class VideoOverlayHider {
         }
 
         if (hidden) {
-            if (view.getVisibility() != View.GONE) {
-                HIDDEN_HERE.put(view, Boolean.TRUE);
+            int visibility = view.getVisibility();
+            if (visibility != View.GONE) {
+                HIDDEN_HERE.put(view, visibility);
                 view.setVisibility(View.GONE);
             }
             return;
         }
 
-        if (HIDDEN_HERE.remove(view) != null && view.getVisibility() == View.GONE) {
-            view.setVisibility(View.VISIBLE);
+        Integer before = HIDDEN_HERE.remove(view);
+        if (before != null && view.getVisibility() == View.GONE) {
+            view.setVisibility(before);
         }
+    }
+
+    /** Lets a test stand in for a TikTok resource id, which only the real APK resolves. */
+    static void resolveForTests(String name, int id) {
+        RESOLVED_IDS.put(APP_PACKAGE + ":" + name, id);
     }
 
     /**
