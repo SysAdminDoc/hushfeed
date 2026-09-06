@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Two notifications TikTok gives you no way to turn off. One switch drops the "somebody started following you" notification before Android is asked to post it, which is the usual complaint when a wave of empty accounts follows you overnight. The follower still turns up in the Inbox and nothing else in the drawer changes, because the app tags each notification with the channel it belongs on and only that one is dropped. The other switch takes away message streaks: the streak button on a chat and the reminder that goes with it.
+
 * Press and hold the left or right third of the screen to jump back or forward. How far is up to you, five seconds to start with, and the middle third still does whatever Long press is set to. It rides on the Long-press controls patch and is off until you turn it on, because holding a video is also how TikTok starts playing it at double speed.
 
 ## 0.18.0 (2026-09-06)

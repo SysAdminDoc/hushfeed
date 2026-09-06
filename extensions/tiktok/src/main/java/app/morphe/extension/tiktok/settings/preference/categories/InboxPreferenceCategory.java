@@ -26,7 +26,8 @@ public final class InboxPreferenceCategory extends ConditionalPreferenceCategory
         return SettingsStatus.inboxFilterEnabled
                 || SettingsStatus.hideSuggestedAccountsEnabled
                 || SettingsStatus.hideInboxStoriesEnabled
-                || SettingsStatus.expandActivityListEnabled;
+                || SettingsStatus.expandActivityListEnabled
+                || SettingsStatus.notificationControlsEnabled;
     }
 
     @Override
@@ -116,6 +117,23 @@ public final class InboxPreferenceCategory extends ConditionalPreferenceCategory
                 "Hide suggested account rows.",
                 Settings.HIDE_INBOX_SUGGESTED_ACCOUNTS
         ));
+        }
+        if (SettingsStatus.notificationControlsEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide new follower notifications",
+                    "Drop the notification saying somebody new followed you before it reaches "
+                            + "the drawer. Every other notification is left alone, and the "
+                            + "follower still appears in the Inbox.",
+                    Settings.HIDE_FOLLOWER_NOTIFICATIONS
+            ));
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide message streaks",
+                    "Take away the streak button in a chat and the reminder message that goes "
+                            + "with it.",
+                    Settings.HIDE_MESSAGE_STREAKS
+            ));
         }
         if (SettingsStatus.expandActivityListEnabled) {
             addPreference(new TogglePreference(

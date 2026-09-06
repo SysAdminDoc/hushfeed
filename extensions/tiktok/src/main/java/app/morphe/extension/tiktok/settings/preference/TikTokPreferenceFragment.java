@@ -376,11 +376,14 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         if (SettingsStatus.inboxFilterEnabled
                 || SettingsStatus.hideSuggestedAccountsEnabled
                 || SettingsStatus.hideInboxStoriesEnabled
-                || SettingsStatus.expandActivityListEnabled) {
+                || SettingsStatus.expandActivityListEnabled
+                || SettingsStatus.notificationControlsEnabled) {
             addMenu(screen, Section.INBOX, SettingsMenuPreference.Icon.INBOX, countEnabled(
                     (SettingsStatus.inboxFilterEnabled || SettingsStatus.hideInboxStoriesEnabled)
                             && Settings.HIDE_INBOX_STORIES.get(),
                     SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_NEW_FOLLOWERS.get(),
+                    SettingsStatus.notificationControlsEnabled && Settings.HIDE_FOLLOWER_NOTIFICATIONS.get(),
+                    SettingsStatus.notificationControlsEnabled && Settings.HIDE_MESSAGE_STREAKS.get(),
                     SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_ACTIVITY.get(),
                     SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_ARCHIVE.get(),
                     SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_TAKO.get(),

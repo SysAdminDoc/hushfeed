@@ -269,6 +269,10 @@ Comma separated list of any other Inbox row titles to hide, matched exactly. Use
 Hide stories tray	Sembunyikan deret Story
 Hide the row of story avatars across the top of the Inbox.	Sembunyikan baris foto profil Story di bagian atas Kotak Masuk.
 Hide suggested accounts	Sembunyikan akun yang disarankan
+Hide new follower notifications	Sembunyikan notifikasi pengikut baru
+Drop the notification saying somebody new followed you before it reaches the drawer. Every other notification is left alone, and the follower still appears in the Inbox.	Buang notifikasi yang memberi tahu ada orang baru yang mengikutimu sebelum masuk ke laci notifikasi. Notifikasi lain tidak terpengaruh, dan pengikutnya tetap muncul di Kotak Masuk.
+Hide message streaks	Sembunyikan rentetan pesan
+Take away the streak button in a chat and the reminder message that goes with it.	Hilangkan tombol rentetan di obrolan beserta pesan pengingatnya.
 Hide suggested account rows.	Sembunyikan baris akun yang disarankan.
 Expand activity list	Bentangkan daftar aktivitas
 Show the whole Activity and New followers lists instead of stopping at a View all button.	Tampilkan seluruh daftar Aktivitas dan Pengikut baru, bukan berhenti di tombol Lihat semua.

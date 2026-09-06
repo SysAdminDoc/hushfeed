@@ -41,6 +41,10 @@ public class Settings extends BaseSettings {
     public static final StringSetting DOUBLE_TAP_ACTION = new StringSetting("double_tap_action", "default");
     public static final StringSetting LONG_PRESS_ACTION = new StringSetting("long_press_action", "default");
     public static final BooleanSetting EDGE_SEEK = new BooleanSetting("edge_seek", FALSE);
+    public static final BooleanSetting HIDE_FOLLOWER_NOTIFICATIONS =
+            new BooleanSetting("hide_follower_notifications", FALSE);
+    public static final BooleanSetting HIDE_MESSAGE_STREAKS =
+            new BooleanSetting("hide_message_streaks", FALSE);
     public static final IntegerSetting EDGE_SEEK_SECONDS = new IntegerSetting("edge_seek_seconds", 5);
     public static final BooleanSetting CONFIRM_FOLLOW = new BooleanSetting("confirm_follow", FALSE);
     public static final BooleanSetting CONFIRM_LIKE = new BooleanSetting("confirm_like", FALSE);

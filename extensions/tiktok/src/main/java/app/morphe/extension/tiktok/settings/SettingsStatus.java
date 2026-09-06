@@ -62,6 +62,7 @@ public class SettingsStatus {
         notInterestedEnabled = true;
     }
     public static boolean inboxFilterEnabled = false;
+    public static boolean notificationControlsEnabled = false;
     public static boolean hideSuggestedAccountsEnabled = false;
     public static boolean hideInboxStoriesEnabled = false;
     public static boolean expandActivityListEnabled = false;
@@ -183,6 +184,10 @@ public class SettingsStatus {
 
     public static void enableExpandActivityList() {
         expandActivityListEnabled = true;
+    }
+
+    public static void enableNotificationControls() {
+        notificationControlsEnabled = true;
     }
 
     public static void enableInboxFilter() {

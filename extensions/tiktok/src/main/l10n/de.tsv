@@ -269,6 +269,10 @@ Comma separated list of any other Inbox row titles to hide, matched exactly. Use
 Hide stories tray	Story-Leiste ausblenden
 Hide the row of story avatars across the top of the Inbox.	Die Reihe der Story-Avatare oben im Posteingang ausblenden.
 Hide suggested accounts	Vorgeschlagene Konten ausblenden
+Hide new follower notifications	Benachrichtigungen über neue Follower ausblenden
+Drop the notification saying somebody new followed you before it reaches the drawer. Every other notification is left alone, and the follower still appears in the Inbox.	Die Benachrichtigung, dass dir jemand Neues folgt, verwerfen, bevor sie in der Leiste landet. Alle anderen Benachrichtigungen bleiben unberührt, und der Follower erscheint weiterhin im Posteingang.
+Hide message streaks	Nachrichten-Serien ausblenden
+Take away the streak button in a chat and the reminder message that goes with it.	Entfernt die Serien-Schaltfläche in einem Chat und die zugehörige Erinnerung.
 Hide suggested account rows.	Zeilen mit vorgeschlagenen Konten ausblenden.
 Expand activity list	Aktivitätsliste ausklappen
 Show the whole Activity and New followers lists instead of stopping at a View all button.	Die vollständigen Listen „Aktivität“ und „Neue Follower“ anzeigen, statt bei einer Schaltfläche „Alle anzeigen“ zu enden.
