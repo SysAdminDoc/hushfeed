@@ -45,6 +45,7 @@ public class AdvancedDownloadsTest {
         public final List<Gear> bitRate;
         public List<Audio> bitRateAudio = List.of();
         public boolean dash;
+        public Address downloadNoWatermarkAddr, downloadAddr, playAddr;
         VideoData(List<Gear> gears) { bitRate = gears; }
         public List<Gear> getBitRate() { throw new AssertionError("Must not recurse into playback getter"); }
         public boolean hasDashBitrate() { return dash; }
@@ -286,6 +287,35 @@ public class AdvancedDownloadsTest {
         // The fallback a failed conversion writes is that same untouched WebP.
         assertEquals("WebP", StickerGallerySaver.MediaFormat.webp().label);
         assertEquals("image/webp", StickerGallerySaver.MediaFormat.webp().mimeType);
+    }
+
+    @Test public void aStoryIsFetchedFromTheCleanestAddressItHas() {
+        // A story has no save button, so it is saved from whatever address the video carries,
+        // preferring the one without a watermark burnt into it.
+        VideoData video = new VideoData(List.of());
+        video.downloadNoWatermarkAddr = new Address("https://example.com/clean.mp4", 900);
+        video.downloadAddr = new Address("https://example.com/watermarked.mp4", 900);
+        video.playAddr = new Address("https://example.com/play.mp4", 900);
+        assertEquals(List.of("https://example.com/clean.mp4"), VideoDownloads.sourceUrls(video));
+        video.downloadNoWatermarkAddr = null;
+        assertEquals(List.of("https://example.com/watermarked.mp4"), VideoDownloads.sourceUrls(video));
+        video.downloadAddr = new Address(null, 0);
+        assertEquals(List.of("https://example.com/play.mp4"), VideoDownloads.sourceUrls(video));
+        video.playAddr = null;
+        assertTrue(VideoDownloads.sourceUrls(video).isEmpty());
+        assertTrue(VideoDownloads.sourceUrls(new Object()).isEmpty());
+    }
+
+    @Test public void theRecordedStoryIsTheLastOneBound() {
+        Post first = new Post(List.of(new Photo("https://example.com/one")));
+        Post second = new Post(List.of(new Photo("https://example.com/two")));
+        StoryDownloads.recordStory(first);
+        assertSame(first, StoryDownloads.recordedStory());
+        StoryDownloads.recordStory(second);
+        assertSame(second, StoryDownloads.recordedStory());
+        // A bind with nothing in it leaves the story that is showing alone.
+        StoryDownloads.recordStory(null);
+        assertSame(second, StoryDownloads.recordedStory());
     }
 
     @Test public void theProfilePictureTakesTheLargestSizeThatIsThere() {

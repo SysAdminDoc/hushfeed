@@ -4,6 +4,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
@@ -43,6 +44,28 @@ private object ProfileAvatarBindFingerprint : Fingerprint(
     custom = { method, _ -> method.accessFlags and AccessFlags.STATIC.value == 0 },
 )
 
+private const val AWEME = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
+private const val STORY_PLAY_AREA = "/StoryImmersivePlayAreaComponent;"
+
+/** The story's own view, which is what a press and hold lands on. */
+private object StoryPlayAreaViewFingerprint : Fingerprint(
+    definingClass = STORY_PLAY_AREA,
+    name = "onViewCreated",
+    parameters = listOf("Landroid/view/View;"),
+    returnType = "V",
+)
+
+/**
+ * The play area is handed the story it is about to show. Two methods take that shape and the
+ * names are obfuscated, so both are hooked: whichever runs, the story is recorded.
+ */
+private object StoryPlayAreaBindFingerprint : Fingerprint(
+    definingClass = STORY_PLAY_AREA,
+    parameters = listOf("I", AWEME),
+    returnType = "V",
+    custom = { method, _ -> method.accessFlags and AccessFlags.STATIC.value == 0 },
+)
+
 private object StartDownloadFingerprint : Fingerprint(
     strings = listOf("download_method", "download_action"),
     parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;", "Landroid/content/Context;", "I", "Ljava/lang/String;", "Z", "Lcom/ss/android/ugc/aweme/sharer/model/SharePackage;"),
@@ -52,7 +75,7 @@ private object StartDownloadFingerprint : Fingerprint(
 @Suppress("unused")
 val advancedDownloadsPatch = bytecodePatch(
     name = "Advanced downloads",
-    description = "Adds download quality choices, saves Photo Mode images directly from their source URLs, keeps a video's sound as its own audio file, and saves a profile picture from a long press on the avatar.",
+    description = "Adds download quality choices, saves Photo Mode images directly from their source URLs, keeps a video's sound as its own audio file, and saves a profile picture or a story from a long press.",
     default = false,
 ) {
     compatibleWith(*AppCompatibilities.tiktok4623())
@@ -88,6 +111,23 @@ val advancedDownloadsPatch = bytecodePatch(
             "invoke-static/range { p2 .. p2 }, ${EXTENSION}ProfileAvatarSaver;->" +
                 "attachAvatar(Landroid/view/View;)V",
         )
+
+        StoryPlayAreaViewFingerprint.method.addInstruction(
+            0,
+            "invoke-static/range { p1 .. p1 }, ${EXTENSION}StoryDownloads;->" +
+                "attachPlayArea(Landroid/view/View;)V",
+        )
+        val storyBinds = StoryPlayAreaBindFingerprint.matchAll()
+            .map { it.method }
+            .filter { it.implementation != null }
+        if (storyBinds.isEmpty()) throw PatchException("Advanced downloads: no story bind to record from.")
+        storyBinds.forEach { method ->
+            method.addInstruction(
+                0,
+                "invoke-static/range { p2 .. p2 }, ${EXTENSION}StoryDownloads;->" +
+                    "recordStory(Ljava/lang/Object;)V",
+            )
+        }
 
         SettingsStatusLoadFingerprint.method.addInstruction(0,
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableAdvancedDownloads()V")
