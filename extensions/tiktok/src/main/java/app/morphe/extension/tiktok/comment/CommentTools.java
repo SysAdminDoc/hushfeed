@@ -92,7 +92,8 @@ public final class CommentTools {
      * fields include the bound {@code Comment}.
      */
     public static void registerCommentCell(View itemView, Object manager) {
-        if (!Settings.BLOCK_FROM_COMMENT.get() || itemView == null || manager == null) {
+        boolean block = Settings.BLOCK_FROM_COMMENT.get();
+        if ((!block && !CommentSearch.enabled()) || itemView == null || manager == null) {
             return;
         }
 
@@ -100,6 +101,11 @@ public final class CommentTools {
             Object comment = findComment(manager);
             if (comment == null) {
                 Logger.printDebug(() -> "Comment cell bound but no comment found on " + manager.getClass().getName());
+                return;
+            }
+
+            CommentSearch.onCellBound(itemView, comment);
+            if (!block) {
                 return;
             }
 

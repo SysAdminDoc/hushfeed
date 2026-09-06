@@ -449,3 +449,7 @@ Share links through another host	Bagikan tautan lewat host lain
 A host to put in place of tiktok.com when you share or copy a link, like vxtiktok.com. Leave it empty to share TikTok's own links. Only TikTok links are changed, and only the host: nothing is sent anywhere new.	Host pengganti tiktok.com saat kamu membagikan atau menyalin tautan, misalnya vxtiktok.com. Kosongkan untuk membagikan tautan TikTok sendiri. Hanya tautan TikTok yang diubah, dan hanya bagian host-nya, tidak ada yang dikirim ke mana pun.
 Storage permission is needed to save a story	Izin penyimpanan dibutuhkan untuk menyimpan Story
 Saved %1$s of %2$s photos before the story failed	%1$s dari %2$s foto tersimpan sebelum Story gagal
+
+Search the comments	Cari di komentar
+Put a box above the comments that narrows them to the ones matching what you type, by what they say or who said it. Clearing the box brings the rest back.	Kotak di atas komentar yang mempersempit ke komentar yang cocok dengan ketikanmu, berdasarkan isinya atau siapa yang menulis. Mengosongkan kotaknya mengembalikan sisanya.
+Search these comments	Cari di komentar ini

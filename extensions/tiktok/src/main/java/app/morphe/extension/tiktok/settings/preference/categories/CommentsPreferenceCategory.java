@@ -60,6 +60,14 @@ public class CommentsPreferenceCategory extends ConditionalPreferenceCategory {
         if (SettingsStatus.commentToolsEnabled) {
             addPreference(new TogglePreference(
                     context,
+                    "Search the comments",
+                    "Put a box above the comments that narrows them to the ones matching "
+                            + "what you type, by what they say or who said it. Clearing the "
+                            + "box brings the rest back.",
+                    Settings.COMMENT_SEARCH
+            ));
+            addPreference(new TogglePreference(
+                    context,
                     "Filter comments by keyword",
                     "Hide comments that contain any of the words below, or that come from the accounts below.",
                     Settings.COMMENT_KEYWORD_FILTER

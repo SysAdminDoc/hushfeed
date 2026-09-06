@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(896);
+        Map<String, String> table = new HashMap<>(902);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -688,6 +688,8 @@ public final class L10nTranslations {
                 "Profilbild gespeichert unter %1$s");
         table.put("Promotions, popups, publish dates, and feed controls.",
                 "Werbeaktionen, Popups, Veröffentlichungsdaten und Feed-Bedienelemente.");
+        table.put("Put a box above the comments that narrows them to the ones matching what you type, by what they say or who said it. Clearing the box brings the rest back.",
+                "Ein Feld über den Kommentaren, das auf die passenden eingrenzt, nach Inhalt oder nach der Person. Feld leeren bringt die übrigen zurück.");
         table.put("Put back %1$s videos",
                 "%1$s Videos zurückgeholt");
         table.put("Quality, files and subtitles",
@@ -762,6 +764,10 @@ public final class L10nTranslations {
                 "Gate-Flags suchen und überschreiben");
         table.put("Search local TikTok gate metadata and configure isolated typed overrides.",
                 "Lokale TikTok-Gate-Metadaten durchsuchen und isolierte typisierte Überschreibungen einrichten.");
+        table.put("Search the comments",
+                "Kommentare durchsuchen");
+        table.put("Search these comments",
+                "Diese Kommentare durchsuchen");
         table.put("Seconds. Zero keeps every length. If only quality rules reject a page, keep the nearest allowed candidate.",
                 "Sekunden. Null lässt jede Länge zu. Lehnen nur Qualitätsregeln eine Seite ab, bleibt der nächstliegende erlaubte Kandidat erhalten.");
         table.put("Seek by",
@@ -786,15 +792,15 @@ public final class L10nTranslations {
                 "Links über einen anderen Host teilen");
         table.put("Share sheet",
                 "Teilen-Menü");
+    }
+
+    private static void fillDe6(Map<String, String> table) {
         table.put("Sharing, playback, and gestures.",
                 "Teilen, Wiedergabe und Gesten.");
         table.put("Show @username beside a video instead of the display name the creator chose.",
                 "Zeigt @Benutzername neben einem Video statt des Anzeigenamens, den die Person gewählt hat.");
         table.put("Show Live search",
                 "Live-Suche anzeigen");
-    }
-
-    private static void fillDe6(Map<String, String> table) {
         table.put("Show TikTok's search entry in the Live drawer where supported.",
                 "TikToks Sucheingang im Live-Bereich anzeigen, wo das unterstützt wird.");
         table.put("Show a video preview thumbnail while dragging the seekbar.",
@@ -909,15 +915,15 @@ public final class L10nTranslations {
                 "Platzhalter: {creator}, {date}, {video_id}, {index}. Die Dateiendung bleibt automatisch erhalten.");
         table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
                 "Platzhalter: {creator}, {date}, {video_id}. Die Dateiendung bleibt automatisch erhalten.");
+    }
+
+    private static void fillDe7(Map<String, String> table) {
         table.put("Tokens: {date}, {media_id}. Works for image and video stickers.",
                 "Platzhalter: {date}, {media_id}. Gilt für Bild- und Video-Sticker.");
         table.put("Transparent",
                 "Transparent");
         table.put("Undo last restore",
                 "Letzte Wiederherstellung rückgängig machen");
-    }
-
-    private static void fillDe7(Map<String, String> table) {
         table.put("Unlimited",
                 "Unbegrenzt");
         table.put("Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.",
@@ -977,7 +983,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(896);
+        Map<String, String> table = new HashMap<>(902);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1621,6 +1627,8 @@ public final class L10nTranslations {
                 "Foto profil disimpan ke %1$s");
         table.put("Promotions, popups, publish dates, and feed controls.",
                 "Promosi, popup, tanggal unggah, dan kontrol feed.");
+        table.put("Put a box above the comments that narrows them to the ones matching what you type, by what they say or who said it. Clearing the box brings the rest back.",
+                "Kotak di atas komentar yang mempersempit ke komentar yang cocok dengan ketikanmu, berdasarkan isinya atau siapa yang menulis. Mengosongkan kotaknya mengembalikan sisanya.");
         table.put("Put back %1$s videos",
                 "%1$s video dikembalikan");
         table.put("Quality, files and subtitles",
@@ -1695,6 +1703,10 @@ public final class L10nTranslations {
                 "Cari dan timpa flag gate");
         table.put("Search local TikTok gate metadata and configure isolated typed overrides.",
                 "Cari metadata gate TikTok yang tersimpan di perangkat dan atur penimpaan bertipe secara terpisah.");
+        table.put("Search the comments",
+                "Cari di komentar");
+        table.put("Search these comments",
+                "Cari di komentar ini");
         table.put("Seconds. Zero keeps every length. If only quality rules reject a page, keep the nearest allowed candidate.",
                 "Dalam detik. Nol berarti semua durasi ditampilkan. Jika hanya aturan kualitas yang menolak satu halaman, video terdekat yang masih diizinkan tetap dipertahankan.");
         table.put("Seek by",
@@ -1719,15 +1731,15 @@ public final class L10nTranslations {
                 "Bagikan tautan lewat host lain");
         table.put("Share sheet",
                 "Menu bagikan");
+    }
+
+    private static void fillIn6(Map<String, String> table) {
         table.put("Sharing, playback, and gestures.",
                 "Berbagi, pemutaran, dan gestur.");
         table.put("Show @username beside a video instead of the display name the creator chose.",
                 "Tampilkan @namapengguna di samping video, bukan nama tampilan pilihan kreator.");
         table.put("Show Live search",
                 "Tampilkan pencarian LIVE");
-    }
-
-    private static void fillIn6(Map<String, String> table) {
         table.put("Show TikTok's search entry in the Live drawer where supported.",
                 "Tampilkan kolom cari TikTok di laci LIVE bila didukung.");
         table.put("Show a video preview thumbnail while dragging the seekbar.",
@@ -1842,15 +1854,15 @@ public final class L10nTranslations {
                 "Token: {creator}, {date}, {video_id}, {index}. Ekstensi berkas dipertahankan otomatis.");
         table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
                 "Token: {creator}, {date}, {video_id}. Ekstensi berkas dipertahankan otomatis.");
+    }
+
+    private static void fillIn7(Map<String, String> table) {
         table.put("Tokens: {date}, {media_id}. Works for image and video stickers.",
                 "Token: {date}, {media_id}. Berlaku untuk stiker gambar dan video.");
         table.put("Transparent",
                 "Transparan");
         table.put("Undo last restore",
                 "Urungkan pemulihan terakhir");
-    }
-
-    private static void fillIn7(Map<String, String> table) {
         table.put("Unlimited",
                 "Tanpa batas");
         table.put("Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.",
