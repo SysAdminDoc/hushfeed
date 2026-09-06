@@ -67,13 +67,23 @@ public final class ProfileAvatarSaver {
 
     /**
      * Called with the profile header's avatar view as it is bound. A view holds one long click
-     * listener, so this only takes it when the feature is on: with the switch off TikTok's own
-     * long press is left alone. Turning the switch on takes effect the next time a profile is
-     * opened.
+     * listener, so this only takes it while the feature is on, and hands it back on the next
+     * bind after the switch goes off: returning false from a listener that is still attached
+     * does not give TikTok its gesture back, only removing ours does. A view we never took is
+     * never cleared, because that would throw away the app's own listener.
      */
+    /** The views whose long press is ours, so only those are handed back. */
+    private static final java.util.Map<View, Boolean> TAKEN =
+            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
     public static void attachAvatar(View view) {
-        if (view == null || !enabled()) return;
+        if (view == null) return;
         try {
+            if (!enabled()) {
+                if (TAKEN.remove(view) != null) view.setOnLongClickListener(null);
+                return;
+            }
+            TAKEN.put(view, Boolean.TRUE);
             view.setOnLongClickListener(anchor -> {
                 if (!enabled()) return false;
                 save(anchor, profileUser);

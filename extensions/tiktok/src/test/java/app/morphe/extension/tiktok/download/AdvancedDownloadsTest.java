@@ -485,6 +485,60 @@ public class AdvancedDownloadsTest {
                 DownloadFilenameFormatter.formatProfilePictureName("dancer"));
     }
 
+    @Test public void theGestureGoesBackWhenTheSwitchDoes() {
+        try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+
+            // In the activity's own tree: a long press with no listener left asks the parent
+            // for a context menu, and a view with no parent has nothing to ask.
+            android.widget.LinearLayout root = new android.widget.LinearLayout(activity);
+            activity.setContentView(root);
+
+            for (boolean story : new boolean[]{false, true}) {
+                android.view.View view = new android.view.View(activity);
+                root.addView(view);
+                // TikTok's own gesture. Holding a story is how the app pauses it, so a switch
+                // that is off must leave this exactly where it is.
+                boolean[] theirsRan = {false};
+                view.setOnLongClickListener(anchor -> {
+                    theirsRan[0] = true;
+                    return true;
+                });
+
+                Settings.SAVE_PROFILE_PICTURE.save(false);
+                Settings.SAVE_STORY.save(false);
+                attach(story, view);
+                assertTrue("a view we never took still answers to TikTok", view.performLongClick());
+                assertTrue(theirsRan[0]);
+
+                // Switched on, the press becomes ours.
+                Settings.SAVE_PROFILE_PICTURE.save(true);
+                Settings.SAVE_STORY.save(true);
+                attach(story, view);
+
+                // Switched off again, the next bind hands the view back empty. Answering false
+                // from a listener that is still attached would not: TikTok's own is long gone
+                // by then, and only removing ours lets the app install its own again.
+                Settings.SAVE_PROFILE_PICTURE.save(false);
+                Settings.SAVE_STORY.save(false);
+                attach(story, view);
+                theirsRan[0] = false;
+                assertFalse("ours was taken away rather than left answering false",
+                        view.performLongClick());
+                assertFalse(theirsRan[0]);
+            }
+        } finally {
+            Settings.SAVE_PROFILE_PICTURE.save(false);
+            Settings.SAVE_STORY.save(false);
+        }
+    }
+
+    private static void attach(boolean story, android.view.View view) {
+        if (story) StoryDownloads.attachPlayArea(new Object(), view);
+        else ProfileAvatarSaver.attachAvatar(view);
+    }
+
     @Test public void advancedPatchAloneShowsItsOwnOptions() throws Exception {
         try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
             var activity = controller.get();

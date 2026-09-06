@@ -63,12 +63,23 @@ public final class StoryDownloads {
      * this only takes it when the feature is on; turning the switch on takes effect the next time
      * the story viewer opens.
      */
+    /** The views whose long press is ours, so only those are handed back. */
+    private static final java.util.Map<View, Boolean> TAKEN =
+            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
     public static void attachPlayArea(Object component, View view) {
-        if (component == null || view == null || !enabled()) return;
-        synchronized (OWNERS) {
-            OWNERS.put(view, component);
-        }
+        if (component == null || view == null) return;
         try {
+            if (!enabled()) {
+                // Ours goes back only if it was ours. Holding is how TikTok pauses a story,
+                // and clearing a listener we never set would take that away.
+                if (TAKEN.remove(view) != null) view.setOnLongClickListener(null);
+                return;
+            }
+            synchronized (OWNERS) {
+                OWNERS.put(view, component);
+            }
+            TAKEN.put(view, Boolean.TRUE);
             view.setOnLongClickListener(anchor -> {
                 if (!enabled()) return false;
                 return save(anchor, storyFor(anchor));
