@@ -105,6 +105,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `SIM spoof` | Replaces SIM country and operator values reported to TikTok and provides country presets. TikTok may still use IP address, account history, language, and other region signals. |
 | `Sanitize sharing links` | Removes tracking parameters from TikTok links before they are shared. |
 | `Settings` | Adds the Metra patches settings screen inside TikTok. |
+| `Hide content warnings` | Adds an option to play videos TikTok has classified without the warning overlay asking to be tapped through first. |
 | `Show author region` | Adds an option to show the country a video was posted from next to the creator's name on the feed. |
 | `Show seekbar` | Shows TikTok's native video seekbar where it would normally be hidden. |
 | `Show seekbar thumbnail` | Shows TikTok's video preview thumbnail while dragging the seekbar. |

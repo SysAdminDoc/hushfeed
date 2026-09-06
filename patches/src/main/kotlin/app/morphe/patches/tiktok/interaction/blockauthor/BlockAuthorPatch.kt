@@ -87,7 +87,7 @@ val blockAuthorPatch = bytecodePatch(
  * Wide parameters occupy two registers, so the offset cannot be derived from the
  * parameter index alone.
  */
-private fun app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.registerOfParameter(
+internal fun app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.registerOfParameter(
     descriptor: String,
 ): String? {
     var register = if (accessFlags and AccessFlags.STATIC.value != 0) 0 else 1

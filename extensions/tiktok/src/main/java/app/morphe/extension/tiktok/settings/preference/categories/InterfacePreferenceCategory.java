@@ -27,6 +27,7 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
                 || SettingsStatus.alwaysShowPublishDateEnabled
                 || SettingsStatus.videoOverlaysEnabled
                 || SettingsStatus.authorRegionEnabled
+                || SettingsStatus.sensitiveWarningsEnabled
                 || SettingsStatus.hideFeedLiveButtonEnabled
                 || SettingsStatus.hideFeedSearchButtonEnabled
                 || SettingsStatus.hideFeedFollowButtonEnabled
@@ -87,6 +88,15 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
                     "Always show publish date",
                     "Always show the publish date in video author information. Requires restart.",
                     Settings.ALWAYS_SHOW_PUBLISH_DATE
+            ));
+        }
+        if (SettingsStatus.sensitiveWarningsEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Skip content warnings",
+                    "Play videos TikTok has classified without the overlay asking to be tapped "
+                            + "through first.",
+                    Settings.HIDE_SENSITIVE_WARNINGS
             ));
         }
         if (SettingsStatus.authorRegionEnabled) {

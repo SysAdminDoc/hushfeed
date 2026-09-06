@@ -52,6 +52,7 @@ public class SettingsStatus {
     public static boolean diagnosticsEnabled = false;
     public static boolean blockAuthorEnabled = false;
     public static boolean authorRegionEnabled = false;
+    public static boolean sensitiveWarningsEnabled = false;
     public static boolean notInterestedEnabled = false;
 
     public static void enableNotInterested() {
@@ -150,6 +151,10 @@ public class SettingsStatus {
 
     public static void enableDiagnostics() {
         diagnosticsEnabled = true;
+    }
+
+    public static void enableSensitiveWarnings() {
+        sensitiveWarningsEnabled = true;
     }
 
     public static void enableAuthorRegion() {

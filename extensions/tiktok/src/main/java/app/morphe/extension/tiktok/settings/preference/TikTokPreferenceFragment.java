@@ -277,6 +277,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                 || SettingsStatus.alwaysShowPublishDateEnabled
                 || SettingsStatus.videoOverlaysEnabled
                 || SettingsStatus.authorRegionEnabled
+                || SettingsStatus.sensitiveWarningsEnabled
                 || SettingsStatus.hideFeedLiveButtonEnabled
                 || SettingsStatus.hideFeedSearchButtonEnabled
                 || SettingsStatus.hideFeedFollowButtonEnabled
@@ -290,6 +291,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     SettingsStatus.doubleTapEnabled && !"default".equals(Settings.DOUBLE_TAP_ACTION.get()),
                     SettingsStatus.confirmInteractionsEnabled && Settings.CONFIRM_FOLLOW.get(),
                     SettingsStatus.confirmInteractionsEnabled && Settings.CONFIRM_LIKE.get(),
+                    SettingsStatus.sensitiveWarningsEnabled && Settings.HIDE_SENSITIVE_WARNINGS.get(),
                     SettingsStatus.authorRegionEnabled && Settings.SHOW_AUTHOR_REGION.get(),
                     SettingsStatus.videoOverlaysEnabled && Settings.HIDE_VISUAL_SEARCH.get(),
                     (SettingsStatus.videoOverlaysEnabled || SettingsStatus.hideFeedLiveButtonEnabled)

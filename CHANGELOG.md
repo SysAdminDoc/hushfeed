@@ -1,5 +1,7 @@
 ## 0.14.1 (2026-09-05)
 
+* New Hide content warnings patch plays videos TikTok has classified without the overlay asking to be tapped through first. Off by default.
+
 * New Show author region patch puts the country a video was posted from next to the creator's name on the feed. Off by default.
 
 * Not interested, the follow and like confirmations, double tap to open comments and subtitle tracking keep working when the block button is switched off. They all read which video is on screen, and that reading was tied to the block button's own switch.
