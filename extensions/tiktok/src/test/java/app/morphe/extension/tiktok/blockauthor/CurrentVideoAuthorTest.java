@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNull;
 import android.preference.PreferenceActivity;
 
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.tiktok.settings.Settings;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -92,4 +93,23 @@ public class CurrentVideoAuthorTest {
         }
     }
 
+    @Test
+    public void trackingSurvivesTheBlockButtonBeingTurnedOff() {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            Utils.setContext(controller.get());
+            Settings.BLOCK_AUTHOR_BUTTON.save(false);
+
+            // Not interested, the follow and like confirmations, double tap to open
+            // comments and subtitle tracking all read this and depend on this patch for
+            // it, so the block button's own switch must not decide whether it runs.
+            BlockAuthorPatch.setCurrentVideoParams(new Params("aweme_gated", "creator_gated"));
+            BlockAuthorPatch.setPlayingAweme("aweme_gated");
+
+            assertEquals("aweme_gated",
+                    Reflect.string(CurrentVideoAuthor.getAweme(), "getAid", "aid"));
+            assertEquals("creator_gated", CurrentVideoAuthor.get().uid);
+        } finally {
+            Settings.BLOCK_AUTHOR_BUTTON.save(true);
+        }
+    }
 }

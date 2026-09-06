@@ -5,12 +5,17 @@
 package app.morphe.extension.tiktok.blockauthor;
 
 import app.morphe.extension.shared.Logger;
-import app.morphe.extension.tiktok.settings.Settings;
 
 /**
  * Entry points called from patched TikTok code.
  *
  * Everything here must stay cheap and must never throw: it runs on the feed's hot path.
+ *
+ * None of this is gated on a setting. The hooks only exist when a patch that needs to know
+ * which video is on screen was applied, and several do: Not interested, the follow and like
+ * confirmations, double tap to open comments and subtitle tracking all depend on this patch
+ * for it. Gating on the block button's own switch left every one of them blind whenever
+ * that button was turned off. Each consumer decides for itself whether to act.
  */
 public final class BlockAuthorPatch {
     private BlockAuthorPatch() {
@@ -24,9 +29,6 @@ public final class BlockAuthorPatch {
      */
     public static void setCurrentVideoParams(Object videoItemParams) {
         try {
-            if (!Settings.BLOCK_AUTHOR_BUTTON.get()) {
-                return;
-            }
             CurrentVideoAuthor.update(videoItemParams);
         } catch (Throwable ex) {
             Logger.printException(() -> "Could not track the current video author", ex);
@@ -42,9 +44,6 @@ public final class BlockAuthorPatch {
      */
     public static void setPlayingAweme(String awemeId) {
         try {
-            if (!Settings.BLOCK_AUTHOR_BUTTON.get()) {
-                return;
-            }
             CurrentVideoAuthor.onPlaying(awemeId);
         } catch (Throwable ex) {
             Logger.printException(() -> "Could not track the playing video", ex);
