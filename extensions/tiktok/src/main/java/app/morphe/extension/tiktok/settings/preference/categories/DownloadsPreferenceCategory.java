@@ -109,13 +109,13 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
         addPreference(new TogglePreference(
                 context,
                 "Remove watermark",
-                "Apply to video downloads and image downloads.",
+                "Applies to both video and photo downloads.",
                 Settings.DOWNLOAD_WATERMARK
         ));
         addPreference(new TogglePreference(
                 context,
                 "Custom offline videos",
-                "Adds a custom option to TikTok's offline videos menu after restart.",
+                "Let the Offline videos menu use your own limit instead of TikTok's fixed one. Restart TikTok after turning this on.",
                 Settings.CUSTOM_OFFLINE_VIDEOS
         ));
         addPreference(new NumberInputPreference(

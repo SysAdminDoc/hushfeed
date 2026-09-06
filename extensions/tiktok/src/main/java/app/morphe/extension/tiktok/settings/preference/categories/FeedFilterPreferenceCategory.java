@@ -38,23 +38,23 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
                 "Comma separated country codes. Videos posted from these are hidden, whatever the list above says.",
                 Settings.REGION_NEVER_FROM));
         addPreference(new InputTextPreference(context, "Blocked creators", "Comma separated account handles or user ids. These accounts are always skipped. An entry between slashes, like /^news_/, is a pattern matched against the handle and the display name.", Settings.BLOCKED_CREATORS));
-        addPreference(new NumberInputPreference(context, "Maximum video length", "Seconds. Zero keeps every length. If only quality rules reject a page, keep the nearest allowed candidate.", Settings.MAX_VIDEO_SECONDS, 0, 86400));
-        addPreference(new NumberInputPreference(context, "Maximum views per like", "Lower values require more likes per view. Zero disables this rule. One candidate may be kept to avoid an empty page.", Settings.MAX_VIEWS_PER_LIKE, 0, 1000000));
+        addPreference(new NumberInputPreference(context, "Maximum video length", "Seconds. Zero keeps every length. If a whole batch would be filtered out, the video closest to your limit is kept so the feed is not empty.", Settings.MAX_VIDEO_SECONDS, 0, 86400));
+        addPreference(new NumberInputPreference(context, "Maximum views per like", "Hide videos with a lot of views and few likes. Lower numbers are stricter, zero turns the rule off, and one video is kept back if a whole batch would go.", Settings.MAX_VIEWS_PER_LIKE, 0, 1000000));
         addPreference(new TogglePreference(context, "Hide promotional music", "Skip videos marked as using promotional music.", Settings.HIDE_PROMOTIONAL_MUSIC));
         addPreference(new TogglePreference(context, "Hide LIVE replays", "Skip recorded LIVE broadcasts in the feed.", Settings.HIDE_LIVE_REPLAYS));
         addPreference(new TogglePreference(
                 context,
-                "Remove feed ads", "Remove ads from feed.",
+                "Remove feed ads", "Remove the ads TikTok puts between videos.",
                 Settings.REMOVE_ADS
         ));
         addPreference(new TogglePreference(
                 context,
-                "Hide TikTok Shop", "Hide TikTok shop from feed.",
+                "Hide TikTok Shop", "Hide TikTok Shop posts from the feed.",
                 Settings.HIDE_SHOP
         ));
         addPreference(new TogglePreference(
                 context,
-                "Hide livestreams", "Hide livestreams from feed.",
+                "Hide livestreams", "Hide livestreams from the feed.",
                 Settings.HIDE_LIVE
         ));
         addPreference(new TogglePreference(

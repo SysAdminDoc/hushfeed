@@ -27,6 +27,7 @@ Always show the publish date in video author information. Requires restart.	Sela
 An app's package name, like com.dv.adm. The save button sends the video's link there instead of saving it here. Leave it empty to save here.	Nama paket sebuah aplikasi, misalnya com.dv.adm. Tombol simpan mengirim tautan video ke sana, bukan menyimpannya di sini. Kosongkan untuk menyimpan di sini.
 Animated sticker format	Format stiker animasi
 App behavior	Perilaku aplikasi
+Applies to both video and photo downloads.	Berlaku untuk unduhan video dan foto.
 Apply to video downloads and image downloads.	Berlaku untuk unduhan video dan unduhan gambar.
 Arrange your feed and bottom tabs	Atur feed dan tab bawahmu
 Auto translate comments	Terjemahkan komentar otomatis
@@ -175,6 +176,7 @@ Hide Live entrance	Sembunyikan pintu masuk LIVE
 Hide LIVE replays	Sembunyikan tayangan ulang LIVE
 Hide livestreams	Sembunyikan siaran LIVE
 Hide livestreams from feed.	Sembunyikan siaran LIVE dari feed.
+Hide livestreams from the feed.	Sembunyikan siaran langsung dari feed.
 Hide message requests	Sembunyikan permintaan pesan
 Hide message streaks	Sembunyikan rentetan pesan
 Hide new follower notifications	Sembunyikan notifikasi pengikut baru
@@ -215,6 +217,7 @@ Hide the creator's picture and the plus button at the top of the right column.	S
 Hide the description under the creator's name on the feed.	Sembunyikan deskripsi di bawah nama kreator pada feed.
 Hide the event badge	Sembunyikan lencana acara
 Hide the favourite button	Sembunyikan tombol favorit
+Hide the favourite button and its count in the right column.	Sembunyikan tombol favorit dan angkanya di kolom kanan.
 Hide the floating promotional badge over the feed.	Sembunyikan lencana promosi yang mengambang di atas feed.
 Hide the friend recommendation card and the other cards TikTok slots between videos.	Sembunyikan kartu rekomendasi teman dan kartu lain yang TikTok selipkan di antara video.
 Hide the heart and its count in the right column.	Sembunyikan ikon hati dan angkanya di kolom kanan.
@@ -242,8 +245,10 @@ Hide the spinning record at the bottom of the right column.	Sembunyikan piringan
 Hide the status bar	Sembunyikan bilah status
 Hide the Tako AI feed bubble above the profile button.	Sembunyikan gelembung Tako AI di feed, tepat di atas tombol profil.
 Hide the TikTok Tako assistant conversation.	Sembunyikan percakapan asisten TikTok Tako.
+Hide the whole column on the right, from the avatar down to the music disc.	Sembunyikan seluruh kolom kanan, dari avatar sampai piringan musik.
 Hide TikTok Shop	Sembunyikan TikTok Shop
 Hide TikTok shop from feed.	Sembunyikan TikTok Shop dari feed.
+Hide TikTok Shop posts from the feed.	Sembunyikan kiriman TikTok Shop dari feed.
 Hide TikTok Shop updates and coupon messages.	Sembunyikan info terbaru TikTok Shop dan pesan kupon.
 Hide TikTok Tako	Sembunyikan TikTok Tako
 Hide TikTok's exposed quick emoji row in supported comment inputs.	Sembunyikan baris emoji cepat yang TikTok tampilkan di kolom komentar yang mendukungnya.
@@ -254,6 +259,7 @@ Hide videos marked as paid partnership or branded content.	Sembunyikan video yan
 Hide videos posted as part of a playlist.	Sembunyikan video yang diunggah sebagai bagian dari playlist.
 Hide videos posted by verified accounts.	Sembunyikan video yang diunggah akun terverifikasi.
 Hide videos that belong to a paid Series.	Sembunyikan video yang termasuk Series berbayar.
+Hide videos with a lot of views and few likes. Lower numbers are stricter, zero turns the rule off, and one video is kept back if a whole batch would go.	Sembunyikan video dengan banyak penayangan dan sedikit suka. Angka lebih kecil lebih ketat, nol mematikan aturannya, dan satu video disisakan kalau satu batch penuh akan hilang.
 Hide videos you have already seen	Sembunyikan video yang sudah kamu tonton
 Hide visual search prompt	Sembunyikan ajakan pencarian visual
 Highest	Tertinggi
@@ -276,6 +282,8 @@ Keep the clock and status icons off the screen while TikTok is open. Swipe down 
 Keep the screen's refresh rate	Pertahankan laju penyegaran layar
 Leave maximum empty to keep it unlimited.	Kosongkan nilai maksimum agar tetap tanpa batas.
 Leave the sound out of the saved video. Save the sound as well still writes the .m4a beside it if you want both.	Hilangkan suara dari video yang disimpan. Simpan suaranya juga tetap menulis berkas .m4a di sebelahnya kalau kamu mau keduanya.
+Let screenshots, screen recording and Circle to Search work on TikTok again. Restart TikTok after changing this.	Tangkapan layar, perekaman layar dan Circle to Search berfungsi lagi di TikTok. Mulai ulang TikTok setelahnya.
+Let the Offline videos menu use your own limit instead of TikTok's fixed one. Restart TikTok after turning this on.	Menu Video offline memakai batasmu sendiri, bukan batas tetap TikTok. Mulai ulang TikTok setelah menyalakannya.
 Links, privacy and player tools	Tautan, privasi, dan perkakas pemutar
 Long press	Tekan lama
 Lower values require more likes per view. Zero disables this rule. One candidate may be kept to avoid an empty page.	Nilai lebih kecil menuntut lebih banyak suka per tayangan. Nol mematikan aturan ini. Satu video bisa dipertahankan supaya halaman tidak kosong.
@@ -340,6 +348,7 @@ Remove ads from feed.	Hapus iklan dari feed.
 Remove feed ads	Hapus iklan di feed
 Remove secure window flags. Restart TikTok after changing.	Hapus flag jendela aman. Mulai ulang TikTok setelah mengubahnya.
 Remove the actions row from the share sheet.	Hapus baris aksi dari menu bagikan.
+Remove the ads TikTok puts between videos.	Hapus iklan yang TikTok sisipkan di antara video.
 Remove the row of friends from the top of the share sheet.	Hapus baris teman dari bagian atas menu bagikan.
 Remove the Share via row.	Hapus baris Bagikan lewat.
 Remove tracking parameters from shared links.	Hapus parameter pelacakan dari tautan yang dibagikan.
@@ -371,6 +380,8 @@ Search and override gate flags	Cari dan timpa flag gate
 Search local TikTok gate metadata and configure isolated typed overrides.	Cari metadata gate TikTok yang tersimpan di perangkat dan atur penimpaan bertipe secara terpisah.
 Search the comments	Cari di komentar
 Search these comments	Cari di komentar ini
+Search without personalisation, whatever your account is set to.	Cari tanpa personalisasi, apa pun setelan akunmu.
+Seconds. Zero keeps every length. If a whole batch would be filtered out, the video closest to your limit is kept so the feed is not empty.	Detik. Nol menyimpan semua durasi. Kalau satu batch penuh akan tersaring habis, video yang paling dekat dengan batasmu tetap ada agar feed tidak kosong.
 Seconds. Zero keeps every length. If only quality rules reject a page, keep the nearest allowed candidate.	Dalam detik. Nol berarti semua durasi ditampilkan. Jika hanya aturan kualitas yang menolak satu halaman, video terdekat yang masih diizinkan tetap dipertahankan.
 Seek by	Jarak lompatan
 Seek from the edges	Lompat dari tepi layar
@@ -395,6 +406,7 @@ Show the handle instead of the name	Tampilkan nama pengguna, bukan nama tampilan
 Show the native seekbar on videos where TikTok would normally hide it.	Tampilkan bilah progres bawaan pada video yang biasanya disembunyikan TikTok.
 Show the whole Activity and New followers lists instead of stopping at a View all button.	Tampilkan seluruh daftar Aktivitas dan Pengikut baru, bukan berhenti di tombol Lihat semua.
 Show the whole video instead of cropping it to the window. Nothing changes on a tall phone, where it already fits. On a folding phone opened up, a squarer screen or a split view the sides or the ends stop being cut off.	Tampilkan video secara utuh, bukan dipotong mengikuti jendela. Di ponsel yang tinggi tidak ada yang berubah karena videonya memang sudah pas. Di ponsel lipat yang dibuka, layar yang lebih persegi, atau mode layar terbagi, sisi atau ujung videonya tidak lagi terpotong.
+Show TikTok's own progress bar on videos where it is normally hidden.	Tampilkan bilah progres TikTok pada video yang biasanya menyembunyikannya.
 Show TikTok's search entry in the Live drawer where supported.	Tampilkan kolom cari TikTok di laci LIVE bila didukung.
 Show where a video was posted	Tampilkan asal unggahan video
 SIM country preset	Praset negara SIM
@@ -442,6 +454,7 @@ The profile picture couldn't be saved.	Foto profilnya tidak bisa disimpan.
 The report could not be saved.	Laporannya tidak bisa disimpan.
 The sound couldn't be saved.	Suaranya tidak bisa disimpan.
 The story couldn't be saved.	Story-nya tidak bisa disimpan.
+The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks.	Jempol ke bawah pada tiap komentar memblokir akun penulisnya, bukan memberi dislike. Komentarnya meredup, ada spanduk untuk membatalkan, dan ketukan kedua membuka blokirnya.
 The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks. Takes effect after a restart.	Jempol ke bawah pada tiap komentar memblokir akun yang menulisnya, bukan menandai tidak suka. Komentarnya meredup, muncul spanduk untuk mengurungkan, dan ketukan kedua membuka blokirnya. Berlaku setelah mulai ulang.
 The video couldn't be saved. Try again, or choose Automatic.	Videonya tidak bisa disimpan. Coba lagi, atau pilih Otomatis.
 There was nothing to clear	Tidak ada yang bisa dihapus
@@ -459,7 +472,9 @@ TikTok refused the follow: %1$s	TikTok menolak permintaan mengikuti: %1$s
 Tokens: {creator}, {date}, {video_id}, {index}. The file extension is kept automatically.	Token: {creator}, {date}, {video_id}, {index}. Ekstensi berkas dipertahankan otomatis.
 Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.	Token: {creator}, {date}, {video_id}. Ekstensi berkas dipertahankan otomatis.
 Tokens: {date}, {media_id}. Works for image and video stickers.	Token: {date}, {media_id}. Berlaku untuk stiker gambar dan video.
+Translate comments as they load, using TikTok's own translator.	Terjemahkan komentar saat dimuat, memakai penerjemah TikTok sendiri.
 Transparent	Transparan
+Two letters, like us, gb or jp.	Dua huruf, misalnya us, gb atau jp.
 Unblocked %1$s	%1$s dibuka blokirnya
 Undo	Urungkan
 Undo last restore	Urungkan pemulihan terakhir
@@ -486,3 +501,5 @@ WebP, exactly as TikTok sent it	WebP, persis seperti yang dikirim TikTok
 Window width needed to enable the layout. Restart after changing.	Lebar jendela yang dibutuhkan agar tata letak ini aktif. Mulai ulang setelah mengubahnya.
 Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.	Simpan suara video di sebelahnya sebagai .m4a. Android 10 ke atas menyimpan audio secara terpisah, jadi berkasnya masuk ke Music dengan nama folder yang sama seperti folder videomu.
 YOUR EXPERIENCE	PENGALAMANMU
+Your operator's name, like T-Mobile.	Nama operatormu, misalnya T-Mobile.
+Your operator's numeric code, like 310260.	Kode angka operatormu, misalnya 310260.

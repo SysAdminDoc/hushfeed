@@ -63,7 +63,7 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
             addPreference(new TogglePreference(
                     context,
                     "Show seekbar",
-                    "Show the native seekbar on videos where TikTok would normally hide it.",
+                    "Show TikTok's own progress bar on videos where it is normally hidden.",
                     Settings.SHOW_SEEKBAR
             ));
         }
@@ -152,7 +152,7 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
             addPreference(new TogglePreference(
                     context,
                     "Use non-personalized search",
-                    "Use TikTok's non-personalized search state instead of the saved account choice.",
+                    "Search without personalisation, whatever your account is set to.",
                     Settings.ENABLE_NON_PERSONALIZED_SEARCH
             ));
         }

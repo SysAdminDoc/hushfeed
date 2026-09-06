@@ -29,7 +29,7 @@ public class CommentsPreferenceCategory extends ConditionalPreferenceCategory {
             addPreference(new TogglePreference(
                     context,
                     "Auto translate comments",
-                    "Automatically translates loaded comment batches using TikTok's translation system.",
+                    "Translate comments as they load, using TikTok's own translator.",
                     Settings.COMMENT_BATCH_TRANSLATION
             ));
         }
@@ -95,7 +95,7 @@ public class CommentsPreferenceCategory extends ConditionalPreferenceCategory {
                     "Thumbs down blocks the commenter",
                     "The thumbs down on each comment blocks the account that posted it instead of "
                             + "disliking. The comment dims, an undo banner follows, and a second tap "
-                            + "unblocks. Takes effect after a restart.",
+                            + "unblocks.",
                     Settings.BLOCK_FROM_COMMENT
             ));
         }

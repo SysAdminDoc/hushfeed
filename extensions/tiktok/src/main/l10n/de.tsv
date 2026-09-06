@@ -27,6 +27,7 @@ Always show the publish date in video author information. Requires restart.	Das 
 An app's package name, like com.dv.adm. The save button sends the video's link there instead of saving it here. Leave it empty to save here.	Der Paketname einer App, etwa com.dv.adm. Die Speichern-Schaltfläche schickt den Link des Videos dorthin, statt es hier zu speichern. Leer lassen, um hier zu speichern.
 Animated sticker format	Format animierter Sticker
 App behavior	App-Verhalten
+Applies to both video and photo downloads.	Gilt für Video- und Foto-Downloads.
 Apply to video downloads and image downloads.	Gilt für Video- und Bild-Downloads.
 Arrange your feed and bottom tabs	Ordne deine Feed-Tabs und unteren Tabs an
 Auto translate comments	Kommentare automatisch übersetzen
@@ -175,6 +176,7 @@ Hide Live entrance	Live-Zugang ausblenden
 Hide LIVE replays	LIVE-Wiederholungen ausblenden
 Hide livestreams	Livestreams ausblenden
 Hide livestreams from feed.	Livestreams aus dem Feed ausblenden.
+Hide livestreams from the feed.	Livestreams aus dem Feed ausblenden.
 Hide message requests	Nachrichtenanfragen ausblenden
 Hide message streaks	Nachrichten-Serien ausblenden
 Hide new follower notifications	Follower-Hinweise ausblenden
@@ -215,6 +217,7 @@ Hide the creator's picture and the plus button at the top of the right column.	B
 Hide the description under the creator's name on the feed.	Die Beschreibung unter dem Namen des Creators im Feed ausblenden.
 Hide the event badge	Event-Abzeichen ausblenden
 Hide the favourite button	Favoriten-Button ausblenden
+Hide the favourite button and its count in the right column.	Den Favoriten-Button und seine Zahl in der rechten Spalte ausblenden.
 Hide the floating promotional badge over the feed.	Das schwebende Werbe-Abzeichen über dem Feed ausblenden.
 Hide the friend recommendation card and the other cards TikTok slots between videos.	Die Freundesvorschlagskarte und die anderen Karten ausblenden, die TikTok zwischen Videos einschiebt.
 Hide the heart and its count in the right column.	Herz und Zähler in der rechten Spalte ausblenden
@@ -242,8 +245,10 @@ Hide the spinning record at the bottom of the right column.	Drehende Platte unte
 Hide the status bar	Statusleiste ausblenden
 Hide the Tako AI feed bubble above the profile button.	Die Tako-AI-Blase im Feed über der Profil-Schaltfläche ausblenden.
 Hide the TikTok Tako assistant conversation.	Die Unterhaltung mit dem TikTok-Tako-Assistenten ausblenden.
+Hide the whole column on the right, from the avatar down to the music disc.	Die ganze rechte Spalte ausblenden, vom Avatar bis zur Musikscheibe.
 Hide TikTok Shop	TikTok Shop ausblenden
 Hide TikTok shop from feed.	TikTok Shop aus dem Feed ausblenden.
+Hide TikTok Shop posts from the feed.	TikTok-Shop-Beiträge aus dem Feed ausblenden.
 Hide TikTok Shop updates and coupon messages.	TikTok-Shop-Updates und Gutschein-Nachrichten ausblenden.
 Hide TikTok Tako	TikTok Tako ausblenden
 Hide TikTok's exposed quick emoji row in supported comment inputs.	TikToks Schnell-Emoji-Zeile in unterstützten Kommentarfeldern ausblenden.
@@ -254,6 +259,7 @@ Hide videos marked as paid partnership or branded content.	Videos ausblenden, di
 Hide videos posted as part of a playlist.	Videos ausblenden, die als Teil einer Playlist veröffentlicht wurden.
 Hide videos posted by verified accounts.	Videos von verifizierten Konten ausblenden.
 Hide videos that belong to a paid Series.	Videos ausblenden, die zu einer bezahlten Serie gehören.
+Hide videos with a lot of views and few likes. Lower numbers are stricter, zero turns the rule off, and one video is kept back if a whole batch would go.	Videos mit vielen Aufrufen und wenigen Likes ausblenden. Kleinere Zahlen sind strenger, null schaltet die Regel ab, und ein Video bleibt übrig, wenn ein ganzer Schwung wegfiele.
 Hide videos you have already seen	Bereits gesehene Videos ausblenden
 Hide visual search prompt	Bildersuche-Hinweis ausblenden
 Highest	Höchste
@@ -276,6 +282,8 @@ Keep the clock and status icons off the screen while TikTok is open. Swipe down 
 Keep the screen's refresh rate	Bildwiederholrate des Bildschirms behalten
 Leave maximum empty to keep it unlimited.	Lass das Maximum leer, damit es unbegrenzt bleibt.
 Leave the sound out of the saved video. Save the sound as well still writes the .m4a beside it if you want both.	Den Ton aus dem gespeicherten Video weglassen. Ton ebenfalls speichern schreibt die .m4a weiterhin daneben, wenn du beides willst.
+Let screenshots, screen recording and Circle to Search work on TikTok again. Restart TikTok after changing this.	Screenshots, Bildschirmaufnahmen und Circle to Search funktionieren in TikTok wieder. Starte TikTok danach neu.
+Let the Offline videos menu use your own limit instead of TikTok's fixed one. Restart TikTok after turning this on.	Das Menü „Offline-Videos“ nutzt dein eigenes Limit statt TikToks festem. Starte TikTok nach dem Einschalten neu.
 Links, privacy and player tools	Links, Datenschutz und Wiedergabewerkzeuge
 Long press	Langes Drücken
 Lower values require more likes per view. Zero disables this rule. One candidate may be kept to avoid an empty page.	Niedrigere Werte verlangen mehr Likes pro Aufruf. Null schaltet diese Regel ab. Ein Kandidat kann bleiben, damit die Seite nicht leer ist.
@@ -340,6 +348,7 @@ Remove ads from feed.	Werbung aus dem Feed entfernen.
 Remove feed ads	Werbung im Feed entfernen
 Remove secure window flags. Restart TikTok after changing.	Sichere Fenster-Flags entfernen. Starte TikTok nach der Änderung neu.
 Remove the actions row from the share sheet.	Die Aktionszeile aus dem Teilen-Menü entfernen.
+Remove the ads TikTok puts between videos.	Die Werbung entfernen, die TikTok zwischen die Videos setzt.
 Remove the row of friends from the top of the share sheet.	Die Freundesreihe oben im Teilen-Menü entfernen.
 Remove the Share via row.	Die Zeile „Teilen über“ entfernen.
 Remove tracking parameters from shared links.	Tracking-Parameter aus geteilten Links entfernen.
@@ -371,6 +380,8 @@ Search and override gate flags	Gate-Flags suchen und überschreiben
 Search local TikTok gate metadata and configure isolated typed overrides.	Lokale TikTok-Gate-Metadaten durchsuchen und isolierte typisierte Überschreibungen einrichten.
 Search the comments	Kommentare durchsuchen
 Search these comments	Diese Kommentare durchsuchen
+Search without personalisation, whatever your account is set to.	Ohne Personalisierung suchen, unabhängig von deiner Kontoeinstellung.
+Seconds. Zero keeps every length. If a whole batch would be filtered out, the video closest to your limit is kept so the feed is not empty.	Sekunden. Null behält jede Länge. Würde ein ganzer Schwung wegfallen, bleibt das Video, das deinem Limit am nächsten kommt, damit der Feed nicht leer ist.
 Seconds. Zero keeps every length. If only quality rules reject a page, keep the nearest allowed candidate.	Sekunden. Null lässt jede Länge zu. Lehnen nur Qualitätsregeln eine Seite ab, bleibt der nächstliegende erlaubte Kandidat erhalten.
 Seek by	Sprungweite
 Seek from the edges	Von den Rändern springen
@@ -395,6 +406,7 @@ Show the handle instead of the name	@Namen statt Anzeigenamen zeigen
 Show the native seekbar on videos where TikTok would normally hide it.	Die native Fortschrittsleiste auch bei Videos anzeigen, bei denen TikTok sie sonst ausblendet.
 Show the whole Activity and New followers lists instead of stopping at a View all button.	Die vollständigen Listen „Aktivität“ und „Neue Follower“ anzeigen, statt bei einer Schaltfläche „Alle anzeigen“ zu enden.
 Show the whole video instead of cropping it to the window. Nothing changes on a tall phone, where it already fits. On a folding phone opened up, a squarer screen or a split view the sides or the ends stop being cut off.	Das ganze Video zeigen, statt es auf das Fenster zuzuschneiden. Auf einem hohen Telefon ändert sich nichts, dort passt es bereits. Auf einem aufgeklappten Falttelefon, einem quadratischeren Bildschirm oder im geteilten Bildschirm werden die Seiten oder die Enden nicht mehr abgeschnitten.
+Show TikTok's own progress bar on videos where it is normally hidden.	TikToks eigene Fortschrittsleiste bei Videos zeigen, wo sie sonst versteckt ist.
 Show TikTok's search entry in the Live drawer where supported.	TikToks Sucheingang im Live-Bereich anzeigen, wo das unterstützt wird.
 Show where a video was posted	Herkunftsland anzeigen
 SIM country preset	SIM-Ländervorgabe
@@ -442,6 +454,7 @@ The profile picture couldn't be saved.	Das Profilbild konnte nicht gespeichert w
 The report could not be saved.	Der Bericht konnte nicht gespeichert werden.
 The sound couldn't be saved.	Der Sound konnte nicht gespeichert werden.
 The story couldn't be saved.	Die Story konnte nicht gespeichert werden.
+The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks.	Der Daumen runter an jedem Kommentar blockiert das Konto dahinter, statt zu disliken. Der Kommentar wird blasser, ein Banner bietet den Weg zurück, und ein zweiter Tipp hebt die Blockierung auf.
 The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks. Takes effect after a restart.	Der Daumen runter an jedem Kommentar blockiert das Konto, das ihn geschrieben hat, statt ihn abzulehnen. Der Kommentar wird abgedunkelt, ein Rückgängig-Banner folgt, und ein zweites Tippen hebt die Blockierung auf. Wirkt nach einem Neustart.
 The video couldn't be saved. Try again, or choose Automatic.	Das Video konnte nicht gespeichert werden. Versuche es noch einmal oder wähle Automatisch.
 There was nothing to clear	Es gab nichts zu löschen
@@ -459,7 +472,9 @@ TikTok refused the follow: %1$s	TikTok hat das Folgen abgelehnt: %1$s
 Tokens: {creator}, {date}, {video_id}, {index}. The file extension is kept automatically.	Platzhalter: {creator}, {date}, {video_id}, {index}. Die Dateiendung bleibt automatisch erhalten.
 Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.	Platzhalter: {creator}, {date}, {video_id}. Die Dateiendung bleibt automatisch erhalten.
 Tokens: {date}, {media_id}. Works for image and video stickers.	Platzhalter: {date}, {media_id}. Gilt für Bild- und Video-Sticker.
+Translate comments as they load, using TikTok's own translator.	Kommentare beim Laden übersetzen, mit TikToks eigenem Übersetzer.
 Transparent	Transparent
+Two letters, like us, gb or jp.	Zwei Buchstaben, etwa us, gb oder jp.
 Unblocked %1$s	%1$s entblockt
 Undo	Rückgängig
 Undo last restore	Letzte Wiederherstellung rückgängig machen
@@ -486,3 +501,5 @@ WebP, exactly as TikTok sent it	WebP, genau so wie TikTok es geschickt hat
 Window width needed to enable the layout. Restart after changing.	Fensterbreite, ab der das Layout aktiv wird. Nach dem Ändern neu starten.
 Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.	Den Ton des Videos daneben als .m4a speichern. Ab Android 10 wird Audio getrennt abgelegt, also landet die Datei unter Music im Ordner mit dem Namen deines Videoordners.
 YOUR EXPERIENCE	DEIN ERLEBNIS
+Your operator's name, like T-Mobile.	Der Name deines Anbieters, etwa T-Mobile.
+Your operator's numeric code, like 310260.	Der Zahlencode deines Anbieters, etwa 310260.

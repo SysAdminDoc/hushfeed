@@ -42,17 +42,17 @@ public class SimSpoofPreferenceCategory extends ConditionalPreferenceCategory {
         }
         InputTextPreference countryIsoPreference = new InputTextPreference(
                 context,
-                "Country ISO", "us, gb, jp, ...",
+                "Country ISO", "Two letters, like us, gb or jp.",
                 Settings.SIM_SPOOF_ISO
         );
         InputTextPreference mccMncPreference = new InputTextPreference(
                 context,
-                "Operator MCC/MNC", "Example: 310260",
+                "Operator MCC/MNC", "Your operator's numeric code, like 310260.",
                 Settings.SIMSPOOF_MCCMNC
         );
         InputTextPreference operatorNamePreference = new InputTextPreference(
                 context,
-                "Operator name", "Example: T-Mobile",
+                "Operator name", "Your operator's name, like T-Mobile.",
                 Settings.SIMSPOOF_OP_NAME
         );
         SimPresetPreference simPresetPreference = new SimPresetPreference(

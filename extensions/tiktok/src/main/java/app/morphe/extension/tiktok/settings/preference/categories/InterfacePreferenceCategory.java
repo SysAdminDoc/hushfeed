@@ -50,7 +50,7 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
         }
         if (SettingsStatus.screenCaptureEnabled) {
             addPreference(new TogglePreference(context, "Allow screenshots and Circle to Search",
-                    "Remove secure window flags. Restart TikTok after changing.", Settings.ALLOW_SCREEN_CAPTURE));
+                    "Let screenshots, screen recording and Circle to Search work on TikTok again. Restart TikTok after changing this.", Settings.ALLOW_SCREEN_CAPTURE));
         }
         if (SettingsStatus.automaticClearDisplayEnabled) {
             addPreference(new TogglePreference(context, "Automatic clear display",
@@ -140,8 +140,7 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
             addPreference(new TogglePreference(
                     context,
                     "Hide the action bar",
-                    "Hide the column on the right: avatar, like, comments, favourite, share "
-                            + "and the music disc.",
+                    "Hide the whole column on the right, from the avatar down to the music disc.",
                     Settings.HIDE_FEED_ACTION_BAR
             ));
             addPreference(new TogglePreference(
@@ -165,7 +164,7 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
             addPreference(new TogglePreference(
                     context,
                     "Hide the favourite button",
-                    "Hide the bookmark and its count in the right column.",
+                    "Hide the favourite button and its count in the right column.",
                     Settings.HIDE_RAIL_FAVOURITE
             ));
             addPreference(new TogglePreference(
