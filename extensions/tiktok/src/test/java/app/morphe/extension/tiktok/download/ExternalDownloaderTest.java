@@ -107,6 +107,26 @@ public class ExternalDownloaderTest {
         assertNull(ExternalDownloader.shareUrl(new GetterVideo(null, null, "7712345")));
     }
 
+    @Test public void theLinkHandedOverIsSanitizedTheWayASharedOneIs() {
+        try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            Settings.EXTERNAL_DOWNLOADER_PACKAGE.save("com.dv.adm");
+            app.morphe.extension.shared.settings.BaseSettings.SANITIZE_SHARING_LINKS.save(true);
+
+            Shared video = new Shared(
+                    "https://www.tiktok.com/@dancer/video/7712345?_r=1&_t=abc123&sender_device=pc");
+            assertTrue(ExternalDownloader.handOff(video, activity));
+
+            Intent sent = Shadows.shadowOf(activity).getNextStartedActivity();
+            assertNotNull(sent);
+            assertEquals("https://www.tiktok.com/@dancer/video/7712345",
+                    sent.getStringExtra(Intent.EXTRA_TEXT));
+        } finally {
+            Settings.EXTERNAL_DOWNLOADER_PACKAGE.save("");
+        }
+    }
+
     @Test public void anAppThatIsNotThereLeavesTheSaveWhereItWas() {
         try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup()) {
             var activity = controller.get();

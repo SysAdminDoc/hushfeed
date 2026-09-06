@@ -14,6 +14,7 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.share.ShareUrlSanitizer;
 
 /**
  * Hands the video's link to another app instead of saving it here.
@@ -38,7 +39,9 @@ public final class ExternalDownloader {
 
         Intent send = new Intent(Intent.ACTION_SEND);
         send.setType("text/plain");
-        send.putExtra(Intent.EXTRA_TEXT, url);
+        // The same treatment a shared link gets. TikTok's own link carries the parameters that
+        // say who sent it, and handing that to another app is still handing it out.
+        send.putExtra(Intent.EXTRA_TEXT, ShareUrlSanitizer.rewriteShareUrl(url));
         send.setPackage(target);
         send.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {

@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Handing a video's link to another downloader now strips the tracking from it, the same way sharing a link does. TikTok's own link carries parameters that say who sent it, and those were going out with the hand-off even with Sanitize sharing links turned on.
+
 * The Friends tab gets filtered like the rest of the feed. It arrives as its own kind of response, so none of the existing hooks ever saw it and sponsored posts kept turning up there with every filter switched on. Ads, and LIVE cards when you have livestreams hidden, are dropped from it now.
 
 * The Save button on a sticker saves the sticker you are looking at. TikTok reuses the preview sheet for whatever sticker you open next, and the button was holding the one it was built for, so opening a second sticker and saving it could write the first one instead.
