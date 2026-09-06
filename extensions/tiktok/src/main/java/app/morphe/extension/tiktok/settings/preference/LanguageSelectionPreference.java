@@ -61,7 +61,7 @@ public final class LanguageSelectionPreference extends Preference {
     public LanguageSelectionPreference(Context context, StringSetting setting) {
         super(context);
         this.setting = setting;
-        setTitle("Do not translate languages");
+        setTitle(L10n.t(context, "Do not translate languages"));
         setKey(setting.key);
         setValue(setting.get());
     }
@@ -127,14 +127,14 @@ public final class LanguageSelectionPreference extends Preference {
         root.setBackground(SettingsUi.borderedSurface(context, 6, true));
 
         TextView title = new TextView(context);
-        title.setText("Do not translate languages");
+        title.setText(L10n.t(context, "Do not translate languages"));
         title.setTextColor(SettingsUi.textPrimary());
         title.setTextSize(20);
         title.setTypeface(title.getTypeface(), Typeface.BOLD);
         root.addView(title, matchWrap());
 
         TextView helper = new TextView(context);
-        helper.setText("Checked languages keep their original comments. TikTok's current catalog is supplemented by languages bundled with this app version.");
+        helper.setText(L10n.t(context, "Checked languages keep their original comments. TikTok's current catalog is supplemented by languages bundled with this app version."));
         helper.setTextColor(SettingsUi.textSecondary());
         helper.setTextSize(14);
         LinearLayout.LayoutParams helperParams = matchWrap();
@@ -143,7 +143,7 @@ public final class LanguageSelectionPreference extends Preference {
 
         EditText search = new EditText(context);
         search.setSingleLine(true);
-        search.setHint("Search language or code");
+        search.setHint(L10n.t(context, "Search language or code"));
         search.setImeOptions(EditorInfo.IME_ACTION_DONE);
         SettingsUi.styleEditText(search);
         root.addView(search, matchWrap());
@@ -160,11 +160,25 @@ public final class LanguageSelectionPreference extends Preference {
         listParams.setMargins(0, dp(8), 0, dp(10));
         root.addView(list, listParams);
 
+        TextView nothing = new TextView(context);
+        nothing.setText(L10n.t(context, "No language matches that"));
+        nothing.setTextColor(SettingsUi.textSecondary());
+        nothing.setTextSize(14);
+        nothing.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams nothingParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                SettingsUi.dialogListHeight(context, 430)
+        );
+        nothingParams.setMargins(0, dp(8), 0, dp(10));
+        root.addView(nothing, nothingParams);
+        // The list swaps itself for this and back again as the search narrows and widens.
+        list.setEmptyView(nothing);
+
         LinearLayout actions = new LinearLayout(context);
         actions.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
-        TextView clear = action(context, "Clear", false);
-        TextView cancel = action(context, "Cancel", false);
-        TextView save = action(context, "Save", true);
+        TextView clear = action(context, L10n.t(context, "Clear"), false);
+        TextView cancel = action(context, L10n.t(context, "Cancel"), false);
+        TextView save = action(context, L10n.t(context, "Save"), true);
         actions.addView(clear);
         actions.addView(cancel);
         actions.addView(save);

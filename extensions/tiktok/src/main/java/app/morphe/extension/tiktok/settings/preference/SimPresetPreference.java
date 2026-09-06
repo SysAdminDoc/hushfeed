@@ -279,8 +279,9 @@ public class SimPresetPreference extends Preference {
             SimPreset preset = getItem(position);
 
             if (preset == null) {
-                title.setText("No matching countries");
-                summary.setText("");
+                // A row with a blank second line looks like a result that failed to load.
+                title.setText(L10n.t(getContext(), "No matching countries"));
+                summary.setText(L10n.t(getContext(), "Try a country name, or a two-letter code"));
                 view.setEnabled(false);
             } else {
                 title.setText(preset.country);

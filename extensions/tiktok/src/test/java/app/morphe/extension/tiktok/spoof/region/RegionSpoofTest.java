@@ -114,9 +114,13 @@ public class RegionSpoofTest {
             new SimSpoofPreferenceCategory(activity, screen);
             assertNotNull(screen.findPreference("region_spoof"));
             assertNotNull(screen.findPreference("region_store_spoof"));
-            var country = screen.findPreference("simspoof_iso");
-            assertFalse(country.getOnPreferenceChangeListener().onPreferenceChange(country, "zz"));
-            assertTrue(country.getOnPreferenceChangeListener().onPreferenceChange(country, "de"));
+            var country = (app.morphe.extension.tiktok.settings.preference.InputTextPreference)
+                    screen.findPreference("simspoof_iso");
+            assertFalse(country.callChangeListener("zz"));
+            assertFalse(country.callChangeListener(""));
+            assertTrue(country.callChangeListener("de"));
+            // The listener behind the check still does its own job.
+            assertNotNull(country.getOnPreferenceChangeListener());
             activity.setPreferenceScreen(screen);
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
             app.morphe.extension.tiktok.UiCapture.save(activity.getWindow().getDecorView(), "region-settings.png");

@@ -11,6 +11,8 @@ import android.content.Context;
 import android.content.Intent;
 
 import app.morphe.extension.shared.Logger;
+import androidx.annotation.Nullable;
+
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.settings.Settings;
@@ -58,13 +60,30 @@ public final class ExternalDownloader {
         }
     }
 
+    /**
+     * What is wrong with the app name as typed, or null when nothing is. An empty box is
+     * fine and means the save stays in TikTok. Anything else has to look like a package
+     * name, because {@link #packageName()} quietly drops what does not and the reader would
+     * otherwise only find out at the next save.
+     */
+    @Nullable
+    public static String packageNameProblem(String value) {
+        if (value == null) return null;
+        String name = value.trim();
+        if (name.isEmpty() || name.matches(PACKAGE_NAME)) return null;
+        return L10n.t("That is not an app name. Try something like com.example.downloader, "
+                + "or leave the box empty to keep saving in TikTok.");
+    }
+
+    /** What an Android package name looks like, and nothing that could be a path or an argument. */
+    private static final String PACKAGE_NAME = "[a-zA-Z][a-zA-Z0-9_]*(\\.[a-zA-Z][a-zA-Z0-9_]*)+";
+
     /** The app the link goes to, as typed, or empty when the save stays here. */
     static String packageName() {
         String value = Settings.EXTERNAL_DOWNLOADER_PACKAGE.get();
         if (value == null) return "";
         String name = value.trim();
-        // An Android package name, and nothing that could be a path or an argument.
-        if (name.isEmpty() || !name.matches("[a-zA-Z][a-zA-Z0-9_]*(\\.[a-zA-Z][a-zA-Z0-9_]*)+")) {
+        if (name.isEmpty() || !name.matches(PACKAGE_NAME)) {
             return "";
         }
         return name;

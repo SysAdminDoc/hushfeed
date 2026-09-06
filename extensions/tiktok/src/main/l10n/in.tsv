@@ -27,6 +27,7 @@ Also override TikTok's region getters. Keeps your interface language. Requires O
 Always show publish date	Selalu tampilkan tanggal unggah
 Always show the publish date in video author information. Requires restart.	Selalu tampilkan tanggal unggah di informasi pembuat video. Perlu mulai ulang.
 An app's package name, like com.dv.adm. The save button sends the video's link there instead of saving it here. Leave it empty to save here.	Nama paket sebuah aplikasi, misalnya com.dv.adm. Tombol simpan mengirim tautan video ke sana, bukan menyimpannya di sini. Kosongkan untuk menyimpan di sini.
+An operator code is five or six digits, like 310260	Kode operator itu lima atau enam angka, misalnya 310260
 Animated sticker format	Format stiker animasi
 App behavior	Perilaku aplikasi
 Applies to both video and photo downloads.	Berlaku untuk unduhan video dan foto.
@@ -54,6 +55,7 @@ Caption background	Latar keterangan
 Caption text size	Ukuran teks keterangan
 Captions, gestures and on-screen controls	Keterangan, gestur, dan kontrol di layar
 Capture crash reports locally	Rekam laporan mogok di perangkat
+Checked languages keep their original comments. TikTok's current catalog is supplemented by languages bundled with this app version.	Komentar dalam bahasa yang dicentang dibiarkan apa adanya. Daftar TikTok sekarang ditambah bahasa yang dibawa versi aplikasi ini.
 Choose 1-1000 videos. Values outside this range use the nearest valid limit. Restart TikTok after saving.	Pilih 1 sampai 1000 video. Nilai di luar rentang ini memakai batas sah terdekat. Mulai ulang TikTok setelah menyimpan.
 Choose a backup file. Your current settings are kept for Undo.	Pilih berkas cadangan. Pengaturanmu yang sekarang disimpan untuk Urungkan.
 Choose what reaches your feed	Pilih apa yang sampai ke feed-mu
@@ -311,6 +313,7 @@ ms	ms
 Never from these countries	Tidak pernah dari negara ini
 No account to block on this video	Tidak ada akun untuk diblokir di video ini
 No additional languages excluded	Tidak ada bahasa tambahan yang dikecualikan
+No language matches that	Tidak ada bahasa yang cocok
 No limit	Tanpa batas
 No preset selected	Tidak ada praset yang dipilih
 No sound to block on this video	Tidak ada suara untuk diblokir di video ini
@@ -390,6 +393,7 @@ Saving the selected video quality without sound	Menyimpan kualitas video pilihan
 Saving the story	Menyimpan Story
 Saving video and subtitles to %1$s	Menyimpan video dan subtitel ke %1$s
 Search and override gate flags	Cari dan timpa flag gate
+Search language or code	Cari bahasa atau kode
 Search local TikTok gate metadata and configure isolated typed overrides.	Cari metadata gate TikTok yang tersimpan di perangkat dan atur penimpaan bertipe secara terpisah.
 Search the comments	Cari di komentar
 Search these comments	Cari di komentar ini
@@ -459,6 +463,8 @@ Tap again to %1$s	Ketuk lagi untuk %1$s
 Tap the feed Follow button twice within four seconds.	Ketuk tombol Ikuti di feed dua kali dalam empat detik.
 Tap the like heart twice within four seconds. Removing a like stays immediate.	Ketuk ikon hati dua kali dalam empat detik. Membatalkan suka tetap langsung berlaku.
 That creator pattern is too long to use, so it was skipped: %1$s	Pola kreator itu terlalu panjang, jadi dilewati: %1$s
+That creator pattern is too long to use: %1$s	Pola kreator itu terlalu panjang: %1$s
+That is not an app name. Try something like com.example.downloader, or leave the box empty to keep saving in TikTok.	Itu bukan nama aplikasi. Coba seperti com.example.downloader, atau kosongkan saja biar tetap disimpan di TikTok.
 That settings change did not go through. Nothing was altered.	Perubahan itu tidak berhasil. Tidak ada yang diubah.
 The destination contains an invalid folder name	Ada nama folder yang tidak sah di tujuannya
 The file picker is not available on this device.	Pemilih berkas tidak tersedia di perangkat ini.
@@ -493,6 +499,7 @@ Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.
 Tokens: {date}, {media_id}. Works for image and video stickers.	Token: {date}, {media_id}. Berlaku untuk stiker gambar dan video.
 Translate comments as they load, using TikTok's own translator.	Terjemahkan komentar saat dimuat, memakai penerjemah TikTok sendiri.
 Transparent	Transparan
+Try a country name, or a two-letter code	Coba nama negara, atau kode dua huruf
 Two letters, like us, gb or jp.	Dua huruf, misalnya us, gb atau jp.
 Unblocked %1$s	%1$s dibuka blokirnya
 Undo	Urungkan

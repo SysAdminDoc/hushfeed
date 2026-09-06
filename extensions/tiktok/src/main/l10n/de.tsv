@@ -27,6 +27,7 @@ Also override TikTok's region getters. Keeps your interface language. Requires O
 Always show publish date	Veröffentlichungsdatum immer anzeigen
 Always show the publish date in video author information. Requires restart.	Das Veröffentlichungsdatum immer in den Angaben zum Video-Ersteller anzeigen. Erfordert einen Neustart.
 An app's package name, like com.dv.adm. The save button sends the video's link there instead of saving it here. Leave it empty to save here.	Der Paketname einer App, etwa com.dv.adm. Die Speichern-Schaltfläche schickt den Link des Videos dorthin, statt es hier zu speichern. Leer lassen, um hier zu speichern.
+An operator code is five or six digits, like 310260	Ein Betreibercode hat fünf oder sechs Ziffern, zum Beispiel 310260
 Animated sticker format	Format animierter Sticker
 App behavior	App-Verhalten
 Applies to both video and photo downloads.	Gilt für Video- und Foto-Downloads.
@@ -54,6 +55,7 @@ Caption background	Untertitel-Hintergrund
 Caption text size	Textgröße der Untertitel
 Captions, gestures and on-screen controls	Untertitel, Gesten und Bildschirmelemente
 Capture crash reports locally	Absturzberichte lokal speichern
+Checked languages keep their original comments. TikTok's current catalog is supplemented by languages bundled with this app version.	Kommentare in angehakten Sprachen bleiben, wie sie sind. Zu TikToks aktueller Liste kommen die Sprachen dazu, die diese App-Version mitbringt.
 Choose 1-1000 videos. Values outside this range use the nearest valid limit. Restart TikTok after saving.	Wähle 1 bis 1000 Videos. Werte außerhalb dieses Bereichs nutzen das nächstgelegene gültige Limit. Starte TikTok nach dem Speichern neu.
 Choose a backup file. Your current settings are kept for Undo.	Wähle eine Sicherungsdatei. Deine aktuellen Einstellungen bleiben zum Rückgängigmachen erhalten.
 Choose what reaches your feed	Wähle aus, was in deinem Feed erscheint
@@ -311,6 +313,7 @@ ms	ms
 Never from these countries	Nie aus diesen Ländern
 No account to block on this video	Bei diesem Video gibt es kein Konto zum Blockieren
 No additional languages excluded	Keine weiteren Sprachen ausgeschlossen
+No language matches that	Keine Sprache passt dazu
 No limit	Keine Grenze
 No preset selected	Keine Vorgabe gewählt
 No sound to block on this video	Bei diesem Video gibt es keinen Sound zum Blockieren
@@ -390,6 +393,7 @@ Saving the selected video quality without sound	Die gewählte Videoqualität wir
 Saving the story	Story wird gespeichert
 Saving video and subtitles to %1$s	Video und Untertitel werden in %1$s gespeichert
 Search and override gate flags	Gate-Flags suchen und überschreiben
+Search language or code	Sprache oder Code suchen
 Search local TikTok gate metadata and configure isolated typed overrides.	Lokale TikTok-Gate-Metadaten durchsuchen und isolierte typisierte Überschreibungen einrichten.
 Search the comments	Kommentare durchsuchen
 Search these comments	Diese Kommentare durchsuchen
@@ -459,6 +463,8 @@ Tap again to %1$s	Noch einmal tippen zum %1$s
 Tap the feed Follow button twice within four seconds.	Tippe die Folgen-Schaltfläche im Feed innerhalb von vier Sekunden zweimal an.
 Tap the like heart twice within four seconds. Removing a like stays immediate.	Tippe das Like-Herz innerhalb von vier Sekunden zweimal an. Das Entfernen eines Likes bleibt sofort.
 That creator pattern is too long to use, so it was skipped: %1$s	Dieses Kreator-Muster ist zu lang und wurde übersprungen: %1$s
+That creator pattern is too long to use: %1$s	Dieses Kreator-Muster ist zu lang: %1$s
+That is not an app name. Try something like com.example.downloader, or leave the box empty to keep saving in TikTok.	Das ist kein App-Name. Versuche etwas wie com.example.downloader, oder lass das Feld leer, damit weiter in TikTok gespeichert wird.
 That settings change did not go through. Nothing was altered.	Diese Änderung hat nicht geklappt. Es wurde nichts geändert.
 The destination contains an invalid folder name	Im Zielpfad steht ein unzulässiger Ordnername
 The file picker is not available on this device.	Die Dateiauswahl ist auf diesem Gerät nicht verfügbar.
@@ -493,6 +499,7 @@ Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.
 Tokens: {date}, {media_id}. Works for image and video stickers.	Platzhalter: {date}, {media_id}. Gilt für Bild- und Video-Sticker.
 Translate comments as they load, using TikTok's own translator.	Kommentare beim Laden übersetzen, mit TikToks eigenem Übersetzer.
 Transparent	Transparent
+Try a country name, or a two-letter code	Versuche einen Ländernamen oder ein Kürzel aus zwei Buchstaben
 Two letters, like us, gb or jp.	Zwei Buchstaben, etwa us, gb oder jp.
 Unblocked %1$s	%1$s entblockt
 Undo	Rückgängig

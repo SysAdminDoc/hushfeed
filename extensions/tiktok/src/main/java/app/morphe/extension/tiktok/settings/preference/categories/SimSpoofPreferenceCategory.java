@@ -13,6 +13,9 @@ import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.InputTextPreference;
 import app.morphe.extension.tiktok.settings.preference.SimPresetPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
+import app.morphe.extension.tiktok.spoof.sim.SpoofSimPatch;
+import app.morphe.extension.tiktok.spoof.region.RegionSpoof;
+import app.morphe.extension.tiktok.settings.L10n;
 
 @SuppressWarnings("deprecation")
 public class SimSpoofPreferenceCategory extends ConditionalPreferenceCategory {
@@ -44,12 +47,14 @@ public class SimSpoofPreferenceCategory extends ConditionalPreferenceCategory {
                 context,
                 "Country ISO", "Two letters, like us, gb or jp.",
                 Settings.SIM_SPOOF_ISO
-        );
+        ).withCheck(value -> RegionSpoof.validCountry(value)
+                ? null : L10n.t("Enter a valid two-letter country code"));
         InputTextPreference mccMncPreference = new InputTextPreference(
                 context,
                 "Operator MCC/MNC", "Your operator's numeric code, like 310260.",
                 Settings.SIMSPOOF_MCCMNC
-        );
+        ).withCheck(value -> SpoofSimPatch.validMccMnc(value.trim()) ? null
+                : L10n.t("An operator code is five or six digits, like 310260"));
         InputTextPreference operatorNamePreference = new InputTextPreference(
                 context,
                 "Operator name", "Your operator's name, like T-Mobile.",
@@ -63,12 +68,6 @@ public class SimSpoofPreferenceCategory extends ConditionalPreferenceCategory {
         );
 
         countryIsoPreference.setOnPreferenceChangeListener((preference, newValue) -> {
-            if (!app.morphe.extension.tiktok.spoof.region.RegionSpoof.validCountry(newValue.toString())) {
-                app.morphe.extension.shared.Utils.showToastShort(
-                        app.morphe.extension.tiktok.settings.L10n.t(
-                                "Enter a valid two-letter country code"));
-                return false;
-            }
             simPresetPreference.refreshSummary(
                     newValue.toString(),
                     mccMncPreference.getText(),

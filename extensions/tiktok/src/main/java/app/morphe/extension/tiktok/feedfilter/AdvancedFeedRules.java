@@ -1,6 +1,7 @@
 package app.morphe.extension.tiktok.feedfilter;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
@@ -131,6 +132,29 @@ public final class AdvancedFeedRules {
         @NonNull @Override public String toString() {
             return text.toString();
         }
+    }
+
+    /**
+     * What is wrong with a blocked-creator list as typed, or null when nothing is. Named so
+     * the reader can see which entry to fix, since the list is one long comma separated line
+     * and a pattern that will not compile is otherwise only reported at the next feed page.
+     */
+    @Nullable
+    public static String creatorEntryProblem(String list) {
+        if (list == null) return null;
+        for (String entry : rawTerms(list)) {
+            if (!isPattern(entry)) continue;
+            String source = entry.substring(1, entry.length() - 1);
+            if (source.length() > MAX_PATTERN_LENGTH) {
+                return L10n.f("That creator pattern is too long to use: %1$s", entry);
+            }
+            try {
+                Pattern.compile(source, Pattern.CASE_INSENSITIVE);
+            } catch (PatternSyntaxException invalid) {
+                return L10n.f("Hushfeed cannot read the creator pattern %1$s", entry);
+            }
+        }
+        return null;
     }
 
     /** An entry between slashes is a pattern rather than a name to match exactly. */

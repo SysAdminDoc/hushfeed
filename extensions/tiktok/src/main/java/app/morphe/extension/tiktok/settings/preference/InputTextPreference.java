@@ -17,11 +17,27 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+
 import app.morphe.extension.shared.settings.StringSetting;
-import app.morphe.extension.tiktok.Utils;
+import app.morphe.extension.shared.Utils;
 
 @SuppressWarnings("deprecation")
 public class InputTextPreference extends EditTextPreference {
+
+    /**
+     * Looks at what was typed and says what is wrong with it, or null when nothing is.
+     *
+     * <p>The message is shown as it is returned, so it is written for the reader and comes
+     * from the translation table.
+     */
+    public interface Check {
+        @Nullable
+        String problem(String value);
+    }
+
+    @Nullable
+    private Check check;
 
     public InputTextPreference(Context context, String title, String summary, StringSetting setting) {
         super(context);
@@ -31,11 +47,33 @@ public class InputTextPreference extends EditTextPreference {
         setText(setting.get());
     }
 
+    /**
+     * Refuses a value the field cannot use, while the dialog is still open and the reader is
+     * still looking at it. Without this the value saves and goes wrong somewhere else: at the
+     * next feed page, at the next save, or silently and never.
+     */
+    public InputTextPreference withCheck(Check check) {
+        this.check = check;
+        return this;
+    }
+
+    @Override
+    public boolean callChangeListener(Object newValue) {
+        if (check != null) {
+            String problem = check.problem(newValue == null ? "" : newValue.toString());
+            if (problem != null) {
+                Utils.showToastLong(problem);
+                return false;
+            }
+        }
+        return super.callChangeListener(newValue);
+    }
+
     @Override
     protected void onBindView(View view) {
         super.onBindView(view);
 
-        Utils.setTitleAndSummaryColor(view);
+        app.morphe.extension.tiktok.Utils.setTitleAndSummaryColor(view);
     }
 
     @Override

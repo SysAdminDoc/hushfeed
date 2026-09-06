@@ -42,7 +42,7 @@ public class SpoofSimPatch {
         if (isContextNotSet("MCC-MNC")) return value;
 
         if (Settings.SIM_SPOOF.get()) {
-            String mccMnc = Settings.SIMSPOOF_MCCMNC.get();
+            String mccMnc = mccMnc(Settings.SIMSPOOF_MCCMNC.get());
             if (!validMccMnc(mccMnc)) {
                 Logger.printInfo(() -> "Ignoring an unusable MCC/MNC: " + mccMnc);
                 return value;
@@ -80,19 +80,28 @@ public class SpoofSimPatch {
      * rather than handed on: a value typed before this check existed, or restored from a
      * backup, would otherwise reach them as letters.
      */
-    private static boolean validMccMnc(String value) {
-        if (value == null || value.length() < 5 || value.length() > 6) return false;
-        for (int index = 0; index < value.length(); index++) {
-            if (value.charAt(index) < '0' || value.charAt(index) > '9') return false;
+    public static boolean validMccMnc(String value) {
+        String code = mccMnc(value);
+        if (code.length() < 5 || code.length() > 6) return false;
+        for (int index = 0; index < code.length(); index++) {
+            if (code.charAt(index) < '0' || code.charAt(index) > '9') return false;
         }
         return true;
+    }
+
+    /**
+     * The stored code without the spaces around it. The dialog and the getters below have to
+     * read it the same way, or the field accepts a value that is then ignored every time.
+     */
+    private static String mccMnc(String value) {
+        return value == null ? "" : value.trim();
     }
 
     private static String getMccMncPart(String value, boolean mcc) {
         if (isContextNotSet(mcc ? "cellMcc" : "cellMnc")) return value;
         if (!Settings.SIM_SPOOF.get()) return value;
 
-        String combined = Settings.SIMSPOOF_MCCMNC.get();
+        String combined = mccMnc(Settings.SIMSPOOF_MCCMNC.get());
         if (!validMccMnc(combined)) return value;
 
         String replacement = mcc ? combined.substring(0, 3) : combined.substring(3);

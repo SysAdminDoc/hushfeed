@@ -16,6 +16,7 @@ import app.morphe.extension.tiktok.settings.preference.InputTextPreference;
 import app.morphe.extension.tiktok.settings.preference.NumberInputPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 import app.morphe.extension.tiktok.download.DownloadDestination;
+import app.morphe.extension.tiktok.download.ExternalDownloader;
 
 @SuppressWarnings("deprecation")
 public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
@@ -61,7 +62,8 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
                     "Send links to another app",
                     "An app's package name, like com.dv.adm. The save button sends the video's "
                             + "link there instead of saving it here. Leave it empty to save here.",
-                    Settings.EXTERNAL_DOWNLOADER_PACKAGE));
+                    Settings.EXTERNAL_DOWNLOADER_PACKAGE)
+                    .withCheck(value -> ExternalDownloader.packageNameProblem(value.trim())));
         }
         addPreference(new DownloadPathPreference(
                 context,
