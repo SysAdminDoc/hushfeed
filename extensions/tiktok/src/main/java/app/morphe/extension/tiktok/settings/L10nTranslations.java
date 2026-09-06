@@ -259,7 +259,7 @@ public final class L10nTranslations {
         table.put("Disable analytics and tracking",
                 "Analyse und Tracking abschalten");
         table.put("Disable long-press quick share",
-                "Schnelles Teilen bei langem Drücken abschalten");
+                "Schnelles Teilen abschalten");
         table.put("Disable long-press repost",
                 "Reposten bei langem Drücken abschalten");
         table.put("Do not translate languages",
@@ -279,7 +279,7 @@ public final class L10nTranslations {
         table.put("Enable diagnostic logging",
                 "Diagnoseprotokoll einschalten");
         table.put("Enable hold-and-slide 2x lock",
-                "2x-Sperre durch Halten und Wischen einschalten");
+                "2x-Sperre per Halten und Wischen");
         table.put("Example: 310260",
                 "Beispiel: 310260");
         table.put("Example: T-Mobile",
@@ -394,7 +394,7 @@ public final class L10nTranslations {
         table.put("Hide message streaks",
                 "Nachrichten-Serien ausblenden");
         table.put("Hide new follower notifications",
-                "Benachrichtigungen über neue Follower ausblenden");
+                "Follower-Hinweise ausblenden");
         table.put("Hide new followers",
                 "Neue Follower ausblenden");
         table.put("Hide paid partnerships",
@@ -552,7 +552,7 @@ public final class L10nTranslations {
         table.put("Hushfeed cannot read the creator pattern %1$s",
                 "Hushfeed kann das Creator-Muster %1$s nicht lesen");
         table.put("Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working.",
-                "Hushfeed hat ein TikTok-Rätsel ausgeblendet. Schalte Rätsel-Dialoge ausblenden aus, wenn etwas nicht mehr funktioniert.");
+                "Hushfeed hat ein TikTok-Rätsel ausgeblendet. Schalte „CAPTCHA-Popups ausblenden“ aus, wenn etwas nicht mehr funktioniert.");
         table.put("Ignore the creator's choice so the Duet and Stitch entries appear. Everything else the app checks still applies, and whether the upload is accepted is the server's decision.",
                 "Die Wahl der erstellenden Person übergehen, damit die Einträge Duett und Stitch erscheinen. Alle übrigen Prüfungen der App gelten weiterhin, und ob der Upload angenommen wird, entscheidet der Server.");
         table.put("Inbox",
@@ -608,7 +608,7 @@ public final class L10nTranslations {
         table.put("Min/Max likes",
                 "Min./Max. Likes");
         table.put("Min/Max shares",
-                "Min/Max Teilen");
+                "Min./Max. geteilt");
         table.put("Min/Max views",
                 "Min./Max. Aufrufe");
         table.put("Minimum",
@@ -791,7 +791,7 @@ public final class L10nTranslations {
         table.put("Show seekbar",
                 "Fortschrittsleiste anzeigen");
         table.put("Show seekbar thumbnail",
-                "Vorschaubild an der Fortschrittsleiste anzeigen");
+                "Vorschaubild beim Ziehen");
     }
 
     private static void fillDe6(Map<String, String> table) {
@@ -808,7 +808,7 @@ public final class L10nTranslations {
         table.put("Show the whole video instead of cropping it to the window. Nothing changes on a tall phone, where it already fits. On a folding phone opened up, a squarer screen or a split view the sides or the ends stop being cut off.",
                 "Das ganze Video zeigen, statt es auf das Fenster zuzuschneiden. Auf einem hohen Telefon ändert sich nichts, dort passt es bereits. Auf einem aufgeklappten Falttelefon, einem quadratischeren Bildschirm oder im geteilten Bildschirm werden die Seiten oder die Enden nicht mehr abgeschnitten.");
         table.put("Show where a video was posted",
-                "Anzeigen, wo ein Video veröffentlicht wurde");
+                "Herkunftsland anzeigen");
         table.put("Skip blocked sounds",
                 "Gesperrte Sounds überspringen");
         table.put("Skip content warnings",
@@ -816,7 +816,7 @@ public final class L10nTranslations {
         table.put("Skip recorded LIVE broadcasts in the feed.",
                 "Aufgezeichnete LIVE-Übertragungen im Feed überspringen.");
         table.put("Skip videos marked as using promotional music.",
-                "Videos überspringen, die als Videos mit Werbemusik gekennzeichnet sind.");
+                "Videos überspringen, die als Werbemusik gekennzeichnet sind.");
         table.put("Skip videos that use a sound blocked with the player's sound button, or named below.",
                 "Videos überspringen, deren Sound über die Sound-Taste im Player gesperrt wurde oder unten aufgeführt ist.");
         table.put("Source code and releases",
@@ -866,11 +866,11 @@ public final class L10nTranslations {
         table.put("The minimum or maximum favourites of a video to show.",
                 "Mindest- oder Höchstzahl an Favoriten, damit ein Video gezeigt wird.");
         table.put("The minimum or maximum likes of a video to show.",
-                "Die Mindest- oder Höchstzahl an Likes, die ein Video zum Anzeigen haben darf.");
+                "Die Mindest- oder Höchstzahl an Likes, damit ein Video gezeigt wird.");
         table.put("The minimum or maximum shares of a video to show.",
-                "Mindest- oder Höchstzahl an Teilungen, damit ein Video gezeigt wird.");
+                "Die Mindest- oder Höchstzahl, wie oft ein Video geteilt wurde, damit es gezeigt wird.");
         table.put("The minimum or maximum views of a video to show.",
-                "Die Mindest- oder Höchstzahl an Aufrufen, die ein Video zum Anzeigen haben darf.");
+                "Die Mindest- oder Höchstzahl an Aufrufen, damit ein Video gezeigt wird.");
         table.put("The profile picture couldn't be saved.",
                 "Das Profilbild konnte nicht gespeichert werden.");
         table.put("The story couldn't be saved.",
@@ -912,7 +912,7 @@ public final class L10nTranslations {
         table.put("Unlimited",
                 "Unbegrenzt");
         table.put("Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.",
-                "Bis zu 8 Geschwindigkeiten von 0,5 bis 3, durch Kommas getrennt. Beispiel: 0.5, 1, 1.5, 2, 2.5, 3. Leer lassen für TikToks Liste. Nach dem Ändern der Liste neu starten.");
+                "Bis zu 8 Geschwindigkeiten von 0.5 bis 3, durch Kommas getrennt. Beispiel: 0.5, 1, 1.5, 2, 2.5, 3. Leer lassen für TikToks Liste. Nach dem Ändern der Liste neu starten.");
         table.put("Use 0 for TikTok's size, or 12 to 48 sp. Applies to the next caption.",
                 "0 für TikToks Größe oder 12 bis 48 sp. Gilt ab dem nächsten Untertitel.");
     }
@@ -923,7 +923,7 @@ public final class L10nTranslations {
         table.put("Use TikTok's non-personalized search state instead of the saved account choice.",
                 "TikToks nicht personalisierten Suchmodus statt der gespeicherten Kontoauswahl verwenden.");
         table.put("Use a default playback speed",
-                "Standard-Wiedergabegeschwindigkeit verwenden");
+                "Standardgeschwindigkeit verwenden");
         table.put("Use non-personalized search",
                 "Nicht personalisierte Suche verwenden");
         table.put("Use the preset for TikTok's account and store region getters too. May affect search. Requires the locale option and a restart.",
@@ -951,7 +951,7 @@ public final class L10nTranslations {
         table.put("Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.",
                 "Den Ton des Videos daneben als .m4a speichern. Ab Android 10 wird Audio getrennt abgelegt, also landet die Datei unter Music im Ordner mit dem Namen deines Videoordners.");
         table.put("YOUR EXPERIENCE",
-                "DEIN TIKTOK");
+                "DEIN ERLEBNIS");
         table.put("code %1$s",
                 "Code %1$s");
         table.put("days",
@@ -1013,7 +1013,7 @@ public final class L10nTranslations {
         table.put("Allowed bottom tabs",
                 "Tab bawah yang diizinkan");
         table.put("Allowed loaded tabs",
-                "Tab yang diizinkan");
+                "Tab dimuat yang diizinkan");
         table.put("Also apply these filters to downloaded videos TikTok uses when the feed cannot load enough new items.",
                 "Terapkan filter ini juga ke video terunduh yang TikTok pakai saat feed tidak bisa memuat cukup konten baru.");
         table.put("Also override TikTok's region getters. Keeps your interface language. Requires Override SIM details and a restart; IP address and account rules still apply.",
@@ -1168,7 +1168,7 @@ public final class L10nTranslations {
         table.put("Custom SIM details",
                 "Detail SIM khusus");
         table.put("Custom offline videos",
-                "Batas video offline khusus");
+                "Video offline khusus");
         table.put("Dark",
                 "Gelap");
         table.put("Days to remember a video. Zero removes the age limit. History keeps at most 10,000 videos.",
@@ -1239,13 +1239,13 @@ public final class L10nTranslations {
         table.put("Folder picker is not available on this device",
                 "Pemilih folder tidak tersedia di perangkat ini");
         table.put("For You",
-                "For You");
+                "Untuk Kamu");
         table.put("Forget seen videos after",
                 "Lupakan video yang sudah ditonton setelah");
         table.put("GIF",
                 "GIF");
         table.put("Ghost mode",
-                "Mode senyap");
+                "Mode siluman");
         table.put("Hidden commenters",
                 "Pengomentar yang disembunyikan");
         table.put("Hide AI generated videos",
@@ -1716,7 +1716,7 @@ public final class L10nTranslations {
         table.put("Show seekbar",
                 "Tampilkan bilah progres");
         table.put("Show seekbar thumbnail",
-                "Tampilkan pratinjau bilah progres");
+                "Tampilkan pratinjau video di bilah progres");
     }
 
     private static void fillIn6(Map<String, String> table) {
@@ -1837,7 +1837,7 @@ public final class L10nTranslations {
         table.put("Unlimited",
                 "Tanpa batas");
         table.put("Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.",
-                "Sampai 8 kecepatan dari 0,5 hingga 3, dipisahkan koma. Contoh: 0.5, 1, 1.5, 2, 2.5, 3. Kosongkan untuk memakai daftar TikTok. Mulai ulang setelah mengubah daftar ini.");
+                "Sampai 8 kecepatan dari 0.5 hingga 3, dipisahkan koma. Contoh: 0.5, 1, 1.5, 2, 2.5, 3. Kosongkan untuk memakai daftar TikTok. Mulai ulang setelah mengubah daftar ini.");
         table.put("Use 0 for TikTok's size, or 12 to 48 sp. Applies to the next caption.",
                 "Pakai 0 untuk ukuran bawaan TikTok, atau 12 sampai 48 sp. Berlaku untuk keterangan berikutnya.");
     }
@@ -1884,7 +1884,7 @@ public final class L10nTranslations {
         table.put("dp",
                 "dp");
         table.put("ms",
-                "md");
+                "ms");
         table.put("sp",
                 "sp");
         table.put("us, gb, jp, ...",

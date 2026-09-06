@@ -1,5 +1,7 @@
 ## Unreleased
 
+* German and Indonesian corrections. The German CAPTCHA message told you to turn off a switch by a name that is not on the screen, the speed list said to use commas as decimal points when the field only takes dots, and shares were translated as arithmetic division. Indonesian had the Custom offline videos row reading as its own limit row, and For You left in English where TikTok's own Indonesian build says Untuk Kamu. Six German titles that were long enough to be cut short have been shortened.
+
 * Three things about the settings screens. The comment search box follows your phone's theme, has a border so it looks like a field you can type in, gets a search key rather than a newline, and is a proper size to tap. Each section says the same thing on the home page as it does at the top of its own page, where the two used to disagree. And the Diagnostics page keeps the backup actions together at the end instead of scattering them between the logging switches.
 
 * The undo on the block banner is a real target now, announces itself to a screen reader, and says Undo in your own language. Clear all on the suggested accounts row is translated too, and readable on a light inbox rather than washed out.

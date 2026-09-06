@@ -16,7 +16,7 @@ All loaded tabs	Semua tab yang dimuat
 Allow Duet and Stitch anyway	Tetap izinkan Duet dan Stitch
 Allow screenshots and Circle to Search	Izinkan tangkapan layar dan Circle to Search
 Allowed bottom tabs	Tab bawah yang diizinkan
-Allowed loaded tabs	Tab yang diizinkan
+Allowed loaded tabs	Tab dimuat yang diizinkan
 Also apply these filters to downloaded videos TikTok uses when the feed cannot load enough new items.	Terapkan filter ini juga ke video terunduh yang TikTok pakai saat feed tidak bisa memuat cukup konten baru.
 Also override TikTok's region getters. Keeps your interface language. Requires Override SIM details and a restart; IP address and account rules still apply.	Timpa juga pembaca wilayah milik TikTok. Bahasa antarmukamu tidak berubah. Perlu Timpa detail SIM dan mulai ulang; aturan alamat IP dan akun tetap berlaku.
 Always show publish date	Selalu tampilkan tanggal unggah
@@ -92,7 +92,7 @@ Could not open settings section	Bagian pengaturan tidak bisa dibuka
 Country and network preferences	Preferensi negara dan jaringan
 Country ISO	ISO negara
 Current: %1$s %2$s	Saat ini: %1$s %2$s
-Custom offline videos	Batas video offline khusus
+Custom offline videos	Video offline khusus
 Custom SIM details	Detail SIM khusus
 Dark	Gelap
 days	hari
@@ -129,9 +129,9 @@ Filters, translation and copy options	Filter, terjemahan, dan opsi salin
 Fit the video to the screen	Sesuaikan video dengan layar
 Folder picker is not available	Pemilih folder tidak tersedia
 Folder picker is not available on this device	Pemilih folder tidak tersedia di perangkat ini
-For You	For You
+For You	Untuk Kamu
 Forget seen videos after	Lupakan video yang sudah ditonton setelah
-Ghost mode	Mode senyap
+Ghost mode	Mode siluman
 GIF	GIF
 Hidden commenters	Pengomentar yang disembunyikan
 Hide activity	Sembunyikan aktivitas
@@ -276,7 +276,7 @@ Min/Max likes	Suka min/maks
 Min/Max shares	Bagikan min/maks
 Min/Max views	Tayangan min/maks
 Minimum	Minimum
-ms	md
+ms	ms
 Never from these countries	Tidak pernah dari negara ini
 No additional languages excluded	Tidak ada bahasa tambahan yang dikecualikan
 No limit	Tanpa batas
@@ -362,7 +362,7 @@ Show a video preview thumbnail while dragging the seekbar.	Tampilkan pratinjau v
 Show block button on videos	Tampilkan tombol blokir di video
 Show Live search	Tampilkan pencarian LIVE
 Show seekbar	Tampilkan bilah progres
-Show seekbar thumbnail	Tampilkan pratinjau bilah progres
+Show seekbar thumbnail	Tampilkan pratinjau video di bilah progres
 Show the country a video was posted from next to the creator's name.	Tampilkan negara asal unggahan video di sebelah nama kreator.
 Show the current spoken caption while the other controls are hidden.	Tampilkan teks ucapan yang sedang berjalan meski kontrol lain disembunyikan.
 Show the handle instead of the name	Tampilkan nama pengguna, bukan nama tampilan
@@ -424,7 +424,7 @@ Transparent	Transparan
 Undo	Urungkan
 Undo last restore	Urungkan pemulihan terakhir
 Unlimited	Tanpa batas
-Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.	Sampai 8 kecepatan dari 0,5 hingga 3, dipisahkan koma. Contoh: 0.5, 1, 1.5, 2, 2.5, 3. Kosongkan untuk memakai daftar TikTok. Mulai ulang setelah mengubah daftar ini.
+Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.	Sampai 8 kecepatan dari 0.5 hingga 3, dipisahkan koma. Contoh: 0.5, 1, 1.5, 2, 2.5, 3. Kosongkan untuk memakai daftar TikTok. Mulai ulang setelah mengubah daftar ini.
 us, gb, jp, ...	us, gb, jp, ...
 Use 0 for TikTok's size, or 12 to 48 sp. Applies to the next caption.	Pakai 0 untuk ukuran bawaan TikTok, atau 12 sampai 48 sp. Berlaku untuk keterangan berikutnya.
 Use a default playback speed	Pakai kecepatan pemutaran bawaan
