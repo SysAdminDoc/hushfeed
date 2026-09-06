@@ -62,6 +62,7 @@ public class SettingsStatus {
         notInterestedEnabled = true;
     }
     public static boolean inboxFilterEnabled = false;
+    public static boolean videoFitEnabled = false;
     public static boolean notificationControlsEnabled = false;
     public static boolean hideSuggestedAccountsEnabled = false;
     public static boolean hideInboxStoriesEnabled = false;
@@ -184,6 +185,10 @@ public class SettingsStatus {
 
     public static void enableExpandActivityList() {
         expandActivityListEnabled = true;
+    }
+
+    public static void enableVideoFit() {
+        videoFitEnabled = true;
     }
 
     public static void enableNotificationControls() {

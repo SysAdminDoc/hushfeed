@@ -41,6 +41,8 @@ public class Settings extends BaseSettings {
     public static final StringSetting DOUBLE_TAP_ACTION = new StringSetting("double_tap_action", "default");
     public static final StringSetting LONG_PRESS_ACTION = new StringSetting("long_press_action", "default");
     public static final BooleanSetting EDGE_SEEK = new BooleanSetting("edge_seek", FALSE);
+    public static final BooleanSetting FIT_VIDEO_TO_SCREEN =
+            new BooleanSetting("fit_video_to_screen", FALSE);
     public static final BooleanSetting HIDE_FOLLOWER_NOTIFICATIONS =
             new BooleanSetting("hide_follower_notifications", FALSE);
     public static final BooleanSetting HIDE_MESSAGE_STREAKS =

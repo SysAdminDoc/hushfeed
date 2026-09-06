@@ -366,12 +366,14 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     SettingsStatus.downloadEnabled && !"mp4".equals(Settings.DOWNLOAD_STICKER_FORMAT.get())
             ));
         }
-        if (SettingsStatus.playbackQualityEnabled || SettingsStatus.playbackSpeedEnabled || SettingsStatus.autoAdvanceEnabled) {
+        if (SettingsStatus.playbackQualityEnabled || SettingsStatus.playbackSpeedEnabled
+                || SettingsStatus.autoAdvanceEnabled || SettingsStatus.videoFitEnabled) {
             addMenu(screen, Section.PLAYBACK, SettingsMenuPreference.Icon.PLAYBACK,
                     countEnabled(SettingsStatus.playbackQualityEnabled && !"auto".equals(Settings.PLAYBACK_QUALITY.get()),
                             SettingsStatus.playbackSpeedEnabled && Settings.DEFAULT_SPEED_ENABLED.get(),
                             SettingsStatus.playbackSpeedEnabled && !Settings.CUSTOM_SPEEDS.get().trim().isEmpty(),
-                            SettingsStatus.autoAdvanceEnabled && Settings.AUTO_ADVANCE.get()));
+                            SettingsStatus.autoAdvanceEnabled && Settings.AUTO_ADVANCE.get(),
+                            SettingsStatus.videoFitEnabled && Settings.FIT_VIDEO_TO_SCREEN.get()));
         }
         if (SettingsStatus.inboxFilterEnabled
                 || SettingsStatus.hideSuggestedAccountsEnabled

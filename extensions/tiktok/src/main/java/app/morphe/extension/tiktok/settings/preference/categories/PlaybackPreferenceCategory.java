@@ -18,7 +18,8 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
     }
 
     @Override public boolean getSettingsStatus() {
-        return SettingsStatus.playbackQualityEnabled || SettingsStatus.playbackSpeedEnabled || SettingsStatus.autoAdvanceEnabled;
+        return SettingsStatus.playbackQualityEnabled || SettingsStatus.playbackSpeedEnabled
+                || SettingsStatus.autoAdvanceEnabled || SettingsStatus.videoFitEnabled;
     }
 
     @Override public void addPreferences(Context context) {
@@ -53,6 +54,14 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
             addPreference(new ChoicePreference(context, "On mobile data", Settings.PLAYBACK_QUALITY_METERED,
                     new String[]{"No limit", "Highest", "Lowest", "1080p", "720p", "540p", "480p", "360p"},
                     new String[]{"off", "highest", "lowest", "1080", "720", "540", "480", "360"}));
+        }
+        if (SettingsStatus.videoFitEnabled) {
+            addPreference(new TogglePreference(context, "Fit the video to the screen",
+                    "Show the whole video instead of cropping it to the window. Nothing changes "
+                            + "on a tall phone, where it already fits. On a folding phone opened "
+                            + "up, a squarer screen or a split view the sides or the ends stop "
+                            + "being cut off.",
+                    Settings.FIT_VIDEO_TO_SCREEN));
         }
     }
 }

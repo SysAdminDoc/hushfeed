@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(876);
+        Map<String, String> table = new HashMap<>(880);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -309,6 +309,8 @@ public final class L10nTranslations {
                 "Offline-Ersatzvideos filtern");
         table.put("Filters, translation and copy options",
                 "Filter, Übersetzung und Kopieroptionen");
+        table.put("Fit the video to the screen",
+                "Video an den Bildschirm anpassen");
         table.put("Folder picker is not available",
                 "Ordnerauswahl ist nicht verfügbar");
         table.put("Folder picker is not available on this device",
@@ -421,11 +423,11 @@ public final class L10nTranslations {
                 "Story-Leiste ausblenden");
         table.put("Hide story",
                 "Storys ausblenden");
-        table.put("Hide story from feed.",
-                "Storys aus dem Feed ausblenden.");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Hide story from feed.",
+                "Storys aus dem Feed ausblenden.");
         table.put("Hide suggested account rows.",
                 "Zeilen mit vorgeschlagenen Konten ausblenden.");
         table.put("Hide suggested accounts",
@@ -544,11 +546,11 @@ public final class L10nTranslations {
                 "Höchste");
         table.put("Home",
                 "Startseite");
-        table.put("How far each edge press moves the video.",
-                "Wie weit ein Druck am Rand das Video bewegt.");
     }
 
     private static void fillDe4(Map<String, String> table) {
+        table.put("How far each edge press moves the video.",
+                "Wie weit ein Druck am Rand das Video bewegt.");
         table.put("Hushfeed cannot read the creator pattern %1$s",
                 "Hushfeed kann das Creator-Muster %1$s nicht lesen");
         table.put("Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working.",
@@ -667,11 +669,11 @@ public final class L10nTranslations {
                 "Ein Profilbild gedrückt halten, um das Original in voller Größe im Fotoordner zu speichern.");
         table.put("Press and hold a story to save it. Stories have no save button of their own, and holding one is how TikTok pauses it, so this takes that gesture over.",
                 "Eine Story gedrückt halten, um sie zu speichern. Stories haben keinen eigenen Speicher-Button, und Halten pausiert bei TikTok, also übernimmt das diese Geste.");
-        table.put("Press and hold the left or right third of the screen to jump back or forward. The middle third keeps the Long press action.",
-                "Halte das linke oder rechte Drittel des Bildschirms gedrückt, um zurück oder vorwärts zu springen. Im mittleren Drittel gilt weiterhin die Aktion für langes Drücken.");
     }
 
     private static void fillDe5(Map<String, String> table) {
+        table.put("Press and hold the left or right third of the screen to jump back or forward. The middle third keeps the Long press action.",
+                "Halte das linke oder rechte Drittel des Bildschirms gedrückt, um zurück oder vorwärts zu springen. Im mittleren Drittel gilt weiterhin die Aktion für langes Drücken.");
         table.put("Profile picture saved to %1$s",
                 "Profilbild gespeichert unter %1$s");
         table.put("Promotions, popups, publish dates, and feed controls.",
@@ -790,15 +792,17 @@ public final class L10nTranslations {
                 "Das Land, aus dem ein Video veröffentlicht wurde, neben dem Namen des Creators anzeigen.");
         table.put("Show the current spoken caption while the other controls are hidden.",
                 "Den aktuell gesprochenen Untertitel anzeigen, während die anderen Bedienelemente ausgeblendet sind.");
-        table.put("Show the handle instead of the name",
-                "@Namen statt Anzeigenamen zeigen");
     }
 
     private static void fillDe6(Map<String, String> table) {
+        table.put("Show the handle instead of the name",
+                "@Namen statt Anzeigenamen zeigen");
         table.put("Show the native seekbar on videos where TikTok would normally hide it.",
                 "Die native Fortschrittsleiste auch bei Videos anzeigen, bei denen TikTok sie sonst ausblendet.");
         table.put("Show the whole Activity and New followers lists instead of stopping at a View all button.",
                 "Die vollständigen Listen „Aktivität“ und „Neue Follower“ anzeigen, statt bei einer Schaltfläche „Alle anzeigen“ zu enden.");
+        table.put("Show the whole video instead of cropping it to the window. Nothing changes on a tall phone, where it already fits. On a folding phone opened up, a squarer screen or a split view the sides or the ends stop being cut off.",
+                "Das ganze Video zeigen, statt es auf das Fenster zuzuschneiden. Auf einem hohen Telefon ändert sich nichts, dort passt es bereits. Auf einem aufgeklappten Falttelefon, einem quadratischeren Bildschirm oder im geteilten Bildschirm werden die Seiten oder die Enden nicht mehr abgeschnitten.");
         table.put("Show where a video was posted",
                 "Anzeigen, wo ein Video veröffentlicht wurde");
         table.put("Skip blocked sounds",
@@ -911,13 +915,13 @@ public final class L10nTranslations {
                 "Nicht personalisierte Suche verwenden");
         table.put("Use the preset for TikTok's account and store region getters too. May affect search. Requires the locale option and a restart.",
                 "Die Vorgabe auch für TikToks Konto- und Store-Regionsabfragen verwenden. Kann die Suche beeinflussen. Erfordert die Sprachoption und einen Neustart.");
+    }
+
+    private static void fillDe7(Map<String, String> table) {
         table.put("Use the selected country and operator values. Restart TikTok after changing region settings.",
                 "Die gewählten Werte für Land und Netzbetreiber verwenden. Starte TikTok nach dem Ändern der Regionseinstellungen neu.");
         table.put("Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.",
                 "Das geteilte Layout auf breiteren Bildschirmen verwenden. Starte TikTok nach dem Ändern dieser Option oder nach dem Aufklappen neu, falls das alte Layout bleibt.");
-    }
-
-    private static void fillDe7(Map<String, String> table) {
         table.put("Video (MP4)",
                 "Video (MP4)");
         table.put("Video destination",
@@ -957,7 +961,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(876);
+        Map<String, String> table = new HashMap<>(880);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1222,6 +1226,8 @@ public final class L10nTranslations {
                 "Filter video offline cadangan");
         table.put("Filters, translation and copy options",
                 "Filter, terjemahan, dan opsi salin");
+        table.put("Fit the video to the screen",
+                "Sesuaikan video dengan layar");
         table.put("Folder picker is not available",
                 "Pemilih folder tidak tersedia");
         table.put("Folder picker is not available on this device",
@@ -1334,11 +1340,11 @@ public final class L10nTranslations {
                 "Sembunyikan deret Story");
         table.put("Hide story",
                 "Sembunyikan Story");
-        table.put("Hide story from feed.",
-                "Sembunyikan Story dari feed.");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Hide story from feed.",
+                "Sembunyikan Story dari feed.");
         table.put("Hide suggested account rows.",
                 "Sembunyikan baris akun yang disarankan.");
         table.put("Hide suggested accounts",
@@ -1457,11 +1463,11 @@ public final class L10nTranslations {
                 "Tertinggi");
         table.put("Home",
                 "Beranda");
-        table.put("How far each edge press moves the video.",
-                "Seberapa jauh setiap tekanan di tepi memindahkan video.");
     }
 
     private static void fillIn4(Map<String, String> table) {
+        table.put("How far each edge press moves the video.",
+                "Seberapa jauh setiap tekanan di tepi memindahkan video.");
         table.put("Hushfeed cannot read the creator pattern %1$s",
                 "Hushfeed tidak bisa membaca pola kreator %1$s");
         table.put("Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working.",
@@ -1580,11 +1586,11 @@ public final class L10nTranslations {
                 "Tekan dan tahan foto profil untuk menyimpan aslinya dalam ukuran penuh ke lokasi simpan fotomu.");
         table.put("Press and hold a story to save it. Stories have no save button of their own, and holding one is how TikTok pauses it, so this takes that gesture over.",
                 "Tekan dan tahan Story untuk menyimpannya. Story tidak punya tombol simpan sendiri, dan menahannya adalah cara TikTok menjeda, jadi gestur itu diambil alih.");
-        table.put("Press and hold the left or right third of the screen to jump back or forward. The middle third keeps the Long press action.",
-                "Tekan dan tahan sepertiga kiri atau kanan layar untuk melompat mundur atau maju. Sepertiga bagian tengah tetap memakai aksi Tekan lama.");
     }
 
     private static void fillIn5(Map<String, String> table) {
+        table.put("Press and hold the left or right third of the screen to jump back or forward. The middle third keeps the Long press action.",
+                "Tekan dan tahan sepertiga kiri atau kanan layar untuk melompat mundur atau maju. Sepertiga bagian tengah tetap memakai aksi Tekan lama.");
         table.put("Profile picture saved to %1$s",
                 "Foto profil disimpan ke %1$s");
         table.put("Promotions, popups, publish dates, and feed controls.",
@@ -1703,15 +1709,17 @@ public final class L10nTranslations {
                 "Tampilkan negara asal unggahan video di sebelah nama kreator.");
         table.put("Show the current spoken caption while the other controls are hidden.",
                 "Tampilkan teks ucapan yang sedang berjalan meski kontrol lain disembunyikan.");
-        table.put("Show the handle instead of the name",
-                "Tampilkan nama pengguna, bukan nama tampilan");
     }
 
     private static void fillIn6(Map<String, String> table) {
+        table.put("Show the handle instead of the name",
+                "Tampilkan nama pengguna, bukan nama tampilan");
         table.put("Show the native seekbar on videos where TikTok would normally hide it.",
                 "Tampilkan bilah progres bawaan pada video yang biasanya disembunyikan TikTok.");
         table.put("Show the whole Activity and New followers lists instead of stopping at a View all button.",
                 "Tampilkan seluruh daftar Aktivitas dan Pengikut baru, bukan berhenti di tombol Lihat semua.");
+        table.put("Show the whole video instead of cropping it to the window. Nothing changes on a tall phone, where it already fits. On a folding phone opened up, a squarer screen or a split view the sides or the ends stop being cut off.",
+                "Tampilkan video secara utuh, bukan dipotong mengikuti jendela. Di ponsel yang tinggi tidak ada yang berubah karena videonya memang sudah pas. Di ponsel lipat yang dibuka, layar yang lebih persegi, atau mode layar terbagi, sisi atau ujung videonya tidak lagi terpotong.");
         table.put("Show where a video was posted",
                 "Tampilkan asal unggahan video");
         table.put("Skip blocked sounds",
@@ -1824,13 +1832,13 @@ public final class L10nTranslations {
                 "Pakai pencarian nonpersonal");
         table.put("Use the preset for TikTok's account and store region getters too. May affect search. Requires the locale option and a restart.",
                 "Pakai praset itu untuk pembaca wilayah akun dan toko TikTok juga. Bisa memengaruhi pencarian. Perlu opsi lokal dan mulai ulang.");
+    }
+
+    private static void fillIn7(Map<String, String> table) {
         table.put("Use the selected country and operator values. Restart TikTok after changing region settings.",
                 "Pakai nilai negara dan operator yang dipilih. Mulai ulang TikTok setelah mengubah pengaturan wilayah.");
         table.put("Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.",
                 "Pakai tata letak terbagi pada layar yang lebih lebar. Mulai ulang TikTok setelah mengubah opsi ini atau setelah membuka lipatan jika tata letak lama masih muncul.");
-    }
-
-    private static void fillIn7(Map<String, String> table) {
         table.put("Video (MP4)",
                 "Video (MP4)");
         table.put("Video destination",
