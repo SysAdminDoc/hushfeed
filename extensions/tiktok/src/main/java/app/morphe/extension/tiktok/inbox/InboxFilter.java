@@ -20,6 +20,8 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.BooleanSetting;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.settings.preference.SettingsUi;
+import app.morphe.extension.tiktok.settings.L10n;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -280,11 +282,12 @@ public final class InboxFilter {
 
         TextView clearAll = new TextView(activity);
         clearAll.setId(CLEAR_ALL_VIEW_ID);
-        clearAll.setText("Clear all");
-        clearAll.setTextColor(Color.rgb(254, 44, 85));
+        clearAll.setText(L10n.t(activity, "Clear all"));
+        clearAll.setTextColor(SettingsUi.overlayAccentOn(SettingsUi.isDarkMode()));
         clearAll.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         clearAll.setGravity(Gravity.CENTER_VERTICAL | Gravity.END);
-        clearAll.setContentDescription("Clear all suggested accounts");
+        clearAll.setContentDescription(L10n.t(activity, "Clear all suggested accounts"));
+        clearAll.setMinimumHeight(Math.round(48 * activity.getResources().getDisplayMetrics().density));
         float density = activity.getResources().getDisplayMetrics().density;
         int padding = Math.round(16 * density);
         clearAll.setPadding(padding, 0, padding, 0);

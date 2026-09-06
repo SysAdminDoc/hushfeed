@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The undo on the block banner is a real target now, announces itself to a screen reader, and says Undo in your own language. Clear all on the suggested accounts row is translated too, and readable on a light inbox rather than washed out.
+
 * Turning off the profile picture or story save gives TikTok its own long press back. Both took over the gesture while switched on and then kept it after being switched off, answering that they had not handled it, which is not the same as handing it back. Holding a story is how TikTok pauses it, so that one was worth getting right.
 
 * Four bounds on what a download will accept from the server. A sticker is read with a ceiling instead of until the phone runs out of memory, a mirror that is not an HTTP address is skipped rather than abandoning the ones after it, a file over 2 GB has its length checked properly, and a filename built from a very long name is cut to what a filesystem takes without splitting a character in half.

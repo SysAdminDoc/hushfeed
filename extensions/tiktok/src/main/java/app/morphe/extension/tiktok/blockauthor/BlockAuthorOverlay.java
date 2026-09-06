@@ -26,6 +26,8 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.feedfilter.SoundIdentity;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.settings.preference.SettingsUi;
+import app.morphe.extension.tiktok.settings.L10n;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.notinterested.NotInterested;
 
@@ -561,15 +563,23 @@ public final class BlockAuthorOverlay {
                 banner.addView(label, new LinearLayout.LayoutParams(0, -2, 1f));
 
                 TextView undo = new TextView(activity);
-                undo.setText("UNDO");
-                undo.setTextColor(Color.rgb(254, 44, 85));
+                undo.setText(L10n.t(activity, "Undo"));
+                undo.setContentDescription(L10n.t(activity, "Undo"));
+                undo.setTextColor(SettingsUi.OVERLAY_ACCENT);
                 undo.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-                undo.setPadding(dp(activity, 12), 0, 0, 0);
+                // A banner that dismisses itself is the worst place for a small target.
+                undo.setPadding(dp(activity, 16), dp(activity, 12), dp(activity, 16), dp(activity, 12));
+                undo.setMinimumHeight(dp(activity, 48));
+                undo.setMinimumWidth(dp(activity, 48));
+                undo.setGravity(Gravity.CENTER);
                 undo.setOnClickListener(view -> {
                     dismissUndo();
                     undoAction.run();
                 });
                 banner.addView(undo, new LinearLayout.LayoutParams(-2, -2));
+                // Nothing announced this banner, so a reader using TalkBack never knew there
+                // was a way back at all.
+                banner.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
 
                 // Every window decor is a FrameLayout, so gravity params work in any root.
                 FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(-1, -2,
