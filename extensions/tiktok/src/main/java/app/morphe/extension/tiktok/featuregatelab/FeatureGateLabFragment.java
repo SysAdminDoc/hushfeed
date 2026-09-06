@@ -59,6 +59,7 @@ import java.util.zip.GZIPOutputStream;
 
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.settings.SettingsJson;
 import app.morphe.extension.tiktok.settings.SettingsOperationJournal;
 import app.morphe.extension.tiktok.settings.preference.SettingsUi;
 
@@ -82,8 +83,11 @@ public final class FeatureGateLabFragment extends Fragment {
     private static final java.util.concurrent.atomic.AtomicBoolean CHANGING = new java.util.concurrent.atomic.AtomicBoolean();
     private static final int REQUEST_EXPORT_LOADED = 0x6f10;
     private static final int REQUEST_IMPORT_LOADED = 0x6f11;
-    private static final int MAX_COMPRESSED_IMPORT_BYTES = 32 * 1024 * 1024;
-    private static final int MAX_JSON_IMPORT_BYTES = 64 * 1024 * 1024;
+    private static final int MAX_COMPRESSED_IMPORT_BYTES = 4 * 1024 * 1024;
+    private static final int MAX_JSON_IMPORT_BYTES = 8 * 1024 * 1024;
+    private static final int MAX_IMPORT_RULES = 1024;
+    private static final SettingsJson.Limits IMPORT_JSON_LIMITS = new SettingsJson.Limits(
+            24, 8192, 64 * 1024, 2048, MAX_JSON_IMPORT_BYTES);
     private static final int FILTER_ALL = 0;
     private static final int FILTER_BOOLEAN = 1;
     private static final int FILTER_ENABLED = 2;
@@ -752,8 +756,8 @@ public final class FeatureGateLabFragment extends Fragment {
 
     private void writeLoadedValuesFile(Uri uri) {
         new Thread(() -> {
+            Activity activity = getActivity();
             try {
-                Activity activity = getActivity();
                 if (activity == null) return;
                 ExportPayload payload = buildExportPayload();
                 try (OutputStream output = activity.getContentResolver().openOutputStream(uri, "w")) {
@@ -762,7 +766,10 @@ public final class FeatureGateLabFragment extends Fragment {
                 }
                 postToast("Exported " + payload.count + " loaded values");
             } catch (Throwable throwable) {
-                postToast("Loaded-value file export failed");
+                Logger.printException(() -> "Loaded-value file export failed", throwable);
+                postToast(deleteCreatedDocument(activity, uri)
+                        ? "Loaded-value file export failed"
+                        : "Loaded-value file export failed; cleanup also failed");
             }
         }, "MorpheGateFileExport").start();
     }
@@ -772,12 +779,12 @@ public final class FeatureGateLabFragment extends Fragment {
             try {
                 Activity activity = getActivity();
                 if (activity == null) return;
-                byte[] compressed;
+                byte[] encoded;
                 try (InputStream input = activity.getContentResolver().openInputStream(uri)) {
                     if (input == null) throw new IllegalStateException("Document provider returned no input stream");
-                    compressed = readLimited(input, MAX_COMPRESSED_IMPORT_BYTES);
+                    encoded = readLimited(input, MAX_COMPRESSED_IMPORT_BYTES);
                 }
-                reviewLoadedImport(new JSONObject(readGzipJson(compressed)));
+                reviewLoadedImport(readLoadedJson(encoded));
             } catch (Throwable throwable) {
                 Logger.printException(() -> "Loaded-value file import failed", throwable);
                 postToast("Loaded-value file is invalid or too large");
@@ -803,10 +810,18 @@ public final class FeatureGateLabFragment extends Fragment {
         int unavailable = 0;
         int malformed = 0;
         if (sourceRules == null) throw new IllegalArgumentException("Missing loaded values");
+        if (sourceRules.length() > MAX_IMPORT_RULES) {
+            throw new IllegalArgumentException("Loaded values contain too many rules");
+        }
         {
             for (int i = 0; i < sourceRules.length(); i++) {
                 JSONObject item = sourceRules.optJSONObject(i);
                 if (item == null) {
+                    malformed++;
+                    continue;
+                }
+                if (!isStringField(item, "manager") || !isStringField(item, "key")
+                        || !isStringField(item, "type") || !isStringField(item, "value")) {
                     malformed++;
                     continue;
                 }
@@ -888,19 +903,26 @@ public final class FeatureGateLabFragment extends Fragment {
         return new ExportPayload(bytes.toByteArray(), rules.length());
     }
 
-    private static String readGzipJson(byte[] compressed) throws Exception {
-        if (compressed.length < 2 || (compressed[0] & 0xff) != 0x1f || (compressed[1] & 0xff) != 0x8b) {
-            throw new IllegalArgumentException("Expected a gzip-compressed Feature Gate Lab JSON file");
-        }
+    private static JSONObject readLoadedJson(byte[] encoded) throws Exception {
+        byte[] json = isGzip(encoded) ? readGzipJson(encoded) : encoded;
+        return SettingsJson.parseObject(json, IMPORT_JSON_LIMITS);
+    }
+
+    private static boolean isGzip(byte[] encoded) {
+        return encoded.length >= 2 && (encoded[0] & 0xff) == 0x1f
+                && (encoded[1] & 0xff) == 0x8b;
+    }
+
+    private static byte[] readGzipJson(byte[] compressed) throws Exception {
         try (GZIPInputStream gzip = new GZIPInputStream(new ByteArrayInputStream(compressed))) {
-            return new String(readLimited(gzip, MAX_JSON_IMPORT_BYTES), StandardCharsets.UTF_8);
+            return readLimited(gzip, MAX_JSON_IMPORT_BYTES);
         }
     }
 
     private static byte[] readLimited(InputStream input, int maxBytes) throws Exception {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         byte[] buffer = new byte[8192];
-        int total = 0;
+        long total = 0;
         int read;
         while ((read = input.read(buffer)) != -1) {
             total += read;
@@ -910,9 +932,23 @@ public final class FeatureGateLabFragment extends Fragment {
         return output.toByteArray();
     }
 
+    private static boolean deleteCreatedDocument(Activity activity, Uri uri) {
+        if (activity == null || uri == null) return true;
+        try {
+            return activity.getContentResolver().delete(uri, null, null) > 0;
+        } catch (Throwable cleanupError) {
+            Logger.printException(() -> "Loaded-value export cleanup failed", cleanupError);
+            return false;
+        }
+    }
+
     private static boolean isPrimitiveType(String type) {
         return "BOOLEAN".equals(type) || "INT".equals(type) || "LONG".equals(type)
                 || "FLOAT".equals(type) || "DOUBLE".equals(type) || "STRING".equals(type);
+    }
+
+    private static boolean isStringField(JSONObject object, String key) {
+        return object.has(key) && object.opt(key) instanceof String;
     }
 
     private void postToast(String text) {

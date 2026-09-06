@@ -232,10 +232,18 @@ public final class FeatureGateLabStore {
         }
         List<Rule> accepted = new ArrayList<>();
         List<String> rejected = new ArrayList<>();
+        java.util.Set<String> acceptedIds = new java.util.HashSet<>();
         for (int i = 0; i < items.length(); i++) {
             JSONObject item = items.optJSONObject(i);
             if (item == null) {
                 rejected.add("Entry " + (i + 1) + ": invalid object");
+                continue;
+            }
+            if (!(item.opt("manager") instanceof String)
+                    || !(item.opt("key") instanceof String)
+                    || !(item.opt("type") instanceof String)
+                    || !(item.opt("value") instanceof String)) {
+                rejected.add("Entry " + (i + 1) + ": invalid field type");
                 continue;
             }
             String manager = item.optString("manager", "");
@@ -260,7 +268,12 @@ public final class FeatureGateLabStore {
                 rejected.add(key + ": " + error);
                 continue;
             }
-            accepted.add(new Rule(idFor(manager, key, type), manager, key, type, value, false, System.currentTimeMillis()));
+            String id = idFor(manager, key, type);
+            if (!acceptedIds.add(id)) {
+                rejected.add(key + ": duplicate rule");
+                continue;
+            }
+            accepted.add(new Rule(id, manager, key, type, value, false, System.currentTimeMillis()));
         }
         return new ImportReview(accepted, rejected);
     }

@@ -239,6 +239,81 @@ public class FeatureGateLabActionsTest {
         }
     }
 
+    @Test public void rawJsonImportMatchesThePickerAndAppliesTheSameReview() throws Exception {
+        try (var owner = Robolectric.buildActivity(TestActivity.class).setup().visible()) {
+            var activity = owner.get();
+            var fragment = attach(activity);
+            JSONObject root = new JSONObject().put("payload_kind", "loaded_values")
+                    .put("tiktok_version", FeatureGateLabStore.TARGET_VERSION)
+                    .put("rules", new JSONArray().put(rule("gate", "true")));
+            action(fragment, 3);
+            var started = Shadows.shadowOf(activity).getNextStartedActivityForResult();
+            var uri = android.net.Uri.parse("content://lab-test/values.json");
+            Shadows.shadowOf(activity.getContentResolver()).registerInputStream(uri,
+                    new ByteArrayInputStream(root.toString().getBytes(StandardCharsets.UTF_8)));
+            fragment.onActivityResult(started.requestCode, Activity.RESULT_OK, new Intent().setData(uri));
+            waitFor("Imported 1 disabled values.");
+            assertFalse(FeatureGateLabStore.rule("abmock", "gate", "BOOLEAN").enabled);
+            assertEquals("true", FeatureGateLabStore.rule("abmock", "gate", "BOOLEAN").value);
+        }
+    }
+
+    @Test public void boundedImportParserRejectsDuplicateDeepInvalidAndOverlargeInput() throws Exception {
+        assertLoadedJsonRejected(("{\"payload_kind\":\"loaded_values\","
+                + "\"payload_kind\":\"loaded_values\",\"tiktok_version\":\"46.2.3\",\"rules\":[]}")
+                .getBytes(StandardCharsets.UTF_8));
+        assertLoadedJsonRejected(new byte[]{'{', '"', 'x', '"', ':', '"', (byte) 0xc3, 0x28, '"', '}'});
+
+        StringBuilder deep = new StringBuilder();
+        for (int i = 0; i < 30; i++) deep.append('[');
+        deep.append("{}");
+        for (int i = 0; i < 30; i++) deep.append(']');
+        assertLoadedJsonRejected(deep.toString().getBytes(StandardCharsets.UTF_8));
+        assertLoadedJsonRejected(new byte[8 * 1024 * 1024 + 1]);
+
+        JSONArray many = new JSONArray();
+        for (int i = 0; i < 2000; i++) many.put(rule("gate" + i, "true"));
+        JSONObject root = new JSONObject().put("payload_kind", "loaded_values")
+                .put("tiktok_version", FeatureGateLabStore.TARGET_VERSION).put("rules", many);
+        assertLoadedJsonRejected(root.toString().getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Test public void loadedValueReviewRejectsNonStringFieldsAndDuplicateRules() throws Exception {
+        JSONObject nonString = rule("gate", "true").put("value", true);
+        JSONObject duplicate = rule("gate", "false");
+        JSONObject duplicateAgain = rule("gate", "true");
+        JSONObject root = new JSONObject().put("schema", 1).put("target", "TikTok global")
+                .put("tiktok_version", FeatureGateLabStore.TARGET_VERSION)
+                .put("rules", new JSONArray().put(nonString).put(duplicate).put(duplicateAgain));
+        FeatureGateLabStore.ImportReview review = FeatureGateLabStore.reviewProfile(
+                root.toString(), FeatureGateCatalog.cachedSnapshot().byIdentity);
+        assertEquals(1, review.accepted.size());
+        assertEquals(2, review.rejected.size());
+    }
+
+    @Test public void failedExportReportsProviderWriteFailure() throws Exception {
+        try (var owner = Robolectric.buildActivity(TestActivity.class).setup().visible()) {
+            var activity = owner.get();
+            var fragment = attach(activity);
+            action(fragment, 2);
+            var started = Shadows.shadowOf(activity).getNextStartedActivityForResult();
+            var uri = android.net.Uri.parse("file:///unregistered-export.json.gz");
+            fragment.onActivityResult(started.requestCode, Activity.RESULT_OK, new Intent().setData(uri));
+            waitFor("Loaded-value file export failed");
+        }
+    }
+
+    private static void assertLoadedJsonRejected(byte[] bytes) throws Exception {
+        var method = FeatureGateLabFragment.class.getDeclaredMethod("readLoadedJson", byte[].class);
+        method.setAccessible(true);
+        try {
+            method.invoke(null, (Object) bytes);
+            fail("import should be rejected");
+        } catch (java.lang.reflect.InvocationTargetException expected) {
+            assertNotNull(expected.getCause());
+        }
+    }
+
     private static FeatureGateLabFragment attach(Activity activity) {
         var fragment = new FeatureGateLabFragment();
         activity.getFragmentManager().beginTransaction().replace(android.R.id.content, fragment).commit();

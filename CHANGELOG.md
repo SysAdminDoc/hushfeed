@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Feature Gate Lab imports are now bounded while they are decoded. Raw JSON and gzip exports use strict UTF-8 and duplicate-key checks with depth, node, string, array and rule limits, and a failed export only removes the selected new document while reporting cleanup failures.
+
 * Settings and Feature Gate Lab changes now share an on-disk operation journal. An interrupted write is reconciled at startup to the prior or committed state, the private Undo copy is retained, and malformed recovery records produce a visible notice.
 
 * Seen-history undo stays available until its SQLite transaction commits. Rejected inserts and write errors report failure on the settings row, while a failed first database open clears its in-memory load gate so the next read can retry.
