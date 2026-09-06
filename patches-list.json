@@ -911,6 +911,34 @@
       "options": []
     },
     {
+      "name": "Hide comment popup ads",
+      "description": "Stops the brand animation that plays over the comment sheet when a comment matches an advertiser's trigger word or emoji. Supports TikTok 46.2.3.",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Hide content warnings",
       "description": "Adds an option to play videos TikTok has classified without the warning overlay asking to be tapped through first. Supports TikTok 46.2.3.",
       "use": false,

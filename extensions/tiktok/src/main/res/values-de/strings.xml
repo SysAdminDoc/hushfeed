@@ -176,6 +176,8 @@
     <string name="mtp_39d023cd">Storys ausblenden</string>
     <!-- Feed tabs, bottom tabs, and Tako AI. -->
     <string name="mtp_3b9553b5">Feed-Tabs, untere Tabs und Tako AI.</string>
+    <!-- Hide comment popup ads -->
+    <string name="mtp_3cd1651c">Werbe-Popups in Kommentaren ausblenden</string>
     <!-- Remove secure window flags. Restart TikTok after changing. -->
     <string name="mtp_3d4075ae">Sichere Fenster-Flags entfernen. Starte TikTok nach der Änderung neu.</string>
     <!-- Remove ads from feed. -->
@@ -698,6 +700,8 @@
     <string name="mtp_f62d6224">Das Land, aus dem ein Video veröffentlicht wurde, neben dem Namen des Creators anzeigen.</string>
     <!-- Original language -->
     <string name="mtp_f63da85a">Originalsprache</string>
+    <!-- Stop the brand animation that plays over the comments when what someone typed matches an advertiser's trigger. -->
+    <string name="mtp_f6cebd09">Stoppt die Markenanimation über den Kommentaren, wenn das Getippte zu einem Werbe-Auslöser passt.</string>
     <!-- Skip blocked sounds -->
     <string name="mtp_f6fc5d0c">Gesperrte Sounds überspringen</string>
     <!-- Restore settings -->

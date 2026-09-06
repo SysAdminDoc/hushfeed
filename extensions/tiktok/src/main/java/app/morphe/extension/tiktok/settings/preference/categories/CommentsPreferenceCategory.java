@@ -49,6 +49,14 @@ public class CommentsPreferenceCategory extends ConditionalPreferenceCategory {
                     Settings.COPY_COMMENTS_WITHOUT_USERNAME
             ));
         }
+        if (SettingsStatus.hideCommentEggsEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide comment popup ads",
+                    "Stop the brand animation that plays over the comments when what someone typed matches an advertiser's trigger.",
+                    Settings.HIDE_COMMENT_EGGS
+            ));
+        }
         if (SettingsStatus.commentToolsEnabled) {
             addPreference(new TogglePreference(
                     context,

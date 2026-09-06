@@ -1,5 +1,7 @@
 ## Unreleased
 
+* New patch: Hide comment popup ads. Commenting with a word or emoji an advertiser has bought sets off a full brand animation over the comment sheet. The switch stops it.
+
 * Playback quality has a second choice for mobile data. It is a ceiling, so it lowers what plays on a metered connection and never raises it.
 
 * Ads no longer come back in the profile video viewer. Opening a video from a profile was filtered, but scrolling past it refilled the viewer through the profile detail panel's own two delivery methods, which nothing was watching.

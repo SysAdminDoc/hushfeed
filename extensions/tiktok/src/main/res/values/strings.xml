@@ -88,6 +88,7 @@
     <string name="mtp_39b485d6">Lowest</string>
     <string name="mtp_39d023cd">Hide story</string>
     <string name="mtp_3b9553b5">Feed tabs, bottom tabs, and Tako AI.</string>
+    <string name="mtp_3cd1651c">Hide comment popup ads</string>
     <string name="mtp_3d4075ae">Remove secure window flags. Restart TikTok after changing.</string>
     <string name="mtp_3eaee2f9">Remove ads from feed.</string>
     <string name="mtp_3ecf4127">Only internal storage folders are supported</string>
@@ -349,6 +350,7 @@
     <string name="mtp_f5bf4950">Video quality, speed and automatic advance.</string>
     <string name="mtp_f62d6224">Show the country a video was posted from next to the creator\'s name.</string>
     <string name="mtp_f63da85a">Original language</string>
+    <string name="mtp_f6cebd09">Stop the brand animation that plays over the comments when what someone typed matches an advertiser\'s trigger.</string>
     <string name="mtp_f6fc5d0c">Skip blocked sounds</string>
     <string name="mtp_f768f7c6">Restore settings</string>
     <string name="mtp_f7963847">Use 0 for TikTok\'s size, or 12 to 48 sp. Applies to the next caption.</string>

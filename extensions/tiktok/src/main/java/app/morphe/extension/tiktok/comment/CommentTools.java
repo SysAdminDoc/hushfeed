@@ -58,6 +58,14 @@ import java.util.WeakHashMap;
  * sits underneath it.
  */
 public final class CommentTools {
+    /**
+     * The brand animation TikTok plays over the comment sheet when a comment matches an
+     * advertiser's trigger. Called from the trigger itself, so returning true skips it.
+     */
+    public static boolean shouldHideCommentEgg() {
+        return Settings.HIDE_COMMENT_EGGS.get();
+    }
+
     private static final String APP_PACKAGE = "com.zhiliaoapp.musically";
     private static final String DISLIKE_BUTTON_ID = "jlk";
     private static final String DISLIKE_ICON_ID = "m3b";

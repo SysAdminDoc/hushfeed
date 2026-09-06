@@ -65,6 +65,7 @@ public class SettingsStatus {
     public static boolean hideInboxStoriesEnabled = false;
     public static boolean expandActivityListEnabled = false;
     public static boolean commentToolsEnabled = false;
+    public static boolean hideCommentEggsEnabled = false;
     public static boolean videoOverlaysEnabled = false;
     public static boolean shareSheetEnabled = false;
     public static boolean seenVideoFilterEnabled = false;
@@ -185,6 +186,10 @@ public class SettingsStatus {
 
     public static void enableCommentTools() {
         commentToolsEnabled = true;
+    }
+
+    public static void enableHideCommentEggs() {
+        hideCommentEggsEnabled = true;
     }
 
     public static void enableSeenVideoFilter() {
