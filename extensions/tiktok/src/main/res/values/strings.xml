@@ -143,7 +143,6 @@
     <string name="mtp_64bee535">Use TikTok\'s non-personalized search state instead of the saved account choice.</string>
     <string name="mtp_6501fe45">Hide playlist videos</string>
     <string name="mtp_66b64e3a">Search and override gate flags</string>
-    <string name="mtp_67a09fe0">Hide browsing and LIVE puzzle dialogs. Login and account verification remain available.</string>
     <string name="mtp_6887a6db">Country and network preferences</string>
     <string name="mtp_69494ab7">Remove watermark</string>
     <string name="mtp_6a8a62af">Disable long-press repost</string>
@@ -213,6 +212,7 @@
     <string name="mtp_93382e68">Remove feed ads</string>
     <string name="mtp_93dd92cb">Hide inserted cards</string>
     <string name="mtp_93fbd7db">Folder picker is not available on this device</string>
+    <string name="mtp_953bad0f">Hide browsing and LIVE puzzle dialogs. Login, account verification and any puzzle raised over a follow, like, comment or repost stay visible.</string>
     <string name="mtp_95bcf060">Open profile and story website links in your system browser instead of TikTok\'s in-app browser.</string>
     <string name="mtp_9612acd1">Override store region (experimental)</string>
     <string name="mtp_963f0c36">Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok\'s list. Restart after changing this list.</string>
@@ -313,6 +313,7 @@
     <string name="mtp_e1779296">Hide image video</string>
     <string name="mtp_e22b29c7">Hide the Archive row.</string>
     <string name="mtp_e263a49d">Remove the actions row from the share sheet.</string>
+    <string name="mtp_e3515af9">Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working.</string>
     <string name="mtp_e462ae24">Sticker destination</string>
     <string name="mtp_e4734450">Save the latest available TikTok crash report for diagnostic export.</string>
     <string name="mtp_e4828489">Hide feed follow button</string>

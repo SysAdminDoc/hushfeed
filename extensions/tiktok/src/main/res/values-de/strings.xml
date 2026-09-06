@@ -286,8 +286,6 @@
     <string name="mtp_6501fe45">Playlist-Videos ausblenden</string>
     <!-- Search and override gate flags -->
     <string name="mtp_66b64e3a">Gate-Flags suchen und überschreiben</string>
-    <!-- Hide browsing and LIVE puzzle dialogs. Login and account verification remain available. -->
-    <string name="mtp_67a09fe0">Rätsel-Dialoge beim Stöbern und in LIVE ausblenden. Anmeldung und Kontobestätigung bleiben verfügbar.</string>
     <!-- Country and network preferences -->
     <string name="mtp_6887a6db">Land und Netzwerkeinstellungen</string>
     <!-- Remove watermark -->
@@ -426,6 +424,8 @@
     <string name="mtp_93dd92cb">Eingeschobene Karten ausblenden</string>
     <!-- Folder picker is not available on this device -->
     <string name="mtp_93fbd7db">Ordnerauswahl ist auf diesem Gerät nicht verfügbar</string>
+    <!-- Hide browsing and LIVE puzzle dialogs. Login, account verification and any puzzle raised over a follow, like, comment or repost stay visible. -->
+    <string name="mtp_953bad0f">Rätsel-Dialoge beim Stöbern und in LIVE ausblenden. Anmeldung, Kontobestätigung und jedes Rätsel, das bei Folgen, Liken, Kommentieren oder Reposten kommt, bleiben sichtbar.</string>
     <!-- Open profile and story website links in your system browser instead of TikTok's in-app browser. -->
     <string name="mtp_95bcf060">Website-Links aus Profilen und Storys im Systembrowser öffnen statt in TikToks In-App-Browser.</string>
     <!-- Override store region (experimental) -->
@@ -626,6 +626,8 @@
     <string name="mtp_e22b29c7">Die Zeile „Archiv“ ausblenden.</string>
     <!-- Remove the actions row from the share sheet. -->
     <string name="mtp_e263a49d">Die Aktionszeile aus dem Teilen-Menü entfernen.</string>
+    <!-- Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working. -->
+    <string name="mtp_e3515af9">Hushfeed hat ein TikTok-Rätsel ausgeblendet. Schalte Rätsel-Dialoge ausblenden aus, wenn etwas nicht mehr funktioniert.</string>
     <!-- Sticker destination -->
     <string name="mtp_e462ae24">Speicherort für Sticker</string>
     <!-- Save the latest available TikTok crash report for diagnostic export. -->

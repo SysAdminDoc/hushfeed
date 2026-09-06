@@ -799,7 +799,7 @@
     },
     {
       "name": "Hide BdTuring CAPTCHA popups",
-      "description": "Hides TikTok's risk control CAPTCHA dialog, which the browsing CAPTCHA patch does not cover. Answers the Hide CAPTCHA popups setting and never touches SMS or two factor verification. A suppressed check can make the action behind it fail silently, so this is off by default. Supports TikTok 46.2.3.",
+      "description": "Hides TikTok's risk control CAPTCHA dialog, which the browsing CAPTCHA patch does not cover. Answers the Hide CAPTCHA popups setting, never touches SMS or two factor verification, and never hides a check the server raised over a follow, like, comment or repost. Off by default. Supports TikTok 46.2.3.",
       "use": false,
       "dependencies": [
         "BytecodePatch"
@@ -827,7 +827,7 @@
     },
     {
       "name": "Hide CAPTCHA popups",
-      "description": "Adds a default-off setting to hide browsing and LIVE puzzle dialogs while preserving login and account verification.",
+      "description": "Adds a default-off setting to hide browsing and LIVE puzzle dialogs. Login and account verification stay visible, and so does any puzzle the server raised over a follow, like, comment or repost, because hiding one of those makes the action fail with no message.",
       "use": true,
       "dependencies": [
         "BytecodePatch"

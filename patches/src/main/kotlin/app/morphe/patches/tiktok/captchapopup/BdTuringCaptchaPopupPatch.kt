@@ -15,8 +15,8 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.util.numberOfParameterRegisters
 
-private const val FEATURE_CONTROLS_CLASS_DESCRIPTOR =
-    "Lapp/morphe/extension/tiktok/featurecontrols/FeatureControls;"
+private const val CAPTCHA_GATE_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/tiktok/featurecontrols/CaptchaGate;"
 
 private object RiskControlServiceExecuteFingerprint : Fingerprint(
     definingClass = "Lcom/bytedance/bdturing/verify/RiskControlService;",
@@ -29,17 +29,17 @@ private object RiskControlServiceExecuteFingerprint : Fingerprint(
  * `Hide CAPTCHA popups` covers, so it needs its own hook. It answers the same setting and
  * refuses to touch the two service types that carry account security verification.
  *
- * Off by default on purpose: TikTok raises a real risk check here as well, and failing one
- * makes the action behind it (a follow, a like) fail with no explanation. Every suppression
- * is logged so the cause is findable.
+ * Off by default on purpose: TikTok raises a real risk check here as well. The gate never
+ * hides one that arrived over a write the user just asked for, and logs every suppression,
+ * but a check this service raises for some other reason still has consequences.
  */
 @Suppress("unused")
 val bdTuringCaptchaPopupPatch = bytecodePatch(
     name = "Hide BdTuring CAPTCHA popups",
     description = "Hides TikTok's risk control CAPTCHA dialog, which the browsing CAPTCHA " +
-        "patch does not cover. Answers the Hide CAPTCHA popups setting and never touches SMS " +
-        "or two factor verification. A suppressed check can make the action behind it fail " +
-        "silently, so this is off by default. Supports TikTok 46.2.3.",
+        "patch does not cover. Answers the Hide CAPTCHA popups setting, never touches SMS or " +
+        "two factor verification, and never hides a check the server raised over a follow, " +
+        "like, comment or repost. Off by default. Supports TikTok 46.2.3.",
     default = false,
 ) {
     dependsOn(sharedExtensionPatch)
@@ -69,7 +69,7 @@ val bdTuringCaptchaPopupPatch = bytecodePatch(
                     move-result-object v0
                     invoke-virtual {v2}, $requestType->getServiceType()Ljava/lang/String;
                     move-result-object v1
-                    invoke-static {v0, v1}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->shouldHideTuringCaptchaPopup(Landroid/app/Activity;Ljava/lang/String;)Z
+                    invoke-static {v0, v1}, $CAPTCHA_GATE_CLASS_DESCRIPTOR->shouldHideTuringCaptchaPopup(Landroid/app/Activity;Ljava/lang/String;)Z
                     move-result v0
                     if-eqz v0, :morphe_show_bdturing_captcha_popup
                     const/4 v0, 0x3

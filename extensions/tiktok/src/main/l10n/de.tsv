@@ -165,7 +165,7 @@ Tap the like heart twice within four seconds. Removing a like stays immediate.	T
 Hide floating promotions	Schwebende Werbeaktionen ausblenden
 Hide floating promotion badges, coins, and timer banners on the homepage.	Schwebende Werbe-Abzeichen, Münzen und Timer-Banner auf der Startseite ausblenden.
 Hide CAPTCHA popups	CAPTCHA-Popups ausblenden
-Hide browsing and LIVE puzzle dialogs. Login and account verification remain available.	Rätsel-Dialoge beim Stöbern und in LIVE ausblenden. Anmeldung und Kontobestätigung bleiben verfügbar.
+Hide browsing and LIVE puzzle dialogs. Login, account verification and any puzzle raised over a follow, like, comment or repost stay visible.	Rätsel-Dialoge beim Stöbern und in LIVE ausblenden. Anmeldung, Kontobestätigung und jedes Rätsel, das bei Folgen, Liken, Kommentieren oder Reposten kommt, bleiben sichtbar.
 Always show publish date	Veröffentlichungsdatum immer anzeigen
 Always show the publish date in video author information. Requires restart.	Das Veröffentlichungsdatum immer in den Angaben zum Video-Ersteller anzeigen. Erfordert einen Neustart.
 Skip content warnings	Inhaltswarnungen überspringen
@@ -361,3 +361,4 @@ People, shortcuts and sending controls	Kontakte, Verknüpfungen und Versandoptio
 Country and network preferences	Land und Netzwerkeinstellungen
 Links, privacy and player tools	Links, Datenschutz und Wiedergabewerkzeuge
 Backups and troubleshooting	Sicherungen und Fehlerdiagnose
+Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working.	Hushfeed hat ein TikTok-Rätsel ausgeblendet. Schalte Rätsel-Dialoge ausblenden aus, wenn etwas nicht mehr funktioniert.
