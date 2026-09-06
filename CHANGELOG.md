@@ -2,6 +2,8 @@
 
 * The extension payload now keeps its Android 23 promise. Download workers, history, feed state, Lab sorting and language selection use APIs available on the declared floor, and the TikTok module declares that floor explicitly.
 
+* Patch verification now treats the desktop process, result report, requested patch set, target version and saved APK as one result. Heap measurements use the same checks, keep expected out of memory runs visible, isolate concurrent runs, and never remove a path outside the work directory.
+
 * Settings text that said the wrong thing. The thumbs down block claimed it needed a restart, which it never did. The two region switches claimed one and never asked for it, and now they do, because TikTok reads the country at startup. A dozen summaries that talked about secure window flags, native seekbars, candidates and pages now say what actually happens.
 
 * Every message the patches show you is now in your own language, not just the settings screens. Blocking, saving, seeking, the confirm taps and the backup actions all spoke English on a German or Indonesian phone. The ones that name something, a handle or a file, are built so the translation decides the word order rather than having English word order with the name dropped in.
