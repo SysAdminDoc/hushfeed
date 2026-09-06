@@ -12,6 +12,7 @@ import app.morphe.extension.shared.Utils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
 
 /**
  * Performs the block and unblock calls.
@@ -178,16 +179,11 @@ public final class BlockAuthorService {
         if (!(status instanceof Number)) {
             return null;
         }
-        double numeric = ((Number) status).doubleValue();
-        if (Double.isNaN(numeric) || Double.isInfinite(numeric) || numeric != Math.rint(numeric)
-                || numeric < Integer.MIN_VALUE || numeric > Integer.MAX_VALUE) {
+        try {
+            return new BigDecimal(status.toString()).intValueExact();
+        } catch (NumberFormatException | ArithmeticException invalid) {
             return null;
         }
-        long integral = ((Number) status).longValue();
-        if (integral < Integer.MIN_VALUE || integral > Integer.MAX_VALUE || (double) integral != numeric) {
-            return null;
-        }
-        return (int) integral;
     }
 
     /**

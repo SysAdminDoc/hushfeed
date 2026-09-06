@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -70,6 +71,9 @@ public class BlockAuthorServiceTest {
         assertNull(status(new GetterResponse(new GetterBody(Double.valueOf(0.5)))));
         assertNull(status(new GetterResponse(new GetterBody(Double.valueOf(Double.NaN)))));
         assertNull(status(new GetterResponse(new GetterBody(Long.valueOf(Long.MAX_VALUE)))));
+        assertNull(status(new GetterResponse(new GetterBody(new BigDecimal("2147483647.0000000001")))));
+        assertEquals(Integer.valueOf(2147483647),
+                status(new GetterResponse(new GetterBody(new BigDecimal("2147483647.0000")))));
     }
 
     @Test

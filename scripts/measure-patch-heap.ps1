@@ -79,13 +79,13 @@ function Get-ReportPatchNames {
 
 function Test-SameNames {
     param([string[]]$Expected, [string[]]$Actual)
-    $expectedCounts = @{}
+    $expectedCounts = [System.Collections.Generic.Dictionary[string, int]]::new([System.StringComparer]::Ordinal)
     foreach ($name in @($Expected)) {
         if ($null -eq $name) { return $false }
         if (-not $expectedCounts.ContainsKey($name)) { $expectedCounts[$name] = 0 }
         $expectedCounts[$name]++
     }
-    $actualCounts = @{}
+    $actualCounts = [System.Collections.Generic.Dictionary[string, int]]::new([System.StringComparer]::Ordinal)
     foreach ($name in @($Actual)) {
         if ($null -eq $name) { return $false }
         if (-not $actualCounts.ContainsKey($name)) { $actualCounts[$name] = 0 }
@@ -98,6 +98,11 @@ function Test-SameNames {
     return $true
 }
 
+function Test-TrueBoolean {
+    param([object]$Value)
+    return $Value -is [bool] -and [bool]$Value
+}
+
 function Test-PatchingReport {
     param([object]$Report, [string[]]$ExpectedNames, [string]$OutputPath)
     if ($null -eq $Report) { return [pscustomobject]@{ Valid = $false; Reason = 'missing or invalid result JSON' } }
@@ -105,20 +110,20 @@ function Test-PatchingReport {
     $steps = @($Report.patchingSteps)
     $stepsOk = $steps.Count -gt 0 -and @($steps | Where-Object {
         $property = $_.PSObject.Properties['success']
-        $null -eq $property -or -not [bool]$property.Value
+        $null -eq $property -or -not (Test-TrueBoolean $property.Value)
     }).Count -eq 0
     $failed = @($Report.failedPatches)
     $namesOk = Test-SameNames -Expected $ExpectedNames -Actual (Get-ReportPatchNames $Report.appliedPatches)
     $targetOk = $null -ne $Report.PSObject.Properties['packageName'] -and
         $null -ne $Report.PSObject.Properties['packageVersion'] -and
-        [string]$Report.packageName -eq 'com.zhiliaoapp.musically' -and
-        [string]$Report.packageVersion -eq '46.2.3'
+        [string]::Equals([string]$Report.packageName, 'com.zhiliaoapp.musically', [System.StringComparison]::Ordinal) -and
+        [string]::Equals([string]$Report.packageVersion, '46.2.3', [System.StringComparison]::Ordinal)
     $outputOk = Test-ApkFile $OutputPath
-    $valid = $null -ne $success -and [bool]$success.Value -and $stepsOk -and
+    $valid = $null -ne $success -and (Test-TrueBoolean $success.Value) -and $stepsOk -and
         $failed.Count -eq 0 -and $namesOk -and $targetOk -and $outputOk
     $reason = if ($valid) { 'ok' } else {
         $parts = New-Object System.Collections.Generic.List[string]
-        if ($null -eq $success -or -not [bool]$success.Value) { $parts.Add('report.success is false') }
+        if ($null -eq $success -or -not (Test-TrueBoolean $success.Value)) { $parts.Add('report.success is false or not a boolean') }
         if (-not $stepsOk) { $parts.Add('a patching step failed or is missing') }
         if ($failed.Count -ne 0) { $parts.Add("$($failed.Count) failed patches") }
         if (-not $namesOk) { $parts.Add('requested and applied patch names differ') }
@@ -186,8 +191,9 @@ foreach ($case in @($Cases)) {
             catch { Write-Warning "[$which @ -Xmx$mx] could not parse result JSON: $($_.Exception.Message)" }
         }
         $validation = Test-PatchingReport -Report $report -ExpectedNames $(if ($which -eq 'settings') { @('Settings') } else { $all }) -OutputPath $out
-        if ($outOfMemory -and -not ($cliExitCode -eq 0 -and $validation.Valid)) {
+        if ($outOfMemory) {
             $verdict = 'OUT OF MEMORY'
+            $invalidCases++
         } elseif ($cliExitCode -eq 0 -and $validation.Valid) {
             $verdict = 'ok'
         } else {

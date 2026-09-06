@@ -19,13 +19,13 @@ param(
     [Parameter(Mandatory = $true)][string]$WorkDir,
     [string]$Bundle,
     [string]$PatchList,
-    [string]$Java = "java",
-    [string]$ExpectedPackageName = "com.zhiliaoapp.musically",
-    [string]$ExpectedPackageVersion = "46.2.3"
+    [string]$Java = "java"
 )
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
+$expectedPackageName = 'com.zhiliaoapp.musically'
+$expectedPackageVersion = '46.2.3'
 
 function Resolve-WithinRoot {
     param([string]$Path, [string]$Root)
@@ -86,13 +86,13 @@ function Get-ReportPatchNames {
 
 function Test-SameNames {
     param([string[]]$Expected, [string[]]$Actual)
-    $expectedCounts = @{}
+    $expectedCounts = [System.Collections.Generic.Dictionary[string, int]]::new([System.StringComparer]::Ordinal)
     foreach ($name in @($Expected)) {
         if ($null -eq $name) { return $false }
         if (-not $expectedCounts.ContainsKey($name)) { $expectedCounts[$name] = 0 }
         $expectedCounts[$name]++
     }
-    $actualCounts = @{}
+    $actualCounts = [System.Collections.Generic.Dictionary[string, int]]::new([System.StringComparer]::Ordinal)
     foreach ($name in @($Actual)) {
         if ($null -eq $name) { return $false }
         if (-not $actualCounts.ContainsKey($name)) { $actualCounts[$name] = 0 }
@@ -107,13 +107,16 @@ function Test-SameNames {
     return $true
 }
 
+function Test-TrueBoolean {
+    param([object]$Value)
+    return $Value -is [bool] -and [bool]$Value
+}
+
 function Test-PatchingReport {
     param(
         [object]$Report,
         [string[]]$ExpectedNames,
-        [string]$OutputPath,
-        [string]$ExpectedName,
-        [string]$ExpectedVersion
+        [string]$OutputPath
     )
     if ($null -eq $Report) { return [pscustomobject]@{ Valid = $false; Reason = 'missing or invalid result JSON' } }
 
@@ -121,21 +124,21 @@ function Test-PatchingReport {
     $steps = @($Report.patchingSteps)
     $stepsOk = $steps.Count -gt 0 -and @($steps | Where-Object {
         $property = $_.PSObject.Properties['success']
-        $null -eq $property -or -not [bool]$property.Value
+        $null -eq $property -or -not (Test-TrueBoolean $property.Value)
     }).Count -eq 0
     $failed = @($Report.failedPatches)
     $applied = Get-ReportPatchNames $Report.appliedPatches
     $namesOk = Test-SameNames -Expected $ExpectedNames -Actual $applied
     $targetOk = $null -ne $Report.PSObject.Properties['packageName'] -and
         $null -ne $Report.PSObject.Properties['packageVersion'] -and
-        [string]$Report.packageName -eq $ExpectedName -and
-        [string]$Report.packageVersion -eq $ExpectedVersion
+        [string]::Equals([string]$Report.packageName, $expectedPackageName, [System.StringComparison]::Ordinal) -and
+        [string]::Equals([string]$Report.packageVersion, $expectedPackageVersion, [System.StringComparison]::Ordinal)
     $outputOk = Test-ApkFile $OutputPath
-    $valid = $null -ne $success -and [bool]$success.Value -and $stepsOk -and
+    $valid = $null -ne $success -and (Test-TrueBoolean $success.Value) -and $stepsOk -and
         $failed.Count -eq 0 -and $namesOk -and $targetOk -and $outputOk
     $reason = if ($valid) { 'ok' } else {
         $parts = New-Object System.Collections.Generic.List[string]
-        if ($null -eq $success -or -not [bool]$success.Value) { $parts.Add('report.success is false') }
+        if ($null -eq $success -or -not (Test-TrueBoolean $success.Value)) { $parts.Add('report.success is false or not a boolean') }
         if (-not $stepsOk) { $parts.Add('a patching step failed or is missing') }
         if ($failed.Count -ne 0) { $parts.Add("$($failed.Count) failed patches") }
         if (-not $namesOk) { $parts.Add('requested and applied patch names differ') }
@@ -200,8 +203,7 @@ try {
         try { $report = Get-Content -LiteralPath $result -Raw | ConvertFrom-Json }
         catch { Write-Warning "Could not parse result JSON: $($_.Exception.Message)" }
     }
-    $validation = Test-PatchingReport -Report $report -ExpectedNames $names -OutputPath $out `
-        -ExpectedName $ExpectedPackageName -ExpectedVersion $ExpectedPackageVersion
+    $validation = Test-PatchingReport -Report $report -ExpectedNames $names -OutputPath $out
     $reportApplied = if ($null -ne $report) { @($report.appliedPatches).Count } else { 0 }
     $reportFailed = if ($null -ne $report) { @($report.failedPatches).Count } else { 0 }
     $target = if ($null -ne $report) { "$($report.packageName) $($report.packageVersion)" } else { 'unknown target' }

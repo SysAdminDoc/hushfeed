@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Patch verification now compares names with ordinal matching, accepts only JSON booleans, fixes the TikTok target in the script, and treats an out of memory process as a failed measurement when the CLI did not exit cleanly. Block status parsing also rejects fractional values that only round to an integer.
+
 * The extension payload now keeps its Android 23 promise. Download workers, history, feed state, Lab sorting and language selection use APIs available on the declared floor, and the TikTok module declares that floor explicitly.
 
 * Patch verification now treats the desktop process, result report, requested patch set, target version and saved APK as one result. Heap measurements use the same checks, keep expected out of memory runs visible, isolate concurrent runs, and never remove a path outside the work directory.
