@@ -177,6 +177,64 @@ public class SeenVideoHistoryTest {
         }
     }
 
+    @Test public void aTapBeforeTheCopyIsReadKeepsTheWayBack() throws Exception {
+        SeenVideoHistory.onPlayProgressChange("91", 5000, 10000);
+        SeenVideoHistory.onPlayProgressChange("92", 5000, 10000);
+        drain();
+
+        // Hold the worker so the clear queues its read behind the latch, which is the window
+        // the toast invites a second tap into.
+        CountDownLatch ready = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        io().execute(() -> {
+            ready.countDown();
+            try { release.await(5, TimeUnit.SECONDS); }
+            catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        });
+        assertTrue(ready.await(5, TimeUnit.SECONDS));
+        try {
+            SeenVideoHistory.clear();
+            assertTrue(SeenVideoHistory.canUndo());
+            // The copy is not there yet, so there is nothing to put back this instant, but the
+            // way back must survive the attempt.
+            assertFalse(SeenVideoHistory.undoClear());
+            assertTrue("the offer is not spent by a tap that was too early",
+                    SeenVideoHistory.canUndo());
+        } finally { release.countDown(); }
+        drain();
+
+        assertTrue(SeenVideoHistory.canUndo());
+        assertEquals(2, SeenVideoHistory.undoSize());
+        assertTrue(SeenVideoHistory.undoClear());
+        drain();
+        assertTrue(SeenVideoHistory.shouldHide("91"));
+        assertTrue(SeenVideoHistory.shouldHide("92"));
+    }
+
+    @Test public void puttingTheRecordBackKeepsTheNewerSighting() throws Exception {
+        SeenVideoHistory.onPlayProgressChange("55", 5000, 10000);
+        drain();
+        SeenVideoHistory.clear();
+        drain();
+
+        // Watched again after the clear, so memory holds a newer time than the copy does.
+        SeenVideoHistory.onPlayProgressChange("55", 5000, 10000);
+        drain();
+        long watchedAgain = seenAt("55");
+
+        assertTrue(SeenVideoHistory.undoClear());
+        drain();
+        assertEquals("the older copy must not overwrite it", watchedAgain, seenAt("55"));
+    }
+
+    private static long seenAt(String aid) throws Exception {
+        Field f = SeenVideoHistory.class.getDeclaredField("SEEN");
+        f.setAccessible(true);
+        Object value = ((java.util.Map<?, ?>) f.get(null)).get(aid);
+        assertNotNull("nothing recorded for " + aid, value);
+        return (Long) value;
+    }
+
     private static Object field(String name) throws Exception {
         Field f = SeenVideoHistory.class.getDeclaredField(name);
         f.setAccessible(true);

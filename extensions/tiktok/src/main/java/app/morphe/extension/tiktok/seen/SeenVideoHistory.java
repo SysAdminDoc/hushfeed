@@ -134,6 +134,9 @@ public final class SeenVideoHistory {
                     undo = readAll();
                     getDatabase().getWritableDatabase().delete(TABLE, null, null);
                 } catch (Throwable throwable) {
+                    // No copy means nothing to offer; leaving the flag set would promise a way
+                    // back that does not exist.
+                    undoOffered = false;
                     Logger.printException(() -> "Seen video history clear failed", throwable);
                 }
             });
@@ -181,13 +184,21 @@ public final class SeenVideoHistory {
     public static boolean undoClear() {
         synchronized (HISTORY_LOCK) {
             Map<String, Long> copy = undo;
+            // Null means the copy is still being read off the database, which is not the same
+            // as there being nothing to put back. Spending the offer here would delete the
+            // history for good, so the offer stands and the next tap can take it.
+            if (copy == null) {
+                return false;
+            }
             undoOffered = false;
-            if (copy == null || copy.isEmpty()) {
+            if (copy.isEmpty()) {
                 return false;
             }
             undo = null;
             generation++;
-            SEEN.putAll(copy);
+            for (Map.Entry<String, Long> row : copy.entrySet()) {
+                SEEN.merge(row.getKey(), row.getValue(), Math::max);
+            }
             trimMemory();
 
             Map<String, Long> rows = new HashMap<>(copy);

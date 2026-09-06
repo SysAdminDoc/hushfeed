@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(902);
+        Map<String, String> table = new HashMap<>(904);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -847,6 +847,8 @@ public final class L10nTranslations {
                 "Feature-Gate-Aufzeichnung starten");
         table.put("Sticker destination",
                 "Speicherort für Sticker");
+        table.put("Still reading the record. Tap again in a moment.",
+                "Der Verlauf wird noch gelesen. Tippe gleich noch einmal.");
         table.put("Still saving the last one",
                 "Das letzte wird noch gespeichert");
         table.put("Stop ByteDance AppLog events, AppsFlyer attribution, explicit Firebase screen reports and crash reporting from being sent. TikTok's own diagnostics go quiet with them.",
@@ -913,11 +915,11 @@ public final class L10nTranslations {
                 "TikTok hat das Folgen abgelehnt: %1$s");
         table.put("Tokens: {creator}, {date}, {video_id}, {index}. The file extension is kept automatically.",
                 "Platzhalter: {creator}, {date}, {video_id}, {index}. Die Dateiendung bleibt automatisch erhalten.");
-        table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
-                "Platzhalter: {creator}, {date}, {video_id}. Die Dateiendung bleibt automatisch erhalten.");
     }
 
     private static void fillDe7(Map<String, String> table) {
+        table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
+                "Platzhalter: {creator}, {date}, {video_id}. Die Dateiendung bleibt automatisch erhalten.");
         table.put("Tokens: {date}, {media_id}. Works for image and video stickers.",
                 "Platzhalter: {date}, {media_id}. Gilt für Bild- und Video-Sticker.");
         table.put("Transparent",
@@ -983,7 +985,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(902);
+        Map<String, String> table = new HashMap<>(904);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1786,6 +1788,8 @@ public final class L10nTranslations {
                 "Mulai merekam feature gate");
         table.put("Sticker destination",
                 "Lokasi simpan stiker");
+        table.put("Still reading the record. Tap again in a moment.",
+                "Catatannya masih dibaca. Ketuk lagi sebentar lagi.");
         table.put("Still saving the last one",
                 "Yang sebelumnya masih disimpan");
         table.put("Stop ByteDance AppLog events, AppsFlyer attribution, explicit Firebase screen reports and crash reporting from being sent. TikTok's own diagnostics go quiet with them.",
@@ -1852,11 +1856,11 @@ public final class L10nTranslations {
                 "TikTok menolak permintaan mengikuti: %1$s");
         table.put("Tokens: {creator}, {date}, {video_id}, {index}. The file extension is kept automatically.",
                 "Token: {creator}, {date}, {video_id}, {index}. Ekstensi berkas dipertahankan otomatis.");
-        table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
-                "Token: {creator}, {date}, {video_id}. Ekstensi berkas dipertahankan otomatis.");
     }
 
     private static void fillIn7(Map<String, String> table) {
+        table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
+                "Token: {creator}, {date}, {video_id}. Ekstensi berkas dipertahankan otomatis.");
         table.put("Tokens: {date}, {media_id}. Works for image and video stickers.",
                 "Token: {date}, {media_id}. Berlaku untuk stiker gambar dan video.");
         table.put("Transparent",
