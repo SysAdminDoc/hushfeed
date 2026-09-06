@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The install steps say what to do about an out of memory error while patching. The same work needs more than Morphe Manager's 640 MB default on a desktop, and 1024 MB is comfortable.
+
 * Comment tools can hide comments that are a picture or a sticker instead of words, replies included. It works on its own, without the keyword filter.
 
 * Clear display now hides the tab strip by asking whether the controls are actually hidden, rather than reading a stored setting the automatic path never writes. The strip stayed up in exactly the case the change was meant to fix.

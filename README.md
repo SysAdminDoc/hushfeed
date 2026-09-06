@@ -38,7 +38,7 @@ The block, sound and Not interested controls, rendered in a local UI test:
 
 1. Get the TikTok 46.2.3 APK. Google Play only offers the newest build, so take it from [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/).
 2. Add Hushfeed as a source in Morphe Manager. The quickest way is this link on the phone: [Add Hushfeed to Morphe](https://morphe.software/add-source?github=SysAdminDoc/hushfeed). You can also download `patches-0.16.0.mpp` from the [latest release](https://github.com/SysAdminDoc/hushfeed/releases/latest) and load it as a local bundle.
-3. Pick the patches you want and patch the APK. Keep the manager's existing signing key so TikTok stays logged in across updates.
+3. Pick the patches you want and patch the APK. Keep the manager's existing signing key so TikTok stays logged in across updates. If patching stops with an out of memory error, raise the memory limit in Morphe Manager's settings: the same work needs more than the 640 MB default on a desktop, and 1024 MB is comfortable.
 4. Open TikTok, go to Settings and privacy, and tap Hushfeed. Every patch you selected has its switches there.
 
 The Settings patch adds the entry point; most patches depend on it and it's selected by default. `patches-bundle.json` in the repository root is the source index Morphe reads for the published bundle.
@@ -232,7 +232,7 @@ Only the global package is declared in the compatibility metadata. TikTok change
 - `patches/`: Kotlin patch definitions, fingerprints and shared patch utilities.
 - `extensions/`: Java extension code the patches inject into TikTok, with the Robolectric tests beside it.
 - `extensions/tiktok/src/main/l10n/`: the settings translation tables.
-- `scripts/`: the translation generator, the whole-bundle apply check and release helpers.
+- `scripts/`: the translation generator, the whole-bundle apply check, the patching memory check and release helpers.
 - `patches-list.json`: generated patch metadata.
 - `patches-bundle.json`: the Morphe source index for the published bundle.
 
