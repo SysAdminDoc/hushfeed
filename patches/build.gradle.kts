@@ -31,7 +31,7 @@ dependencies {
 // add it to TikTok's resources. The source of truth is the extension's res folder, which
 // the extension's own tests read; the generator is scripts/gen-l10n.py.
 val l10nDir = layout.buildDirectory.dir("generated/l10n")
-val syncL10n by tasks.registering(Sync::class) {
+val syncL10n = tasks.register<Sync>("syncL10n") {
     description = "Copy the settings translations into the bundle's resources"
     from(rootProject.file("extensions/tiktok/src/main/res")) {
         include("values*/strings.xml")
@@ -50,7 +50,7 @@ tasks.named("sourcesJar") {
 }
 
 tasks {
-    val verifyBundle by registering(JavaExec::class) {
+    val verifyBundle = register<JavaExec>("verifyBundle") {
         group = "verification"
         description = "Check the Android bundle and its published patch list without rebuilding it"
         dependsOn(classes)

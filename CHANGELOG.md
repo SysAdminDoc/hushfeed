@@ -1,3 +1,9 @@
+## 0.15.1 (2026-09-06)
+
+* The repository is public. Morphe Manager can add it as a source straight from the project page.
+* Build tooling refreshed: Gradle 9.7.1, guava 33.7.1 and androidx annotation 1.10.0. The Android Gradle plugin and Kotlin come from the Morphe patches plugin (AGP 9.1.0, Kotlin 2.4.10), and the patcher stays at 1.12.0 because that is what the stable manager ships. Unused version pins were removed from the catalog.
+* The bundle is otherwise the same as 0.15.0.
+
 ## 0.15.0 (2026-09-06)
 
 * The project has its own name. The bundle, the entry in TikTok's settings and the settings screen now say Hushfeed. The repository moved to SysAdminDoc/hushfeed, the source index points at its releases, and the about row links to the project page instead of a donation link.
