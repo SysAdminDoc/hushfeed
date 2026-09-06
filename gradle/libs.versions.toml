@@ -3,8 +3,10 @@
 # at the version the stable Morphe Manager bundles: a newer pin trips the manager's
 # Patcher-Version gate and it refuses the bundle.
 morphe-patcher = "1.12.0"
-# Pinned to what morphe-patches-template pairs with the patcher above; a mismatch makes
-# R8 see two copies of dexlib2 and fail buildAndroid with "Classpath type already present".
+# Read by the app.morphe.patches settings plugin, not by anything in this repo: remove it and
+# configuration fails with "Version with alias smali not found in version catalog". A mismatch
+# with the patcher makes R8 see two copies of dexlib2 and fail buildAndroid with
+# "Classpath type already present".
 #noinspection GradleDependency
 smali = "d92701d947"
 # The Android Gradle plugin and Kotlin come from the app.morphe.patches settings plugin

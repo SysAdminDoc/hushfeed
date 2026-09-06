@@ -44,13 +44,17 @@ tasks {
         )
     }
     named("buildAndroid") {
+        // Resolved at configuration time. Reaching for project inside doLast is what the
+        // configuration cache refuses, and Gradle 10 turns that refusal into an error.
+        val bundleFile = layout.buildDirectory.file("libs/patches-${project.version}.mpp")
+        val checksumFile = layout.buildDirectory.file("bundle.sha256")
         doLast {
             // Record only at the producer boundary. Standalone verification must not
             // bless a modified bundle by generating its own expected checksum.
-            val bundle = layout.buildDirectory.file("libs/patches-${project.version}.mpp").get().asFile
-            val digest = MessageDigest.getInstance("SHA-256").digest(bundle.readBytes())
+            val digest = MessageDigest.getInstance("SHA-256")
+                .digest(bundleFile.get().asFile.readBytes())
                 .joinToString("") { "%02x".format(it) }
-            layout.buildDirectory.file("bundle.sha256").get().asFile.writeText(digest)
+            checksumFile.get().asFile.writeText(digest)
         }
         finalizedBy(verifyBundle)
     }
@@ -63,7 +67,7 @@ tasks {
         mainClass.set("app.morphe.util.PatchListGeneratorKt")
         args(project.version.toString())
     }
-    // Used by gradle-semantic-release-plugin.
+    // The patch list has to be regenerated before anything publishes the bundle.
     publish {
         dependsOn("generatePatchesList")
     }
