@@ -214,7 +214,7 @@
     },
     {
       "name": "Comment tools",
-      "description": "Hides comments that contain chosen words or come from chosen accounts, and turns the thumbs down on each comment into a block button. Supports TikTok 46.2.3.",
+      "description": "Hides comments that contain chosen words or come from chosen accounts, turns the thumbs down on each comment into a block button, hides comments made of an image or a sticker rather than words, and adds a box above the comments that narrows them by what they say or who said it. Supports TikTok 46.2.3.",
       "use": false,
       "dependencies": [
         "BytecodePatch"
@@ -690,7 +690,7 @@
     },
     {
       "name": "Feed filter",
-      "description": "Hides feed ads, TikTok Shop items, livestreams, stories, photo posts, and videos outside configured view or like ranges.",
+      "description": "Hides feed ads, TikTok Shop items, livestreams, LIVE replays, stories, photo posts, paid partnerships, AI labelled videos, verified accounts, series, playlists, the playlist bar, the floating event badge and inserted cards. Videos can also be filtered by your own caption words, creator handles or patterns, sound names, length, the country they were posted from and their view, like, comment, favourite and share counts. Sponsored cards are dropped from the profile video viewer, the search grids and the Friends tab as well as the feed. Supports TikTok 46.2.3.",
       "use": true,
       "dependencies": [
         "BytecodePatch"
@@ -1478,7 +1478,7 @@
     },
     {
       "name": "Playback quality",
-      "description": "Selects the lowest, highest or target video quality for playback, including adaptive streams.",
+      "description": "Selects the lowest, highest or a target video quality for playback, adaptive streams included. A second choice caps quality on mobile data and only ever lowers it. Download quality has its own setting. Supports TikTok 46.2.3.",
       "use": false,
       "dependencies": [
         "BytecodePatch"

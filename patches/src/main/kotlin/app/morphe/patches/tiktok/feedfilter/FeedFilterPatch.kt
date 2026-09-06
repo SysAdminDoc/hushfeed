@@ -35,7 +35,13 @@ private const val CARD_FILTERS_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/
 @Suppress("unused")
 val feedFilterPatch = bytecodePatch(
     name = "Feed filter",
-    description = "Hides feed ads, TikTok Shop items, livestreams, stories, photo posts, and videos outside configured view or like ranges.",
+    description = "Hides feed ads, TikTok Shop items, livestreams, LIVE replays, stories, photo " +
+        "posts, paid partnerships, AI labelled videos, verified accounts, series, playlists, " +
+        "the playlist bar, the floating event badge and inserted cards. Videos can also be " +
+        "filtered by your own caption words, creator handles or patterns, sound names, length, " +
+        "the country they were posted from and their view, like, comment, favourite and share " +
+        "counts. Sponsored cards are dropped from the profile video viewer, the search grids " +
+        "and the Friends tab as well as the feed. Supports TikTok 46.2.3.",
     default = true,
 ) {
     dependsOn(
