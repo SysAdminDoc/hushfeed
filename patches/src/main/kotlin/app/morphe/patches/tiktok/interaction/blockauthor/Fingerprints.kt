@@ -47,8 +47,9 @@ internal object BlockServiceFingerprint : Fingerprint(
  * the first parameter. The bind callback above fires for items the feed has prefetched, so
  * this is what decides which of them is current.
  *
- * The same method is hooked by "Hide already seen videos" and "Long-press controls"; all
- * three injections are prepends and do not interfere.
+ * The same method is hooked by "Hide already seen videos", "Long-press controls" and
+ * "Stay paused after a scroll". The first two prepend like this one; the last searches the
+ * instructions for its own site, so a prepend at zero moves it rather than displacing it.
  */
 internal object PlayerProgressAidFingerprint : Fingerprint(
     returnType = "V",

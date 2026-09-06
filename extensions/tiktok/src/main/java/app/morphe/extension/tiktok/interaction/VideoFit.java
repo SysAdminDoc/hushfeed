@@ -7,8 +7,12 @@
 package app.morphe.extension.tiktok.interaction;
 
 import android.content.Context;
+import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
+import android.widget.FrameLayout;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
@@ -51,6 +55,12 @@ public final class VideoFit {
             if (params == null) return false;
             params.width = fitWidth(videoWidth, videoHeight, containerWidth, containerHeight);
             params.height = fitHeight(videoWidth, videoHeight, containerWidth, containerHeight);
+            // A video large enough to fill was pinned wherever the container puts a child that
+            // does not fit, and the offsets moved it from there. A smaller one has to say
+            // where it goes, or the bars all end up on one side.
+            if (params instanceof FrameLayout.LayoutParams) {
+                ((FrameLayout.LayoutParams) params).gravity = Gravity.CENTER;
+            }
             view.setLayoutParams(params);
             // The offsets that follow a crop shift the video off centre once it fits.
             view.setTranslationX(0f);
@@ -89,29 +99,45 @@ public final class VideoFit {
     }
 
     /**
-     * The window the video has to fit in. The view's own parent is the cell's container and
-     * knows its size once it has been laid out; before that the feed cell fills the window,
-     * which the display is measured against in split view too.
+     * How many levels up to look for something that has been measured. The video sits a
+     * couple of frames inside the cell, and past that the answer stops being the cell.
+     */
+    private static final int LEVELS = 4;
+
+    /**
+     * The window the video has to fit in. The nearest laid out ancestor is the cell, which
+     * fills the window; on a first bind nothing above it has a size yet, and the fallback is
+     * the view's own resources rather than the application's, because in split view only the
+     * activity's configuration reports the half of the screen TikTok actually has.
      */
     private static int containerWidth(View view) {
-        int width = parentWidth(view);
+        int width = measuredAncestor(view, true);
         if (width > 0) return width;
-        Context context = Utils.getContext();
-        return context == null ? 0 : context.getResources().getDisplayMetrics().widthPixels;
+        return metrics(view, true);
     }
 
     private static int containerHeight(View view) {
-        int height = parentHeight(view);
+        int height = measuredAncestor(view, false);
         if (height > 0) return height;
-        Context context = Utils.getContext();
-        return context == null ? 0 : context.getResources().getDisplayMetrics().heightPixels;
+        return metrics(view, false);
     }
 
-    private static int parentWidth(View view) {
-        return view.getParent() instanceof View ? ((View) view.getParent()).getWidth() : 0;
+    private static int measuredAncestor(View view, boolean horizontal) {
+        ViewParent parent = view.getParent();
+        for (int level = 0; level < LEVELS && parent instanceof View; level++) {
+            View candidate = (View) parent;
+            int size = horizontal ? candidate.getWidth() : candidate.getHeight();
+            if (size > 0) return size;
+            parent = candidate.getParent();
+        }
+        return 0;
     }
 
-    private static int parentHeight(View view) {
-        return view.getParent() instanceof View ? ((View) view.getParent()).getHeight() : 0;
+    private static int metrics(View view, boolean horizontal) {
+        Context context = view.getContext();
+        if (context == null) context = Utils.getContext();
+        if (context == null) return 0;
+        DisplayMetrics display = context.getResources().getDisplayMetrics();
+        return horizontal ? display.widthPixels : display.heightPixels;
     }
 }

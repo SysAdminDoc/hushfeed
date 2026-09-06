@@ -55,8 +55,9 @@ private object FeedLongPressFingerprint : Fingerprint(
  * runs on is the one holding the player to seek. The other {@code onPlayProgressChange} on
  * the class takes a single float and is empty, so the parameters pick the wanted one.
  *
- * "Block the author" and "Hide already seen videos" prepend to the same method. All three
- * injections are prepends and do not interfere.
+ * "Block the author", "Hide already seen videos" and "Stay paused after a scroll" also
+ * hook this method. The first two prepend like this one; the third finds its own site by
+ * searching the instructions, so a prepend at zero moves it along with everything else.
  */
 private object PlayerProgressFingerprint : Fingerprint(
     returnType = "V",

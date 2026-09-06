@@ -210,6 +210,16 @@ public class GestureActionsTest {
             assertEquals(0, GestureActions.edgeSeekDelta(press(width - third - 1)));
             assertEquals(7000L, GestureActions.edgeSeekDelta(press(width - third)));
 
+            // Side by side with another app, TikTok's window does not start at the left of
+            // the display, so the press across the window and the press across the display
+            // are different numbers. The zones follow the window, which is what the video
+            // fills. An event offset this way reports the two separately.
+            MotionEvent offset = press(width + 20f);
+            offset.offsetLocation(-width, 0f);
+            assertEquals(width + 20f, offset.getRawX(), 0.5f);
+            assertEquals(20f, offset.getX(), 0.5f);
+            assertEquals(-7000L, GestureActions.edgeSeekDelta(offset));
+
             // Nothing to act on: no event, and a distance of zero.
             assertEquals(0, GestureActions.edgeSeekDelta(null));
             Settings.EDGE_SEEK_SECONDS.save(0);
@@ -230,7 +240,10 @@ public class GestureActionsTest {
             Settings.LONG_PRESS_ACTION.save("default");
 
             FakeController player = new FakeController();
-            FeedSeek.recordProgress(player, "source-1", 10_000L, 30_000L);
+            FeedSeek.recordProgress(player, "one", 10_000L, 30_000L);
+            // The gesture reads the video on screen from the block author tracker.
+            app.morphe.extension.tiktok.blockauthor.BlockAuthorPatch.setCurrentVideoParams(new Params("one"));
+            app.morphe.extension.tiktok.blockauthor.BlockAuthorPatch.setPlayingAweme("one");
 
             // Right edge: forward by the configured distance, and the press is swallowed so
             // TikTok's own 2x hold does not start under the same finger.
@@ -254,15 +267,27 @@ public class GestureActionsTest {
 
             // A tick with nothing playing does not replace the player that is.
             player.player.sought = Float.NaN;
-            FeedSeek.recordProgress(null, "source-1", 1_000L, 30_000L);
+            FeedSeek.recordProgress(null, "one", 1_000L, 30_000L);
             FeedSeek.recordProgress(player, "", 1_000L, 30_000L);
-            FeedSeek.recordProgress(player, "source-1", 1_000L, 0L);
-            assertTrue(FeedSeek.seekBy(-1_000L));
+            FeedSeek.recordProgress(player, "one", 1_000L, 0L);
+            assertTrue(FeedSeek.seekBy("one", -1_000L));
             assertEquals(28_999f, player.player.sought, 0.5f);
 
+            // Scrolled on to something that never reports progress, a photo post or an ad:
+            // the player still holds the video before it, and moving that one would look
+            // like nothing happening. The press says which video it means.
+            player.player.sought = Float.NaN;
+            assertFalse(FeedSeek.seekBy("two", 5_000L));
+            assertFalse(FeedSeek.seekBy(null, 5_000L));
+            assertTrue(Float.isNaN(player.player.sought));
+            app.morphe.extension.tiktok.blockauthor.BlockAuthorPatch.setCurrentVideoParams(new Params("two"));
+            app.morphe.extension.tiktok.blockauthor.BlockAuthorPatch.setPlayingAweme("two");
+            assertTrue("the press is still ours", GestureActions.onLongPress(press(width - 1f)));
+            assertTrue("but nothing moved", Float.isNaN(player.player.sought));
+
             // A player we cannot reach is reported rather than pretended about.
-            FeedSeek.recordProgress(new ShapelessController(), "source-2", 5_000L, 30_000L);
-            assertFalse(FeedSeek.seekBy(1_000L));
+            FeedSeek.recordProgress(new ShapelessController(), "three", 5_000L, 30_000L);
+            assertFalse(FeedSeek.seekBy("three", 1_000L));
         } finally {
             Settings.EDGE_SEEK.save(false);
             Settings.EDGE_SEEK_SECONDS.save(5);

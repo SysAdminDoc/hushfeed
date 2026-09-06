@@ -59,8 +59,10 @@ public class VideoFitTest {
         assertEquals(2400, VideoFit.fitHeight(2160, 4800, 1080, 2400));
 
         // A sliver still gets a pixel rather than nothing at all.
-        assertTrue(VideoFit.fitWidth(1, 100000, 1080, 2400) >= 1);
-        assertTrue(VideoFit.fitHeight(100000, 1, 1080, 2400) >= 1);
+        assertEquals(1, VideoFit.fitWidth(1, 100000, 1080, 2400));
+        assertEquals(2400, VideoFit.fitHeight(1, 100000, 1080, 2400));
+        assertEquals(1080, VideoFit.fitWidth(100000, 1, 1080, 2400));
+        assertEquals(1, VideoFit.fitHeight(100000, 1, 1080, 2400));
     }
 
     @Test public void theSwitchDecidesAndAnythingUnreadableIsLeftToTikTok() {
@@ -87,12 +89,31 @@ public class VideoFitTest {
             assertTrue(VideoFit.fitInstead(cropped, video));
             assertEquals(506, video.getLayoutParams().width);
             assertEquals(900, video.getLayoutParams().height);
+            // A video that no longer fills has to say where it sits, or every bar ends up on
+            // the same side.
+            assertEquals(android.view.Gravity.CENTER,
+                    ((FrameLayout.LayoutParams) video.getLayoutParams()).gravity);
             // The offsets that centred a crop would push a fitted video off the screen.
             assertEquals(0f, video.getTranslationX(), 0.001f);
             assertEquals(0f, video.getTranslationY(), 0.001f);
 
             // A video that already fits is left exactly as TikTok laid it out.
             assertFalse(VideoFit.fitInstead(new Result(400, 800), video));
+
+            // Before the first layout pass nothing above the video has a size, and the window
+            // is what is left to measure against. Taken from the view's own resources, which
+            // in a split view is the half TikTok has rather than the whole display.
+            android.util.DisplayMetrics window = activity.getResources().getDisplayMetrics();
+            assertTrue("the window is a squarer shape than 9:16",
+                    window.widthPixels * 16 > window.heightPixels * 9);
+            FrameLayout unmeasured = new FrameLayout(activity);
+            View early = new View(activity);
+            unmeasured.addView(early);
+            early.setLayoutParams(new FrameLayout.LayoutParams(1440, 2560));
+            assertTrue(VideoFit.fitInstead(new Result(1440, 2560), early));
+            assertEquals(window.heightPixels, early.getLayoutParams().height);
+            assertEquals(Math.round(window.heightPixels * 1440f / 2560f),
+                    early.getLayoutParams().width);
 
             // Nothing to work with: no view, no result, a result we cannot read, and sizes
             // that make no sense. Every one of them hands the job back.

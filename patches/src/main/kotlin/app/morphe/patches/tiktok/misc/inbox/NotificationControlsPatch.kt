@@ -14,6 +14,7 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.util.getReference
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val EXTENSION = "Lapp/morphe/extension/tiktok/inbox/NotificationControls;"
@@ -26,6 +27,7 @@ private const val EXTENSION = "Lapp/morphe/extension/tiktok/inbox/NotificationCo
  */
 private object PushNotifyFingerprint : Fingerprint(
     definingClass = "Lcom/ss/android/ugc/awemepushlib/manager/MessageShowHandler;",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
     returnType = "V",
     custom = { method, _ ->
         method.implementation?.instructions?.any { instruction ->
@@ -69,14 +71,20 @@ val notificationControlsPatch = bytecodePatch(
 
     execute {
         PushNotifyFingerprint.method.apply {
-            // p1 is the push message. The two parameters either side of it pin the shape,
-            // because the message's own type is obfuscated and cannot be named here.
+            // The method is static, so p1 is the second parameter. That is the push message,
+            // whose own type is obfuscated and cannot be named here, so the parameters around
+            // it stand in for its name: a Context first and the built Notification fifth. p1
+            // itself only has to be an object for the call to pass it as one.
             check(
                 parameterTypes.size >= 5 &&
                     parameterTypes[0] == "Landroid/content/Context;" &&
+                    parameterTypes[1].startsWith("L") &&
                     parameterTypes[4] == "Landroid/app/Notification;",
             ) {
                 "Notification controls: the push handler no longer takes the message in p1."
+            }
+            check(implementation!!.registerCount > parameterTypes.size) {
+                "Notification controls: the push handler has no free local register."
             }
             addInstructions(
                 0,
@@ -97,6 +105,11 @@ val notificationControlsPatch = bytecodePatch(
                 "Notification controls: no ${fingerprint.name} to take over."
             }
             matches.forEach { match ->
+                // A Kotlin getter this small can be compiled with only its own receiver, and
+                // then v0 is that receiver rather than a spare.
+                check(match.method.implementation!!.registerCount > 1) {
+                    "Notification controls: ${fingerprint.name} has no free local register."
+                }
                 match.method.addInstructions(
                     0,
                     """

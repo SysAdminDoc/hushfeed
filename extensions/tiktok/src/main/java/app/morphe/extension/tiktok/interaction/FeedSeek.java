@@ -17,36 +17,50 @@ import java.lang.reflect.Method;
  *
  * <p>TikTok's {@code PlayerController} kept its name and so did the two methods that matter.
  * Its progress callback runs several times a second while a video plays and carries the
- * position and the length, and {@code getPlayerManager()} hands back the player the seekbar
- * drags. The manager's own {@code seek(float milliseconds)} kept its name too, but the
- * interface declaring it did not, so that one call goes through reflection on whichever
- * concrete class the manager turns out to be.
+ * position, the length and the id of the video they belong to, and {@code getPlayerManager()}
+ * hands back the player the seekbar drags. The manager's own {@code seek(float milliseconds)}
+ * kept its name too, but the interface declaring it did not, so that one call goes through
+ * reflection on whichever concrete class the manager turns out to be.
+ *
+ * <p>The id is the point. A post that never reports progress, a photo post or a paused ad,
+ * leaves the last video's controller sitting here, and a press would move something that is
+ * no longer on screen. So the seek says which video it means and is refused if that is not
+ * the one the ticks describe.
  */
 public final class FeedSeek {
-    private static WeakReference<Object> player = new WeakReference<>(null);
-    private static long positionMs;
-    private static long durationMs;
+    private static volatile WeakReference<Object> player = new WeakReference<>(null);
+    private static volatile String source;
+    private static volatile long positionMs;
+    private static volatile long durationMs;
     private static Class<?> seekOwner;
     private static Method seekMethod;
 
     private FeedSeek() {}
 
     /**
-     * {@code PlayerController.onPlayProgressChange(sourceId, position, duration)}. A tick with
-     * no source id belongs to a player holding nothing, and a length of zero leaves a seek
-     * with nothing to clamp against, so neither is worth keeping.
+     * {@code PlayerController.onPlayProgressChange(sourceId, position, duration)}. The source
+     * id is the video's own id, which is how the block author patch names the same parameter.
+     * A tick with no id belongs to a player holding nothing, and a length of zero leaves a
+     * seek with nothing to clamp against, so neither is worth keeping.
      */
     public static void recordProgress(Object controller, String sourceId, long position, long duration) {
         if (controller == null || sourceId == null || sourceId.isEmpty() || duration <= 0) return;
         player = new WeakReference<>(controller);
+        source = sourceId;
         positionMs = position;
         durationMs = duration;
     }
 
-    /** Moves the playing video by {@code deltaMs}, kept inside its length. */
-    static boolean seekBy(long deltaMs) {
+    /**
+     * Moves {@code videoId} by {@code deltaMs}, kept inside its length. False when that is not
+     * the video the player has been reporting, which is the case for anything that scrolled
+     * past without ever playing.
+     */
+    static boolean seekBy(String videoId, long deltaMs) {
         Object controller = player.get();
+        String playing = source;
         if (controller == null || durationMs <= 0) return false;
+        if (videoId == null || playing == null || !playing.equals(videoId)) return false;
 
         long target = positionMs + deltaMs;
         if (target < 0) target = 0;
@@ -74,7 +88,10 @@ public final class FeedSeek {
         }
     }
 
-    /** Remembered for the one class the manager is, which does not change while the app runs. */
+    /**
+     * Remembered for the one class the manager is, which does not change while the app runs.
+     * Only ever reached from the gesture, so from the main thread.
+     */
     private static Method seekMethod(Class<?> type) {
         if (type == seekOwner) return seekMethod;
         seekOwner = type;

@@ -61,9 +61,10 @@ public final class GestureActions {
         // Whole pixels, so a press exactly on a third lands on one side of the line every
         // time. A screen width times a third does not, and 106.666664 sits below 106.66667.
         int third = width / 3;
-        // The gesture listener sits on the cell's touch layer, which fills the window, so the
-        // press is placed against the screen rather than against a view we do not hold.
-        float x = event.getRawX();
+        // The listener sits on the cell's touch layer, which fills the window, so the press
+        // is placed against the window. getRawX would be the position on the whole display,
+        // which in a side by side split view puts every press in the right hand third.
+        float x = event.getX();
         if (x < third) return -seconds * 1000L;
         if (x >= width - third) return seconds * 1000L;
         return 0;
@@ -76,7 +77,9 @@ public final class GestureActions {
     public static boolean onLongPress(MotionEvent event) {
         long delta = edgeSeekDelta(event);
         if (delta != 0) {
-            if (!FeedSeek.seekBy(delta)) Utils.showToastShort("Nothing is playing to seek");
+            // Named, so a post that never reported progress cannot move the video before it.
+            String videoId = Reflect.string(CurrentVideoAuthor.getAweme(), "getAid", "aid");
+            if (!FeedSeek.seekBy(videoId, delta)) Utils.showToastShort("Nothing is playing to seek");
             // The edge belongs to the seek whether or not it worked, so the 2x hold that would
             // otherwise start under the finger does not fire on top of it.
             return true;
