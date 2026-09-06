@@ -111,11 +111,17 @@ public final class SettingsHeaderPreference extends Preference {
         back.setImageDrawable(new BackDrawable());
         back.setOnClickListener(view -> { if (onBack != null) onBack.run(); });
         back.setFocusable(true);
+        // The same accent-at-15%-alpha the grouped rows use. divider() is 1.3:1 against the
+        // dark surface, which is no press feedback at all.
         back.setBackground(new android.graphics.drawable.RippleDrawable(
-                android.content.res.ColorStateList.valueOf(SettingsUi.divider()), null,
+                android.content.res.ColorStateList.valueOf(
+                        (SettingsUi.accent() & 0x00ffffff) | 0x26000000),
+                null,
                 SettingsUi.roundedSurface(context, 6, false)));
         LinearLayout.LayoutParams backParams = new LinearLayout.LayoutParams(SettingsUi.dp(context, 48), SettingsUi.dp(context, 48));
-        backParams.setMarginStart(SettingsUi.dp(context, -12));
+        // -8 lines the glyph up with the 8dp gutter. Anything more pushes the button's
+        // leading edge outside the header, where it is clipped and takes no touches.
+        backParams.setMarginStart(SettingsUi.dp(context, -8));
         toolbar.addView(back, backParams);
         TextView brand = SettingsUi.text(context, "HUSHFEED", 12, SettingsUi.accent(), 1);
         brand.setLetterSpacing(0.12f);

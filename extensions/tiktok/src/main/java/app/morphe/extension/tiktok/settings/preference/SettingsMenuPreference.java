@@ -126,10 +126,14 @@ public final class SettingsMenuPreference extends Preference {
         addAccessory(view);
     }
 
+    /**
+     * Wrapping, which a long translation needs. The sizes are deliberately not set here: the
+     * list adapter settles those after this runs, so a number written here would be read as
+     * the one on screen and never be it.
+     */
     private void styleText(View view) {
         TextView title = view.findViewById(android.R.id.title);
         if (title != null) {
-            title.setTextSize(15.5f);
             title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
             title.setSingleLine(false);
             title.setEllipsize(null);
@@ -137,7 +141,6 @@ public final class SettingsMenuPreference extends Preference {
 
         TextView summary = view.findViewById(android.R.id.summary);
         if (summary != null) {
-            summary.setTextSize(12.8f);
             summary.setSingleLine(false);
             summary.setEllipsize(null);
         }
@@ -200,6 +203,8 @@ public final class SettingsMenuPreference extends Preference {
 
         ImageView chevron = new ImageView(getContext());
         chevron.setImageDrawable(new ChevronDrawable());
+        // Decorative, like the one the list adapter adds to every other row.
+        chevron.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         LinearLayout.LayoutParams chevronParams = new LinearLayout.LayoutParams(
                 SettingsUi.dp(getContext(), 18),
                 SettingsUi.dp(getContext(), 18)
@@ -254,17 +259,11 @@ public final class SettingsMenuPreference extends Preference {
 
         MenuIconDrawable(Icon icon) {
             this.icon = icon;
-            fill.setColor(SettingsUi.isDarkMode()
-                    ? Color.argb(255, 23, 23, 29)
-                    : Color.argb(255, 246, 246, 248));
-            border.setColor(SettingsUi.isDarkMode()
-                    ? Color.argb(255, 48, 48, 56)
-                    : Color.argb(255, 224, 224, 228));
+            fill.setColor(SettingsUi.liftedSurface());
+            border.setColor(SettingsUi.border());
             border.setStyle(Paint.Style.STROKE);
             border.setStrokeWidth(1f);
-            line.setColor(SettingsUi.isDarkMode()
-                    ? Color.argb(255, 207, 207, 215)
-                    : Color.argb(255, 72, 72, 78));
+            line.setColor(SettingsUi.textSecondary());
             line.setStyle(Paint.Style.STROKE);
             line.setStrokeWidth(1.8f);
             line.setStrokeCap(Paint.Cap.ROUND);
