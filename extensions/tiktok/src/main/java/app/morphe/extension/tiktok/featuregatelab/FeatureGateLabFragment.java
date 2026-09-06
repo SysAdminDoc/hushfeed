@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -87,7 +88,7 @@ public final class FeatureGateLabFragment extends Fragment {
     private static final int MAX_JSON_IMPORT_BYTES = 8 * 1024 * 1024;
     private static final int MAX_IMPORT_RULES = 1024;
     private static final SettingsJson.Limits IMPORT_JSON_LIMITS = new SettingsJson.Limits(
-            24, 8192, 64 * 1024, 2048, MAX_JSON_IMPORT_BYTES);
+            24, 8192, 64 * 1024, MAX_IMPORT_RULES, MAX_JSON_IMPORT_BYTES);
     private static final int FILTER_ALL = 0;
     private static final int FILTER_BOOLEAN = 1;
     private static final int FILTER_ENABLED = 2;
@@ -667,11 +668,15 @@ public final class FeatureGateLabFragment extends Fragment {
             Utils.showToastLong("A Lab change is already running");
             return;
         }
-        if (checked) FeatureGateLabStore.acknowledgeWarning();
-        FeatureGateLabStore.setMasterEnabled(checked);
-        rebuild();
-        Utils.showToastLong(checked ? "Overrides enabled. Restart TikTok to apply saved values."
-                : "Overrides disabled. Restart TikTok to restore native values.");
+        try {
+            FeatureGateLabUndo.setMasterEnabled(checked);
+            rebuild();
+            Utils.showToastLong(checked ? "Overrides enabled. Restart TikTok to apply saved values."
+                    : "Overrides disabled. Restart TikTok to restore native values.");
+        } catch (Exception error) {
+            master.setChecked(FeatureGateLabStore.masterEnabled());
+            Utils.showToastLong("Could not change Lab overrides. " + error.getMessage());
+        }
     }
 
     private void openDetail(FeatureGateCatalog.Entry entry) {
@@ -755,19 +760,20 @@ public final class FeatureGateLabFragment extends Fragment {
     }
 
     private void writeLoadedValuesFile(Uri uri) {
+        Activity activity = getActivity();
+        ContentResolver resolver = activity == null ? null : activity.getContentResolver();
         new Thread(() -> {
-            Activity activity = getActivity();
             try {
-                if (activity == null) return;
+                if (resolver == null) throw new IllegalStateException("Activity detached");
                 ExportPayload payload = buildExportPayload();
-                try (OutputStream output = activity.getContentResolver().openOutputStream(uri, "w")) {
+                try (OutputStream output = resolver.openOutputStream(uri, "w")) {
                     if (output == null) throw new IllegalStateException("Document provider returned no output stream");
                     output.write(payload.gzipBytes);
                 }
                 postToast("Exported " + payload.count + " loaded values");
             } catch (Throwable throwable) {
                 Logger.printException(() -> "Loaded-value file export failed", throwable);
-                postToast(deleteCreatedDocument(activity, uri)
+                postToast(deleteCreatedDocument(resolver, uri)
                         ? "Loaded-value file export failed"
                         : "Loaded-value file export failed; cleanup also failed");
             }
@@ -932,10 +938,10 @@ public final class FeatureGateLabFragment extends Fragment {
         return output.toByteArray();
     }
 
-    private static boolean deleteCreatedDocument(Activity activity, Uri uri) {
-        if (activity == null || uri == null) return true;
+    private static boolean deleteCreatedDocument(ContentResolver resolver, Uri uri) {
+        if (resolver == null || uri == null) return false;
         try {
-            return activity.getContentResolver().delete(uri, null, null) > 0;
+            return resolver.delete(uri, null, null) > 0;
         } catch (Throwable cleanupError) {
             Logger.printException(() -> "Loaded-value export cleanup failed", cleanupError);
             return false;
@@ -987,11 +993,11 @@ public final class FeatureGateLabFragment extends Fragment {
             }
             String notice = result;
             new Handler(Looper.getMainLooper()).post(() -> {
-                CHANGING.set(false);
                 if (master != null) master.setChecked(FeatureGateLabStore.masterEnabled());
         master.setContentDescription("Enable overrides");
         SettingsUi.styleSwitch(master);
                 rebuild();
+                CHANGING.set(false);
                 Utils.showToastLong(notice);
             });
         });

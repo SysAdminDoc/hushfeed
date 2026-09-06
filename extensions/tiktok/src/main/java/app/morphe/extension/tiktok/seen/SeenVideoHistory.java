@@ -402,11 +402,11 @@ public final class SeenVideoHistory {
                     pruneDatabase(nowMs);
                 } catch (Throwable throwable) {
                     synchronized (HISTORY_LOCK) {
-                        if (generation == loadGeneration) {
-                            // A failed open must not permanently claim that the first load
-                            // happened. The next read can retry after the cause is gone.
-                            LOAD_STARTED.set(false);
-                        }
+                        // A failed open must not permanently claim that the first load
+                        // happened. The next read can retry after the cause is gone. The
+                        // generation may have changed while the open was waiting, but no
+                        // newer load can start until this gate is released.
+                        LOAD_STARTED.set(false);
                     }
                     Logger.printException(() -> "Seen video history load failed", throwable);
                 }

@@ -192,7 +192,10 @@ public final class SettingsOperationJournal {
 
     private static Recovery reconcileLocked(Context context) {
         AtomicFile file = journalFile(context);
-        if (!file.getBaseFile().isFile()) return Recovery.NONE;
+        // AtomicFile may leave the last durable copy in its .bak file when the process
+        // dies between startWrite and finishWrite. Let openRead restore that copy instead
+        // of treating the interrupted operation as if no journal existed.
+        if (!hasJournalFile(file)) return Recovery.NONE;
 
         String text;
         String fingerprint;
@@ -257,11 +260,7 @@ public final class SettingsOperationJournal {
     }
 
     private static boolean labMatches(JSONObject expected) {
-        try {
-            return expected.toString().equals(FeatureGateLabStore.exportSettings().toString());
-        } catch (JSONException error) {
-            return false;
-        }
+        return FeatureGateLabStore.settingsMatch(expected);
     }
 
     private static void applyLab(JSONObject saved) throws Exception {
@@ -318,6 +317,11 @@ public final class SettingsOperationJournal {
         return new AtomicFile(new File(context.getFilesDir(), FILE_NAME));
     }
 
+    private static boolean hasJournalFile(AtomicFile file) {
+        File base = file.getBaseFile();
+        return base.isFile() || new File(base.getPath() + ".bak").isFile();
+    }
+
     private static void write(AtomicFile file, String text) throws IOException {
         byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
         if (bytes.length > MAX_JOURNAL_BYTES) throw new IOException("Settings journal is too large");
@@ -350,7 +354,7 @@ public final class SettingsOperationJournal {
 
     private static void delete(AtomicFile file) throws IOException {
         file.delete();
-        if (file.getBaseFile().exists()) throw new IOException("Could not clear settings journal");
+        if (hasJournalFile(file)) throw new IOException("Could not clear settings journal");
     }
 
     private static void publish(Recovery result, String fingerprint) {

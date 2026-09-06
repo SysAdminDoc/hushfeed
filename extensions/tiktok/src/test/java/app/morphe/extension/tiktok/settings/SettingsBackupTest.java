@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -351,6 +352,49 @@ public class SettingsBackupTest {
         } finally {
             operation.abort();
         }
+    }
+
+    @Test public void anAtomicFileBackupIsReconciledAfterAWriteCrash() throws Exception {
+        var app = Utils.getContext();
+        String before = SettingsBackup.create(false);
+        JSONObject after = new JSONObject(before);
+        after.getJSONObject("settings").put(Settings.REGION_SPOOF.key, true);
+        Settings.REGION_SPOOF.save(true);
+        writeJournal("settings", before, after.toString());
+
+        File base = new File(app.getFilesDir(), SettingsOperationJournal.FILE_NAME);
+        File backup = new File(base.getPath() + ".bak");
+        assertTrue(base.renameTo(backup));
+        assertFalse(base.isFile());
+        assertTrue(backup.isFile());
+
+        assertEquals(SettingsOperationJournal.Recovery.ALREADY_COMMITTED,
+                SettingsOperationJournal.initialize(app));
+        assertTrue(Settings.REGION_SPOOF.get());
+        assertFalse(base.exists());
+        assertFalse(backup.exists());
+    }
+
+    @Test public void labJournalMatchingIgnoresRuleOrder() throws Exception {
+        var app = Utils.getContext();
+        JSONArray ordered = new JSONArray()
+                .put(new JSONObject().put("manager", "abmock").put("key", "order_a")
+                        .put("type", "BOOLEAN").put("value", "true").put("force", true))
+                .put(new JSONObject().put("manager", "abmock").put("key", "order_b")
+                        .put("type", "INT").put("value", "3").put("force", false));
+        JSONObject before = FeatureGateLabStore.exportSettings();
+        JSONObject after = new JSONObject().put("schema", 1).put("target", "TikTok global")
+                .put("tiktok_version", FeatureGateLabStore.TARGET_VERSION).put("rules", ordered)
+                .put("master", false).put("acknowledged", false);
+        JSONArray reversed = new JSONArray().put(ordered.get(1)).put(ordered.get(0));
+        JSONObject current = new JSONObject(after.toString()).put("rules", reversed);
+        FeatureGateLabStore.replaceSettings(FeatureGateLabStore.parseSettings(current), false, false);
+        writeJournal("lab", before.toString(), after.toString());
+
+        assertEquals(SettingsOperationJournal.Recovery.ALREADY_COMMITTED,
+                SettingsOperationJournal.initialize(app));
+        assertEquals(2, FeatureGateLabStore.rules().size());
+        assertFalse(new File(app.getFilesDir(), SettingsOperationJournal.FILE_NAME).isFile());
     }
 
     private static void writeJournal(String kind, String before, String after) throws Exception {

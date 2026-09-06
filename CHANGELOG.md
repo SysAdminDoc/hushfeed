@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The settings journal now survives an AtomicFile backup left by a crash, compares Lab rules without depending on their display order, and covers edits made from the Lab detail pages. Seen-history loading can retry after a clear races a failed open, reset takes its journal lock before capturing defaults, and detached exports still clean up the selected document.
+
 * Feature Gate Lab imports are now bounded while they are decoded. Raw JSON and gzip exports use strict UTF-8 and duplicate-key checks with depth, node, string, array and rule limits, and a failed export only removes the selected new document while reporting cleanup failures.
 
 * Settings and Feature Gate Lab changes now share an on-disk operation journal. An interrupted write is reconciled at startup to the prior or committed state, the private Undo copy is retained, and malformed recovery records produce a visible notice.

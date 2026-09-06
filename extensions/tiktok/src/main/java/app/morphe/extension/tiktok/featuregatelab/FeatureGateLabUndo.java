@@ -29,6 +29,45 @@ final class FeatureGateLabUndo {
                 !allData && FeatureGateLabStore.warningAcknowledged(), allData);
     }
 
+    static synchronized void setMasterEnabled(boolean enabled) throws Exception {
+        replace(new ArrayList<>(FeatureGateLabStore.rules()), enabled,
+                enabled || FeatureGateLabStore.warningAcknowledged(), false);
+    }
+
+    static synchronized void saveRule(String manager, String key, String type, String value,
+            boolean enabled) throws Exception {
+        String id = FeatureGateLabStore.idFor(manager, key, type);
+        List<FeatureGateLabStore.Rule> next = new ArrayList<>();
+        boolean replaced = false;
+        for (FeatureGateLabStore.Rule rule : FeatureGateLabStore.rules()) {
+            if (rule.id.equals(id)) {
+                next.add(new FeatureGateLabStore.Rule(id, manager, key,
+                        FeatureGateLabStore.normalizeType(type), value, enabled,
+                        System.currentTimeMillis()));
+                replaced = true;
+            } else {
+                next.add(rule);
+            }
+        }
+        if (!replaced) {
+            next.add(new FeatureGateLabStore.Rule(id, manager, key,
+                    FeatureGateLabStore.normalizeType(type), value, enabled,
+                    System.currentTimeMillis()));
+        }
+        replace(next, FeatureGateLabStore.masterEnabled(),
+                FeatureGateLabStore.warningAcknowledged(), false);
+    }
+
+    static synchronized void deleteRule(String manager, String key, String type) throws Exception {
+        String id = FeatureGateLabStore.idFor(manager, key, type);
+        List<FeatureGateLabStore.Rule> next = new ArrayList<>();
+        for (FeatureGateLabStore.Rule rule : FeatureGateLabStore.rules()) {
+            if (!rule.id.equals(id)) next.add(rule);
+        }
+        replace(next, FeatureGateLabStore.masterEnabled(),
+                FeatureGateLabStore.warningAcknowledged(), false);
+    }
+
     static synchronized void importRules(FeatureGateLabStore.ImportReview review) throws Exception {
         if (review.accepted.isEmpty()) return;
         var merged = new LinkedHashMap<String, FeatureGateLabStore.Rule>();
@@ -131,11 +170,7 @@ final class FeatureGateLabUndo {
     }
 
     private static boolean matches(JSONObject expected) {
-        try {
-            return expected.toString().equals(FeatureGateLabStore.exportSettings().toString());
-        } catch (Exception error) {
-            return false;
-        }
+        return FeatureGateLabStore.settingsMatch(expected);
     }
 
     private static void apply(JSONObject saved) throws Exception {
@@ -145,6 +180,10 @@ final class FeatureGateLabUndo {
 
     private static AtomicFile file() throws IOException {
         if (Utils.getContext() == null) throw new IOException("Lab storage unavailable");
-        return new AtomicFile(new File(Utils.getContext().getFilesDir(), "feature-gate-lab-undo.json"));
+        File directory = Utils.getContext().getFilesDir();
+        if (directory == null || !directory.isDirectory()) {
+            throw new IOException("Lab storage directory is unavailable");
+        }
+        return new AtomicFile(new File(directory, "feature-gate-lab-undo.json"));
     }
 }

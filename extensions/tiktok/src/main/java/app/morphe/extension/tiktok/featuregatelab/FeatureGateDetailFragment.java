@@ -370,14 +370,24 @@ public final class FeatureGateDetailFragment extends Fragment {
             Utils.showToastLong(error);
             return;
         }
-        FeatureGateLabStore.saveRule(entry.manager, entry.key, entry.type, value, enabled);
+        try {
+            FeatureGateLabUndo.saveRule(entry.manager, entry.key, entry.type, value, enabled);
+        } catch (Exception failure) {
+            Utils.showToastLong("Could not save this override. " + failure.getMessage());
+            return;
+        }
         rule = FeatureGateLabStore.rule(entry.manager, entry.key, entry.type);
         reset.setVisibility(View.VISIBLE);
         updateStatus();
     }
 
     private void resetRule() {
-        FeatureGateLabStore.deleteRule(entry.manager, entry.key, entry.type);
+        try {
+            FeatureGateLabUndo.deleteRule(entry.manager, entry.key, entry.type);
+        } catch (Exception error) {
+            Utils.showToastLong("Could not reset this override. " + error.getMessage());
+            return;
+        }
         rule = null;
         suppress = true;
         if (force != null) force.setChecked(false);

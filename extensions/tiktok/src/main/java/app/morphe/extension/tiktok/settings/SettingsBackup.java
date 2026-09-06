@@ -105,6 +105,28 @@ public final class SettingsBackup {
             throw RestoreException.rejected(error);
         }
         SettingsOperationJournal.Operation operation = SettingsOperationJournal.acquire(context);
+        restoreWithOperation(context, text, saveUndo, next, operation);
+    }
+
+    public static void reset(Context context) throws Exception {
+        SettingsOperationJournal.Operation operation = SettingsOperationJournal.acquire(context);
+        try {
+            String text = create(true);
+            Snapshot next;
+            try {
+                next = parse(text);
+            } catch (Exception error) {
+                throw RestoreException.rejected(error);
+            }
+            restoreWithOperation(context, text, true, next, operation);
+        } catch (Exception error) {
+            operation.abort();
+            throw error;
+        }
+    }
+
+    private static void restoreWithOperation(Context context, String text, boolean saveUndo,
+            Snapshot next, SettingsOperationJournal.Operation operation) throws Exception {
         boolean closed = false;
         try {
             String previousText = create(false);
@@ -136,7 +158,6 @@ public final class SettingsBackup {
         }
     }
 
-    public static void reset(Context context) throws Exception { restore(context, create(true), true); }
     public static void undo(Context context) throws Exception { restore(context, read(undoFile(context).openRead()), false); }
     public static boolean hasUndo(Context context) { return undoFile(context).getBaseFile().isFile(); }
 

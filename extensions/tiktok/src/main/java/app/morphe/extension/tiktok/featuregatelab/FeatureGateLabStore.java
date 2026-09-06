@@ -168,6 +168,38 @@ public final class FeatureGateLabStore {
                 .put("acknowledged", warningAcknowledged());
     }
 
+    /** Compares durable Lab state while ignoring rule ordering and update timestamps. */
+    public static boolean settingsMatch(JSONObject expected) {
+        try {
+            if (!(expected.get("master") instanceof Boolean)
+                    || !(expected.get("acknowledged") instanceof Boolean)
+                    || expected.getBoolean("master") != masterEnabled()
+                    || expected.getBoolean("acknowledged") != warningAcknowledged()) {
+                return false;
+            }
+            List<Rule> wanted = parseSettings(expected);
+            Map<String, Rule> actual = new HashMap<>();
+            for (Rule rule : rules()) actual.put(rule.id, rule);
+            if (actual.size() != wanted.size()) return false;
+            for (Rule rule : wanted) {
+                Rule candidate = actual.get(rule.id);
+                if (candidate == null || !sameDurableRule(rule, candidate)) return false;
+            }
+            return true;
+        } catch (Exception error) {
+            return false;
+        }
+    }
+
+    private static boolean sameDurableRule(Rule left, Rule right) {
+        return left.id.equals(right.id)
+                && left.manager.equals(right.manager)
+                && left.key.equals(right.key)
+                && left.type.equals(right.type)
+                && left.value.equals(right.value)
+                && left.enabled == right.enabled;
+    }
+
     /** Decode the entire backup before any setting or rule is changed. */
     public static List<Rule> parseSettings(JSONObject root) throws JSONException {
         if (!Integer.valueOf(1).equals(root.get("schema")) || !TARGET_VERSION.equals(root.optString("tiktok_version"))

@@ -190,6 +190,48 @@ public class SeenVideoHistoryTest {
         }
     }
 
+    @Test public void failedInitialOpenAfterClearStillAllowsALaterRetry() throws Exception {
+        Field databaseField = SeenVideoHistory.class.getDeclaredField("database");
+        databaseField.setAccessible(true);
+        Object previousDatabase = databaseField.get(null);
+        databaseField.set(null, null);
+        Field factoryField = SeenVideoHistory.class.getDeclaredField("databaseFactory");
+        factoryField.setAccessible(true);
+        Object previousFactory = factoryField.get(null);
+        CountDownLatch openStarted = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        AtomicBoolean failOnce = new AtomicBoolean(true);
+        factoryField.set(null, (SeenVideoHistory.DatabaseFactory) context ->
+                new SeenVideoHistory.Database(context) {
+                    @Override public SQLiteDatabase getReadableDatabase() {
+                        if (failOnce.compareAndSet(true, false)) {
+                            openStarted.countDown();
+                            try { release.await(5, TimeUnit.SECONDS); }
+                            catch (InterruptedException error) {
+                                Thread.currentThread().interrupt();
+                            }
+                            throw new IllegalStateException("injected open failure after clear");
+                        }
+                        return super.getReadableDatabase();
+                    }
+                });
+        ((AtomicBoolean) field("LOAD_STARTED")).set(false);
+        try {
+            SeenVideoHistory.size();
+            assertTrue(openStarted.await(5, TimeUnit.SECONDS));
+            SeenVideoHistory.clear(); // Advances the generation while the first open waits.
+            release.countDown();
+            drain();
+            assertFalse("a failed open after clear must release the retry gate",
+                    ((AtomicBoolean) field("LOAD_STARTED")).get());
+        } finally {
+            release.countDown();
+            factoryField.set(null, previousFactory);
+            databaseField.set(null, previousDatabase);
+            failOnce.set(false);
+        }
+    }
+
     @Test public void failedUndoCommitRetainsRecoveryAndReportsFailure() throws Exception {
         SeenVideoHistory.onPlayProgressChange("failed-undo", 5000, 10000);
         drain();
