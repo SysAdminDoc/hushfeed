@@ -243,6 +243,23 @@ public class SeenVideoHistoryTest {
         return (Long) value;
     }
 
+    @Test public void aSchemaChangeKeepsWhatWasAlreadyWatched() throws Exception {
+        long watched = System.currentTimeMillis();
+        database().execSQL("INSERT INTO seen_videos VALUES ('kept', ?)", new Object[]{watched});
+
+        // What SQLiteOpenHelper calls when the version moves in either direction. Neither is
+        // allowed to take the record with it.
+        SQLiteOpenHelper helper = (SQLiteOpenHelper) field("database");
+        helper.onUpgrade(database(), 1, 2);
+        helper.onDowngrade(database(), 2, 1);
+
+        try (android.database.Cursor c = database().rawQuery(
+                "SELECT last_seen_ms FROM seen_videos WHERE aid = 'kept'", null)) {
+            assertTrue("the row survived the migration", c.moveToFirst());
+            assertEquals(watched, c.getLong(0));
+        }
+    }
+
     private static Object field(String name) throws Exception {
         Field f = SeenVideoHistory.class.getDeclaredField(name);
         f.setAccessible(true);

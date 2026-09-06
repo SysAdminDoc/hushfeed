@@ -422,7 +422,7 @@ public final class SeenVideoHistory {
         @Override
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(
-                    "CREATE TABLE " + TABLE + " (" +
+                    "CREATE TABLE IF NOT EXISTS " + TABLE + " (" +
                             COLUMN_AID + " TEXT PRIMARY KEY NOT NULL, " +
                             COLUMN_LAST_SEEN + " INTEGER NOT NULL" +
                             ")"
@@ -433,9 +433,23 @@ public final class SeenVideoHistory {
             );
         }
 
+        /**
+         * Version 1 is the only schema there has been, so there is nothing to move yet and
+         * the rows are left where they are. Whatever comes next adds what it needs with
+         * ALTER TABLE: dropping the table would throw away the record the whole feature
+         * exists to keep, and nothing else holds a copy of it.
+         */
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            db.execSQL("DROP TABLE IF EXISTS " + TABLE);
+            onCreate(db);
+        }
+
+        /**
+         * Going back to an older bundle is not a reason to lose the history either. The
+         * default here throws, which would take the app down on the first read.
+         */
+        @Override
+        public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             onCreate(db);
         }
     }
