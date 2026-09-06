@@ -2,6 +2,7 @@ package app.morphe.extension.tiktok.seen;
 
 import static org.junit.Assert.*;
 
+import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import app.morphe.extension.shared.Utils;
@@ -12,6 +13,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -142,6 +144,84 @@ public class SeenVideoHistoryTest {
         drain();
         assertEquals(0, SeenVideoHistory.size());
         assertFalse(SeenVideoHistory.shouldHide("old"));
+    }
+
+    @Test public void failedInitialOpenCanRetryAndLoadHistory() throws Exception {
+        Field databaseField = SeenVideoHistory.class.getDeclaredField("database");
+        databaseField.setAccessible(true);
+        Object previousDatabase = databaseField.get(null);
+        databaseField.set(null, null);
+        ((AtomicBoolean) field("LOAD_STARTED")).set(false);
+
+        Field factoryField = SeenVideoHistory.class.getDeclaredField("databaseFactory");
+        factoryField.setAccessible(true);
+        Object previousFactory = factoryField.get(null);
+        AtomicBoolean failOnce = new AtomicBoolean(true);
+        factoryField.set(null, (SeenVideoHistory.DatabaseFactory) context ->
+                new SeenVideoHistory.Database(context) {
+                    @Override public SQLiteDatabase getReadableDatabase() {
+                        if (failOnce.compareAndSet(true, false)) {
+                            throw new IllegalStateException("injected open failure");
+                        }
+                        return super.getReadableDatabase();
+                    }
+                });
+        try {
+            SeenVideoHistory.size();
+            drain();
+            assertFalse("a failed open must allow a later retry",
+                    ((AtomicBoolean) field("LOAD_STARTED")).get());
+
+            // The failed helper remains usable once the transient open error is gone.
+            database().execSQL("INSERT OR REPLACE INTO seen_videos VALUES ('retry', ?)",
+                    new Object[]{System.currentTimeMillis()});
+            SeenVideoHistory.size();
+            drain();
+            try (android.database.Cursor cursor = database().rawQuery(
+                    "SELECT aid FROM seen_videos WHERE aid = 'retry'", null)) {
+                assertEquals("the retried database should still contain the row", 1, cursor.getCount());
+            }
+            assertEquals("the retried load should see the persisted row", 1, SeenVideoHistory.size());
+            assertTrue(SeenVideoHistory.shouldHide("retry"));
+        } finally {
+            factoryField.set(null, previousFactory);
+            databaseField.set(null, previousDatabase);
+            failOnce.set(false);
+        }
+    }
+
+    @Test public void failedUndoCommitRetainsRecoveryAndReportsFailure() throws Exception {
+        SeenVideoHistory.onPlayProgressChange("failed-undo", 5000, 10000);
+        drain();
+        SeenVideoHistory.clear();
+        drain();
+        assertEquals(1, SeenVideoHistory.undoSize());
+
+        Field writerField = SeenVideoHistory.class.getDeclaredField("rowWriter");
+        writerField.setAccessible(true);
+        Object previousWriter = writerField.get(null);
+        writerField.set(null, (SeenVideoHistory.RowWriter) (database, values) -> -1L);
+        AtomicReference<SeenVideoHistory.UndoResult> result = new AtomicReference<>();
+        CountDownLatch callback = new CountDownLatch(1);
+        try {
+            assertTrue(SeenVideoHistory.undoClear(undoResult -> {
+                result.set(undoResult);
+                callback.countDown();
+            }));
+            drain();
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+            assertTrue(callback.await(5, TimeUnit.SECONDS));
+            assertEquals(SeenVideoHistory.UndoResult.FAILED, result.get());
+            assertTrue("a rejected insert must keep the recovery copy", SeenVideoHistory.canUndo());
+            assertEquals(1, SeenVideoHistory.undoSize());
+        } finally {
+            writerField.set(null, previousWriter);
+        }
+
+        assertTrue(SeenVideoHistory.undoClear());
+        drain();
+        assertFalse(SeenVideoHistory.canUndo());
+        assertTrue(SeenVideoHistory.shouldHide("failed-undo"));
     }
 
     @Test public void staleExpiryCannotDeleteARefreshedRecord() throws Exception {

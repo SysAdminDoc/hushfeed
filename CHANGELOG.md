@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Seen-history undo stays available until its SQLite transaction commits. Rejected inserts and write errors report failure on the settings row, while a failed first database open clears its in-memory load gate so the next read can retry.
+
 * Patch verification now compares names with ordinal matching, accepts only JSON booleans, fixes the TikTok target in the script, and treats an out of memory process as a failed measurement when the CLI did not exit cleanly. Block status parsing also rejects fractional values that only round to an integer.
 
 * The extension payload now keeps its Android 23 promise. Download workers, history, feed state, Lab sorting and language selection use APIs available on the declared floor, and the TikTok module declares that floor explicitly.

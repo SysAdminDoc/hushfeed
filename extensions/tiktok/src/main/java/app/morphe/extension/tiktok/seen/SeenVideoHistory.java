@@ -21,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
 
 /**
@@ -32,6 +33,25 @@ import app.morphe.extension.tiktok.settings.Settings;
  * behind it.</p>
  */
 public final class SeenVideoHistory {
+    public enum UndoResult {
+        NOT_READY,
+        EMPTY,
+        RESTORED,
+        FAILED
+    }
+
+    public interface UndoCallback {
+        void onComplete(UndoResult result);
+    }
+
+    interface DatabaseFactory {
+        Database create(Context context);
+    }
+
+    interface RowWriter {
+        long insert(SQLiteDatabase database, ContentValues values);
+    }
+
     private static final String DATABASE_NAME = "seen_videos.db";
     private static final int DATABASE_VERSION = 1;
     private static final String TABLE = "seen_videos";
@@ -55,6 +75,12 @@ public final class SeenVideoHistory {
     private static final AtomicBoolean LOAD_STARTED = new AtomicBoolean();
 
     private static volatile Database database;
+    static final DatabaseFactory DEFAULT_DATABASE_FACTORY = context -> new Database(context);
+    static volatile DatabaseFactory databaseFactory = DEFAULT_DATABASE_FACTORY;
+    static final RowWriter DEFAULT_ROW_WRITER =
+            (writable, values) -> writable.insertWithOnConflict(
+                    TABLE, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+    static volatile RowWriter rowWriter = DEFAULT_ROW_WRITER;
     /**
      * The history as it was before the last clear, read from the database rather than from
      * memory: memory may never have been loaded, and a clear deletes every row either way.
@@ -133,23 +159,38 @@ public final class SeenVideoHistory {
 
     public static void clear() {
         synchronized (HISTORY_LOCK) {
-            generation++;
+            final int clearGeneration = ++generation;
             SEEN.clear();
             callbackAid = null;
             callbackAidMarked = false;
             undo = null;
             undoOffered = true;
             IO.execute(() -> {
+                Map<String, Long> copy = null;
+                Throwable failure = null;
                 try {
                     // Read the rows before deleting them. Memory is not the source here: a
                     // load may never have run, and the delete takes every row regardless.
-                    undo = readAll();
+                    copy = readAll();
                     getDatabase().getWritableDatabase().delete(TABLE, null, null);
                 } catch (Throwable throwable) {
-                    // Only a missing copy withdraws the offer. The read can succeed and the
-                    // delete still fail, and then the way back is the one thing worth keeping.
-                    if (undo == null) undoOffered = false;
-                    Logger.printException(() -> "Seen video history clear failed", throwable);
+                    failure = throwable;
+                }
+                synchronized (HISTORY_LOCK) {
+                    // A newer clear owns the offer. Do not let an older worker replace its
+                    // copy after the user has asked to clear again.
+                    if (generation == clearGeneration) {
+                        if (copy != null) {
+                            undo = copy;
+                        } else {
+                            // Only a missing copy withdraws the offer. The read can succeed
+                            // and the delete still fail, and then the way back is worth keeping.
+                            undoOffered = false;
+                        }
+                    }
+                }
+                if (failure != null) {
+                    Logger.printException(() -> "Seen video history clear failed", failure);
                 }
             });
         }
@@ -189,59 +230,103 @@ public final class SeenVideoHistory {
     }
 
     /**
-     * Puts the history back as it was before the last clear. True when something was
-     * restored. The rows are written again rather than the delete being deferred: a clear
-     * that a crash could undo on its own would be worse than no undo at all.
+     * Queues the history to be put back as it was before the last clear. True means that the
+     * write was queued; the callback overload reports whether SQLite committed it. The rows
+     * are written again rather than the delete being deferred: a clear that a crash could undo
+     * on its own would be worse than no undo at all.
      */
     public static boolean undoClear() {
+        return undoClear(null);
+    }
+
+    /**
+     * Starts putting the history back and reports the durable result asynchronously. The
+     * callback runs on the main thread. A true return value means that the write was queued;
+     * only {@link UndoResult#RESTORED} means that SQLite committed it.
+     */
+    public static boolean undoClear(UndoCallback callback) {
+        UndoResult immediate = null;
         synchronized (HISTORY_LOCK) {
             Map<String, Long> copy = undo;
             // Null means the copy is still being read off the database, which is not the same
             // as there being nothing to put back. Spending the offer here would delete the
             // history for good, so the offer stands and the next tap can take it.
             if (copy == null) {
-                return false;
-            }
-            undoOffered = false;
-            if (copy.isEmpty()) {
-                return false;
-            }
-            undo = null;
-            generation++;
-            for (Map.Entry<String, Long> row : copy.entrySet()) {
-                mergeSeen(row.getKey(), row.getValue());
-            }
-            trimMemory();
-
-            // What goes back to the database is what memory settled on, not the copy: a
-            // video watched again since the clear has a newer time, and writing the copy over
-            // it would put that back to the older one on the next load.
-            Map<String, Long> rows = new HashMap<>();
-            for (String aid : copy.keySet()) {
-                Long merged = SEEN.get(aid);
-                if (merged != null) rows.put(aid, merged);
-            }
-            IO.execute(() -> {
-                try {
-                    SQLiteDatabase writable = getDatabase().getWritableDatabase();
-                    writable.beginTransaction();
-                    try {
-                        for (Map.Entry<String, Long> row : rows.entrySet()) {
-                            ContentValues values = new ContentValues();
-                            values.put(COLUMN_AID, row.getKey());
-                            values.put(COLUMN_LAST_SEEN, row.getValue());
-                            writable.insertWithOnConflict(
-                                    TABLE, null, values, SQLiteDatabase.CONFLICT_REPLACE);
-                        }
-                        writable.setTransactionSuccessful();
-                    } finally {
-                        writable.endTransaction();
-                    }
-                } catch (Throwable throwable) {
-                    Logger.printException(() -> "Seen video history undo failed", throwable);
+                immediate = UndoResult.NOT_READY;
+            } else if (copy.isEmpty()) {
+                undo = null;
+                undoOffered = false;
+                immediate = UndoResult.EMPTY;
+            } else {
+                final int undoGeneration = ++generation;
+                for (Map.Entry<String, Long> row : copy.entrySet()) {
+                    mergeSeen(row.getKey(), row.getValue());
                 }
-            });
-            return true;
+                trimMemory();
+
+                IO.execute(() -> {
+                    UndoResult result = UndoResult.FAILED;
+                    boolean current = false;
+                    try {
+                        // Read the current in-memory timestamps at execution time. A video
+                        // watched again while this job waited keeps its newer sighting.
+                        Map<String, Long> rows = new HashMap<>();
+                        synchronized (HISTORY_LOCK) {
+                            if (generation != undoGeneration || undo != copy) {
+                                return;
+                            }
+                            for (String aid : copy.keySet()) {
+                                Long merged = SEEN.get(aid);
+                                if (merged != null) rows.put(aid, merged);
+                            }
+                        }
+
+                        SQLiteDatabase writable = getDatabase().getWritableDatabase();
+                        writable.beginTransaction();
+                        try {
+                            for (Map.Entry<String, Long> row : rows.entrySet()) {
+                                ContentValues values = new ContentValues();
+                                values.put(COLUMN_AID, row.getKey());
+                                values.put(COLUMN_LAST_SEEN, row.getValue());
+                                long inserted = rowWriter.insert(writable, values);
+                                if (inserted == -1L) {
+                                    throw new IllegalStateException(
+                                            "SQLite rejected seen-history row " + row.getKey());
+                                }
+                            }
+                            writable.setTransactionSuccessful();
+                        } finally {
+                            writable.endTransaction();
+                        }
+
+                        synchronized (HISTORY_LOCK) {
+                            current = generation == undoGeneration && undo == copy;
+                            if (current) {
+                                undo = null;
+                                undoOffered = false;
+                                result = UndoResult.RESTORED;
+                            }
+                        }
+                    } catch (Throwable throwable) {
+                        synchronized (HISTORY_LOCK) {
+                            current = generation == undoGeneration && undo == copy;
+                            // Keep the copy and the offer. A failed transaction is retryable,
+                            // including the -1 return SQLite uses for a rejected insert.
+                            if (current) undoOffered = true;
+                        }
+                        Logger.printException(() -> "Seen video history undo failed", throwable);
+                    }
+                    if (current) notifyUndo(callback, result);
+                });
+            }
+        }
+        if (immediate != null) notifyUndo(callback, immediate);
+        return immediate == null;
+    }
+
+    private static void notifyUndo(UndoCallback callback, UndoResult result) {
+        if (callback != null) {
+            Utils.runOnMainThread(() -> callback.onComplete(result));
         }
     }
 
@@ -316,6 +401,13 @@ public final class SeenVideoHistory {
                     }
                     pruneDatabase(nowMs);
                 } catch (Throwable throwable) {
+                    synchronized (HISTORY_LOCK) {
+                        if (generation == loadGeneration) {
+                            // A failed open must not permanently claim that the first load
+                            // happened. The next read can retry after the cause is gone.
+                            LOAD_STARTED.set(false);
+                        }
+                    }
                     Logger.printException(() -> "Seen video history load failed", throwable);
                 }
             });
@@ -420,14 +512,17 @@ public final class SeenVideoHistory {
                 if (context == null) {
                     throw new IllegalStateException("Application context is not available");
                 }
-                result = new Database(context.getApplicationContext());
+                result = databaseFactory.create(context.getApplicationContext());
+                if (result == null) {
+                    throw new IllegalStateException("Database factory returned null");
+                }
                 database = result;
             }
             return result;
         }
     }
 
-    private static final class Database extends SQLiteOpenHelper {
+    static class Database extends SQLiteOpenHelper {
         Database(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
         }

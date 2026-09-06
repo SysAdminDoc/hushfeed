@@ -20,6 +20,7 @@ public final class ClearSeenVideoHistoryPreference extends Preference {
     static final String CLEAR_SUMMARY = "Delete the local record of the videos you have watched.";
     static final String UNDO_SUMMARY = "Cleared. Tap again to put the record back.";
     static final String NOT_READY = "Still reading the record. Tap again in a moment.";
+    static final String FAILED = "Could not put back the seen video history. Try again.";
 
     public ClearSeenVideoHistoryPreference(Context context) {
         super(context);
@@ -32,14 +33,27 @@ public final class ClearSeenVideoHistoryPreference extends Preference {
         // the next tap rather than a dialog asking permission first.
         setOnPreferenceClickListener(preference -> {
             if (SeenVideoHistory.canUndo()) {
-                boolean restored = SeenVideoHistory.undoClear();
-                // The offer survives a tap that arrives before the copy has been read, so the
-                // row has to ask what the state is rather than assume the way back is spent.
-                boolean stillOffered = SeenVideoHistory.canUndo();
-                Utils.showToastShort(L10n.t(context, restored
-                        ? "Seen video history put back"
-                        : stillOffered ? NOT_READY : "There was nothing to put back"));
-                setSummary(stillOffered ? UNDO_SUMMARY : CLEAR_SUMMARY);
+                SeenVideoHistory.undoClear(result -> {
+                    String message;
+                    if (result == SeenVideoHistory.UndoResult.RESTORED) {
+                        message = "Seen video history put back";
+                    } else if (result == SeenVideoHistory.UndoResult.FAILED) {
+                        message = FAILED;
+                    } else if (result == SeenVideoHistory.UndoResult.EMPTY) {
+                        message = "There was nothing to put back";
+                    } else {
+                        message = NOT_READY;
+                    }
+                    Utils.showToastShort(L10n.t(context, message));
+                    setSummary(result == SeenVideoHistory.UndoResult.RESTORED
+                            || result == SeenVideoHistory.UndoResult.EMPTY
+                            ? CLEAR_SUMMARY
+                            : UNDO_SUMMARY);
+                });
+                // The offer survives a tap that arrives before the copy has been read or while
+                // SQLite is retrying, so leave the row ready for another tap until the callback
+                // reports a durable result.
+                setSummary(UNDO_SUMMARY);
                 return true;
             }
 
