@@ -5,9 +5,11 @@
 package app.morphe.patches.tiktok.misc.share
 
 import app.morphe.patches.shared.compat.AppCompatibilities
+import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
+import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/share/ShareUrlSanitizer;"
 
@@ -22,6 +24,12 @@ val sanitizeShareUrlsPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
+        SettingsStatusLoadFingerprint.method.addInstruction(
+            0,
+            "invoke-static {}, " +
+                "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableSanitizeShareUrls()V",
+        )
+
         ShareUrlTrackerFingerprint.method.apply {
             val urlRegister = implementation!!.registerCount - parameterTypes.size +
                 if (parameterTypes[0] in arrayOf("J", "D")) 2 else 1

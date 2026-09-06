@@ -349,6 +349,9 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             addMenu(screen, Section.COMMENTS, SettingsMenuPreference.Icon.COMMENTS, countEnabled(
                     SettingsStatus.commentToolsEnabled && Settings.COMMENT_KEYWORD_FILTER.get(),
                     SettingsStatus.commentToolsEnabled && Settings.COMMENT_SEARCH.get(),
+                    SettingsStatus.commentToolsEnabled && Settings.BLOCK_FROM_COMMENT.get(),
+                    SettingsStatus.commentToolsEnabled && Settings.HIDE_COMMENT_MEDIA.get(),
+                    SettingsStatus.hideCommentEggsEnabled && Settings.HIDE_COMMENT_EGGS.get(),
                     SettingsStatus.commentTranslationEnabled && Settings.COMMENT_BATCH_TRANSLATION.get(),
                     SettingsStatus.hideCommentQuickReactionsEnabled && Settings.HIDE_COMMENT_QUICK_REACTIONS.get(),
                     SettingsStatus.copyCommentsWithoutUsernameEnabled && Settings.COPY_COMMENTS_WITHOUT_USERNAME.get()
@@ -374,6 +377,8 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                 || SettingsStatus.autoAdvanceEnabled || SettingsStatus.videoFitEnabled) {
             addMenu(screen, Section.PLAYBACK, SettingsMenuPreference.Icon.PLAYBACK,
                     countEnabled(SettingsStatus.playbackQualityEnabled && !"auto".equals(Settings.PLAYBACK_QUALITY.get()),
+                            SettingsStatus.playbackQualityEnabled
+                                    && !"off".equals(Settings.PLAYBACK_QUALITY_METERED.get()),
                             SettingsStatus.playbackSpeedEnabled && Settings.DEFAULT_SPEED_ENABLED.get(),
                             SettingsStatus.playbackSpeedEnabled && !Settings.CUSTOM_SPEEDS.get().trim().isEmpty(),
                             SettingsStatus.autoAdvanceEnabled && Settings.AUTO_ADVANCE.get(),
@@ -599,9 +604,10 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                 SettingsStatus.foldableSplitViewEnabled && Settings.FOLDABLE_SPLIT_VIEW.get(),
                 SettingsStatus.blockAuthorEnabled && Settings.BLOCK_AUTHOR_BUTTON.get(),
                 SettingsStatus.notInterestedEnabled && Settings.NOT_INTERESTED_BUTTON.get(),
-                BaseSettings.SANITIZE_SHARING_LINKS.get(),
-                !ShareUrlSanitizer.domain(Settings.CUSTOM_SHARE_DOMAIN.get()).isEmpty(),
-                Settings.SHOW_SEEKBAR.get()
+                SettingsStatus.sanitizeShareUrlsEnabled && BaseSettings.SANITIZE_SHARING_LINKS.get(),
+                SettingsStatus.sanitizeShareUrlsEnabled
+                        && !ShareUrlSanitizer.domain(Settings.CUSTOM_SHARE_DOMAIN.get()).isEmpty(),
+                SettingsStatus.showSeekbarEnabled && Settings.SHOW_SEEKBAR.get()
         );
         if (SettingsStatus.externalBrowserEnabled && Settings.OPEN_EXTERNAL_LINKS.get()) {
             count++;

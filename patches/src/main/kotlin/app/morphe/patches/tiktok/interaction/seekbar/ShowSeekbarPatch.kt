@@ -25,6 +25,12 @@ val showSeekbarPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
+        SettingsStatusLoadFingerprint.method.addInstruction(
+            0,
+            "invoke-static {}, " +
+                "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableShowSeekbar()V",
+        )
+
         // This target is TikTok's short predicate used by the feed progress UI.
         ShouldShowProgressBarFingerprint.method.addInstructions(
             0,

@@ -80,6 +80,8 @@ public class SettingsStatus {
     public static boolean hideFeedSaveButtonEnabled = false;
     public static boolean hideFeedLiveButtonEnabled = false;
     public static boolean hideFeedSearchButtonEnabled = false;
+    public static boolean showSeekbarEnabled = false;
+    public static boolean sanitizeShareUrlsEnabled = false;
 
     public static void enableFeedFilter() {
         feedFilterEnabled = true;
@@ -143,6 +145,14 @@ public class SettingsStatus {
 
     public static void enableSeekbarThumbnail() {
         seekbarThumbnailEnabled = true;
+    }
+
+    public static void enableShowSeekbar() {
+        showSeekbarEnabled = true;
+    }
+
+    public static void enableSanitizeShareUrls() {
+        sanitizeShareUrlsEnabled = true;
     }
 
     public static void enableStopVideoLooping() {

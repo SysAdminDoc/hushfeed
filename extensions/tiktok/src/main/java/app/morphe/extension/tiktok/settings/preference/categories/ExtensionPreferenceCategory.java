@@ -34,20 +34,22 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                     "Split comment minimum width", "Window width needed to enable the layout. Restart after changing.",
                     Settings.FOLDABLE_SPLIT_VIEW_MIN_WIDTH_DP, 320, 1600, "dp"));
         }
-        addPreference(new TogglePreference(
-                context,
-                "Sanitize sharing links",
-                "Remove tracking parameters from shared links.",
-                BaseSettings.SANITIZE_SHARING_LINKS
-        ));
-        addPreference(new app.morphe.extension.tiktok.settings.preference.InputTextPreference(
+        if (SettingsStatus.sanitizeShareUrlsEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Sanitize sharing links",
+                    "Remove tracking parameters from shared links.",
+                    BaseSettings.SANITIZE_SHARING_LINKS
+            ));
+            addPreference(new app.morphe.extension.tiktok.settings.preference.InputTextPreference(
                 context,
                 "Share links through another host",
                 "A host to put in place of tiktok.com when you share or copy a link, like "
                         + "vxtiktok.com. Leave it empty to share TikTok's own links. Only TikTok "
                         + "links are changed, and only the host: nothing is sent anywhere new.",
                 Settings.CUSTOM_SHARE_DOMAIN
-        ));
+            ));
+        }
         if (SettingsStatus.externalBrowserEnabled) {
             addPreference(new TogglePreference(
                     context,
@@ -57,12 +59,14 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
             ));
         }
 
-        addPreference(new TogglePreference(
-                context,
-                "Show seekbar",
-                "Show the native seekbar on videos where TikTok would normally hide it.",
-                Settings.SHOW_SEEKBAR
-        ));
+        if (SettingsStatus.showSeekbarEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Show seekbar",
+                    "Show the native seekbar on videos where TikTok would normally hide it.",
+                    Settings.SHOW_SEEKBAR
+            ));
+        }
         if (SettingsStatus.seekbarThumbnailEnabled) {
             addPreference(new TogglePreference(
                     context,
