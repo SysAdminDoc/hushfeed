@@ -42,6 +42,20 @@ public final class GestureActions {
         return true;
     }
 
+    /**
+     * Runs before TikTok's own long press handling. Returning true swallows the gesture,
+     * which is what keeps the 2x hold and the quick share sheet from also firing.
+     */
+    public static boolean onLongPress() {
+        String action = Settings.LONG_PRESS_ACTION.get();
+        if ("nothing".equals(action)) return true;
+        if (!"comments".equals(action)) return false;
+        if (!openComments(Reflect.string(CurrentVideoAuthor.getAweme(), "getAid", "aid"))) {
+            Utils.showToastShort("Comments aren't available for this video");
+        }
+        return true;
+    }
+
     static boolean openComments(String videoId) {
         if (videoId == null || videoId.isEmpty()) return false;
         View hidden = null;

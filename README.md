@@ -56,6 +56,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Subtitle tools` | Saves captions as SRT files beside downloaded videos. Choose original, device or all available languages, adjust caption size and background, and keep the current caption visible in clear display. |
 | `Playback quality` | Chooses the lowest, highest or a target video quality for regular and adaptive playback. Download quality has its own setting. |
 | `Advanced downloads` | Selects a video quality or target resolution and combines separate audio tracks when needed. An optional Photo Mode downloader saves source images directly, preserving their bytes and format. |
+| `Long-press controls` | Lets a long press on a video keep TikTok's own action, do nothing, or open the video's comments. |
 | `Double-tap controls` | Changes feed double taps to do nothing or open comments for the current video. TikTok's normal action is the default. |
 | `Confirm feed interactions` | Adds optional second-tap protection to Follow and the like heart. The red ring expires after four seconds and resets when the video changes. |
 | `AMOLED dark theme` | Replaces the dark background palette with black or a chosen opaque color. Select the patch and its color in the patcher. Light theme colors stay unchanged. |

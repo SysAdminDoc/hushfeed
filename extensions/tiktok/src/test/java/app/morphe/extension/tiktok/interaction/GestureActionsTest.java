@@ -88,4 +88,36 @@ public class GestureActionsTest {
             app.morphe.extension.tiktok.UiCapture.save(activity.getWindow().getDecorView(), "interface-settings.png");
         }
     }
+
+    @Test public void longPressFollowsItsOwnSettingAndSwallowsWhenRemapped() {
+        try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup().visible()) {
+            Utils.setContext(controller.get());
+            Settings.LONG_PRESS_ACTION.save("default");
+            assertFalse(GestureActions.onLongPress());
+            Settings.LONG_PRESS_ACTION.save("nothing");
+            assertTrue(GestureActions.onLongPress());
+            // Remapped to comments with nothing registered: still swallowed, never TikTok's
+            // own action, so a stale 2x hold cannot fire from an unavailable comment control.
+            Settings.LONG_PRESS_ACTION.save("comments");
+            assertTrue(GestureActions.onLongPress());
+            // The two gestures do not share a setting.
+            Settings.DOUBLE_TAP_ACTION.save("nothing");
+            Settings.LONG_PRESS_ACTION.save("default");
+            assertFalse(GestureActions.onLongPress());
+            Settings.DOUBLE_TAP_ACTION.save("default");
+        }
+    }
+
+    @Test public void longPressPatchHasThreeReachableChoices() throws Exception {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            SettingsStatus.longPressEnabled = true;
+            PreferenceScreen screen = activity.getPreferenceManager().createPreferenceScreen(activity);
+            new InterfacePreferenceCategory(activity, screen);
+            ChoicePreference choice = (ChoicePreference) screen.findPreference("long_press_action");
+            assertNotNull(choice);
+            assertArrayEquals(new String[]{"default", "nothing", "comments"}, choice.getEntryValues());
+        }
+    }
 }

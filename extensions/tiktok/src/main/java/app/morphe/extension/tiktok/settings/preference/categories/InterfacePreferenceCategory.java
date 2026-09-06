@@ -22,7 +22,7 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
 
     @Override
     public boolean getSettingsStatus() {
-        return SettingsStatus.subtitleToolsEnabled || SettingsStatus.screenCaptureEnabled || SettingsStatus.automaticClearDisplayEnabled || SettingsStatus.doubleTapEnabled || SettingsStatus.confirmInteractionsEnabled || SettingsStatus.captchaPopupSuppressionEnabled
+        return SettingsStatus.subtitleToolsEnabled || SettingsStatus.screenCaptureEnabled || SettingsStatus.automaticClearDisplayEnabled || SettingsStatus.doubleTapEnabled || SettingsStatus.longPressEnabled || SettingsStatus.confirmInteractionsEnabled || SettingsStatus.captchaPopupSuppressionEnabled
                 || SettingsStatus.promotionalBannersEnabled
                 || SettingsStatus.alwaysShowPublishDateEnabled
                 || SettingsStatus.videoOverlaysEnabled
@@ -60,6 +60,11 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
         if (SettingsStatus.doubleTapEnabled) {
             addPreference(new ChoicePreference(context, "Double tap", Settings.DOUBLE_TAP_ACTION,
                     new String[]{"TikTok default", "Do nothing", "Open comments"},
+                    new String[]{"default", "nothing", "comments"}));
+        }
+        if (SettingsStatus.longPressEnabled) {
+            addPreference(new ChoicePreference(context, "Long press", Settings.LONG_PRESS_ACTION,
+                    new String[]{"TikTok default (2x hold, quick share)", "Do nothing", "Open comments"},
                     new String[]{"default", "nothing", "comments"}));
         }
         if (SettingsStatus.confirmInteractionsEnabled) {

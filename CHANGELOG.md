@@ -1,5 +1,7 @@
 ## 0.14.1 (2026-09-05)
 
+* New Long-press controls patch. A long press on a video can keep TikTok's own action, do nothing, or open the comments. Off by default.
+
 * Hide video overlays gained switches for the caption and the music line. Both put the row back when the switch goes off.
 
 * New Hide content warnings patch plays videos TikTok has classified without the overlay asking to be tapped through first. Off by default.

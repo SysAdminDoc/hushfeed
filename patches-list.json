@@ -1219,6 +1219,35 @@
       "options": []
     },
     {
+      "name": "Long-press controls",
+      "description": "Lets a long press on a video keep TikTok's own action, do nothing, or open the video's comments. Supports TikTok 46.2.3.",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Not interested button",
       "description": "Adds a button beside the block control to tell TikTok you aren't interested in the current video. Off by default.",
       "use": false,
