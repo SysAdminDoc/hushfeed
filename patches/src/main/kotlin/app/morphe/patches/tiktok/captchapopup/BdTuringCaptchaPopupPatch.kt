@@ -15,9 +15,6 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.util.numberOfParameterRegisters
 
-private const val CAPTCHA_GATE_CLASS_DESCRIPTOR =
-    "Lapp/morphe/extension/tiktok/featurecontrols/CaptchaGate;"
-
 private object RiskControlServiceExecuteFingerprint : Fingerprint(
     definingClass = "Lcom/bytedance/bdturing/verify/RiskControlService;",
     name = "execute",
@@ -42,7 +39,9 @@ val bdTuringCaptchaPopupPatch = bytecodePatch(
         "like, comment or repost. Off by default. Supports TikTok 46.2.3.",
     default = false,
 ) {
-    dependsOn(sharedExtensionPatch)
+    // The recorder is what lets the gate tell a browsing puzzle from one raised over a write.
+    // Selecting this patch without it would hide both.
+    dependsOn(sharedExtensionPatch, captchaRequestRecorderPatch)
     compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {

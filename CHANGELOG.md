@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Review pass over the CAPTCHA gate and the follow verdict. The request recorder is its own dependency now, so selecting only the BdTuring patch cannot leave the gate blind and hiding every check. A verification request whose scene cannot be read is shown rather than hidden. Follow paths on a relation route count as follows. The verdict reader no longer keeps a context per request when diagnostic logging is off, and cannot throw into TikTok's network stack. A status code nested under `data` no longer answers for the whole response, a static getter is not read as this response's verdict, and 0, "0" and "0.0" all read as accepted. Both windows use the monotonic clock, so a corrected system clock cannot open or close them.
+
 * New patch: Hide comment popup ads. Commenting with a word or emoji an advertiser has bought sets off a full brand animation over the comment sheet. The switch stops it.
 
 * Playback quality has a second choice for mobile data. It is a ceiling, so it lowers what plays on a metered connection and never raises it.

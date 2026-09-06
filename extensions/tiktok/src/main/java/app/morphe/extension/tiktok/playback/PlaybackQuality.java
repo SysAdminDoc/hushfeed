@@ -2,6 +2,7 @@ package app.morphe.extension.tiktok.playback;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
+import android.os.SystemClock;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
@@ -59,7 +60,7 @@ public final class PlaybackQuality {
     }
 
     private static boolean isMetered() {
-        long now = System.currentTimeMillis();
+        long now = SystemClock.elapsedRealtime();
         MeteredState cached = meteredState;
         if (cached != null && now - cached.atMs <= METERED_CACHE_MS) return cached.metered;
 

@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import app.morphe.extension.shared.Logger;
@@ -34,7 +35,7 @@ public final class FollowDiagnostics {
 
     private FollowDiagnostics() {}
 
-    private static final class FollowRequestContext {
+    static final class FollowRequestContext {
         final int id;
         final String path;
         String action = "unknown";
@@ -85,7 +86,7 @@ public final class FollowDiagnostics {
     }
 
     private static volatile FollowRequestContext recentDirectContext;
-    private static volatile boolean warnedAboutRefusedFollow;
+    private static final AtomicBoolean warnedAboutRefusedFollow = new AtomicBoolean();
 
     public static void logSimpleFollowRequest(int action, String uid, String secUid) {
         if (!shouldLog()) return;
@@ -291,13 +292,23 @@ public final class FollowDiagnostics {
         String followPath = followPath(request);
         if (followPath != null) {
             final String finalPath = followPath;
-            FollowRequestContext context = contextForRequest(request, finalPath);
-            // The verdict is read whether or not logging is on: a refused follow is the
-            // thing users report, and it looks like nothing happened at all.
-            readServerVerdict(response, context);
-            warnAboutRefusedFollowOnce(context);
+            boolean logging = loggingEnabled();
 
-            if (!reserveNetworkEvent()) return;
+            // The verdict is read whether or not logging is on: a refused follow is the
+            // thing users report, and it looks like nothing happened at all. With logging
+            // off the context stays local, because the map that keeps one per request is
+            // never emptied, and nothing here may throw into TikTok's network stack.
+            FollowRequestContext context = logging
+                    ? contextForRequest(request, finalPath)
+                    : new FollowRequestContext(0, finalPath);
+            try {
+                readServerVerdict(response, context);
+                warnAboutRefusedFollowOnce(context);
+            } catch (Throwable throwable) {
+                Logger.printDebug(() -> "[Morphe TikTok FollowProbe] verdict read failed: " + throwable);
+            }
+
+            if (!logging || !reserveNetworkEvent()) return;
             followReadbackWindowUntil = System.currentTimeMillis() + READBACK_WINDOW_MS;
             activeReadbackContext = context;
 
@@ -338,6 +349,14 @@ public final class FollowDiagnostics {
     private static boolean shouldLog() {
         try {
             return BaseSettings.DEBUG.get() && eventCount.get() < MAX_EVENTS_PER_SESSION;
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    private static boolean loggingEnabled() {
+        try {
+            return BaseSettings.DEBUG.get();
         } catch (Exception ignored) {
             return false;
         }
@@ -468,19 +487,17 @@ public final class FollowDiagnostics {
     }
 
     /** True only when the server said no in a way that cannot be read as anything else. */
-    private static boolean followWasRefused(FollowRequestContext context) {
-        boolean refusedByCode = !FollowVerdict.UNKNOWN.equals(context.statusCode)
-                && !"0".equals(context.statusCode);
-        return refusedByCode || "false".equals(context.bodyIsFollowSuccess);
+    static boolean followWasRefused(FollowRequestContext context) {
+        return FollowVerdict.isRefusalCode(context.statusCode)
+                || "false".equals(context.bodyIsFollowSuccess);
     }
 
     /**
      * A refused follow leaves the button looking as though it worked, so the first one of a
      * session says what happened. Once only: the same refusal repeats on every retry.
      */
-    private static void warnAboutRefusedFollowOnce(FollowRequestContext context) {
-        if (warnedAboutRefusedFollow || !followWasRefused(context)) return;
-        warnedAboutRefusedFollow = true;
+    static void warnAboutRefusedFollowOnce(FollowRequestContext context) {
+        if (!followWasRefused(context) || !warnedAboutRefusedFollow.compareAndSet(false, true)) return;
 
         String reason = FollowVerdict.UNKNOWN.equals(context.statusMsg)
                 ? L10n.f("code %1$s", context.statusCode)

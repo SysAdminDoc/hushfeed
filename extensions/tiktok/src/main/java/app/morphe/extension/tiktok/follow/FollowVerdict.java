@@ -34,7 +34,20 @@ public final class FollowVerdict {
 
     /** True once the server named a code other than zero, which is its "accepted". */
     public boolean isRefusal() {
-        return !UNKNOWN.equals(statusCode) && !"0".equals(statusCode);
+        return isRefusalCode(statusCode);
+    }
+
+    /**
+     * Whether a status code means the server said no. The code arrives as text because the
+     * model may hold it as any numeric type, so 0, "0" and "0.0" all have to read as accepted.
+     */
+    public static boolean isRefusalCode(String code) {
+        if (code == null || UNKNOWN.equals(code)) return false;
+        try {
+            return Double.parseDouble(code) != 0d;
+        } catch (NumberFormatException ignored) {
+            return !"0".equals(code);
+        }
     }
 
     public boolean isEmpty() {
@@ -115,6 +128,8 @@ public final class FollowVerdict {
              current = current.getSuperclass()) {
             try {
                 Method method = current.getDeclaredMethod(name);
+                // A static getter answers for the class, not for this response.
+                if (Modifier.isStatic(method.getModifiers())) continue;
                 method.setAccessible(true);
                 return text(method.invoke(body));
             } catch (NoSuchMethodException ignored) {
@@ -132,31 +147,68 @@ public final class FollowVerdict {
         return string.isEmpty() ? null : string;
     }
 
-    /** The value of the first of {@code names} present in the JSON, quoted or bare. */
+    /**
+     * The value of the first of {@code names} present at the top level of the JSON, quoted or
+     * bare. Depth matters: TikTok wraps a per-item status under {@code data} and an object
+     * that carried its own status_code would otherwise answer for the whole response.
+     */
     private static String value(String json, String[] names) {
         for (String name : names) {
-            int at = json.indexOf('"' + name + '"');
-            if (at < 0) continue;
-
-            int cursor = at + name.length() + 2;
-            while (cursor < json.length() && Character.isWhitespace(json.charAt(cursor))) cursor++;
-            if (cursor >= json.length() || json.charAt(cursor) != ':') continue;
-            cursor++;
-            while (cursor < json.length() && Character.isWhitespace(json.charAt(cursor))) cursor++;
-            if (cursor >= json.length()) continue;
-
-            if (json.charAt(cursor) == '"') {
-                String quoted = unescaped(json, cursor + 1);
-                if (quoted != null) return quoted;
-                continue;
-            }
-
-            int end = cursor;
-            while (end < json.length() && ",}] \t\r\n".indexOf(json.charAt(end)) < 0) end++;
-            String bare = json.substring(cursor, end).trim();
-            if (!bare.isEmpty() && !"null".equals(bare)) return bare;
+            String found = topLevelValue(json, name);
+            if (found != null) return found;
         }
         return null;
+    }
+
+    private static String topLevelValue(String json, String name) {
+        String key = '"' + name + '"';
+        int depth = 0;
+        for (int i = 0; i < json.length(); i++) {
+            char c = json.charAt(i);
+            if (c == '"') {
+                if (depth == 1 && json.startsWith(key, i)) {
+                    String read = readValue(json, i + key.length());
+                    if (read != null) return read;
+                }
+                i = endOfString(json, i);
+                if (i < 0) return null;
+                continue;
+            }
+            if (c == '{' || c == '[') depth++;
+            else if (c == '}' || c == ']') depth--;
+        }
+        return null;
+    }
+
+    /** The index of the closing quote of the string that starts at {@code from}. */
+    private static int endOfString(String json, int from) {
+        for (int i = from + 1; i < json.length(); i++) {
+            char c = json.charAt(i);
+            if (c == '\\') {
+                i++;
+                continue;
+            }
+            if (c == '"') return i;
+        }
+        return -1;
+    }
+
+    /** The value after a key, or null when what follows is not a plain value. */
+    private static String readValue(String json, int after) {
+        int cursor = after;
+        while (cursor < json.length() && Character.isWhitespace(json.charAt(cursor))) cursor++;
+        if (cursor >= json.length() || json.charAt(cursor) != ':') return null;
+        cursor++;
+        while (cursor < json.length() && Character.isWhitespace(json.charAt(cursor))) cursor++;
+        if (cursor >= json.length()) return null;
+
+        if (json.charAt(cursor) == '"') return unescaped(json, cursor + 1);
+        if (json.charAt(cursor) == '{' || json.charAt(cursor) == '[') return null;
+
+        int end = cursor;
+        while (end < json.length() && ",}] \t\r\n".indexOf(json.charAt(end)) < 0) end++;
+        String bare = json.substring(cursor, end).trim();
+        return bare.isEmpty() || "null".equals(bare) ? null : bare;
     }
 
     private static String unescaped(String json, int from) {

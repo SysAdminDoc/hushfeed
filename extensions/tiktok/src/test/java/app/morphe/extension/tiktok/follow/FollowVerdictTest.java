@@ -45,6 +45,27 @@ public class FollowVerdictTest {
         }
     }
 
+    /** A static getter answers for the class, not for this response. */
+    public static final class StaticGetterBody {
+        public static int getStatusCode() {
+            return 9999;
+        }
+    }
+
+    /** A holder that keeps the answer as text it has not parsed. */
+    public static final class BlobBody {
+        private final String body;
+
+        BlobBody(String body) {
+            this.body = body;
+        }
+
+        @Override
+        public String toString() {
+            return body;
+        }
+    }
+
     @Test
     public void aCapturedRefusalKeepsItsCodeAndMessage() {
         FollowVerdict verdict = FollowVerdict.parse(REFUSED_BODY);
@@ -117,6 +138,49 @@ public class FollowVerdictTest {
 
         assertEquals("8", verdict.statusCode);
         assertEquals("Blocked by this user", verdict.statusMsg);
+    }
+
+    @Test
+    public void aNestedStatusDoesNotAnswerForTheWholeResponse() {
+        // TikTok wraps a per-item status under data; the response's own status is the one
+        // that says whether the follow landed.
+        FollowVerdict verdict = FollowVerdict.parse(
+                "{\"data\":{\"status_code\":0,\"status_msg\":\"ok\"},"
+                        + "\"status_code\":2098,\"status_msg\":\"Try again later.\"}");
+
+        assertEquals("2098", verdict.statusCode);
+        assertEquals("Try again later.", verdict.statusMsg);
+        assertTrue(verdict.isRefusal());
+    }
+
+    @Test
+    public void aKeyInsideAnArrayIsNotMistakenForTheAnswer() {
+        assertEquals(FollowVerdict.UNKNOWN,
+                FollowVerdict.parse("{\"items\":[{\"status_code\":42}]}").statusCode);
+    }
+
+    @Test
+    public void anUnparsedBodyIsReadFromItsText() {
+        FollowVerdict verdict = FollowVerdict.of(new BlobBody(REFUSED_BODY));
+
+        assertEquals("2098", verdict.statusCode);
+        assertTrue(verdict.isRefusal());
+    }
+
+    @Test
+    public void aStaticGetterIsNotReadAsThisResponse() {
+        assertEquals(FollowVerdict.UNKNOWN, FollowVerdict.of(new StaticGetterBody()).statusCode);
+    }
+
+    @Test
+    public void aFractionalZeroIsStillAnAcceptedFollow() {
+        // The code arrives as text because the model may hold it as any numeric type.
+        assertFalse(FollowVerdict.isRefusalCode("0"));
+        assertFalse(FollowVerdict.isRefusalCode("0.0"));
+        assertFalse(FollowVerdict.isRefusalCode(FollowVerdict.UNKNOWN));
+        assertFalse(FollowVerdict.isRefusalCode(null));
+        assertTrue(FollowVerdict.isRefusalCode("2098"));
+        assertTrue(FollowVerdict.isRefusalCode("2098.0"));
     }
 
     @Test

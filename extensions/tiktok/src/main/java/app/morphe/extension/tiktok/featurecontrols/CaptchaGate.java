@@ -8,8 +8,10 @@ package app.morphe.extension.tiktok.featurecontrols;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.SystemClock;
 
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
@@ -45,22 +47,29 @@ public final class CaptchaGate {
             "com.ss.android.ugc.aweme.IAccountUserService";
 
     /** Written whole so a reader never sees one call's action with another call's time. */
-    private static final class WriteRequest {
-        final String action;
+    private static final class Stamped {
+        final String value;
         final long atMs;
 
-        WriteRequest(String action, long atMs) {
-            this.action = action;
+        Stamped(String value, long atMs) {
+            this.value = value;
             this.atMs = atMs;
         }
     }
 
-    private static volatile WriteRequest pendingWrite;
-    private static volatile boolean warnedThisSession;
-    private static volatile String lastSuppressedCheckId;
-    private static volatile long lastSuppressedAtMs;
+    private static volatile Stamped pendingWrite;
+    private static volatile Stamped lastSuppressed;
+    private static final AtomicBoolean warnedThisSession = new AtomicBoolean();
 
     private CaptchaGate() {
+    }
+
+    /**
+     * The clock the windows are measured against. Wall time can jump when the network or the
+     * user corrects it, which would either close a window early or hold it open forever.
+     */
+    static long now() {
+        return SystemClock.elapsedRealtime();
     }
 
     // ---------------------------------------------------------------- what the check gates
@@ -76,7 +85,7 @@ public final class CaptchaGate {
     static void recordRequestPath(String path) {
         String action = writeActionFor(path);
         if (action != null) {
-            pendingWrite = new WriteRequest(action, System.currentTimeMillis());
+            pendingWrite = new Stamped(action, now());
         }
     }
 
@@ -90,9 +99,12 @@ public final class CaptchaGate {
         if (path == null) return null;
         String value = path.toLowerCase(Locale.ROOT);
 
+        // The relation route is the other shape a follow arrives on, which is why the follow
+        // probe accepts either "commit" or "relation" beside the word follow.
         if (value.contains("/commit/follow/")
                 || value.contains("/f2f/follow/")
-                || value.contains("/remove/follower/")) {
+                || value.contains("/remove/follower/")
+                || (value.contains("follow") && value.contains("relation"))) {
             return "follow";
         }
         if (value.contains("/commit/item/digg/")
@@ -125,13 +137,16 @@ public final class CaptchaGate {
 
     /** The write still inside its window, or null when the app is only browsing. */
     public static String pendingWriteAction() {
-        return pendingWriteAction(System.currentTimeMillis());
+        return pendingWriteAction(now());
     }
 
     static String pendingWriteAction(long nowMs) {
-        WriteRequest write = pendingWrite;
-        if (write == null) return null;
-        return nowMs - write.atMs <= WRITE_WINDOW_MS ? write.action : null;
+        return fresh(pendingWrite, nowMs);
+    }
+
+    private static String fresh(Stamped stamped, long nowMs) {
+        if (stamped == null) return null;
+        return nowMs - stamped.atMs <= WRITE_WINDOW_MS ? stamped.value : null;
     }
 
     // ---------------------------------------------------------------- the decision
@@ -155,7 +170,7 @@ public final class CaptchaGate {
 
     /** The whole decision for one check. True hides it. */
     public static boolean shouldHide(Activity activity, String checkId, String detail) {
-        String reason = showReason(activity, detail, System.currentTimeMillis());
+        String reason = showReason(activity, detail, now());
         if (reason != null) {
             String shown = reason;
             Logger.printDebug(() -> "Showing risk check " + checkId + " because " + shown);
@@ -171,20 +186,16 @@ public final class CaptchaGate {
      * effect of a hidden check is otherwise invisible.
      */
     public static void noteSuppressed(String checkId) {
-        lastSuppressedCheckId = checkId;
-        lastSuppressedAtMs = System.currentTimeMillis();
+        lastSuppressed = new Stamped(checkId, now());
         Logger.printInfo(() -> "Hid risk check " + checkId);
 
-        if (warnedThisSession) return;
-        warnedThisSession = true;
+        if (!warnedThisSession.compareAndSet(false, true)) return;
         Utils.showToastShort(L10n.t("Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working."));
     }
 
     /** The id of the last hidden check, or null when none was hidden recently. */
     public static String recentlySuppressedCheckId() {
-        String checkId = lastSuppressedCheckId;
-        if (checkId == null) return null;
-        return System.currentTimeMillis() - lastSuppressedAtMs <= WRITE_WINDOW_MS ? checkId : null;
+        return fresh(lastSuppressed, now());
     }
 
     // ---------------------------------------------------------------- the hooks
@@ -201,13 +212,21 @@ public final class CaptchaGate {
 
     /** The oecverify risk control service, whose request names the verification scene. */
     public static boolean shouldHideOecCaptchaPopup(Object verifyRequest) {
-        String scene = verificationScene(verifyRequest);
-        return shouldHide(null, checkId("scene", scene), scene);
+        return shouldHideVerifyRequest(null, verifyRequest);
     }
 
     /** {@code BdTuring.showVerifyDialog}, reached when network verification skips SecApiImpl. */
     public static boolean shouldHideTuringDialog(Activity activity, Object verifyRequest) {
+        return shouldHideVerifyRequest(activity, verifyRequest);
+    }
+
+    /**
+     * A request whose scene cannot be read is shown, not hidden: without the scene there is
+     * no way to tell an account check from a browsing one.
+     */
+    private static boolean shouldHideVerifyRequest(Activity activity, Object verifyRequest) {
         String scene = verificationScene(verifyRequest);
+        if (scene == null) return false;
         return shouldHide(activity, checkId("scene", scene), scene);
     }
 

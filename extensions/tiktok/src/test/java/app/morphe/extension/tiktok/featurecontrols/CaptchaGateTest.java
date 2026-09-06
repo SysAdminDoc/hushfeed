@@ -13,6 +13,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
+import android.os.Looper;
 
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
@@ -22,7 +23,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowToast;
 
 /**
  * A risk check is classified by the request it gates. A check that arrives over a follow,
@@ -48,6 +51,19 @@ public class CaptchaGateTest {
         }
     }
 
+    /** Stands in for the oecverify request, whose LJIIJ getter names the scene. */
+    public static final class VerifyRequest {
+        private final String scene;
+
+        public VerifyRequest(String scene) {
+            this.scene = scene;
+        }
+
+        public String LJIIJ() {
+            return scene;
+        }
+    }
+
     private long now;
 
     @Before
@@ -55,7 +71,7 @@ public class CaptchaGateTest {
         Context context = RuntimeEnvironment.getApplication();
         Utils.setContext(context);
         Settings.HIDE_CAPTCHA_POPUPS.save(true);
-        now = System.currentTimeMillis();
+        now = CaptchaGate.now();
     }
 
     /** A clock past every write recorded up to now, whatever ran before this test. */
@@ -67,6 +83,8 @@ public class CaptchaGateTest {
     public void everyWriteActionIsRecognisedByItsPath() {
         assertEquals("follow", CaptchaGate.writeActionFor("/aweme/v1/commit/follow/user/"));
         assertEquals("follow", CaptchaGate.writeActionFor("/aweme/v3/f2f/follow/"));
+        // The follow probe accepts a relation route as a follow, so the gate has to as well.
+        assertEquals("follow", CaptchaGate.writeActionFor("/aweme/v1/relation/follow/commit/"));
         // A story like is a like on the story's own Aweme, so it uses the ordinary digg path.
         assertEquals("like", CaptchaGate.writeActionFor("/aweme/v1/commit/item/digg/"));
         assertEquals("comment", CaptchaGate.writeActionFor("/aweme/v1/comment/publish/"));
@@ -97,6 +115,18 @@ public class CaptchaGateTest {
         assertEquals("follow", CaptchaGate.pendingWriteAction());
         assertEquals("it gates a follow",
                 CaptchaGate.showReason(null, "{\"subtype\":\"slide\"}", now));
+    }
+
+    @Test
+    public void aBrowsingRequestArmsNothing() {
+        // Order independent: whatever an earlier case left pending, a browsing request must
+        // not change it. A path wrongly classified as a write would.
+        String before = CaptchaGate.pendingWriteAction(now);
+        CaptchaGate.recordRequest(new Request("/aweme/v1/feed/"));
+        assertEquals(before, CaptchaGate.pendingWriteAction(now));
+
+        CaptchaGate.recordRequest(new Request("/aweme/v2/comment/list/"));
+        assertEquals(before, CaptchaGate.pendingWriteAction(now));
     }
 
     @Test
@@ -135,16 +165,48 @@ public class CaptchaGateTest {
     }
 
     @Test
+    public void aCheckWithAReasonToBeShownIsNotHidden() {
+        // shouldHide is what every hook calls. Whenever showReason has an answer, the puzzle
+        // has to reach the user; only a null reason may suppress one.
+        CaptchaGate.recordRequest(new Request("/aweme/v1/commit/follow/user/"));
+
+        assertFalse(CaptchaGate.shouldHide(null, "risk slide", "{\"subtype\":\"slide\"}"));
+        assertFalse(CaptchaGate.shouldHideCaptchaPopup(null, "{\"subtype\":\"slide\"}"));
+        assertFalse(CaptchaGate.shouldHideLegacyCaptchaPopup(null, 2148));
+        assertFalse(CaptchaGate.shouldHideTuringCaptchaPopup(null, "common_verify"));
+    }
+
+    @Test
+    public void aVerificationRequestThatNamesNoSceneIsShown() {
+        // Without a scene there is no way to tell an account check from a browsing one.
+        assertFalse(CaptchaGate.shouldHideOecCaptchaPopup(new VerifyRequest(null)));
+        assertFalse(CaptchaGate.shouldHideOecCaptchaPopup(new Object()));
+        assertFalse(CaptchaGate.shouldHideTuringDialog(null, null));
+    }
+
+    @Test
     public void smsAndTwoFactorChecksAreNeverHidden() {
         assertFalse(CaptchaGate.shouldHideTuringCaptchaPopup(null, "sms"));
         assertFalse(CaptchaGate.shouldHideTuringCaptchaPopup(null, "twice_verify"));
     }
 
     @Test
-    public void aHiddenCheckIsRecordedByItsId() {
+    public void aHiddenCheckIsRecordedByItsIdAndSaidOnceOnScreen() {
+        ShadowToast.reset();
+
         CaptchaGate.noteSuppressed(CaptchaGate.checkId("risk", "{\"subtype\":\"slide_captcha\"}"));
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
 
         assertEquals("risk slide_captcha", CaptchaGate.recentlySuppressedCheckId());
+        int afterFirst = ShadowToast.shownToastCount();
+        assertTrue("no toast was shown", afterFirst >= 1);
+        assertTrue(String.valueOf(ShadowToast.getTextOfLatestToast()),
+                ShadowToast.getTextOfLatestToast().contains("Hide CAPTCHA popups"));
+
+        // The same puzzle repeats on every retry, so only the first one says anything.
+        CaptchaGate.noteSuppressed(CaptchaGate.checkId("risk", "{\"subtype\":\"slide_captcha\"}"));
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        assertEquals(afterFirst, ShadowToast.shownToastCount());
     }
 
     @Test
@@ -159,9 +221,8 @@ public class CaptchaGateTest {
     @Test
     public void theWindowCoversTheWholeRoundTrip() {
         // The server raises the check in its answer, so the request has already been sent.
-        assertTrue(CaptchaGate.WRITE_WINDOW_MS >= 10_000L);
-
         CaptchaGate.recordRequest(new Request("/aweme/v1/commit/follow/user/"));
         assertNotNull(CaptchaGate.pendingWriteAction());
+        assertEquals("follow", CaptchaGate.pendingWriteAction(now + 10_000L));
     }
 }
