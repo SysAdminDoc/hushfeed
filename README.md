@@ -38,7 +38,7 @@ The block, sound and Not interested controls, rendered in a local UI test:
 
 1. Get the TikTok 46.2.3 APK. Google Play only offers the newest build, so take it from [APKMirror](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/).
 2. Add Hushfeed as a source in Morphe Manager. The quickest way is this link on the phone: [Add Hushfeed to Morphe](https://morphe.software/add-source?github=SysAdminDoc/hushfeed). You can also download `patches-0.16.0.mpp` from the [latest release](https://github.com/SysAdminDoc/hushfeed/releases/latest) and load it as a local bundle.
-3. Pick the patches you want and patch the APK. Keep the manager's existing signing key so TikTok stays logged in across updates. If patching stops with an out of memory error, raise the memory limit in Morphe Manager's settings: the same work needs more than the 640 MB default on a desktop, and 1024 MB is comfortable.
+3. Pick the patches you want and patch the APK. Keep the manager's existing signing key so TikTok stays logged in across updates. Every patch here fits the manager's 640 MB memory default except AMOLED dark theme, which rewrites TikTok's color resources and needs the limit raised to 768 MB. If patching stops with an out of memory error, that setting is the one to raise.
 4. Open TikTok, go to Settings and privacy, and tap Hushfeed. Every patch you selected has its switches there.
 
 The Settings patch adds the entry point; most patches depend on it and it's selected by default. `patches-bundle.json` in the repository root is the source index Morphe reads for the published bundle.
@@ -212,7 +212,7 @@ python scripts/gen-l10n.py
 ./gradlew :extensions:tiktok:test
 ```
 
-The script writes the string resources the Settings patch adds to TikTok, and the tests fail on any settings text that has no entry, so a missing line shows up before it ships.
+The script writes `L10nTranslations.java`, which the extension carries with its own code, and the tests fail on any settings text that has no entry, so a missing line shows up before it ships. The translations used to go into TikTok's own resources, but merging a few hundred strings into a table of 74,765 pushed patching past the memory Morphe Manager allows by default.
 
 <br>
 

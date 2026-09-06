@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Patching fits the memory Morphe Manager gives by default. The settings text used to be merged into TikTok's own resources, which meant decoding a resource table of 74,765 strings and needing 768 MB to do it. The translations now travel in the extension's code instead, and screen capture detection, which only wanted the manifest, no longer asks for resources at all. The default set of patches finishes in 512 MB. AMOLED dark theme still rewrites colors, so picking it still means raising the limit to 768 MB.
+
 * Review pass over the new filters and the history clear. Clearing the seen video history now copies the rows off the database rather than out of memory, which could be empty when the feature has never run in that session: the clear deleted everything and offered nothing back. A blocked creator entry that opens a pattern and never closes it no longer swallows the names after it, patterns stop at the end of their line, and each pattern keeps its own compiled form, so two of them no longer take turns handing each other the wrong one.
 
 * A switch hides the numbers under the like, comment, favourite and share buttons while leaving the buttons themselves.

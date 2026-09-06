@@ -9,7 +9,7 @@ import org.w3c.dom.Element
 @Suppress("unused")
 val amoledThemePatch = resourcePatch(
     name = "AMOLED dark theme",
-    description = "Replaces TikTok's dark background palette with black or a chosen color. The light theme keeps its colors. Choose this patch to enable it.",
+    description = "Replaces TikTok's dark background palette with black or a chosen color. The light theme keeps its colors. Choose this patch to enable it. It is the one patch that rewrites resources, so patching with it on needs the memory limit raised to 768 MB.",
     default = false,
 ) {
     compatibleWith(*AppCompatibilities.tiktok4623())

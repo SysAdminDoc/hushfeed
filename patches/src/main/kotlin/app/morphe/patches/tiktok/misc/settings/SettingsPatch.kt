@@ -47,7 +47,7 @@ val settingsPatch = bytecodePatch(
     description = "Adds the Hushfeed settings screen to TikTok. Supports TikTok 46.2.3.",
     default = true,
 ) {
-    dependsOn(sharedExtensionPatch, addResourcesPatch)
+    dependsOn(sharedExtensionPatch)
 
     compatibleWith(*AppCompatibilities.tiktok4623())
 

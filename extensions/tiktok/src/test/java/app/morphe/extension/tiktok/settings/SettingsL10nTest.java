@@ -2,8 +2,12 @@ package app.morphe.extension.tiktok.settings;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import android.content.Context;
+import android.content.res.Configuration;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -24,17 +28,14 @@ import app.morphe.extension.tiktok.settings.preference.categories.PlaybackPrefer
 import app.morphe.extension.tiktok.settings.preference.categories.SharePreferenceCategory;
 import app.morphe.extension.tiktok.settings.preference.categories.SimSpoofPreferenceCategory;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.junit.After;
 import org.junit.Test;
@@ -43,22 +44,19 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  * The settings screens in the phone's language. The English text in the code is the key,
- * the generated resources carry each language, and this walks every screen to make sure
- * nothing is left in English once German is selected.
+ * the generated {@link L10nTranslations} carries each language, and this walks every screen
+ * to make sure nothing is left in English once German is selected.
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
 public class SettingsL10nTest {
     public static final class TestActivity extends PreferenceActivity {}
 
-    private static final File ENGLISH = new File("src/main/res/values/strings.xml");
-    private static final File GERMAN = new File("src/main/res/values-de/strings.xml");
+    /** The table the generator wrote, which is what the app carries. */
+    private static final Map<String, String> GERMAN = L10nTranslations.of("de");
 
     @After
     public void resetStatus() throws Exception {
@@ -66,9 +64,32 @@ public class SettingsL10nTest {
     }
 
     @Test
-    public void theKeyIsTheOneTheGeneratorWrites() {
-        // Pinned against scripts/gen-l10n.py: zlib.crc32 of the UTF-8 text.
-        assertEquals("mtp_135f97b8", L10n.key("Hide the caption"));
+    public void everyLanguageTheBundleCarriesHasATable() {
+        assertNotNull("German", L10nTranslations.of("de"));
+        for (String language : L10nTranslations.LANGUAGES) {
+            assertNotNull(language, L10nTranslations.of(language));
+        }
+        // A language nobody translated into falls back rather than failing.
+        assertNull(L10nTranslations.of("xx"));
+    }
+
+    @Test
+    public void aCountrySpecificLocaleFallsBackToItsLanguage() {
+        // The tables are named by language; Austrian German gets the German table.
+        assertEquals("Beschreibung ausblenden",
+                L10n.t(germanContext("de", "AT"), "Hide the caption"));
+        assertEquals("Beschreibung ausblenden",
+                L10n.t(germanContext("de", ""), "Hide the caption"));
+        // A language with no table keeps the English.
+        assertEquals("Hide the caption", L10n.t(germanContext("fr", "FR"), "Hide the caption"));
+    }
+
+    /** A context whose resources report one locale, which is what the lookup reads. */
+    private static Context germanContext(String language, String country) {
+        Configuration configuration = new Configuration(
+                RuntimeEnvironment.getApplication().getResources().getConfiguration());
+        configuration.setLocale(new Locale(language, country));
+        return RuntimeEnvironment.getApplication().createConfigurationContext(configuration);
     }
 
     @Test
@@ -95,22 +116,19 @@ public class SettingsL10nTest {
     }
 
     @Test
-    public void everyGeneratedStringIsNamedByItsEnglishText() throws Exception {
-        Map<String, String> english = strings(ENGLISH);
-        Map<String, String> german = strings(GERMAN);
-        assertFalse(english.isEmpty());
-        assertFalse(german.isEmpty());
-        for (Map.Entry<String, String> entry : english.entrySet()) {
-            assertEquals("name of: " + entry.getValue(), L10n.key(entry.getValue()), entry.getKey());
-        }
-        for (String name : german.keySet()) {
-            assertTrue("German string without an English source: " + name, english.containsKey(name));
+    public void theTableIsKeyedByTheEnglishTextItself() {
+        assertFalse(GERMAN.isEmpty());
+        assertEquals("Beschreibung ausblenden", GERMAN.get("Hide the caption"));
+        // Nothing is translated to nothing: an empty value would blank a label.
+        for (Map.Entry<String, String> entry : GERMAN.entrySet()) {
+            assertFalse("empty key", entry.getKey().isEmpty());
+            assertFalse("empty translation of: " + entry.getKey(), entry.getValue().isEmpty());
         }
     }
 
     @Test
     public void everySettingsStringHasAGermanEntry() throws Exception {
-        Set<String> english = new LinkedHashSet<>(strings(ENGLISH).values());
+        Set<String> english = new LinkedHashSet<>(GERMAN.keySet());
         Set<String> shown = collectEverything();
         List<String> missing = new ArrayList<>();
         for (String text : shown) {
@@ -128,13 +146,10 @@ public class SettingsL10nTest {
     @Config(sdk = 28, qualifiers = "de")
     public void nothingOnTheScreensStaysEnglishUnderTheGermanLocale() throws Exception {
         // Words German spells the same way, like Transparent, cannot tell the two apart.
-        Map<String, String> englishByName = strings(ENGLISH);
-        Map<String, String> germanByName = strings(GERMAN);
         Set<String> english = new LinkedHashSet<>();
-        for (Map.Entry<String, String> entry : englishByName.entrySet()) {
-            String german = germanByName.get(entry.getKey());
-            if (german != null && !german.equals(entry.getValue())) {
-                english.add(entry.getValue());
+        for (Map.Entry<String, String> entry : GERMAN.entrySet()) {
+            if (!entry.getValue().equals(entry.getKey())) {
+                english.add(entry.getKey());
             }
         }
         Set<String> shown = collectEverything();
@@ -216,17 +231,6 @@ public class SettingsL10nTest {
     }
 
     /** name to text, with Android's string escapes undone. */
-    private static Map<String, String> strings(File file) throws Exception {
-        assertTrue(file.getAbsolutePath(), file.isFile());
-        Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file);
-        NodeList nodes = document.getElementsByTagName("string");
-        Map<String, String> result = new LinkedHashMap<>();
-        for (int i = 0; i < nodes.getLength(); i++) {
-            Element element = (Element) nodes.item(i);
-            result.put(element.getAttribute("name"), unescape(element.getTextContent()));
-        }
-        return result;
-    }
 
     private static String unescape(String text) {
         StringBuilder out = new StringBuilder(text.length());

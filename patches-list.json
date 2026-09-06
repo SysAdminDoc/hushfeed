@@ -6,7 +6,7 @@
   "patches": [
     {
       "name": "AMOLED dark theme",
-      "description": "Replaces TikTok's dark background palette with black or a chosen color. The light theme keeps its colors. Choose this patch to enable it.",
+      "description": "Replaces TikTok's dark background palette with black or a chosen color. The light theme keeps its colors. Choose this patch to enable it. It is the one patch that rewrites resources, so patching with it on needs the memory limit raised to 768 MB.",
       "use": false,
       "dependencies": [],
       "compatiblePackages": {
@@ -409,9 +409,7 @@
       "name": "Disable screen capture detection",
       "description": "Prevents TikTok from reacting to screenshots and screen recordings.",
       "use": true,
-      "dependencies": [
-        "BytecodePatch"
-      ],
+      "dependencies": [],
       "compatiblePackages": {
         "com.zhiliaoapp.musically": [
           "46.2.3"
@@ -1563,8 +1561,7 @@
       "description": "Adds the Hushfeed settings screen to TikTok. Supports TikTok 46.2.3.",
       "use": true,
       "dependencies": [
-        "BytecodePatch",
-        "ResourcePatch"
+        "BytecodePatch"
       ],
       "compatiblePackages": {
         "com.zhiliaoapp.musically": [
