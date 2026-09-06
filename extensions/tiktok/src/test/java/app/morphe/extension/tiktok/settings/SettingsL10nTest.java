@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.os.LocaleList;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -86,6 +87,23 @@ public class SettingsL10nTest {
         assertEquals("Sembunyikan keterangan", L10n.t(contextFor("id", "ID"), "Hide the caption"));
         // A language with no table keeps the English.
         assertEquals("Hide the caption", L10n.t(contextFor("fr", "FR"), "Hide the caption"));
+    }
+
+    @Test
+    public void asecondLanguageAnswersWhenTheFirstHasNoTable() {
+        // A phone set to French and then German shows German, because Android resolves a
+        // string against the whole language list rather than only the first entry.
+        Configuration configuration = new Configuration(
+                RuntimeEnvironment.getApplication().getResources().getConfiguration());
+        configuration.setLocales(new LocaleList(new Locale("fr", "FR"), new Locale("de", "DE")));
+        Context context = RuntimeEnvironment.getApplication().createConfigurationContext(configuration);
+        assertEquals(List.of("fr-rfr", "fr", "de-rde", "de"), L10n.tags(context));
+        assertEquals("Beschreibung ausblenden", L10n.t(context, "Hide the caption"));
+        // The order is the phone's: a language with a table earlier in the list wins.
+        configuration.setLocales(new LocaleList(new Locale("in", "ID"), new Locale("de", "DE")));
+        assertEquals("Sembunyikan keterangan", L10n.t(
+                RuntimeEnvironment.getApplication().createConfigurationContext(configuration),
+                "Hide the caption"));
     }
 
     /** A context whose resources report one locale, which is what the lookup reads. */
@@ -272,21 +290,5 @@ public class SettingsL10nTest {
                 field.setBoolean(null, value);
             }
         }
-    }
-
-    /** name to text, with Android's string escapes undone. */
-
-    private static String unescape(String text) {
-        StringBuilder out = new StringBuilder(text.length());
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            if (c == '\\' && i + 1 < text.length()) {
-                char next = text.charAt(++i);
-                out.append(next == 'n' ? '\n' : next);
-            } else {
-                out.append(c);
-            }
-        }
-        return out.toString();
     }
 }

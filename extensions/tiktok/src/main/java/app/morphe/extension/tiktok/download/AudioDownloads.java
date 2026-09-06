@@ -8,8 +8,6 @@ import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,10 +15,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Saves a video's sound as its own .m4a. TikTok serves the audio separately for videos with a
- * DASH stream, and that track is copied straight into an MP4 container; everything else has the
- * sound inside the video file, so the video is fetched once and its audio track copied out. No
- * track is ever re-encoded.
+ * Saves a video's sound as its own .m4a, copied out of a container rather than re-encoded.
+ *
+ * The bytes come from whatever has already been fetched wherever possible: when
+ * {@link VideoDownloads} handles the download it hands its own temporary file over, which is
+ * the separate audio stream for a video with DASH and the video file itself otherwise. Only
+ * when TikTok's own downloader takes the video does this fetch anything of its own.
  */
 final class AudioDownloads {
     private static final ExecutorService WORKER = Executors.newSingleThreadExecutor();
@@ -28,44 +28,69 @@ final class AudioDownloads {
 
     private AudioDownloads() {}
 
-    /** Runs beside whichever download handles the video, and never takes it over. */
+    static boolean enabled() {
+        return SettingsStatus.advancedDownloadsEnabled && Settings.DOWNLOAD_AUDIO_TRACK.get();
+    }
+
+    /** Fetches the sound itself, for the downloads this extension does not handle. */
     static void start(Object aweme, Context context) {
-        if (context == null || !SettingsStatus.advancedDownloadsEnabled) return;
-        if (!Settings.DOWNLOAD_AUDIO_TRACK.get()) return;
+        if (context == null || !enabled()) return;
         if (android.os.Build.VERSION.SDK_INT >= 23 && android.os.Build.VERSION.SDK_INT < 29
                 && context.checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != android.content.pm.PackageManager.PERMISSION_GRANTED) return;
         Object video = Reflect.property(aweme, "getVideo", "video");
         if (video == null) return;
 
+        // The separate audio stream when there is one, otherwise the video, which carries it.
         List<String> sound = VideoDownloads.audioUrls(video, null);
-        List<String> fallback = sound.isEmpty() ? VideoDownloads.sourceUrls(video) : Collections.emptyList();
-        if (sound.isEmpty() && fallback.isEmpty()) return;
+        List<String> source = sound.isEmpty() ? VideoDownloads.sourceUrls(video) : sound;
+        if (source.isEmpty()) return;
 
         String id = Reflect.string(aweme, "getAid", "aid");
-        if (id == null || !ACTIVE.add(id)) return;
+        if (id == null) return;
         Context app = context.getApplicationContext();
-        String name = DownloadFilenameFormatter.formatSelectedAudioName(aweme);
-        String path = audioPath(DownloadsPatch.getVideoDownloadPath());
+        if (!ACTIVE.add(id)) return;
         WORKER.execute(() -> {
-            List<File> temporary = new ArrayList<>();
+            File fetched = null;
             try {
-                File source = temp(app, temporary);
-                RemoteMedia.fetch(sound.isEmpty() ? fallback : sound, source, false);
-                File result = temp(app, temporary);
-                TrackMuxer.audioOnly(source, result);
-                MediaFileWriter.publish(app, result, name, "audio/mp4", path, true);
-                Utils.showToastShort("Sound saved to " + path);
+                fetched = File.createTempFile("sound-source-", ".mp4", app.getCacheDir());
+                RemoteMedia.fetch(source, fetched, false);
+                write(app, aweme, fetched);
             } catch (IOException | RuntimeException exception) {
                 Logger.printException(() -> "Sound download failed", exception);
                 Utils.showToastLong("The sound couldn't be saved.");
             } finally {
-                for (File file : temporary) {
-                    if (!file.delete()) Logger.printInfo(() -> "Could not remove sound temporary file");
+                if (fetched != null && !fetched.delete()) {
+                    Logger.printInfo(() -> "Could not remove sound temporary file");
                 }
                 ACTIVE.remove(id);
             }
         });
+    }
+
+    /**
+     * Copies the sound out of a file that is already on disk. Runs on the caller's thread, so
+     * the file has to outlive the call, and reports its own failures rather than taking the
+     * video download down with it.
+     */
+    static void write(Context app, Object aweme, File source) {
+        if (!enabled()) return;
+        File output = null;
+        try {
+            output = File.createTempFile("sound-", ".m4a", app.getCacheDir());
+            TrackMuxer.audioOnly(source, output);
+            String path = audioPath(DownloadsPatch.getVideoDownloadPath());
+            MediaFileWriter.publish(app, output, DownloadFilenameFormatter.formatSelectedAudioName(aweme),
+                    "audio/mp4", path, true);
+            Utils.showToastShort("Sound saved to " + path);
+        } catch (IOException | RuntimeException exception) {
+            Logger.printException(() -> "Sound save failed", exception);
+            Utils.showToastLong("The sound couldn't be saved.");
+        } finally {
+            if (output != null && !output.delete()) {
+                Logger.printInfo(() -> "Could not remove sound temporary file");
+            }
+        }
     }
 
     /**
@@ -77,11 +102,5 @@ final class AudioDownloads {
         if (android.os.Build.VERSION.SDK_INT < 29) return videoPath;
         int slash = videoPath == null ? -1 : videoPath.indexOf('/');
         return "Music" + (slash < 0 ? "/TikTok" : videoPath.substring(slash));
-    }
-
-    private static File temp(Context context, List<File> files) throws IOException {
-        File file = File.createTempFile("selected-audio-", ".m4a", context.getCacheDir());
-        files.add(file);
-        return file;
     }
 }

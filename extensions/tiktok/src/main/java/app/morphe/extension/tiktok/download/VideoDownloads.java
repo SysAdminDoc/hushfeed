@@ -50,25 +50,36 @@ final class VideoDownloads {
         }
         String id = Reflect.string(aweme, "getAid", "aid");
         if (id == null) return false;
-        if (!ACTIVE.add(id)) return true;
         Context app = context.getApplicationContext();
-        String name = DownloadFilenameFormatter.formatSelectedVideoName(aweme);
-        String path = captions.isEmpty() ? DownloadsPatch.getVideoDownloadPath()
-                : SubtitleDownloads.pairedPath(DownloadsPatch.getVideoDownloadPath());
+        String name, path;
+        try {
+            name = DownloadFilenameFormatter.formatSelectedVideoName(aweme);
+            path = captions.isEmpty() ? DownloadsPatch.getVideoDownloadPath()
+                    : SubtitleDownloads.pairedPath(DownloadsPatch.getVideoDownloadPath());
+        } catch (RuntimeException exception) {
+            // Working out the name is reflection over TikTok's model, so it can throw. Leaving
+            // the id in ACTIVE here would refuse every later attempt on this video in silence.
+            Logger.printException(() -> "Could not work out the download name", exception);
+            return false;
+        }
+        if (!ACTIVE.add(id)) return true;
         Utils.showToastShort(captions.isEmpty() ? "Saving the selected video quality" : "Saving video and subtitles to " + path);
         WORKER.execute(() -> {
             List<File> temporary = new ArrayList<>();
             try {
                 File picture = temp(app, temporary);
                 RemoteMedia.fetch(videoUrls, picture, false);
-                File result = picture;
+                File result = picture, sound = null;
                 if (dash) {
-                    File sound = temp(app, temporary);
+                    sound = temp(app, temporary);
                     RemoteMedia.fetch(audioUrls, sound, false);
                     result = temp(app, temporary);
                     TrackMuxer.combine(picture, sound, result);
                 }
                 String savedName = MediaFileWriter.publish(app, result, name, "video/mp4", path, true);
+                // The sound is already on disk: the separate stream when the video has one,
+                // otherwise the video itself. Fetching it again would download it twice.
+                AudioDownloads.write(app, aweme, sound == null ? picture : sound);
                 int saved = SubtitleDownloads.save(app, captions, savedName, path);
                 Utils.showToastLong(captions.isEmpty() ? "Video saved"
                         : "Video saved with " + saved + "/" + captions.size() + " subtitles in " + path

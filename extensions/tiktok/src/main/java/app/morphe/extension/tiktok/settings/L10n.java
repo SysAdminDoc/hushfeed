@@ -7,10 +7,16 @@
 package app.morphe.extension.tiktok.settings;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Build;
+import android.os.LocaleList;
 
 import app.morphe.extension.shared.Utils;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -27,13 +33,13 @@ import java.util.Map;
  * text, so nothing here can leave a label empty.
  */
 public final class L10n {
-    /** A language and its table together, so a reader can never pair one with the other's. */
+    /** A set of language tags and the answer they came to, so neither can go stale alone. */
     private static final class Table {
-        final String language;
+        final String key;
         final Map<String, String> translations;
 
-        Table(String language, Map<String, String> translations) {
-            this.language = language;
+        Table(String key, Map<String, String> translations) {
+            this.key = key;
             this.translations = translations;
         }
     }
@@ -56,7 +62,7 @@ public final class L10n {
         if (english == null || english.isEmpty()) {
             return english;
         }
-        Map<String, String> translations = tableFor(language(context));
+        Map<String, String> translations = tableFor(tags(context));
         if (translations == null) {
             return english;
         }
@@ -78,45 +84,76 @@ public final class L10n {
     }
 
     /**
-     * The phone's language as a tag the tables are named by, most specific first: a table
-     * for "pt-rbr" wins over one for "pt".
+     * Every tag worth trying, in the order the phone asks for them, each one most specific
+     * first, so a table for "pt-rbr" wins over one for "pt". Android resolves a string
+     * resource against the whole language list rather than the first entry alone, and reading
+     * the table by hand has to do the same or a second choice language never shows.
      */
-    static String language(Context context) {
-        Locale locale = null;
+    static List<String> tags(Context context) {
+        List<String> tags = new ArrayList<>(4);
+        for (Locale locale : locales(context)) {
+            String language = locale.getLanguage().toLowerCase(Locale.ROOT);
+            if (language.isEmpty() || tags.contains(language)) {
+                continue;
+            }
+            String country = locale.getCountry();
+            if (country != null && !country.isEmpty()) {
+                tags.add(language + "-r" + country.toLowerCase(Locale.ROOT));
+            }
+            tags.add(language);
+        }
+        if (tags.isEmpty()) {
+            tags.add(Locale.getDefault().getLanguage().toLowerCase(Locale.ROOT));
+        }
+        return tags;
+    }
+
+    /** The languages the phone is set to, or the default when there is no context to ask. */
+    private static List<Locale> locales(Context context) {
         try {
             Resources resources = context == null ? null : context.getResources();
             if (resources != null) {
-                locale = resources.getConfiguration().locale;
+                Configuration configuration = resources.getConfiguration();
+                if (Build.VERSION.SDK_INT >= 24) {
+                    LocaleList list = configuration.getLocales();
+                    List<Locale> found = new ArrayList<>(list.size());
+                    for (int index = 0; index < list.size(); index++) {
+                        found.add(list.get(index));
+                    }
+                    if (!found.isEmpty()) {
+                        return found;
+                    }
+                } else if (configuration.locale != null) {
+                    return Collections.singletonList(configuration.locale);
+                }
             }
         } catch (Throwable ignored) {
             // No context yet, or none with resources: the default locale still answers.
         }
-        if (locale == null) {
-            locale = Locale.getDefault();
-        }
-
-        String language = locale.getLanguage().toLowerCase(Locale.ROOT);
-        String country = locale.getCountry();
-        return country == null || country.isEmpty()
-                ? language
-                : language + "-r" + country.toLowerCase(Locale.ROOT);
+        return Collections.singletonList(Locale.getDefault());
     }
 
-    /** The table for a language tag, remembered until the language changes. */
-    private static Map<String, String> tableFor(String language) {
+    /** The first tag with a table, remembered until the phone's languages change. */
+    private static Map<String, String> tableFor(List<String> tags) {
+        StringBuilder builder = new StringBuilder();
+        for (String tag : tags) {
+            builder.append(tag).append(',');
+        }
+        String key = builder.toString();
+
         Table table = cached;
-        if (table != null && language.equals(table.language)) {
+        if (table != null && key.equals(table.key)) {
             return table.translations;
         }
 
-        Map<String, String> found = L10nTranslations.of(language);
-        if (found == null) {
-            int dash = language.indexOf('-');
-            if (dash > 0) {
-                found = L10nTranslations.of(language.substring(0, dash));
+        Map<String, String> found = null;
+        for (String tag : tags) {
+            found = L10nTranslations.of(tag);
+            if (found != null) {
+                break;
             }
         }
-        cached = new Table(language, found);
+        cached = new Table(key, found);
         return found;
     }
 }

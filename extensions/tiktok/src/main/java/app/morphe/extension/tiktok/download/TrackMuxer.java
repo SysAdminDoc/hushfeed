@@ -73,7 +73,7 @@ final class TrackMuxer {
             if ((extractor.getSampleFlags() & MediaExtractor.SAMPLE_FLAG_ENCRYPTED) != 0) throw new IOException("Encrypted media cannot be saved");
             if (android.os.Build.VERSION.SDK_INT >= 28) {
                 long size = extractor.getSampleSize();
-                if (size > 64 * 1024 * 1024) throw new IOException("Video sample is too large");
+                if (size > 64 * 1024 * 1024) throw new IOException("A media sample is too large to copy");
                 if (size > buffer.capacity()) buffer = ByteBuffer.allocateDirect((int) size);
             }
             buffer.clear();

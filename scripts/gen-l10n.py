@@ -111,11 +111,15 @@ def main():
     lines.append("     */")
     lines.append("    static Map<String, String> of(String language) {")
     lines.append("        switch (language) {")
+    known = [other.lower() for other in languages]
     for lang in languages:
-        labels = [lang.lower()]
-        alias = ALIASES.get(lang.lower())
-        if alias and alias not in [other.lower() for other in languages]:
-            labels.append(alias)
+        name = lang.lower()
+        labels = [name]
+        # The alias is on the language, so a regional table answers to both spellings too.
+        head, dash, tail = name.partition("-")
+        alias = ALIASES.get(head)
+        if alias and alias + dash + tail not in known:
+            labels.append(alias + dash + tail)
         for label in labels:
             lines.append("            case %s:" % literal(label))
         lines.append("                return build%s();" % java_name(lang).capitalize())

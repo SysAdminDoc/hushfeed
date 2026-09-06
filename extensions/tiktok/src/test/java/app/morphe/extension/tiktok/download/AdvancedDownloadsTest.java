@@ -72,6 +72,20 @@ public class AdvancedDownloadsTest {
         public List<Photo> imageList;
         Info(List<Photo> photos) { imageList = photos; }
     }
+    public static final class Author {
+        private final String uniqueId;
+        Author(String uniqueId) { this.uniqueId = uniqueId; }
+        public String getUniqueId() { return uniqueId; }
+        public String getNickname() { return "nickname"; }
+    }
+    /** A post with the fields the filename tokens are read from. */
+    public static final class Item {
+        private final Author author;
+        private final String aid;
+        Item(String creator, String aid) { this.author = new Author(creator); this.aid = aid; }
+        public Author getAuthor() { return author; }
+        public String getAid() { return aid; }
+    }
     public static final class Post {
         public final Info photoModeImageInfo;
         Post(List<Photo> photos) { photoModeImageInfo = new Info(photos); }
@@ -161,10 +175,12 @@ public class AdvancedDownloadsTest {
 
     @Test public void theSoundTakesTheVideoNameWithAnAudioExtension() {
         Utils.setContext(RuntimeEnvironment.getApplication());
-        Settings.DOWNLOAD_VIDEO_FILENAME_TEMPLATE.save("{creator}_{video_id}");
-        Post post = new Post(List.of(new Photo("https://example.com/one")));
-        assertEquals("unknown_unknown.mp4", DownloadFilenameFormatter.formatSelectedVideoName(post));
-        assertEquals("unknown_unknown.m4a", DownloadFilenameFormatter.formatSelectedAudioName(post));
+        Settings.DOWNLOAD_VIDEO_FILENAME_TEMPLATE.save("{creator}-{video_id}");
+        Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save("photo-{video_id}");
+        // Distinct values, so swapping the two tokens fails rather than reading the same.
+        Item item = new Item("dancer", "7712345");
+        assertEquals("dancer-7712345.mp4", DownloadFilenameFormatter.formatSelectedVideoName(item));
+        assertEquals("dancer-7712345.m4a", DownloadFilenameFormatter.formatSelectedAudioName(item));
     }
 
     @Test public void soundGoesToTheAudioTreeOnlyWhereTheGalleryDemandsIt() {
@@ -220,7 +236,7 @@ public class AdvancedDownloadsTest {
         } finally { server.close(); responder.join(1000); assertTrue(temp.delete()); }
     }
 
-    @Test public void advancedPatchAloneShowsBothOptions() throws Exception {
+    @Test public void advancedPatchAloneShowsItsOwnOptions() throws Exception {
         try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
             var activity = controller.get();
             Utils.setContext(activity);
@@ -231,6 +247,7 @@ public class AdvancedDownloadsTest {
             new DownloadsPreferenceCategory(activity, screen);
             assertNotNull(screen.findPreference("download_video_quality"));
             assertNotNull(screen.findPreference("download_original_photos"));
+            assertNotNull(screen.findPreference("download_audio_track"));
             assertNull(screen.findPreference("down_watermark"));
             assertEquals(Settings.DOWNLOAD_PHOTO_PATH.get(), screen.findPreference("download_photo_path").getSummary());
             activity.setPreferenceScreen(screen);

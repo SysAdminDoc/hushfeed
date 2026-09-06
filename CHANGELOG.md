@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Review pass over the settings lookup and the sound save. A phone set to two languages reads them in order again, so French and then German shows German rather than English: the new table lookup was only reading the first language, which is not what Android does with resources. Saving the sound no longer downloads the same bytes a second time; it takes them from the file the video download already has, which also means the .m4a and the video carry the same audio stream.
+
 * Advanced downloads can keep the sound on its own. Turn on Save the sound as well and every video you download also writes an .m4a named the same way, copied out of the track TikTok already serves rather than re-encoded. Android 10 and later file audio separately from video, so it goes to Music under whatever folder name your videos use.
 
 * The settings screen speaks Indonesian. All 404 strings are translated, and the tests now walk every screen under the Indonesian locale the same way they do under German, so a missing line fails the build rather than showing up as English on a phone.

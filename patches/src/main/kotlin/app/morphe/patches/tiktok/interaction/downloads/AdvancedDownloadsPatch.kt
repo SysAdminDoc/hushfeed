@@ -28,7 +28,7 @@ private object StartDownloadFingerprint : Fingerprint(
 @Suppress("unused")
 val advancedDownloadsPatch = bytecodePatch(
     name = "Advanced downloads",
-    description = "Adds download quality choices and saves Photo Mode images directly from their source URLs.",
+    description = "Adds download quality choices, saves Photo Mode images directly from their source URLs, and can keep a video's sound as its own audio file.",
     default = false,
 ) {
     compatibleWith(*AppCompatibilities.tiktok4623())

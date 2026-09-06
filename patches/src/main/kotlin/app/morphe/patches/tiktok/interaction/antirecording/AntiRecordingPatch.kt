@@ -21,8 +21,11 @@ private data class ScreenCaptureCallSite(
  * nothing in the manifest to take out, and touching the manifest at all makes the patcher decode
  * the whole resource table. That decode is what put patching over the memory Morphe Manager
  * allows by default: measured 2026-09-06, this patch alone needed 768 MB with it and 512 MB
- * without. A version that does declare the permission still gets the calls nopped, which leaves
- * the permission inert.
+ * without.
+ *
+ * The sweep below matches call sites whose receiver is typed as Activity itself. A build that
+ * called the API through a subclass reference, or that declared the permission, would need the
+ * manifest cleanup back, so check both before widening compatibility past 46.2.3.
  */
 @Suppress("unused")
 val antiRecordingPatch = bytecodePatch(

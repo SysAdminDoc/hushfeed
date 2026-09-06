@@ -21,10 +21,10 @@ public final class OriginalPhotos {
     private OriginalPhotos() {}
 
     public static boolean start(Object aweme, Context context) {
-        // The sound is saved beside whichever download handles the video, so it runs first
-        // and does not decide who that is.
-        AudioDownloads.start(aweme, context);
         if (VideoDownloads.start(aweme, context)) return true;
+        // Nothing here is handling the video, so the sound has to fetch its own bytes. When
+        // the quality download above took it, it saved the sound from what it already had.
+        AudioDownloads.start(aweme, context);
         if (!Settings.DOWNLOAD_ORIGINAL_PHOTOS.get() || context == null) return false;
         if (Reflect.property(aweme, "getPhotoModeImageInfo", "photoModeImageInfo") == null) return false;
         if (android.os.Build.VERSION.SDK_INT >= 23 && android.os.Build.VERSION.SDK_INT < 29
