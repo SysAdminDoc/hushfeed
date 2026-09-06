@@ -43,6 +43,8 @@ import java.util.Map;
  *   id/twc                the strip across the top holding For You, Following and the rest
  *   id/hvo id/fws id/ehl  the six id/eoh buttons inside id/kzj, in order: avatar and
  *   id/hu9 id/p2l id/v9o  follow, like, comments, favourite, music disc, share
+ *   id/fwu id/ecq         the count under each of those, in its own row so the icon
+ *   id/ht9 id/v5x         above it stays put when the count goes
  * </pre>
  * The first two belong to TikTok's search dynamic feature module, so they resolve under
  * that module's package name rather than the app's. Views are re-hidden on every layout
@@ -61,6 +63,8 @@ public final class VideoOverlayHider {
     private static final String SURVEY_ID = "ezp";
     private static final String TAB_STRIP_ID = "twc";
     /** The six buttons inside the action column, in the order they are stacked. */
+    /** The row under each rail button holding its count, without the button itself. */
+    private static final String[] RAIL_COUNT_IDS = {"fwu", "ecq", "ht9", "v5x"};
     private static final String[] RAIL_BUTTON_IDS = {"hvo", "fws", "ehl", "hu9", "p2l", "v9o"};
 
     private static final int LEGACY_STATUS_BAR_FLAGS = View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -162,14 +166,15 @@ public final class VideoOverlayHider {
             // writes it, so it would answer false for exactly the case this is meant to fix.
             boolean tabStrip = RememberClearDisplayPatch.isClearDisplayNow();
             boolean[] rail = railButtonsWanted();
-            boolean anyRail = false;
+            boolean anyRail = Settings.HIDE_RAIL_COUNTS.get();
             for (boolean one : rail) {
                 anyRail |= one;
             }
             if (caption || music || actionBar || surveys || tabStrip || anyRail
                     || !HIDDEN_HERE.isEmpty()) {
                 ViewGroup root = activity.findViewById(android.R.id.content);
-                int[] ids = new int[5 + RAIL_BUTTON_IDS.length];
+                boolean counts = Settings.HIDE_RAIL_COUNTS.get();
+                int[] ids = new int[5 + RAIL_BUTTON_IDS.length + RAIL_COUNT_IDS.length];
                 boolean[] hidden = new boolean[ids.length];
                 ids[0] = identifier(activity, APP_PACKAGE, CAPTION_ID);
                 ids[1] = identifier(activity, APP_PACKAGE, MUSIC_ID);
@@ -184,6 +189,11 @@ public final class VideoOverlayHider {
                 for (int i = 0; i < RAIL_BUTTON_IDS.length; i++) {
                     ids[5 + i] = identifier(activity, APP_PACKAGE, RAIL_BUTTON_IDS[i]);
                     hidden[5 + i] = rail[i];
+                }
+                int countsAt = 5 + RAIL_BUTTON_IDS.length;
+                for (int i = 0; i < RAIL_COUNT_IDS.length; i++) {
+                    ids[countsAt + i] = identifier(activity, APP_PACKAGE, RAIL_COUNT_IDS[i]);
+                    hidden[countsAt + i] = counts;
                 }
 
                 List<List<View>> found = viewsWithIds(root, ids);

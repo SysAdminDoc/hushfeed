@@ -176,6 +176,12 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
             ));
             addPreference(new TogglePreference(
                     context,
+                    "Hide the counts on the right column",
+                    "Hide the numbers under the like, comment, favourite and share buttons. The buttons stay.",
+                    Settings.HIDE_RAIL_COUNTS
+            ));
+            addPreference(new TogglePreference(
+                    context,
                     "Hide surveys",
                     "Hide the question cards TikTok slides over a video near its end.",
                     Settings.HIDE_FEED_SURVEYS

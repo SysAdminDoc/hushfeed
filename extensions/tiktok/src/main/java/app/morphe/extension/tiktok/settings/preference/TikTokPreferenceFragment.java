@@ -325,6 +325,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     SettingsStatus.videoOverlaysEnabled && Settings.HIDE_RAIL_FAVOURITE.get(),
                     SettingsStatus.videoOverlaysEnabled && Settings.HIDE_RAIL_MUSIC.get(),
                     SettingsStatus.videoOverlaysEnabled && Settings.HIDE_RAIL_SHARE.get(),
+                    SettingsStatus.videoOverlaysEnabled && Settings.HIDE_RAIL_COUNTS.get(),
                     SettingsStatus.videoOverlaysEnabled && Settings.HIDE_STATUS_BAR.get(),
                     SettingsStatus.videoOverlaysEnabled && Settings.HIDE_VISUAL_SEARCH.get(),
                     (SettingsStatus.videoOverlaysEnabled || SettingsStatus.hideFeedLiveButtonEnabled)

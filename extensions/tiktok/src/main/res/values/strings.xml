@@ -310,6 +310,7 @@
     <string name="mtp_cdb09fad">Copy a quick report or save the full report as a file.</string>
     <string name="mtp_cdfc6e09">Back</string>
     <string name="mtp_ce7851e8">Comment media filename</string>
+    <string name="mtp_cf76fa80">Hide the counts on the right column</string>
     <string name="mtp_d01962e4">Operator MCC/MNC</string>
     <string name="mtp_d0be8882">Quality, files and subtitles</string>
     <string name="mtp_d12727a3">Tokens: {date}, {media_id}. Works for image and video stickers.</string>
@@ -320,6 +321,7 @@
     <string name="mtp_d22d4bc7">Hide visual search prompt</string>
     <string name="mtp_d2c0aec0">Close</string>
     <string name="mtp_d3ec8f59">Long press</string>
+    <string name="mtp_d45d0835">Hide the numbers under the like, comment, favourite and share buttons. The buttons stay.</string>
     <string name="mtp_d540292a">Disable long-press quick share</string>
     <string name="mtp_d5a602a8">Hide the creator\'s picture and the plus button at the top of the right column.</string>
     <string name="mtp_d5d0cc9a">Maximum</string>

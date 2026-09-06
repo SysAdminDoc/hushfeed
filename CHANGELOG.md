@@ -1,5 +1,7 @@
 ## Unreleased
 
+* A switch hides the numbers under the like, comment, favourite and share buttons while leaving the buttons themselves.
+
 * Clearing the seen video history happens on the tap, with no dialog first. The row says what it cleared and a second tap puts it all back, in the database as well as in memory.
 
 * The install steps say what to do about an out of memory error while patching. The same work needs more than Morphe Manager's 640 MB default on a desktop, and 1024 MB is comfortable.

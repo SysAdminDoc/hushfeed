@@ -620,6 +620,8 @@
     <string name="mtp_cdfc6e09">Zurück</string>
     <!-- Comment media filename -->
     <string name="mtp_ce7851e8">Dateiname für Kommentar-Medien</string>
+    <!-- Hide the counts on the right column -->
+    <string name="mtp_cf76fa80">Zahlen in der rechten Spalte ausblenden</string>
     <!-- Operator MCC/MNC -->
     <string name="mtp_d01962e4">Netzbetreiber MCC/MNC</string>
     <!-- Quality, files and subtitles -->
@@ -640,6 +642,8 @@
     <string name="mtp_d2c0aec0">Schließen</string>
     <!-- Long press -->
     <string name="mtp_d3ec8f59">Langes Drücken</string>
+    <!-- Hide the numbers under the like, comment, favourite and share buttons. The buttons stay. -->
+    <string name="mtp_d45d0835">Blendet die Zahlen unter Like, Kommentar, Favorit und Teilen aus. Die Buttons bleiben.</string>
     <!-- Disable long-press quick share -->
     <string name="mtp_d540292a">Schnelles Teilen bei langem Drücken abschalten</string>
     <!-- Hide the creator's picture and the plus button at the top of the right column. -->

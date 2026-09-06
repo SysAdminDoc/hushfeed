@@ -224,6 +224,48 @@ public class VideoOverlayHiderTest {
     }
 
     @Test
+    public void theCountsGoWithoutTheButtons() {
+        String[] counts = {"fwu", "ecq", "ht9", "v5x"};
+        int[] countIds = new int[counts.length];
+        for (int i = 0; i < counts.length; i++) {
+            countIds[i] = 0x7f0a0200 + i;
+            VideoOverlayHider.resolveForTests(counts[i], countIds[i]);
+        }
+        int likeButtonId = 0x7f0a0210;
+        VideoOverlayHider.resolveForTests("fws", likeButtonId);
+
+        try (var controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            Utils.setContext(activity);
+            LinearLayout root = new LinearLayout(activity);
+            View likeButton = new View(activity);
+            likeButton.setId(likeButtonId);
+            root.addView(likeButton);
+            View[] rows = new View[counts.length];
+            for (int i = 0; i < counts.length; i++) {
+                rows[i] = new View(activity);
+                rows[i].setId(countIds[i]);
+                root.addView(rows[i]);
+            }
+            activity.setContentView(root);
+
+            Settings.HIDE_RAIL_LIKE.save(false);
+            Settings.HIDE_RAIL_COUNTS.save(true);
+            VideoOverlayHider.applyTo(activity);
+            for (int i = 0; i < counts.length; i++) {
+                assertEquals(counts[i], View.GONE, rows[i].getVisibility());
+            }
+            assertEquals("the button itself stays", View.VISIBLE, likeButton.getVisibility());
+
+            Settings.HIDE_RAIL_COUNTS.save(false);
+            VideoOverlayHider.applyTo(activity);
+            for (int i = 0; i < counts.length; i++) {
+                assertEquals(counts[i], View.VISIBLE, rows[i].getVisibility());
+            }
+        }
+    }
+
+    @Test
     public void clearDisplayKeepsTheTabStripAwayUntilItEnds() {
         int tabStripId = 0x7f0a0011;
         VideoOverlayHider.resolveForTests("twc", tabStripId);
