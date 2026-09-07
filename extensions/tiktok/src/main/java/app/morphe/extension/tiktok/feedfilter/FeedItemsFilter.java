@@ -500,7 +500,7 @@ public final class FeedItemsFilter {
 
         int contentRemoved = 0;
         int rangeRejected = 0;
-        Map<String, Integer> reasonCounts = probeEnabled ? new HashMap<>() : null;
+        Map<String, Integer> reasonCounts = new HashMap<>();
 
         List snapshot = new ArrayList(list);
         List contentKept = new ArrayList(snapshot.size());
@@ -585,6 +585,7 @@ public final class FeedItemsFilter {
             recordProbeScan(listId, removed, System.nanoTime() - startNs);
         }
 
+        FeedFilterFeedback.onBatchResult(initialSize, resultList.size(), reasonCounts, System.currentTimeMillis());
         rememberProcessedList(listId, ListFingerprint.from(resultList, extractor), filterMask);
 
         if (verbose && removed > 0 && shouldLogBatch()) {

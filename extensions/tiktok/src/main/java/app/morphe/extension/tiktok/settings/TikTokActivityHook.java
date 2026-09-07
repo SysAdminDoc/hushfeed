@@ -29,6 +29,7 @@ import java.lang.reflect.InvocationTargetException;
 public class TikTokActivityHook {
     private static final String SETTINGS_ACTION = "morphe_settings";
     private static final String SETTINGS_EXTRA = "morphe";
+    private static final String SETTINGS_SECTION_EXTRA = "morphe_settings_section";
 
     public static Object createSettingsEntry(String entryClazzName, String entryInfoClazzName) {
         try {
@@ -76,6 +77,12 @@ public class TikTokActivityHook {
         base.setContentView(linearLayout);
 
         PreferenceFragment preferenceFragment = new TikTokPreferenceFragment();
+        String section = intent.getStringExtra(SETTINGS_SECTION_EXTRA);
+        if (section != null && !section.isEmpty()) {
+            Bundle arguments = new Bundle();
+            arguments.putString(SETTINGS_SECTION_EXTRA, section);
+            preferenceFragment.setArguments(arguments);
+        }
         base.getFragmentManager().beginTransaction().replace(fragmentId, preferenceFragment).commit();
 
         return true;
@@ -98,12 +105,24 @@ public class TikTokActivityHook {
     }
 
     private static void startSettingsActivity() {
+        startSettingsActivity(null);
+    }
+
+    /** Opens the extension settings directly at the feed-filter page. */
+    public static void openFeedFilterSettings() {
+        startSettingsActivity("FEED_FILTER");
+    }
+
+    private static void startSettingsActivity(String section) {
         Context appContext = Utils.getContext();
         if (appContext != null) {
             Intent intent = new Intent(appContext, AdPersonalizationActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.setAction(SETTINGS_ACTION);
             intent.putExtra(SETTINGS_EXTRA, true);
+            if (section != null) {
+                intent.putExtra(SETTINGS_SECTION_EXTRA, section);
+            }
             appContext.startActivity(intent);
         } else {
             Logger.printDebug(() -> "Utils.getContext() return null");
