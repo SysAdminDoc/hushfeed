@@ -27,13 +27,17 @@ import java.lang.ref.WeakReference;
 import java.util.Locale;
 
 /**
- * Covers the feed while a session lock is running, and nothing else.
+ * Covers the feed while a hold is running, and nothing else.
  *
  * <p>It is a view over the activity's content root, the same place the block button lives, shown
  * only while the feed itself is on screen. Messages, a profile and search are all still there
  * underneath it, because the only thing that decides whether this is visible is whether the home
  * tab is selected. It also does not touch a single feed item, so the batch TikTok already
- * fetched is still sitting there when the lock ends, and nothing is refetched.
+ * fetched is still sitting there when the hold ends, and nothing is refetched.
+ *
+ * <p>The way out of the hold is on the panel. Anything else drawn on the content root ends up
+ * underneath it, because this covers the whole root and swallows every touch, so a banner
+ * offering an Undo would be both invisible and untappable.
  */
 public final class SessionLockOverlay {
     private static final long TICK_MS = 1_000L;
@@ -41,10 +45,10 @@ public final class SessionLockOverlay {
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
     private static WeakReference<View> overlayReference = new WeakReference<>(null);
     private static WeakReference<TextView> remainingReference = new WeakReference<>(null);
-    private static boolean ticking;
+    private static volatile boolean ticking;
 
     /**
-     * Runs only while a lock is running. A repeating timer that outlives the lock would be a
+     * Runs only while a hold is running. A repeating timer that outlives the hold would be a
      * second-by-second wake-up for a feature nobody switched on.
      */
     private static final Runnable TICK = new Runnable() {
@@ -62,7 +66,10 @@ public final class SessionLockOverlay {
     private SessionLockOverlay() {
     }
 
-    /** Starts the countdown if a lock is running. Cheap to call on every video. */
+    /**
+     * Starts the countdown if a hold is running. Called from the player's progress callback, so
+     * the already-running case must not reach the budget's monitor at all.
+     */
     public static void ensureRunning() {
         if (ticking || !SessionBudget.isLocked()) return;
         Utils.runOnMainThread(() -> {
@@ -102,7 +109,11 @@ public final class SessionLockOverlay {
         if (totalMinutes <= 0) return L10n.t("Less than a minute left");
         long hours = totalMinutes / 60;
         long minutes = totalMinutes % 60;
-        if (hours == 0) return L10n.f("%1$d minutes left", minutes);
+        if (hours == 0) {
+            return minutes == 1
+                    ? L10n.t("One minute left")
+                    : L10n.f("%1$d minutes left", minutes);
+        }
         // Built before the call so the clock face is not mistaken for text to translate.
         String clock = String.format(Locale.getDefault(), "%d:%02d", hours, minutes);
         return L10n.f("%1$s left", clock);
@@ -123,7 +134,7 @@ public final class SessionLockOverlay {
         panel.setFocusable(true);
 
         TextView title = new TextView(activity);
-        title.setText(L10n.t(activity, "That is the feed for today"));
+        title.setText(SessionBudgetNotice.spentMessage());
         title.setTextColor(Color.WHITE);
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
         title.setGravity(Gravity.CENTER);
@@ -143,13 +154,32 @@ public final class SessionLockOverlay {
         hint.setTextColor(Color.argb(200, 235, 235, 240));
         hint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         hint.setGravity(Gravity.CENTER);
-        GradientDrawable pill = new GradientDrawable();
-        pill.setCornerRadius(SettingsUi.dp(activity, 10));
-        pill.setColor(Color.argb(60, 255, 255, 255));
-        hint.setBackground(pill);
-        int padding = SettingsUi.dp(activity, 12);
-        hint.setPadding(padding, padding / 2, padding, padding / 2);
         panel.addView(hint);
+
+        // The way out. A budget nobody can overrule is a budget people switch off instead, and
+        // this has to be here rather than on a banner, which the panel would cover.
+        TextView release = new TextView(activity);
+        release.setText(L10n.t(activity, "Open the feed anyway"));
+        release.setContentDescription(L10n.t(activity, "Open the feed anyway"));
+        release.setTextColor(Color.WHITE);
+        release.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+        release.setGravity(Gravity.CENTER);
+        GradientDrawable pill = new GradientDrawable();
+        pill.setCornerRadius(SettingsUi.dp(activity, 24));
+        pill.setColor(Color.argb(70, 255, 255, 255));
+        release.setBackground(pill);
+        int padding = SettingsUi.dp(activity, 20);
+        release.setPadding(padding, SettingsUi.dp(activity, 14), padding, SettingsUi.dp(activity, 14));
+        release.setMinimumHeight(SettingsUi.dp(activity, 48));
+        LinearLayout.LayoutParams releaseParams = new LinearLayout.LayoutParams(-2, -2);
+        releaseParams.topMargin = SettingsUi.dp(activity, 28);
+        release.setLayoutParams(releaseParams);
+        release.setOnClickListener(view -> {
+            SessionBudget.releaseLock();
+            sync();
+            Utils.showToastShort(L10n.t("The feed is open again"));
+        });
+        panel.addView(release);
 
         panel.setLayoutParams(new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));

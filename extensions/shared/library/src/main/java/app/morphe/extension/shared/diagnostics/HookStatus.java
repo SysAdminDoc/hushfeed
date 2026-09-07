@@ -42,6 +42,7 @@ public final class HookStatus {
         /** The same misses in the order they arrived, for the first-miss line. */
         final List<String> order = new CopyOnWriteArrayList<>();
         volatile boolean truncated;
+        volatile boolean boundTruncated;
     }
 
     private static final Map<String, Family> FAMILIES = new ConcurrentHashMap<>();
@@ -54,8 +55,9 @@ public final class HookStatus {
     /** A lookup that found what it wanted. A repeat costs one hash lookup and nothing else. */
     public static void bound(String family, String name) {
         Family entry = family(family);
-        if (entry.bound.contains(name)) return;
+        if (entry.boundTruncated || entry.bound.contains(name)) return;
         if (entry.bound.size() < MAX_ENTRIES_PER_FAMILY) entry.bound.add(name);
+        else entry.boundTruncated = true;
     }
 
     /**
@@ -67,13 +69,16 @@ public final class HookStatus {
      */
     public static void missingViewId(String family, String name) {
         Family entry = family(family);
-        if (entry.missed.contains(name)) return;
+        // The truncated check comes first. Past the cap a key is never added, so without this
+        // every later pass would miss the set and rebuild the wording it is not going to use.
+        if (entry.truncated || entry.missed.contains(name)) return;
         record(entry, family, name, "view id '" + name + "'");
     }
 
     /** A member the extension asked for by name and this build does not have. */
     public static void missingMember(String family, String kind, String owner, String name) {
         Family entry = family(family);
+        if (entry.truncated) return;
         String key = owner + '#' + name;
         if (entry.missed.contains(key)) return;
         record(entry, family, key, kind + " " + owner + "#" + name);
@@ -151,7 +156,9 @@ public final class HookStatus {
             StringBuilder line = new StringBuilder(name)
                     .append(": ").append(entry.bound.size()).append(" bound, ")
                     .append(entry.order.size()).append(" unbound");
-            if (entry.truncated) line.append(" and more it stopped counting");
+            if (entry.truncated || entry.boundTruncated) {
+                line.append(" and more it stopped counting");
+            }
             if (!entry.order.isEmpty()) line.append("; first miss: ").append(entry.order.get(0));
             lines.add(line.toString());
         }

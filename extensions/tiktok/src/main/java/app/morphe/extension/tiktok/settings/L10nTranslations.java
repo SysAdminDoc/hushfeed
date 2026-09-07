@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1232);
+        Map<String, String> table = new HashMap<>(1236);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -798,6 +798,8 @@ public final class L10nTranslations {
     }
 
     private static void fillDe6(Map<String, String> table) {
+        table.put("One minute left",
+                "Noch eine Minute");
         table.put("One surface was checked and found everything it needed.",
                 "Eine Oberfläche wurde geprüft und hat alles gefunden, was sie braucht.");
         table.put("Only enable when recording logs to report an issue. Leaving it on for too long can make TikTok feel laggy and may lead to crashes.",
@@ -820,6 +822,8 @@ public final class L10nTranslations {
                 "Feed-Filter öffnen");
         table.put("Open profile and story website links in your system browser instead of TikTok's in-app browser.",
                 "Website-Links aus Profilen und Storys im Systembrowser öffnen statt in TikToks In-App-Browser.");
+        table.put("Open the feed anyway",
+                "Feed trotzdem öffnen");
         table.put("Open the profile again and try once more",
                 "Öffne das Profil erneut und versuche es noch einmal");
         table.put("Open the story again and try once more",
@@ -914,13 +918,13 @@ public final class L10nTranslations {
                 "Wiederherstellung fehlgeschlagen. Einige Einstellungen können noch geändert sein. Nutze „Rückgängig“, um sie wiederherzustellen.");
         table.put("Restore settings",
                 "Einstellungen wiederherstellen");
+    }
+
+    private static void fillDe7(Map<String, String> table) {
         table.put("Resume videos after scrolling",
                 "Videos nach dem Scrollen fortsetzen");
         table.put("Return after using a TikTok feature to see every gate read during the recording.",
                 "Komm nach dem Verwenden einer TikTok-Funktion zurück, um jeden Gate-Zugriff während der Aufzeichnung zu sehen.");
-    }
-
-    private static void fillDe7(Map<String, String> table) {
         table.put("SIM country preset",
                 "SIM-Ländervorgabe");
         table.put("SIM preset saved",
@@ -1037,13 +1041,13 @@ public final class L10nTranslations {
                 "Beim Ziehen der Fortschrittsleiste ein Vorschaubild des Videos anzeigen.");
         table.put("Show block button on videos",
                 "Blockieren-Schaltfläche auf Videos anzeigen");
+    }
+
+    private static void fillDe8(Map<String, String> table) {
         table.put("Show seekbar",
                 "Fortschrittsleiste anzeigen");
         table.put("Show seekbar thumbnail",
                 "Vorschaubild beim Ziehen");
-    }
-
-    private static void fillDe8(Map<String, String> table) {
         table.put("Show the country a video was posted from next to the creator's name.",
                 "Das Land, aus dem ein Video veröffentlicht wurde, neben dem Namen des Creators anzeigen.");
         table.put("Show the current spoken caption while the other controls are hidden.",
@@ -1134,12 +1138,12 @@ public final class L10nTranslations {
                 "Dieses Kreator-Muster ist zu lang und wurde übersprungen: %1$s");
         table.put("That creator pattern is too long to use: %1$s",
                 "Dieses Kreator-Muster ist zu lang: %1$s");
+        table.put("That is %1$d minutes today",
+                "Das sind %1$d Minuten heute");
         table.put("That is %1$d videos today",
                 "Das sind %1$d Videos heute");
         table.put("That is not an app name. Try something like com.example.downloader, or leave the box empty to keep saving in TikTok.",
                 "Das ist kein App-Name. Versuche etwas wie com.example.downloader, oder lass das Feld leer, damit weiter in TikTok gespeichert wird.");
-        table.put("That is the feed for today",
-                "Das war der Feed für heute");
         table.put("That settings change did not go through. Nothing was altered.",
                 "Diese Änderung hat nicht geklappt. Es wurde nichts geändert.");
         table.put("That sticker is in a format Hushfeed cannot read",
@@ -1160,13 +1164,13 @@ public final class L10nTranslations {
                 "Die Mindest- oder Höchstzahl, wie oft ein Video geteilt wurde, damit es gezeigt wird.");
         table.put("The minimum or maximum views of a video to show.",
                 "Die Mindest- oder Höchstzahl an Aufrufen, damit ein Video gezeigt wird.");
+    }
+
+    private static void fillDe9(Map<String, String> table) {
         table.put("The original photos aren't available, so TikTok's own save runs instead",
                 "Die Originalfotos sind nicht verfügbar, also speichert TikTok selbst");
         table.put("The profile picture couldn't be saved.",
                 "Das Profilbild konnte nicht gespeichert werden.");
-    }
-
-    private static void fillDe9(Map<String, String> table) {
         table.put("The report could not be saved.",
                 "Der Bericht konnte nicht gespeichert werden.");
         table.put("The settings backup was rejected. Nothing was altered.",
@@ -1283,13 +1287,13 @@ public final class L10nTranslations {
                 "Fensterbreite, ab der das Layout aktiv wird. Nach dem Ändern neu starten.");
         table.put("Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.",
                 "Den Ton des Videos daneben als .m4a speichern. Ab Android 10 wird Audio getrennt abgelegt, also landet die Datei unter Music im Ordner mit dem Namen deines Videoordners.");
+    }
+
+    private static void fillDe10(Map<String, String> table) {
         table.put("YOUR EXPERIENCE",
                 "DEIN ERLEBNIS");
         table.put("YTDLnis background mode",
                 "YTDLnis-Hintergrundmodus");
-    }
-
-    private static void fillDe10(Map<String, String> table) {
         table.put("YTDLnis download type",
                 "YTDLnis-Downloadtyp");
         table.put("Your operator's name, like T-Mobile.",
@@ -1325,7 +1329,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1232);
+        Map<String, String> table = new HashMap<>(1236);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2079,6 +2083,8 @@ public final class L10nTranslations {
     }
 
     private static void fillIn6(Map<String, String> table) {
+        table.put("One minute left",
+                "Satu menit lagi");
         table.put("One surface was checked and found everything it needed.",
                 "Satu permukaan diperiksa dan menemukan semua yang dibutuhkannya.");
         table.put("Only enable when recording logs to report an issue. Leaving it on for too long can make TikTok feel laggy and may lead to crashes.",
@@ -2101,6 +2107,8 @@ public final class L10nTranslations {
                 "Buka setelan filter feed");
         table.put("Open profile and story website links in your system browser instead of TikTok's in-app browser.",
                 "Buka tautan situs di profil dan Story lewat peramban sistemmu, bukan peramban dalam aplikasi TikTok.");
+        table.put("Open the feed anyway",
+                "Tetap buka feed");
         table.put("Open the profile again and try once more",
                 "Buka lagi profilnya dan coba sekali lagi");
         table.put("Open the story again and try once more",
@@ -2195,13 +2203,13 @@ public final class L10nTranslations {
                 "Pemulihan gagal. Beberapa pengaturan mungkin masih berubah. Gunakan Urungkan untuk memulihkannya.");
         table.put("Restore settings",
                 "Pulihkan pengaturan");
+    }
+
+    private static void fillIn7(Map<String, String> table) {
         table.put("Resume videos after scrolling",
                 "Lanjutkan video setelah menggulir");
         table.put("Return after using a TikTok feature to see every gate read during the recording.",
                 "Kembali ke sini setelah memakai fitur TikTok untuk melihat semua gate yang dibaca selama perekaman.");
-    }
-
-    private static void fillIn7(Map<String, String> table) {
         table.put("SIM country preset",
                 "Praset negara SIM");
         table.put("SIM preset saved",
@@ -2318,13 +2326,13 @@ public final class L10nTranslations {
                 "Tampilkan pratinjau video saat bilah progres digeser.");
         table.put("Show block button on videos",
                 "Tampilkan tombol blokir di video");
+    }
+
+    private static void fillIn8(Map<String, String> table) {
         table.put("Show seekbar",
                 "Tampilkan bilah progres");
         table.put("Show seekbar thumbnail",
                 "Tampilkan pratinjau video di bilah progres");
-    }
-
-    private static void fillIn8(Map<String, String> table) {
         table.put("Show the country a video was posted from next to the creator's name.",
                 "Tampilkan negara asal unggahan video di sebelah nama kreator.");
         table.put("Show the current spoken caption while the other controls are hidden.",
@@ -2415,12 +2423,12 @@ public final class L10nTranslations {
                 "Pola kreator itu terlalu panjang, jadi dilewati: %1$s");
         table.put("That creator pattern is too long to use: %1$s",
                 "Pola kreator itu terlalu panjang: %1$s");
+        table.put("That is %1$d minutes today",
+                "Itu %1$d menit hari ini");
         table.put("That is %1$d videos today",
                 "Itu %1$d video hari ini");
         table.put("That is not an app name. Try something like com.example.downloader, or leave the box empty to keep saving in TikTok.",
                 "Itu bukan nama aplikasi. Coba seperti com.example.downloader, atau kosongkan saja biar tetap disimpan di TikTok.");
-        table.put("That is the feed for today",
-                "Itu feed untuk hari ini");
         table.put("That settings change did not go through. Nothing was altered.",
                 "Perubahan itu tidak berhasil. Tidak ada yang diubah.");
         table.put("That sticker is in a format Hushfeed cannot read",
@@ -2441,13 +2449,13 @@ public final class L10nTranslations {
                 "Jumlah bagikan minimum atau maksimum agar video ditampilkan.");
         table.put("The minimum or maximum views of a video to show.",
                 "Jumlah tayangan minimum atau maksimum agar video ditampilkan.");
+    }
+
+    private static void fillIn9(Map<String, String> table) {
         table.put("The original photos aren't available, so TikTok's own save runs instead",
                 "Foto aslinya tidak tersedia, jadi TikTok yang menyimpannya");
         table.put("The profile picture couldn't be saved.",
                 "Foto profilnya tidak bisa disimpan.");
-    }
-
-    private static void fillIn9(Map<String, String> table) {
         table.put("The report could not be saved.",
                 "Laporannya tidak bisa disimpan.");
         table.put("The settings backup was rejected. Nothing was altered.",
@@ -2564,13 +2572,13 @@ public final class L10nTranslations {
                 "Lebar jendela yang dibutuhkan agar tata letak ini aktif. Mulai ulang setelah mengubahnya.");
         table.put("Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.",
                 "Simpan suara video di sebelahnya sebagai .m4a. Android 10 ke atas menyimpan audio secara terpisah, jadi berkasnya masuk ke Music dengan nama folder yang sama seperti folder videomu.");
+    }
+
+    private static void fillIn10(Map<String, String> table) {
         table.put("YOUR EXPERIENCE",
                 "PENGALAMANMU");
         table.put("YTDLnis background mode",
                 "Mode latar belakang YTDLnis");
-    }
-
-    private static void fillIn10(Map<String, String> table) {
         table.put("YTDLnis download type",
                 "Jenis unduhan YTDLnis");
         table.put("Your operator's name, like T-Mobile.",

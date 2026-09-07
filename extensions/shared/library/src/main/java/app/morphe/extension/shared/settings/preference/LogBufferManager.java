@@ -247,10 +247,15 @@ public final class LogBufferManager {
             }
         }
 
-        // Deliberately not part of this decision. A family exists from the first layout pass, so
-        // counting the table here would mean a report is never empty and "No matching Morphe
-        // diagnostics found" could never be said again.
-        if (crash.isEmpty() && npthCrash.isEmpty() && events.length() == 0) return "";
+        // A family exists from the first layout pass, so an all-bound table must not make a
+        // report non-empty: "No matching Morphe diagnostics found" would never be said again.
+        // A table with a miss in it is different. Those events are the oldest in the buffer and
+        // are the first evicted, so on a badly broken build the table is exactly what would be
+        // dropped, and it is the thing the report exists to carry.
+        boolean worthReporting = !crash.isEmpty() || !npthCrash.isEmpty() || events.length() > 0
+                || (hooks.length() > 0
+                        && app.morphe.extension.shared.diagnostics.HookStatus.anyMissing());
+        if (!worthReporting) return "";
 
         StringBuilder report = new StringBuilder();
         report.append("MORPHE DIAGNOSTIC REPORT\n")

@@ -608,7 +608,6 @@ The feed is open again	Feed terbuka lagi
 Less than a minute left	Kurang dari satu menit lagi
 %1$d minutes left	%1$d menit lagi
 %1$s left	%1$s lagi
-That is the feed for today	Itu feed untuk hari ini
 Messages, profiles and search still work.	Pesan, profil dan pencarian masih berfungsi.
 One surface was checked and found everything it needed.	Satu permukaan diperiksa dan menemukan semua yang dibutuhkannya.
 Something is missing from %1$s. Tap for the whole report.	Ada yang hilang dari %1$s. Ketuk untuk laporan lengkapnya.
@@ -617,3 +616,6 @@ Each surface, how many of the things it looks for are in this build, and how man
 %1$s to %2$s	%1$s sampai %2$s
 Enter a whole number, or one like 20K, 1.5M or 2B	Masukkan bilangan bulat, atau seperti 20K, 1.5M atau 2B
 The smallest value is above the largest	Nilai terkecil lebih besar daripada yang terbesar
+That is %1$d minutes today	Itu %1$d menit hari ini
+One minute left	Satu menit lagi
+Open the feed anyway	Tetap buka feed

@@ -42,9 +42,14 @@ public final class Reflect {
         HookStatus.missingMember(FAMILY, kind, type.getName(), name);
     }
 
+    /** The key both caches and the hook report use, built once per lookup. */
+    private static String key(Class<?> type, String name) {
+        return type.getName() + '#' + name;
+    }
+
     /** The no-argument method {@code name} on {@code type} or a superclass, or null. */
     public static Method method(Class<?> type, String name) {
-        String key = type.getName() + '#' + name;
+        String key = key(type, name);
         Object cached = METHODS.get(key);
         if (cached == null) {
             cached = MISSING;
@@ -104,7 +109,7 @@ public final class Reflect {
             noteMissing("method", target.getClass(), methodName);
             return null;
         }
-        HookStatus.bound(FAMILY, "method " + target.getClass().getName() + "#" + methodName);
+        HookStatus.bound(FAMILY, key(target.getClass(), methodName));
         try {
             return method.invoke(target);
         } catch (Exception ignored) {

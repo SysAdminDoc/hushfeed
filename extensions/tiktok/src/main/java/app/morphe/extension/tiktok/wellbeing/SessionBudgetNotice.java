@@ -5,34 +5,42 @@
 package app.morphe.extension.tiktok.wellbeing;
 
 import app.morphe.extension.shared.Utils;
-import app.morphe.extension.tiktok.blockauthor.BlockAuthorOverlay;
 import app.morphe.extension.tiktok.settings.L10n;
 import app.morphe.extension.tiktok.settings.Settings;
 
 /**
  * Says once that the day's budget has gone, and gets out of the way.
  *
- * <p>With no hold set there is nothing to argue with, so this is a toast. With one, it is the
- * banner the block button already uses, carrying an Undo that lifts the hold. A budget nobody
- * can overrule is a budget people switch off instead, and someone who decides they want another
- * ten minutes should not have to go through settings to get them.
+ * <p>With no hold set there is nothing to argue with, so this is a toast and that is the end of
+ * it. With a hold, the overlay is what carries the message and the way out of it: a banner would
+ * be drawn under the panel, which covers the whole content root and swallows the touch, so the
+ * Undo has to live on the panel itself.
  */
 public final class SessionBudgetNotice {
     private SessionBudgetNotice() {
     }
 
     public static void show() {
-        String message = L10n.f("That is %1$d videos today", SessionBudget.videosSeen());
-        if (Settings.SESSION_BUDGET_LOCK_MINUTES.get() <= 0) {
-            Utils.showToastShort(message);
+        if (Settings.SESSION_BUDGET_LOCK_MINUTES.get() > 0) {
+            SessionLockOverlay.ensureRunning();
             return;
         }
+        Utils.showToastShort(spentMessage());
+    }
 
-        BlockAuthorOverlay.showUndoBanner(message, () -> {
-            SessionBudget.releaseLock();
-            SessionLockOverlay.sync();
-            Utils.showToastShort(L10n.t("The feed is open again"));
-        });
-        SessionLockOverlay.ensureRunning();
+    /** What the day came to, in whichever budget ran out. */
+    static String spentMessage() {
+        int minuteBudget = Settings.SESSION_BUDGET_MINUTES.get();
+        long watchedMinutes = SessionBudget.watchedMs() / 60_000L;
+        // Both can be set; whichever is over is the one worth naming, and the videos come first
+        // because that is the number a reader recognises.
+        int videoBudget = Settings.SESSION_BUDGET_VIDEOS.get();
+        if (videoBudget > 0 && SessionBudget.videosSeen() >= videoBudget) {
+            return L10n.f("That is %1$d videos today", SessionBudget.videosSeen());
+        }
+        if (minuteBudget > 0 && watchedMinutes >= minuteBudget) {
+            return L10n.f("That is %1$d minutes today", watchedMinutes);
+        }
+        return L10n.f("That is %1$d videos today", SessionBudget.videosSeen());
     }
 }

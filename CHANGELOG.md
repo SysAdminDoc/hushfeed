@@ -1,5 +1,13 @@
 ## 0.21.0 (2026-09-07)
 
+* The daily feed budget no longer costs anything when it is switched off, which is how it ships. It counted and wrote to storage on every player report whether or not a budget was set, several times a second. Nothing is counted now until a number goes in, the record is written on a background thread, and the watched time is committed in steps rather than on every report.
+
+* Moving the hour the day starts at, or crossing a timezone, no longer hands back a budget that has been spent. Raising a budget now also lifts a hold that was running under the old one, and a hold no longer charges you for the videos playing behind it.
+
+* The way out of a hold is on the hold itself. It was on a banner drawn underneath it, which meant it could be neither seen nor tapped.
+
+* The budget settings only appear where the hook that feeds them was applied. They used to show on any build with a Playback patch, take a number and count nothing.
+
 * The settings screens are checked at twice the text size and in a mirrored layout, on every page a reader opens rather than one of them, in both themes.
 
 * The five feed count filters take a number the way the feed writes it. Type 20K, 1.5M or 2B instead of counting zeroes, and the row reads the range back in the same form. Nothing is rounded: 1.234M is exactly 1234000, and anything the field cannot read is refused with a message rather than saved as a number nobody meant.

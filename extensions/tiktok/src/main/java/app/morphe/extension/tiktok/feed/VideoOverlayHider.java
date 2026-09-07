@@ -415,16 +415,23 @@ public final class VideoOverlayHider {
      * module's ids only exist once that module has loaded, so a miss for those is retried
      * rather than cached.
      */
+    /** The search module's ids live in their own package, so they are counted on their own. */
+    private static String overlayFamily(boolean searchModule) {
+        return searchModule ? "overlay (search)" : "overlay";
+    }
+
     private static int identifier(Activity activity, String packageName, String name) {
         boolean retryMissing = SEARCH_MODULE_PACKAGE.equals(packageName);
         int id = RESOURCE_IDS.resolve(
                 activity == null ? null : activity.getResources(), packageName, name, retryMissing);
         if (id != 0) {
-            HookStatus.bound("overlay", packageName + ':' + name);
+            // A family per package rather than a composed key: this runs on every layout pass,
+            // and the two id spaces can hand out the same two-character obfuscated name.
+            HookStatus.bound(overlayFamily(retryMissing), name);
             return id;
         }
         if (!retryMissing) {
-            HookStatus.missingViewId("overlay", packageName + ':' + name);
+            HookStatus.missingViewId(overlayFamily(false), name);
         }
         return id;
     }

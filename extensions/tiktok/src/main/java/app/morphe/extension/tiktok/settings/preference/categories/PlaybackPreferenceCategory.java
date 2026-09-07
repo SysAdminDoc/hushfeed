@@ -21,7 +21,8 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
 
     @Override public boolean getSettingsStatus() {
         return SettingsStatus.playbackQualityEnabled || SettingsStatus.playbackSpeedEnabled
-                || SettingsStatus.autoAdvanceEnabled || SettingsStatus.videoFitEnabled;
+                || SettingsStatus.autoAdvanceEnabled || SettingsStatus.videoFitEnabled
+                || SettingsStatus.blockAuthorEnabled;
     }
 
     @Override public void addPreferences(Context context) {
@@ -36,6 +37,9 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
                             + "recreated and stays stopped across backgrounding until it is recreated "
                             + "or the limit changes.", Settings.AUTO_ADVANCE_LIMIT, "video", "videos"));
         }
+        // The counting hangs off the hook that tracks which video is on screen, which the
+        // block author patch installs. Without it these would take a number and count nothing.
+        if (SettingsStatus.blockAuthorEnabled) {
         addPreference(new NumberInputPreference(context, "Daily video budget",
                 "Zero switches this off. Count every video that comes up in the feed, however you "
                         + "got to it, and say so once the count is reached. This is separate from "
@@ -54,6 +58,7 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
                 "The hour both budgets reset, on a 24 hour clock. Four in the morning by default, "
                         + "because someone still scrolling at one is having last night.",
                 Settings.SESSION_BUDGET_RESET_HOUR, "o'clock", "o'clock"));
+        }
 
         if (SettingsStatus.playbackSpeedEnabled) {
             addPreference(new TogglePreference(context, "Use a default playback speed",

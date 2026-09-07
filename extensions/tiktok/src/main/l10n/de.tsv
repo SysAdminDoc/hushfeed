@@ -608,7 +608,6 @@ The feed is open again	Der Feed ist wieder offen
 Less than a minute left	Weniger als eine Minute übrig
 %1$d minutes left	Noch %1$d Minuten
 %1$s left	Noch %1$s
-That is the feed for today	Das war der Feed für heute
 Messages, profiles and search still work.	Nachrichten, Profile und die Suche funktionieren weiterhin.
 One surface was checked and found everything it needed.	Eine Oberfläche wurde geprüft und hat alles gefunden, was sie braucht.
 Something is missing from %1$s. Tap for the whole report.	Bei %1$s fehlt etwas. Tippe für den vollständigen Bericht.
@@ -617,3 +616,6 @@ Each surface, how many of the things it looks for are in this build, and how man
 %1$s to %2$s	%1$s bis %2$s
 Enter a whole number, or one like 20K, 1.5M or 2B	Gib eine ganze Zahl ein, oder eine wie 20K, 1.5M oder 2B
 The smallest value is above the largest	Der kleinste Wert liegt über dem größten
+That is %1$d minutes today	Das sind %1$d Minuten heute
+One minute left	Noch eine Minute
+Open the feed anyway	Feed trotzdem öffnen

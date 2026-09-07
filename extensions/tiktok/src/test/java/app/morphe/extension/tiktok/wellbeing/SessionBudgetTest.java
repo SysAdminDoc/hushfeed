@@ -30,8 +30,11 @@ import org.robolectric.annotation.Config;
 public class SessionBudgetTest {
     private final AtomicLong now = new AtomicLong();
 
-    @Before public void setUp() {
+    @Before public void setUp() throws Exception {
         Utils.setContext(RuntimeEnvironment.getApplication());
+        // The record is written on its own thread, so the previous case's write has to land
+        // before the store is cleared or it comes back as this case's starting state.
+        SessionBudget.awaitWritesForTests();
         Settings.SESSION_BUDGET_VIDEOS.resetToDefault();
         Settings.SESSION_BUDGET_MINUTES.resetToDefault();
         Settings.SESSION_BUDGET_LOCK_MINUTES.resetToDefault();
@@ -43,13 +46,15 @@ public class SessionBudgetTest {
         SessionBudget.resetForTests();
     }
 
-    @After public void tearDown() {
+    @After public void tearDown() throws Exception {
         SessionBudget.setClockForTests(null);
+        SessionBudget.awaitWritesForTests();
         SessionBudget.resetForTests();
         Settings.SESSION_BUDGET_STATE.resetToDefault();
     }
 
     @Test public void everyDifferentVideoCountsOnce() {
+        Settings.SESSION_BUDGET_VIDEOS.save(100);
         SessionBudget.noteVideo("a");
         SessionBudget.noteVideo("a");
         SessionBudget.noteVideo("b");
@@ -62,6 +67,7 @@ public class SessionBudgetTest {
     @Test public void aVideoComeBackToCountsAgain() {
         // Scrolling away and back is watching it again, and it is only the immediate repeat
         // from the player that must not count twice.
+        Settings.SESSION_BUDGET_VIDEOS.save(100);
         SessionBudget.noteVideo("a");
         SessionBudget.noteVideo("b");
         SessionBudget.noteVideo("a");
@@ -69,11 +75,22 @@ public class SessionBudgetTest {
         assertEquals(3, SessionBudget.videosSeen());
     }
 
-    @Test public void nothingIsABudgetUntilOneIsSet() {
+    @Test public void nothingIsCountedUntilABudgetIsSet() {
+        // Not just "no limit reached": nothing is counted and nothing is written. The player
+        // reports several times a second and the settings store commits synchronously, so
+        // counting for someone who never asked for this is thousands of blocking writes an hour.
         for (int video = 0; video < 50; video++) SessionBudget.noteVideo("v" + video);
+        for (int tick = 0; tick < 50; tick++) {
+            now.addAndGet(1_000L);
+            SessionBudget.noteWatching();
+        }
 
+        assertEquals("a video was counted with no budget set", 0, SessionBudget.videosSeen());
+        assertEquals("time was counted with no budget set", 0, SessionBudget.watchedMs());
         assertFalse("a budget nobody set stopped the feed", SessionBudget.reachedLimit());
         assertFalse(SessionBudget.claimNotice());
+        assertEquals("a record was written with nothing to record", "",
+                Settings.SESSION_BUDGET_STATE.get());
     }
 
     @Test public void theVideoBudgetIsReachedOnTheVideoThatReachesIt() {
@@ -129,6 +146,7 @@ public class SessionBudgetTest {
     }
 
     @Test public void timeTheAppSpentAwayIsNotWatching() {
+        Settings.SESSION_BUDGET_MINUTES.save(60);
         SessionBudget.noteWatching();
         now.addAndGet(1_000L);
         SessionBudget.noteWatching();
@@ -142,6 +160,7 @@ public class SessionBudgetTest {
     }
 
     @Test public void theCountsResetAtTheChosenHourAndNotAtMidnight() {
+        Settings.SESSION_BUDGET_VIDEOS.save(100);
         Settings.SESSION_BUDGET_RESET_HOUR.save(4);
         now.set(at(2026, Calendar.SEPTEMBER, 7, 23, 30));
         SessionBudget.resetForTests();
@@ -159,6 +178,7 @@ public class SessionBudgetTest {
     }
 
     @Test public void aDifferentChosenHourMovesTheBoundary() {
+        Settings.SESSION_BUDGET_VIDEOS.save(100);
         Settings.SESSION_BUDGET_RESET_HOUR.save(9);
         now.set(at(2026, Calendar.SEPTEMBER, 7, 23, 30));
         SessionBudget.resetForTests();
@@ -211,7 +231,7 @@ public class SessionBudgetTest {
         assertFalse("the notice came back after the hold was lifted", SessionBudget.claimNotice());
     }
 
-    @Test public void theCountAndTheHoldSurviveTheProcessBeingKilled() {
+    @Test public void theCountAndTheHoldSurviveTheProcessBeingKilled() throws Exception {
         Settings.SESSION_BUDGET_VIDEOS.save(2);
         Settings.SESSION_BUDGET_LOCK_MINUTES.save(30);
         SessionBudget.noteVideo("a");
@@ -219,6 +239,7 @@ public class SessionBudgetTest {
         assertTrue(SessionBudget.claimNotice());
 
         // Everything in memory goes; only what reached the settings store comes back.
+        SessionBudget.awaitWritesForTests();
         SessionBudget.resetForTests();
 
         assertEquals(2, SessionBudget.videosSeen());
@@ -227,13 +248,14 @@ public class SessionBudgetTest {
         assertFalse("the notice came back after a restart", SessionBudget.claimNotice());
     }
 
-    @Test public void aRecordFromAnotherDayIsNotBelieved() {
+    @Test public void aRecordFromAnotherDayIsNotBelieved() throws Exception {
         Settings.SESSION_BUDGET_VIDEOS.save(2);
         Settings.SESSION_BUDGET_LOCK_MINUTES.save(30);
         SessionBudget.noteVideo("a");
         SessionBudget.noteVideo("b");
         SessionBudget.claimNotice();
 
+        SessionBudget.awaitWritesForTests();
         now.set(at(2026, Calendar.SEPTEMBER, 9, 12, 0));
         SessionBudget.resetForTests();
 
@@ -242,6 +264,7 @@ public class SessionBudgetTest {
     }
 
     @Test public void anUnreadableRecordIsDiscardedRatherThanCrashing() {
+        Settings.SESSION_BUDGET_VIDEOS.save(100);
         Settings.SESSION_BUDGET_STATE.save("this is not a session budget");
         SessionBudget.resetForTests();
 
@@ -257,19 +280,99 @@ public class SessionBudgetTest {
         // per-component controller. Wiring one to the other would stop the feed for someone who
         // never turned automatic advance on.
         Settings.AUTO_ADVANCE_LIMIT.save(1);
-        Settings.SESSION_BUDGET_VIDEOS.save(0);
+        Settings.SESSION_BUDGET_VIDEOS.save(5);
 
         SessionBudget.noteVideo("a");
         SessionBudget.noteVideo("b");
         SessionBudget.noteVideo("c");
 
-        assertFalse("the auto-advance limit stopped the feed", SessionBudget.reachedLimit());
+        assertFalse("the auto-advance limit of 1 stopped the feed", SessionBudget.reachedLimit());
         assertEquals(3, SessionBudget.videosSeen());
 
         Settings.SESSION_BUDGET_VIDEOS.save(3);
         assertTrue(SessionBudget.reachedLimit());
         assertEquals("the budget changed the auto-advance limit",
                 1, (int) Settings.AUTO_ADVANCE_LIMIT.get());
+    }
+
+    @Test public void movingTheDayBoundaryDoesNotHandBackASpentBudget() {
+        // Changing the reset hour, or crossing a timezone, can put the same moment on an earlier
+        // day. Treating that as a new day is a one-tap way out of the whole feature: the counts
+        // go to zero and any hold running is lifted.
+        Settings.SESSION_BUDGET_VIDEOS.save(2);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(60);
+        Settings.SESSION_BUDGET_RESET_HOUR.save(4);
+        now.set(at(2026, Calendar.SEPTEMBER, 7, 12, 0));
+        SessionBudget.resetForTests();
+        SessionBudget.noteVideo("a");
+        SessionBudget.noteVideo("b");
+        assertTrue(SessionBudget.claimNotice());
+        assertTrue(SessionBudget.isLocked());
+
+        // Noon is now before the start of the day, so the day computes one earlier.
+        Settings.SESSION_BUDGET_RESET_HOUR.save(13);
+
+        assertEquals("the day was handed back", 2, SessionBudget.videosSeen());
+        assertTrue("the hold was lifted by moving the boundary", SessionBudget.isLocked());
+        assertTrue(SessionBudget.reachedLimit());
+    }
+
+    @Test public void aRaisedBudgetLiftsTheHoldItStartedUnder() {
+        // A hold for a budget nobody is over any more is a screen covered for no reason the
+        // reader can see, and it would sit there for the rest of the hold.
+        Settings.SESSION_BUDGET_VIDEOS.save(2);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(30);
+        SessionBudget.noteVideo("a");
+        SessionBudget.noteVideo("b");
+        assertTrue(SessionBudget.claimNotice());
+        assertTrue(SessionBudget.isLocked());
+
+        Settings.SESSION_BUDGET_VIDEOS.save(10);
+
+        assertFalse(SessionBudget.claimNotice());
+        assertFalse("the hold outlived the budget that started it", SessionBudget.isLocked());
+    }
+
+    @Test public void watchingIsNotCountedWhileTheFeedIsHeld() {
+        // The player keeps reporting behind the overlay. Charging someone for a video they
+        // cannot see would empty tomorrow's budget on top of today's.
+        Settings.SESSION_BUDGET_VIDEOS.save(1);
+        Settings.SESSION_BUDGET_MINUTES.save(60);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(30);
+        SessionBudget.noteVideo("a");
+        assertTrue(SessionBudget.claimNotice());
+        assertTrue(SessionBudget.isLocked());
+
+        SessionBudget.noteWatching();
+        long before = SessionBudget.watchedMs();
+        for (int tick = 0; tick < 20; tick++) {
+            now.addAndGet(2_000L);
+            SessionBudget.noteWatching();
+        }
+
+        assertEquals("time behind the hold was counted", before, SessionBudget.watchedMs());
+    }
+
+    @Test public void theRecordIsNotRewrittenOnEveryPlayerReport() throws Exception {
+        // The settings store commits synchronously, and the player reports several times a
+        // second. A write per report is thousands of blocking writes an hour.
+        Settings.SESSION_BUDGET_MINUTES.save(60);
+        SessionBudget.noteWatching();
+        now.addAndGet(1_000L);
+        SessionBudget.noteWatching();
+        SessionBudget.awaitWritesForTests();
+
+        assertEquals("a second of watching was committed on its own", "",
+                Settings.SESSION_BUDGET_STATE.get());
+
+        // It is committed once enough of it has built up to be worth losing.
+        for (int tick = 0; tick < 40; tick++) {
+            now.addAndGet(1_000L);
+            SessionBudget.noteWatching();
+        }
+        SessionBudget.awaitWritesForTests();
+        assertTrue("half a minute of watching was never committed",
+                Settings.SESSION_BUDGET_STATE.get().contains("|"));
     }
 
     @Test public void nothingInTheBudgetCanDropAFeedItem() throws Exception {
