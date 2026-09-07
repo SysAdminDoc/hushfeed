@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Feature Gate Lab boundary tests now cover malformed persisted scalars, disabled profile imports, master and reset cycles, recorder enablement and concurrent observation limits. Translation retry state expires cleanly, and SIM preset matching keeps null current values and unsupported region fallbacks safe. Runtime coverage is 454 tests.
+
 * Deep feed and account checks now cover repeated response caching, late and final follow delivery, cached and offline fallback policy, hard-filter preservation, bounded probe rotation and malformed verdicts. Every supported account-write route keeps its challenge visible, and the 160-event diagnostics cap is reserved atomically when callbacks arrive together. Non-finite or malformed status codes remain unconfirmed. Runtime coverage is 446 tests.
 
 * Worker-backed settings and Feature Gate Lab tests now drain their owned executors before asserting, reset per-sandbox state before each case, and keep the region semantics check separate from the API ICU cross-check. Runtime coverage is 412 tests.

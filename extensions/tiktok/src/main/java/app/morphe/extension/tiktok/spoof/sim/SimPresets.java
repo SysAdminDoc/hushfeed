@@ -82,8 +82,12 @@ public class SimPresets {
     }
 
     public static boolean hasEmptyCurrentValues(String iso, String mccMnc, String operatorName) {
-        return iso.trim().isEmpty()
-                && mccMnc.trim().isEmpty()
-                && operatorName.trim().isEmpty();
+        return trimOrEmpty(iso).isEmpty()
+                && trimOrEmpty(mccMnc).isEmpty()
+                && trimOrEmpty(operatorName).isEmpty();
+    }
+
+    private static String trimOrEmpty(String value) {
+        return value == null ? "" : value.trim();
     }
 }

@@ -151,6 +151,19 @@ public class CommentBatchTranslatorTest {
         assertEquals(3, NativeManager.requests);
     }
 
+    @Test public void expiredLoadedAndVisibleBatchesCanBeRequestedAgain() throws Exception {
+        Anchor anchor = loadedAnchor("aid-expired", "cid-expired");
+        CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+        assertEquals(1, NativeManager.requests);
+        CommentBatchTranslator.onNativeBatchComplete(new Runner(new Object(), anchor.comment));
+
+        invokePrune(SystemClock.elapsedRealtime() + 61_000L);
+        assertEquals(0, loadedBatchCount());
+        Anchor reloaded = loadedAnchor("aid-expired-reloaded", "cid-expired-reloaded");
+        CommentBatchTranslator.registerCommentCell(new View(context), reloaded);
+        assertEquals(2, NativeManager.requests);
+    }
+
     @Test public void lateFailureCannotRemoveANewerRetryReservation() throws Exception {
         Anchor anchor = loadedAnchor("aid-race", "cid-race");
         NativeManager.blockFirst = true;
@@ -226,6 +239,15 @@ public class CommentBatchTranslatorTest {
         pendingField.setAccessible(true);
         synchronized (lock) {
             return ((Map<String, ?>) pendingField.get(null)).size();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static int loadedBatchCount() throws Exception {
+        Field field = CommentBatchTranslator.class.getDeclaredField("loadedBatches");
+        field.setAccessible(true);
+        synchronized (getTranslatorLock()) {
+            return ((Map<String, ?>) field.get(null)).size();
         }
     }
 

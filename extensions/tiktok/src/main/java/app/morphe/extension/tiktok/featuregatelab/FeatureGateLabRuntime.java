@@ -50,6 +50,7 @@ public final class FeatureGateLabRuntime {
         firstCallers.clear();
         originalValues.clear();
         structuredFailures.clear();
+        observedPlayerValues.clear();
     }
 
     public static boolean isTriggered(String manager, String key, String type) {
@@ -112,9 +113,12 @@ public final class FeatureGateLabRuntime {
         if (rule == null) {
             return original;
         }
-        boolean forced = Boolean.parseBoolean(rule.value);
+        Boolean forced = parseBoolean(rule.value);
+        if (forced == null) {
+            return original;
+        }
         markTriggered(rule, String.valueOf(original), String.valueOf(forced));
-        return forced;
+        return forced.booleanValue();
     }
 
     public static int overrideInt(String key, int original) {
@@ -519,15 +523,19 @@ public final class FeatureGateLabRuntime {
         try {
             switch (rule.type) {
                 case "BOOLEAN":
-                    return Boolean.parseBoolean(rule.value);
+                    return parseBoolean(rule.value);
                 case "INT":
                     return Integer.parseInt(rule.value);
                 case "LONG":
                     return Long.parseLong(rule.value);
-                case "FLOAT":
-                    return Float.parseFloat(rule.value);
-                case "DOUBLE":
-                    return Double.parseDouble(rule.value);
+                case "FLOAT": {
+                    float value = Float.parseFloat(rule.value);
+                    return Float.isFinite(value) ? value : null;
+                }
+                case "DOUBLE": {
+                    double value = Double.parseDouble(rule.value);
+                    return Double.isFinite(value) ? value : null;
+                }
                 case "STRING":
                     return rule.value;
                 default:
@@ -542,7 +550,7 @@ public final class FeatureGateLabRuntime {
         try {
             switch (rule.type) {
                 case "BOOLEAN":
-                    return Boolean.valueOf(rule.value);
+                    return parseBoolean(rule.value);
                 case "INT":
                     return Integer.valueOf(rule.value);
                 case "LONG":
@@ -577,6 +585,13 @@ public final class FeatureGateLabRuntime {
                     : null;
         }
         return parsed;
+    }
+
+    private static Boolean parseBoolean(String value) {
+        if (!"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value)) {
+            return null;
+        }
+        return Boolean.valueOf(value);
     }
 
     private static String scalarTypeOf(Object value) {

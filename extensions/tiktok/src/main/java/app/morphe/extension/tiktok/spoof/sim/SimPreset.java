@@ -31,15 +31,19 @@ public class SimPreset {
     }
 
     public boolean hasSameValues(String currentIso, String currentMccMnc, String currentOperatorName) {
-        return iso.equalsIgnoreCase(currentIso.trim())
-                && mccMnc.equals(currentMccMnc.trim())
-                && operatorName.equalsIgnoreCase(currentOperatorName.trim());
+        return iso.equalsIgnoreCase(trimOrEmpty(currentIso))
+                && mccMnc.equals(trimOrEmpty(currentMccMnc))
+                && operatorName.equalsIgnoreCase(trimOrEmpty(currentOperatorName));
     }
 
     public boolean isValid() {
-        return !country.trim().isEmpty()
-                && iso.matches("[a-z]{2}")
-                && mccMnc.matches("\\d{5,6}")
-                && !operatorName.trim().isEmpty();
+        return !trimOrEmpty(country).isEmpty()
+                && iso != null && iso.matches("[a-z]{2}")
+                && mccMnc != null && mccMnc.matches("\\d{5,6}")
+                && !trimOrEmpty(operatorName).isEmpty();
+    }
+
+    private static String trimOrEmpty(String value) {
+        return value == null ? "" : value.trim();
     }
 }

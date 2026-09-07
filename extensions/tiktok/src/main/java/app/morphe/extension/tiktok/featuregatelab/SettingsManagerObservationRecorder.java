@@ -25,6 +25,7 @@ final class SettingsManagerObservationRecorder {
     private static final int MAX_FIELDS = 128;
     private static final int MAX_STRING_LENGTH = 8192;
     private static final Object NO_DEFAULT = new Object();
+    private static final Object OBSERVATION_LOCK = new Object();
     private static final Map<String, Observation> OBSERVATIONS = new ConcurrentHashMap<>();
     private static final Map<String, Boolean> DEFAULT_WRAPPER_KEYS = new ConcurrentHashMap<>();
 
@@ -32,18 +33,27 @@ final class SettingsManagerObservationRecorder {
     }
 
     static void clear() {
-        OBSERVATIONS.clear();
-        DEFAULT_WRAPPER_KEYS.clear();
+        synchronized (OBSERVATION_LOCK) {
+            OBSERVATIONS.clear();
+            DEFAULT_WRAPPER_KEYS.clear();
+        }
     }
 
     /** Observations are immutable serialized values and exist only for this process. */
     static Runnable checkpoint() {
-        var observations = new java.util.HashMap<>(OBSERVATIONS);
-        var wrappers = new java.util.HashMap<>(DEFAULT_WRAPPER_KEYS);
+        java.util.Map<String, Observation> observations;
+        java.util.Map<String, Boolean> wrappers;
+        synchronized (OBSERVATION_LOCK) {
+            observations = new java.util.HashMap<>(OBSERVATIONS);
+            wrappers = new java.util.HashMap<>(DEFAULT_WRAPPER_KEYS);
+        }
         return () -> {
-            clear();
-            OBSERVATIONS.putAll(observations);
-            DEFAULT_WRAPPER_KEYS.putAll(wrappers);
+            synchronized (OBSERVATION_LOCK) {
+                OBSERVATIONS.clear();
+                DEFAULT_WRAPPER_KEYS.clear();
+                OBSERVATIONS.putAll(observations);
+                DEFAULT_WRAPPER_KEYS.putAll(wrappers);
+            }
         };
     }
 
@@ -51,7 +61,13 @@ final class SettingsManagerObservationRecorder {
         FeatureGateLearnMode.observe(FeatureGateLabStore.MANAGER_SETTINGS_MANAGER, key,
                 (requestedClass == null ? "unknown" : requestedClass.getName())
                         + "(Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Object;", returnedValue);
-        if (key != null && (DEFAULT_WRAPPER_KEYS.containsKey(key) || calledFromDefaultWrapper())) {
+        boolean wrapped = false;
+        if (key != null) {
+            synchronized (OBSERVATION_LOCK) {
+                wrapped = DEFAULT_WRAPPER_KEYS.containsKey(key);
+            }
+        }
+        if (key != null && (wrapped || calledFromDefaultWrapper())) {
             return returnedValue;
         }
         record(
@@ -73,7 +89,9 @@ final class SettingsManagerObservationRecorder {
             Object returnedValue
     ) {
         if (key != null) {
-            DEFAULT_WRAPPER_KEYS.put(key, Boolean.TRUE);
+            synchronized (OBSERVATION_LOCK) {
+                DEFAULT_WRAPPER_KEYS.put(key, Boolean.TRUE);
+            }
         }
         record(
                 FeatureGateLabStore.MANAGER_SETTINGS_MANAGER,
@@ -107,7 +125,10 @@ final class SettingsManagerObservationRecorder {
     }
 
     static JSONArray exportJson() {
-        List<Observation> snapshot = new ArrayList<>(OBSERVATIONS.values());
+        List<Observation> snapshot;
+        synchronized (OBSERVATION_LOCK) {
+            snapshot = new ArrayList<>(OBSERVATIONS.values());
+        }
         Collections.sort(snapshot, (left, right) -> left.key.compareTo(right.key));
         JSONArray result = new JSONArray();
         for (Observation observation : snapshot) {
@@ -117,7 +138,9 @@ final class SettingsManagerObservationRecorder {
     }
 
     static int size() {
-        return OBSERVATIONS.size();
+        synchronized (OBSERVATION_LOCK) {
+            return OBSERVATIONS.size();
+        }
     }
 
     static String serializeText(Object value) {
@@ -154,20 +177,22 @@ final class SettingsManagerObservationRecorder {
         }
         String identity = manager + "\n" + key + "\n"
                 + requestedClass.getName() + "\n" + methodDescriptor;
-        if (OBSERVATIONS.containsKey(identity) || OBSERVATIONS.size() >= MAX_OBSERVATIONS) {
-            return;
+        synchronized (OBSERVATION_LOCK) {
+            if (OBSERVATIONS.containsKey(identity) || OBSERVATIONS.size() >= MAX_OBSERVATIONS) {
+                return;
+            }
+            Observation observation = new Observation(
+                    manager,
+                    sourceType,
+                    key,
+                    requestedClass,
+                    defaultValue,
+                    returnedValue,
+                    methodDescriptor,
+                    captureCaller()
+            );
+            OBSERVATIONS.put(identity, observation);
         }
-        Observation observation = new Observation(
-                manager,
-                sourceType,
-                key,
-                requestedClass,
-                defaultValue,
-                returnedValue,
-                methodDescriptor,
-                captureCaller()
-        );
-        OBSERVATIONS.putIfAbsent(identity, observation);
     }
 
     private static String captureCaller() {

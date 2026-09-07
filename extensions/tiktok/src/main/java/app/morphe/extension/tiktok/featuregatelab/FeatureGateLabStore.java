@@ -52,6 +52,7 @@ public final class FeatureGateLabStore {
         if (prefs != null) {
             prefs.edit().putBoolean(MASTER_KEY, enabled).apply();
         }
+        FeatureGateLabRuntime.clearTriggered();
         FeatureGateLabRuntime.reloadRules();
         FeatureGateLabSession.markRestartNeeded();
     }

@@ -24,7 +24,14 @@ public final class FeatureGateLearnMode {
     private FeatureGateLearnMode() {}
 
     static synchronized void observe(String manager, String key, String type, Object value) {
-        if (!SettingsStatus.featureGateRecorderEnabled || key == null || key.isEmpty()) return;
+        if (!SettingsStatus.featureGateRecorderEnabled) {
+            recording = false;
+            baseline.clear();
+            reads.clear();
+            dropped = 0;
+            return;
+        }
+        if (key == null || key.isEmpty()) return;
         String identity = manager + "\n" + key + "\n" + type;
         if (!latest.containsKey(identity) && latest.size() >= LIMIT) {
             // A full baseline must not prevent a new gate appearing in the current recording.
@@ -49,6 +56,13 @@ public final class FeatureGateLearnMode {
     }
 
     public static synchronized void begin() {
+        if (!SettingsStatus.featureGateRecorderEnabled) {
+            recording = false;
+            baseline.clear();
+            reads.clear();
+            dropped = 0;
+            return;
+        }
         baseline = new LinkedHashMap<>(latest);
         reads.clear();
         dropped = 0;
