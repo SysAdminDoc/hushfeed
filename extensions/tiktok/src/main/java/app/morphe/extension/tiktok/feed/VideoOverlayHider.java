@@ -66,12 +66,14 @@ public final class VideoOverlayHider {
     /** The row under each rail button holding its count, without the button itself. */
     private static final String[] RAIL_COUNT_IDS = {"fwu", "ecq", "ht9", "v5x"};
     private static final String[] RAIL_BUTTON_IDS = {"hvo", "fws", "ehl", "hu9", "p2l", "v9o"};
+    private static final int TRAVERSAL_TARGET_COUNT = 5 + RAIL_BUTTON_IDS.length + RAIL_COUNT_IDS.length;
 
     private static final int LEGACY_STATUS_BAR_FLAGS = View.SYSTEM_UI_FLAG_FULLSCREEN
             | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
             | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 
     private static final ResourceIdCache RESOURCE_IDS = new ResourceIdCache();
+    private static final TraversalScratch TRAVERSAL = new TraversalScratch(TRAVERSAL_TARGET_COUNT);
 
     /**
      * Views this class hid, with the visibility each had before, so turning a switch back
@@ -169,17 +171,18 @@ public final class VideoOverlayHider {
             // the mode. The persisted setting cannot be used here: the automatic path never
             // writes it, so it would answer false for exactly the case this is meant to fix.
             boolean tabStrip = RememberClearDisplayPatch.isClearDisplayNow();
-            boolean[] rail = railButtonsWanted();
-            boolean anyRail = Settings.HIDE_RAIL_COUNTS.get();
+            boolean counts = Settings.HIDE_RAIL_COUNTS.get();
+            boolean[] rail = TRAVERSAL.rail;
+            updateRailButtonsWanted(rail);
+            boolean anyRail = counts;
             for (boolean one : rail) {
                 anyRail |= one;
             }
             if (caption || music || actionBar || surveys || tabStrip || anyRail
                     || !HIDDEN_HERE.isEmpty()) {
                 ViewGroup root = activity.findViewById(android.R.id.content);
-                boolean counts = Settings.HIDE_RAIL_COUNTS.get();
-                int[] ids = new int[5 + RAIL_BUTTON_IDS.length + RAIL_COUNT_IDS.length];
-                boolean[] hidden = new boolean[ids.length];
+                int[] ids = TRAVERSAL.ids;
+                boolean[] hidden = TRAVERSAL.hidden;
                 ids[0] = identifier(activity, APP_PACKAGE, CAPTION_ID);
                 ids[1] = identifier(activity, APP_PACKAGE, MUSIC_ID);
                 ids[2] = identifier(activity, APP_PACKAGE, ACTION_BAR_ID);
@@ -200,10 +203,20 @@ public final class VideoOverlayHider {
                     hidden[countsAt + i] = counts;
                 }
 
-                List<List<View>> found = viewsWithIds(root, ids);
-                for (int i = 0; i < ids.length; i++) {
-                    for (View view : found.get(i)) {
-                        setHidden(view, hidden[i]);
+                List<List<View>> found = TRAVERSAL.found;
+                for (List<View> views : found) {
+                    views.clear();
+                }
+                try {
+                    collect(root, ids, found);
+                    for (int i = 0; i < ids.length; i++) {
+                        for (View view : found.get(i)) {
+                            setHidden(view, hidden[i]);
+                        }
+                    }
+                } finally {
+                    for (List<View> views : found) {
+                        views.clear();
                     }
                 }
             }
@@ -216,14 +229,18 @@ public final class VideoOverlayHider {
 
     /** One flag per button in {@link #RAIL_BUTTON_IDS}, in the same order. */
     static boolean[] railButtonsWanted() {
-        return new boolean[]{
-                Settings.HIDE_RAIL_FOLLOW.get(),
-                Settings.HIDE_RAIL_LIKE.get(),
-                Settings.HIDE_RAIL_COMMENTS.get(),
-                Settings.HIDE_RAIL_FAVOURITE.get(),
-                Settings.HIDE_RAIL_MUSIC.get(),
-                Settings.HIDE_RAIL_SHARE.get(),
-        };
+        boolean[] rail = new boolean[RAIL_BUTTON_IDS.length];
+        updateRailButtonsWanted(rail);
+        return rail;
+    }
+
+    private static void updateRailButtonsWanted(boolean[] rail) {
+        rail[0] = Settings.HIDE_RAIL_FOLLOW.get();
+        rail[1] = Settings.HIDE_RAIL_LIKE.get();
+        rail[2] = Settings.HIDE_RAIL_COMMENTS.get();
+        rail[3] = Settings.HIDE_RAIL_FAVOURITE.get();
+        rail[4] = Settings.HIDE_RAIL_MUSIC.get();
+        rail[5] = Settings.HIDE_RAIL_SHARE.get();
     }
 
     private static void hide(Activity activity, String packageName, String name) {
@@ -274,6 +291,23 @@ public final class VideoOverlayHider {
             ViewGroup group = (ViewGroup) view;
             for (int i = 0, count = group.getChildCount(); i < count; i++) {
                 collect(group.getChildAt(i), ids, found);
+            }
+        }
+    }
+
+    private static final class TraversalScratch {
+        final int[] ids;
+        final boolean[] hidden;
+        final boolean[] rail;
+        final List<List<View>> found;
+
+        TraversalScratch(int targetCount) {
+            ids = new int[targetCount];
+            hidden = new boolean[targetCount];
+            rail = new boolean[RAIL_BUTTON_IDS.length];
+            found = new ArrayList<>(targetCount);
+            for (int i = 0; i < targetCount; i++) {
+                found.add(new ArrayList<>());
             }
         }
     }
