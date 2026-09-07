@@ -503,6 +503,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     !Settings.BLOCKED_CREATORS.get().trim().isEmpty(),
                     !Settings.LOCAL_HIDDEN_CREATORS.get().trim().isEmpty(),
                     Settings.MAX_VIDEO_SECONDS.get() > 0,
+                    Settings.MAX_PUBLICATION_AGE_DAYS.get() > 0,
                     Settings.MAX_VIEWS_PER_LIKE.get() > 0,
                     Settings.HIDE_PROMOTIONAL_MUSIC.get(),
                     Settings.HIDE_LIVE_REPLAYS.get(),

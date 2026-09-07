@@ -43,6 +43,7 @@ public final class FeedItemsFilter {
         new AdvancedFeedRules.PromotionalMusicFilter(),
         new AdvancedFeedRules.LiveReplayFilter(),
         new RegionFilter(),
+        new AdvancedFeedRules.PublicationAgeFilter(),
         new AdvancedFeedRules.QualityFilter()
     );
     private static final List<IFilter> RANGE_FILTERS = List.of(

@@ -71,6 +71,8 @@ public class Settings extends BaseSettings {
     public static final StringSetting REGION_NEVER_FROM = new StringSetting("region_never_from", "", true);
     public static final IntegerSetting MAX_VIDEO_SECONDS =
             new IntegerSetting("max_video_seconds", 0).withRange(0, 86400);
+    public static final IntegerSetting MAX_PUBLICATION_AGE_DAYS =
+            new IntegerSetting("max_publication_age_days", 0).withRange(0, 3650);
     public static final IntegerSetting MAX_VIEWS_PER_LIKE =
             new IntegerSetting("max_views_per_like", 0).withRange(0, 1000000);
     public static final BooleanSetting HIDE_PROMOTIONAL_MUSIC = new BooleanSetting("hide_promotional_music", FALSE);

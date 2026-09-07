@@ -68,6 +68,44 @@ public final class AdvancedFeedRules {
         }
     }
 
+    /** Filters posts whose known publication time is older than the user's age limit. */
+    public static final class PublicationAgeFilter implements IFilter {
+        private static final long DAY_MS = 86_400_000L;
+
+        @Override
+        public boolean getEnabled() {
+            return Settings.MAX_PUBLICATION_AGE_DAYS.get() > 0;
+        }
+
+        @Override
+        public boolean getFiltered(Aweme item) {
+            Object raw = Reflect.property(item, "getCreateTime", "createTime");
+            return olderThan(publicationTimeMillis(raw), System.currentTimeMillis(),
+                    Settings.MAX_PUBLICATION_AGE_DAYS.get());
+        }
+
+        /** Converts TikTok seconds or milliseconds to milliseconds without overflowing. */
+        static long publicationTimeMillis(Object raw) {
+            if (!(raw instanceof Number)) return 0;
+            long timestamp = ((Number) raw).longValue();
+            if (timestamp <= 0) return 0;
+            if (timestamp < 100_000_000_000L) {
+                if (timestamp > Long.MAX_VALUE / 1000L) return Long.MAX_VALUE;
+                return timestamp * 1000L;
+            }
+            return timestamp;
+        }
+
+        /** Uses a strict cutoff so a post exactly at the chosen age remains visible. */
+        static boolean olderThan(long timestampMillis, long nowMillis, long ageDays) {
+            if (timestampMillis <= 0 || ageDays <= 0 || timestampMillis > nowMillis) return false;
+            long ageMillis = ageDays > Long.MAX_VALUE / DAY_MS
+                    ? Long.MAX_VALUE : ageDays * DAY_MS;
+            long cutoff = nowMillis < ageMillis ? Long.MIN_VALUE : nowMillis - ageMillis;
+            return timestampMillis < cutoff;
+        }
+    }
+
     /**
      * How many characters a single name may be read for, counting the re-reads backtracking
      * costs. The two sides are far apart, so the number between them is not delicate:
