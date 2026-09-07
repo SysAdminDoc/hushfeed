@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Release dependency resolution now disables `mavenLocal()` unless `-PallowMavenLocal=true` is supplied. The reviewed graph is recorded in Gradle verification metadata with SHA-256 checksums, and the existing wrapper, smali and Morphe patcher pins remain intact.
+
 * Comment translation checks the switch again before a delayed native call, reserves one request per loaded batch, retries failed completions and remembers only successful ones. Expiration uses elapsed time, so a device clock change cannot keep a stalled request suppressed.
 
 * Diagnostic file exports now build and publish on the shared worker pool. The save reports null streams and failed publication, returns the provider's actual destination, and uses unique app-document files on Android 9 and earlier so repeated reports remain available.

@@ -1,8 +1,13 @@
 rootProject.name = "hushfeed"
 
 pluginManagement {
+    val allowMavenLocal = providers.gradleProperty("allowMavenLocal")
+        .map(String::toBoolean)
+        .getOrElse(false)
     repositories {
-        mavenLocal()
+        // Local plugin artifacts are useful while developing the plugin, but they must never
+        // silently override the reviewed repositories used for a release build.
+        if (allowMavenLocal) mavenLocal()
         gradlePluginPortal()
         google()
         maven {
