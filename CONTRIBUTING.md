@@ -5,14 +5,25 @@ Feature ideas, bug reports, and pull requests are welcome.
 If you open an issue, include:
 
 - the TikTok package name and version
-- the patch or setting involved
-- what you expected to happen
-- what actually happened
+- the Morphe Manager version and Hushfeed bundle version
+- every selected patch, including the settings patch
+- the affected surface, such as Feed, Inbox, Comments or Downloads
+- the expected and actual behavior
+- ordered reproduction steps, including each Hushfeed setting changed before the first failure
 - logs or screenshots if the issue is visual or crash related
 
 Small focused pull requests are easier to test than large mixed changes.
 
 For patch changes, please include what APK version you tested against and what behavior you verified.
+
+Diagnostic tools can copy or save a redacted report. Attach that report instead of raw logcat
+when possible, and remove any private messages or account details from screenshots.
+
+Before publishing a release, run `scripts/validate-release-facts.ps1` after the runtime tests
+and patch list generation. It checks the generated version, target package, target version,
+patch count and test count against the README and `patches-bundle.json`. The local release
+helpers are `scripts/gen-l10n.py`, `scripts/verify-all-patches.ps1` and
+`scripts/measure-patch-heap.ps1`; the latter two need a Morphe desktop jar and a fixture APK.
 
 ## Source notices
 

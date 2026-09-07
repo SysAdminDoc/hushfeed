@@ -6,31 +6,91 @@ body:
   - type: markdown
     attributes:
       value: |
-        # TikTok patches for Morphe bug report
+        # Hushfeed bug report
 
         Before creating a new bug report, please keep the following in mind:
 
         - **Do not submit a duplicate bug report**: Search for existing bug reports [here](https://github.com/SysAdminDoc/hushfeed/issues?q=is%3Aissue%20label%3Abug).
         - **Review the contribution guidelines**: Make sure your bug report adheres to them. You can find the guidelines [here](https://github.com/SysAdminDoc/hushfeed/blob/main/CONTRIBUTING.md).
-  - type: textarea
+  - type: input
+    id: tiktok_version
     attributes:
-      label: Bug description
-      description: |
-        - Describe your bug in detail
-        - Add steps to reproduce the bug if possible (Step 1. ... Step 2. ...)
-        - Add images and videos if possible
+      label: TikTok package and version
+      description: Include the Android package name and the exact TikTok version.
+      placeholder: com.zhiliaoapp.musically 46.2.3
+    validations:
+      required: true
+  - type: input
+    id: host_versions
+    attributes:
+      label: Morphe Manager and Hushfeed versions
+      description: Include the Morphe Manager version and the Hushfeed bundle version.
+      placeholder: Morphe Manager 1.0.0, Hushfeed 0.19.0
     validations:
       required: true
   - type: textarea
+    id: selected_patches
+    attributes:
+      label: Selected patches
+      description: List the selected Hushfeed patches, including Settings and Diagnostic tools when enabled.
+      placeholder: |
+        Settings
+        Comment tools
+        Translate comments
+    validations:
+      required: true
+  - type: dropdown
+    id: affected_surface
+    attributes:
+      label: Affected surface
+      description: Choose where the behavior appeared.
+      options:
+        - Feed
+        - Following
+        - Search
+        - Inbox
+        - Profile
+        - Comments
+        - Downloads
+        - Settings
+        - Notifications
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: bug_description
+    attributes:
+      label: Bug description
+      description: |
+        Describe what happened, what you expected, and whether the behavior is repeatable.
+        Add images or videos when they help explain the result.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Ordered reproduction and settings changes
+      description: List each step in order. Include every Hushfeed setting changed before the first failure, app restarts, and whether the same steps work on a clean install.
+      placeholder: |
+        1. Enabled ...
+        2. Changed ...
+        3. Opened ...
+        4. Saw ...
+    validations:
+      required: true
+  - type: textarea
+    id: error_logs
     attributes:
       label: Error logs
-      description: Exceptions can be captured by running `logcat | grep AndroidRuntime` in a shell.
+      description: Attach the redacted Hushfeed diagnostic export when possible. Do not paste tokens, cookies, signed URLs, or private messages.
       render: shell
   - type: textarea
+    id: solution
     attributes:
       label: Solution
       description: If applicable, add a possible solution to the bug.
   - type: textarea
+    id: additional_context
     attributes:
       label: Additional context
       description: Add additional context here.
