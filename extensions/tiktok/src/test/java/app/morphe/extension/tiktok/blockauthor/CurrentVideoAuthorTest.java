@@ -8,6 +8,8 @@ import android.preference.PreferenceActivity;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -22,6 +24,14 @@ import org.robolectric.annotation.Config;
 @Config(sdk = 28)
 public class CurrentVideoAuthorTest {
     public static final class TestActivity extends PreferenceActivity {}
+
+    @Before public void setUp() {
+        CurrentVideoAuthor.resetForTests();
+    }
+
+    @After public void tearDown() {
+        CurrentVideoAuthor.resetForTests();
+    }
 
     /** Stands in for VideoItemParams. */
     public static final class Params {

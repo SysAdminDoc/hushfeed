@@ -8,6 +8,7 @@ import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.categories.InterfacePreferenceCategory;
 import org.junit.Test;
+import org.junit.After;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
@@ -18,6 +19,9 @@ import org.robolectric.annotation.GraphicsMode;
 @Config(sdk = 28)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class ScreenCaptureTest {
+    @After public void tearDown() {
+        SettingsStatus.screenCaptureEnabled = false;
+    }
     private static final int SECURE = WindowManager.LayoutParams.FLAG_SECURE;
     private static final int KEEP = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
     @Test public void disabledPassesFlagsThroughAndEnabledRemovesOnlySecure() {

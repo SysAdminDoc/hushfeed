@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.After;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
@@ -23,6 +24,9 @@ import org.robolectric.annotation.GraphicsMode;
 @Config(sdk = 28)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class AutomaticClearDisplayTest {
+    @After public void tearDown() {
+        SettingsStatus.automaticClearDisplayEnabled = false;
+    }
     public static class Event {
         public boolean LIZ;
         public int LIZIZ;

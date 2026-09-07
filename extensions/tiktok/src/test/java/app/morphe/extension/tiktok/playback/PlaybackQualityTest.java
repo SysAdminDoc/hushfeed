@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import org.json.JSONObject;
 import org.junit.Test;
+import org.junit.After;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
@@ -23,6 +24,9 @@ import org.robolectric.annotation.GraphicsMode;
 @Config(sdk = 28)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class PlaybackQualityTest {
+    @After public void tearDown() {
+        SettingsStatus.playbackQualityEnabled = false;
+    }
     private static Map<String, Object> stream(String name, int width, int height, int rate) {
         return Map.of("gear_name", name, "vwidth", width, "vheight", height, "bitrate", rate,
                 "main_url", "https://example.com/" + name, "audio_file_id", "sound");

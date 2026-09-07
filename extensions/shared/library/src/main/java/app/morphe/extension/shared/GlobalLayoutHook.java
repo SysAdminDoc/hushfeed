@@ -14,6 +14,7 @@ public final class GlobalLayoutHook {
     /** Installs the callback once for a root, replacing a callback owned by an older root. */
     public synchronized boolean install(ViewGroup nextRoot, Runnable callback) {
         if (nextRoot == null || callback == null) {
+            detach();
             return false;
         }
         if (root.get() == nextRoot && listener != null && observer != null && observer.isAlive()) {

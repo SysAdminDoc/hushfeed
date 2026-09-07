@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import org.junit.Test;
+import org.junit.After;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
@@ -32,6 +33,10 @@ import org.robolectric.annotation.GraphicsMode;
 @Config(sdk = 28)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class SubtitleDownloadsTest {
+    @After public void tearDown() {
+        SettingsStatus.subtitleToolsEnabled = false;
+        SettingsStatus.advancedDownloadsEnabled = false;
+    }
     public static final class Track {
         public String languageCode, languageName, format, url;
         public boolean isOriginalCaption;

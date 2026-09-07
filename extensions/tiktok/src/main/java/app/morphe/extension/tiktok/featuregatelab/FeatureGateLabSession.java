@@ -17,6 +17,11 @@ public final class FeatureGateLabSession {
         noticeShown = false;
     }
 
+    static void resetForTests() {
+        restartNeeded = false;
+        noticeShown = false;
+    }
+
     public static void markRestartNeeded() {
         restartNeeded = true;
     }

@@ -10,6 +10,7 @@ import app.morphe.extension.tiktok.settings.preference.TikTokPreferenceFragment;
 import com.ss.android.ugc.aweme.feed.model.Aweme;
 import java.util.List;
 import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -30,6 +31,10 @@ public class PlaybackSpeedTest {
         Settings.CUSTOM_SPEEDS.save("");
         Settings.REMEMBERED_SPEED.save(1f);
         PlaybackSpeedPatch.beginVideo(null);
+    }
+    @After public void tearDown() {
+        SettingsStatus.playbackSpeedEnabled = false;
+        SettingsStatus.playbackQualityEnabled = false;
     }
     @Test public void manualChoiceSurvivesRepeatedFramesUntilTheVideoChanges() {
         Aweme a = video("a"), b = video("b");

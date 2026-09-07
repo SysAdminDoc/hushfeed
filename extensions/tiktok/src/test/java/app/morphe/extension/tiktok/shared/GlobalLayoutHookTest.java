@@ -42,4 +42,16 @@ public class GlobalLayoutHookTest {
         second.getViewTreeObserver().dispatchOnGlobalLayout();
         assertEquals(2, calls.get());
     }
+
+    @Test public void invalidInstallDetachesTheExistingListener() {
+        Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
+        FrameLayout root = new FrameLayout(activity);
+        AtomicInteger calls = new AtomicInteger();
+        GlobalLayoutHook hook = new GlobalLayoutHook();
+
+        assertTrue(hook.install(root, calls::incrementAndGet));
+        assertFalse(hook.install(null, calls::incrementAndGet));
+        root.getViewTreeObserver().dispatchOnGlobalLayout();
+        assertEquals(0, calls.get());
+    }
 }

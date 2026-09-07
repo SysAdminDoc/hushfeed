@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 
 public final class FeatureGateCatalog {
@@ -88,6 +89,15 @@ public final class FeatureGateCatalog {
 
     public static Snapshot cachedSnapshot() {
         return cachedSnapshot;
+    }
+
+    static void awaitForTests() throws Exception {
+        EXECUTOR.submit(() -> { }).get(5, TimeUnit.SECONDS);
+    }
+
+    static void resetForTests() {
+        staticEntries = null;
+        cachedSnapshot = null;
     }
 
     private static List<Entry> readStaticCatalog() throws Exception {

@@ -144,6 +144,12 @@ public final class CaptchaGate {
         return fresh(pendingWrite, nowMs);
     }
 
+    static void resetForTests() {
+        pendingWrite = null;
+        lastSuppressed = null;
+        warnedThisSession.set(false);
+    }
+
     private static String fresh(Stamped stamped, long nowMs) {
         if (stamped == null) return null;
         return nowMs - stamped.atMs <= WRITE_WINDOW_MS ? stamped.value : null;

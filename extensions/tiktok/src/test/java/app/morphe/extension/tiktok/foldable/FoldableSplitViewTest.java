@@ -7,6 +7,7 @@ import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.categories.ExtensionPreferenceCategory;
 import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -33,6 +34,9 @@ public class FoldableSplitViewTest {
         Utils.setActivity(null);
         Settings.FOLDABLE_SPLIT_VIEW.save(false);
         Settings.FOLDABLE_SPLIT_VIEW_MIN_WIDTH_DP.save(600);
+    }
+    @After public void tearDown() {
+        SettingsStatus.foldableSplitViewEnabled = false;
     }
     @Test public void explicitWidthControlsBothSidesOfThresholdAndRespectsWindowModes() {
         try (var owner = Robolectric.buildActivity(TestActivity.class).setup()) {

@@ -157,6 +157,13 @@ public final class CurrentVideoAuthor {
         return item == null ? null : item.aweme;
     }
 
+    static void resetForTests() {
+        RECENT.clear();
+        current = null;
+        playingAwemeId = null;
+        CurrentVideoSound.clear();
+    }
+
     /** Reads the item without touching anything that tracks the current video. */
     private static Item parse(Object videoItemParams) {
         try {

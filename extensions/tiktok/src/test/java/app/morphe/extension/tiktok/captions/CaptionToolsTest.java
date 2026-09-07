@@ -15,6 +15,7 @@ import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.categories.InterfacePreferenceCategory;
 import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -39,6 +40,10 @@ public class CaptionToolsTest {
         Settings.CAPTION_TEXT_SIZE.save(0);
         Settings.CAPTION_BACKGROUND.save("default");
         Settings.KEEP_CAPTIONS_CLEAR_DISPLAY.save(false);
+        CaptionTools.onVideoChanged(null);
+    }
+    @After public void tearDown() {
+        SettingsStatus.subtitleToolsEnabled = false;
         CaptionTools.onVideoChanged(null);
     }
     @Test public void bothCaptionRenderersResizeAndRestoreWithoutChangingSourceLayout() {

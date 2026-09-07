@@ -12,6 +12,7 @@ import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.ChoicePreference;
 import app.morphe.extension.tiktok.settings.preference.categories.InterfacePreferenceCategory;
 import org.junit.Test;
+import org.junit.After;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
@@ -22,6 +23,12 @@ import org.robolectric.annotation.GraphicsMode;
 @Config(sdk = 28)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class GestureActionsTest {
+    @After public void tearDown() {
+        SettingsStatus.doubleTapEnabled = false;
+        SettingsStatus.longPressEnabled = false;
+        SettingsStatus.videoOverlaysEnabled = false;
+        SettingsStatus.sensitiveWarningsEnabled = false;
+    }
     public static final class TestActivity extends PreferenceActivity {
         @Override public void onCreate(android.os.Bundle state) {
             setTheme(android.R.style.Theme_Material_NoActionBar);

@@ -137,7 +137,7 @@ public final class FeatureGateLabStore {
             prefs.edit()
                     .clear()
                     .putString(STORED_TARGET_VERSION_KEY, TARGET_VERSION)
-                    .apply();
+                    .commit();
         }
         FeatureGateLabRuntime.clearTriggered();
         FeatureGateLabRuntime.reloadRules();

@@ -32,8 +32,8 @@ import org.robolectric.shadows.ShadowToast;
  * like, comment, repost or story action must survive the hide setting, because hiding it is
  * what makes those actions fail with no message.
  *
- * Robolectric keeps statics between tests in a class, so every case that needs an empty
- * queue reads the gate at a clock past any write an earlier case recorded.
+ * The gate owns a small process-wide queue, so each test clears that state before exercising
+ * one decision. The clock remains injectable through the package-private overloads below.
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
@@ -70,6 +70,7 @@ public class CaptchaGateTest {
     public void setUp() {
         Context context = RuntimeEnvironment.getApplication();
         Utils.setContext(context);
+        CaptchaGate.resetForTests();
         Settings.HIDE_CAPTCHA_POPUPS.save(true);
         now = CaptchaGate.now();
     }

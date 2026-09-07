@@ -54,6 +54,7 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -249,16 +250,52 @@ public class Utils {
             },
             new ThreadPoolExecutor.AbortPolicy());
 
+    private static final java.util.concurrent.atomic.AtomicInteger backgroundTasksInFlight =
+            new java.util.concurrent.atomic.AtomicInteger();
+
     public static void runOnBackgroundThread(Runnable task) {
+        backgroundTasksInFlight.incrementAndGet();
         try {
-            backgroundThreadPool.execute(task);
+            backgroundThreadPool.execute(() -> {
+                try {
+                    task.run();
+                } finally {
+                    backgroundTasksInFlight.decrementAndGet();
+                }
+            });
         } catch (RejectedExecutionException error) {
+            backgroundTasksInFlight.decrementAndGet();
             Logger.printException(() -> "Background task queue is full", error);
         }
     }
 
     public static <T> Future<T> submitOnBackgroundThread(Callable<T> call) {
-        return backgroundThreadPool.submit(call);
+        backgroundTasksInFlight.incrementAndGet();
+        try {
+            return backgroundThreadPool.submit(() -> {
+                try {
+                    return call.call();
+                } finally {
+                    backgroundTasksInFlight.decrementAndGet();
+                }
+            });
+        } catch (RejectedExecutionException error) {
+            backgroundTasksInFlight.decrementAndGet();
+            throw error;
+        }
+    }
+
+    /** Waits until background work submitted before this call has finished. */
+    public static void awaitBackgroundTasksForTests() throws Exception {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+        while (true) {
+            long remaining = deadline - System.nanoTime();
+            if (remaining <= 0) throw new TimeoutException("Background tasks did not finish");
+            backgroundThreadPool.submit(() -> { }).get(remaining, TimeUnit.NANOSECONDS);
+            if (backgroundTasksInFlight.get() == 0 && backgroundThreadPool.getQueue().isEmpty()) {
+                return;
+            }
+        }
     }
 
     /**

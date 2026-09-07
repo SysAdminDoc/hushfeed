@@ -24,6 +24,10 @@ final class FeatureGateLabUndo {
 
     private FeatureGateLabUndo() {}
 
+    static synchronized void resetForTests() {
+        observationsUndo = null;
+    }
+
     static synchronized void reset(boolean allData) throws Exception {
         replace(List.of(), !allData && FeatureGateLabStore.masterEnabled(),
                 !allData && FeatureGateLabStore.warningAcknowledged(), allData);

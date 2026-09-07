@@ -24,6 +24,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.After;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
@@ -37,6 +38,9 @@ import org.robolectric.shadows.ShadowToast;
 @Config(sdk = 28, qualifiers = "night")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class SettingsBackupTest {
+    @After public void tearDownStatus() {
+        SettingsStatus.diagnosticsEnabled = false;
+    }
     @Before public void setup() throws Exception {
         Utils.setContext(RuntimeEnvironment.getApplication());
         Settings.REGION_SPOOF.get();
@@ -526,17 +530,16 @@ public class SettingsBackupTest {
             assertEquals(0, (int) Settings.MAX_VIDEO_SECONDS.get());
             fragment.onActivityResult(7312, android.app.Activity.RESULT_CANCELED, null);
             assertNull(org.robolectric.shadows.ShadowAlertDialog.getLatestAlertDialog());
-            app.morphe.extension.tiktok.UiCapture.save(activity.getWindow().getDecorView(), "settings-backup.png");
         }
     }
 
-    private static void waitFor(String message) throws InterruptedException {
-        for (int i = 0; i < 500; i++) {
-            Shadows.shadowOf(Looper.getMainLooper()).idle();
-            if (message.equals(ShadowToast.getTextOfLatestToast())) return;
-            Thread.sleep(10);
+    private static void waitFor(String message) throws Exception {
+        Utils.awaitBackgroundTasksForTests();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        String toast = ShadowToast.getTextOfLatestToast();
+        if (!message.equals(toast)) {
+            fail("Missing completion toast: " + toast);
         }
-        fail("Missing completion toast: " + ShadowToast.getTextOfLatestToast());
     }
 
     @Test public void aBackupCannotPlantANumberTheDialogWouldRefuse() throws Exception {

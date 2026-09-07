@@ -11,6 +11,7 @@ import app.morphe.extension.tiktok.spoof.sim.SimPresets;
 import java.util.Locale;
 import java.util.TimeZone;
 import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -30,6 +31,10 @@ public class RegionSpoofTest {
         Settings.REGION_STORE_SPOOF.save(false);
         Settings.SIM_SPOOF_ISO.save("jp");
     }
+    @After public void tearDown() {
+        SettingsStatus.simSpoofEnabled = false;
+        SettingsStatus.regionSpoofEnabled = false;
+    }
     @Test public void allPresetsSupplyRealCountryTimezonesWithoutChangingGlobalDefaults() {
         Locale systemLocale = Locale.getDefault();
         TimeZone systemZone = TimeZone.getDefault();
@@ -38,11 +43,20 @@ public class RegionSpoofTest {
             assertTrue(preset.iso, RegionSpoof.validCountry(preset.iso));
             TimeZone result = RegionSpoof.timeZone(systemZone);
             assertEquals(preset.timeZone, result.getID());
-            if (Build.VERSION.SDK_INT >= 24) assertEquals(preset.iso.toUpperCase(Locale.ROOT),
-                    android.icu.util.TimeZone.getRegion(result.getID()));
         }
         assertEquals(systemLocale, Locale.getDefault());
         assertEquals(systemZone, TimeZone.getDefault());
+    }
+
+    @Test public void allPresetsMatchTheBundledTzdbRegionWhenAvailable() {
+        if (Build.VERSION.SDK_INT < 24) return;
+        TimeZone systemZone = TimeZone.getDefault();
+        for (SimPreset preset : SimPresets.PRESETS) {
+            Settings.SIM_SPOOF_ISO.save(preset.iso);
+            TimeZone result = RegionSpoof.timeZone(systemZone);
+            assertEquals(preset.iso.toUpperCase(Locale.ROOT),
+                    android.icu.util.TimeZone.getRegion(result.getID()));
+        }
     }
     @Test public void localeKeepsLanguageScriptAndExtensionsAndFlagsAreIndependent() {
         Locale original = Locale.forLanguageTag("zh-Hant-TW-u-nu-hanidec");

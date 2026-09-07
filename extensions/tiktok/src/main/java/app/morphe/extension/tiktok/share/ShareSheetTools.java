@@ -98,6 +98,7 @@ public final class ShareSheetTools {
             }
             ViewGroup root = activity.findViewById(android.R.id.content);
             if (root == null) {
+                LAYOUT_HOOK.detach();
                 Logger.printInfo(() -> "Share sheet tools found no content view to watch");
                 return;
             }

@@ -80,12 +80,16 @@ public final class AuthorRegion {
             }
             ViewGroup root = activity.findViewById(android.R.id.content);
             if (root == null) {
+                LAYOUT_HOOK.detach();
+                restore();
                 Logger.printInfo(() -> "Author region found no content view to watch");
                 return;
             }
             nameViewId = activity.getResources().getIdentifier(NAME_ID, "id", APP_PACKAGE);
             postTimeViewId = activity.getResources().getIdentifier(POST_TIME_ID, "id", APP_PACKAGE);
             if (nameViewId == 0 || postTimeViewId == 0) {
+                LAYOUT_HOOK.detach();
+                restore();
                 Logger.printInfo(() -> "Author region could not resolve the feed name row");
                 return;
             }

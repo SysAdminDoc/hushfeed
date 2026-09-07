@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.After;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
@@ -21,6 +22,11 @@ import org.robolectric.annotation.GraphicsMode;
 @Config(sdk = 28, qualifiers = "night")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class AutoAdvanceTest {
+    @After public void tearDown() {
+        SettingsStatus.autoAdvanceEnabled = false;
+        SettingsStatus.playbackSpeedEnabled = false;
+        SettingsStatus.playbackQualityEnabled = false;
+    }
     enum State { AUTO_SCROLL_STATE_START, AUTO_SCROLL_STATE_STOP, AUTO_SCROLL_STATE_PAUSE }
     static final class FeedView extends View {
         boolean attached = true, shown = true, focused = true;

@@ -7,6 +7,7 @@ import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.preference.NumberInputPreference;
 import app.morphe.extension.tiktok.settings.preference.TikTokPreferenceFragment;
 import org.junit.Test;
+import org.junit.After;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
@@ -19,6 +20,9 @@ import org.robolectric.shadows.ShadowToast;
 @Config(sdk = 28, qualifiers = "night")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class RestartNoticeTest {
+    @After public void tearDownStatus() {
+        SettingsStatus.foldableSplitViewEnabled = false;
+    }
     @Test public void preferenceChangesSaveImmediatelyWithoutOpeningRestartDialog() throws Exception {
         try (var owner = Robolectric.buildActivity(app.morphe.extension.tiktok.captions.CaptionToolsTest.CaptionActivity.class).setup().visible()) {
             var activity = owner.get();

@@ -16,10 +16,12 @@ import app.morphe.extension.tiktok.settings.SettingsPagesTest.PageActivity;
 import java.util.List;
 import java.util.Map;
 import org.junit.Test;
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.Shadows;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
 
@@ -27,6 +29,16 @@ import org.robolectric.annotation.GraphicsMode;
 @Config(sdk = 28, qualifiers = "w480dp-h960dp-night-mdpi")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class FeatureGatePagesTest {
+    @Before public void resetSharedState() throws Exception {
+        Utils.setContext(RuntimeEnvironment.getApplication());
+        FeatureGateCatalog.awaitForTests();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        FeatureGateCatalog.resetForTests();
+        FeatureGateLabSession.resetForTests();
+        FeatureGateLabUndo.resetForTests();
+        SettingsManagerObservationRecorder.clear();
+    }
+
     @Test public void darkLabSearchAndOverrideEditorWork() throws Exception { exercise("dark"); }
     @Test @Config(qualifiers = "w480dp-h960dp-notnight-mdpi")
     public void lightLabSearchAndOverrideEditorWork() throws Exception { exercise("light"); }

@@ -38,6 +38,15 @@ public class FeatureGateLabActionsTest {
     @Before public void setup() throws Exception {
         Utils.setContext(RuntimeEnvironment.getApplication());
         Utils.setIsDarkModeEnabled(true);
+        FeatureGateLabFragment.awaitFileIoForTests();
+        FeatureGateCatalog.awaitForTests();
+        Utils.awaitBackgroundTasksForTests();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        FeatureGateCatalog.resetForTests();
+        FeatureGateLabFragment.resetForTests();
+        FeatureGateLabSession.resetForTests();
+        FeatureGateLabUndo.resetForTests();
+        SettingsManagerObservationRecorder.clear();
         FeatureGateLabStore.resetAllLabData();
         FeatureGateLabSession.begin();
         var entry = entry("gate");
@@ -194,16 +203,12 @@ public class FeatureGateLabActionsTest {
             assertNull(ShadowDialog.getLatestDialog());
             var cached = FeatureGateCatalog.cachedSnapshot();
             action(fragment, 1);
-            for (int i = 0; i < 500 && FeatureGateCatalog.cachedSnapshot() == cached; i++) {
-                Shadows.shadowOf(Looper.getMainLooper()).idle();
-                Thread.sleep(10);
-            }
+            FeatureGateCatalog.awaitForTests();
             Shadows.shadowOf(Looper.getMainLooper()).idle();
             assertNotSame(cached, FeatureGateCatalog.cachedSnapshot());
             var tabs = FeatureGateLabFragment.class.getDeclaredField("viewTabs");
             tabs.setAccessible(true);
             ((ViewGroup) tabs.get(fragment)).getChildAt(1).performClick();
-            app.morphe.extension.tiktok.UiCapture.save(activity.getWindow().getDecorView(), "feature-gate-lab.png");
             ShadowToast.reset();
             FeatureGateLabSession.showRestartDialog(activity);
             FeatureGateLabSession.showAfterHostExit(activity);
@@ -328,13 +333,13 @@ public class FeatureGateLabActionsTest {
         menu.dismiss();
     }
     private static void waitFor(String prefix) throws Exception {
-        for (int i = 0; i < 500; i++) {
-            Shadows.shadowOf(Looper.getMainLooper()).idle();
-            String toast = ShadowToast.getTextOfLatestToast();
-            if (toast != null && toast.startsWith(prefix)) return;
-            Thread.sleep(10);
+        FeatureGateLabFragment.awaitFileIoForTests();
+        Utils.awaitBackgroundTasksForTests();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        String toast = ShadowToast.getTextOfLatestToast();
+        if (toast == null || !toast.startsWith(prefix)) {
+            fail("Missing completion: " + toast);
         }
-        fail("Missing completion: " + ShadowToast.getTextOfLatestToast());
     }
     private static Switch findSwitch(View view) {
         if (view instanceof Switch) return (Switch) view;

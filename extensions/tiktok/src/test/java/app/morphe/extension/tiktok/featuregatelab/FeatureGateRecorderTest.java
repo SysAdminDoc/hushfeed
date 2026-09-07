@@ -6,6 +6,7 @@ import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.FeatureGateRecorderPreference;
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -21,8 +22,14 @@ import org.robolectric.annotation.GraphicsMode;
 public class FeatureGateRecorderTest {
     @Before public void setup() {
         Utils.setContext(RuntimeEnvironment.getApplication());
+        SettingsManagerObservationRecorder.clear();
         SettingsStatus.featureGateRecorderEnabled = true;
         FeatureGateLearnMode.cancel();
+    }
+    @After public void tearDown() {
+        SettingsStatus.featureGateRecorderEnabled = false;
+        FeatureGateLearnMode.cancel();
+        SettingsManagerObservationRecorder.clear();
     }
     @Test public void recordsRepeatedReadsNewKeysAndChangedValuesWithoutOverriding() throws Exception {
         assertTrue(FeatureGateLabRuntime.overrideBoolean("known", true));

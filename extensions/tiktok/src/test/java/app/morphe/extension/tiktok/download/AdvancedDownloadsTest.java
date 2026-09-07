@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.util.Base64;
 import java.util.List;
 import org.junit.Test;
+import org.junit.After;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
@@ -28,6 +29,9 @@ import org.robolectric.annotation.GraphicsMode;
 @Config(sdk = 28)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class AdvancedDownloadsTest {
+    @After public void tearDown() {
+        SettingsStatus.advancedDownloadsEnabled = false;
+    }
     public static final class Address extends UrlModel {
         private final String url;
         private final long size;
@@ -503,6 +507,7 @@ public class AdvancedDownloadsTest {
         try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup()) {
             var activity = controller.get();
             Utils.setContext(activity);
+            SettingsStatus.advancedDownloadsEnabled = true;
 
             // In the activity's own tree: a long press with no listener left asks the parent
             // for a context menu, and a view with no parent has nothing to ask.

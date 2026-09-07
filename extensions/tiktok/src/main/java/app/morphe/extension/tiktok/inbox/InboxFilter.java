@@ -140,6 +140,7 @@ public final class InboxFilter {
 
             ViewGroup root = activity.findViewById(android.R.id.content);
             if (root == null) {
+                LAYOUT_HOOK.detach();
                 Logger.printInfo(() -> "Inbox filter found no content view to watch");
                 return;
             }

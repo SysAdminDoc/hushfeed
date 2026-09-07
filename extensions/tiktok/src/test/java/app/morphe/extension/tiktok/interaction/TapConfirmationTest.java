@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.time.Duration;
 import org.junit.Test;
+import org.junit.After;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
@@ -28,6 +29,9 @@ import org.robolectric.annotation.GraphicsMode;
 @Config(sdk = 28)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class TapConfirmationTest {
+    @After public void tearDown() {
+        SettingsStatus.confirmInteractionsEnabled = false;
+    }
     public static final class TestActivity extends PreferenceActivity {}
     public static final class Params {
         public final Clip aweme;

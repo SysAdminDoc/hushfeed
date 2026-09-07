@@ -115,6 +115,7 @@ public final class VideoOverlayHider {
             }
             ViewGroup root = activity.findViewById(android.R.id.content);
             if (root == null) {
+                LAYOUT_HOOK.detach();
                 Logger.printInfo(() -> "Video overlay hider found no content view to watch");
                 return;
             }
