@@ -78,7 +78,7 @@ The Settings patch adds the entry point and is selected by default. Deselect it 
 | `Enable non-personalized search` | Uses TikTok's non-personalized search mode instead of its saved account choice. |
 | `Hide search suggestions` | Hides the searches TikTok offers on the search page before you type, and stops it fetching them. Your own search history stays. |
 | `Feature Gate Lab` | Adds a searchable menu for viewing and overriding supported TikTok feature flags and configuration values. Client-side overrides cannot bypass server enforcement. |
-| `Feature Gate Recorder` | Records gate reads while you use a feature, then shows new and changed values. Save the full report as JSON or copy a smaller report. |
+| `Feature Gate Recorder` | Records gate reads while you use a feature, then shows new and changed values. An interrupted recording is discarded before the next baseline is taken. Save the full report as JSON or copy a smaller report. |
 | `Follow diagnostics` | Reads what the server said about a follow. TikTok answers a refused follow like a successful one, so this reports the refusal and its reason once per session, and writes the whole exchange to the diagnostic report when logging is on. |
 | `Feed filter` | Hides feed ads, TikTok Shop items, livestreams, stories, photo posts, the playlist bar, the floating event badge, inserted cards, the countdown lock on short drama adverts, and videos outside configured view, age or like ranges, with optional filtering of cached and offline FYP fallback videos. After three fully filtered batches, Hushfeed shows bounded rejection reasons and a link to Feed filter settings. Sponsored cards are also dropped from the profile video viewer, the search grids and the Friends tab. |
 | `Feed tab navigation` | Controls which loaded top and bottom navigation tabs remain visible, blocks newly added tabs when requested, and can hide the Tako AI bubble. |
@@ -192,7 +192,7 @@ Backups record which settings they contain, so missing entries are rejected. A c
 
 <img src="assets/settings/diagnostics.png" alt="Settings backup, restore, reset and undo controls" width="300" />
 
-Feature Gate Lab saves its master switch immediately. Its menu can reset overrides while the switch is off, reset all Lab data, or undo the last reset or import. Imported values stay disabled. Changes run in the background and report their result with a notification. The undo copy stores Lab configuration privately; full-reset undo also restores captured observations during the same app run. Other patch preferences are unchanged.
+Feature Gate Lab saves its master switch immediately. Its menu can reset overrides while the switch is off, reset all Lab data, or undo the last reset or import. Imported values stay disabled. Changes run in the background and report their result with a notification. The recorder discards an interrupted session before taking the next baseline. The undo copy stores Lab configuration privately; full-reset undo also restores captured observations during the same app run. Other patch preferences are unchanged.
 
 <img src="assets/settings/lab.png" alt="Feature Gate Lab with immediate master control and settings menu" width="300" />
 

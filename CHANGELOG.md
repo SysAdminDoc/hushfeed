@@ -1,5 +1,7 @@
 ## Unreleased
 
+* An interrupted Feature Gate recording is discarded before the next baseline is taken, so a session stopped by its setting cannot make later reads look changed. The isolated boundary test now passes on its own as well as in the full suite.
+
 * Automatic advance now has an optional per-session video limit. It counts only visible completions from Hushfeed-owned scrolling, keeps manual and native-only advance independent, stops with a brief notice, and resets when the feed component is recreated. Runtime coverage is 460 tests.
 
 * Advanced downloads can hand a sanitized link to YTDLnis with its documented audio or video type and optional background mode. The profile controls activate only for `com.deniscerri.ytdl`; generic package names still receive a plain link, and an unavailable target leaves TikTok's save in place. Runtime coverage is 458 tests.

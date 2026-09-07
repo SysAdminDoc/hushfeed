@@ -25,10 +25,7 @@ public final class FeatureGateLearnMode {
 
     static synchronized void observe(String manager, String key, String type, Object value) {
         if (!SettingsStatus.featureGateRecorderEnabled) {
-            recording = false;
-            baseline.clear();
-            reads.clear();
-            dropped = 0;
+            discardActiveSession();
             return;
         }
         if (key == null || key.isEmpty()) return;
@@ -57,10 +54,7 @@ public final class FeatureGateLearnMode {
 
     public static synchronized void begin() {
         if (!SettingsStatus.featureGateRecorderEnabled) {
-            recording = false;
-            baseline.clear();
-            reads.clear();
-            dropped = 0;
+            discardActiveSession();
             return;
         }
         baseline = new LinkedHashMap<>(latest);
@@ -75,9 +69,18 @@ public final class FeatureGateLearnMode {
     public static synchronized String lastReport() { return lastReport; }
 
     public static synchronized void cancel() {
+        discardActiveSession();
+    }
+
+    private static void discardActiveSession() {
+        if (recording) {
+            latest.clear();
+            latest.putAll(baseline);
+        }
         recording = false;
         baseline.clear();
         reads.clear();
+        dropped = 0;
     }
 
     public static synchronized String stopAndBuildReport() {
