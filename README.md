@@ -18,9 +18,9 @@ It started as a private fork of [icysymmetra's Metra patches](https://github.com
 
 ## What it does
 
-- **Block from the feed.** One tap blocks whoever posted the video you're watching, with an undo banner. A second button blocks the current sound. A Not interested button sits beside them.
+- **Block from the feed.** One tap blocks whoever posted the video you're watching, with an undo banner. A second button hides that creator locally without contacting TikTok, and its searchable list can remove one entry at a time. Another button blocks the current sound. A Not interested button sits beside them.
 - **Guard rails against accidental taps.** Follow and like need a second tap within four seconds. Sending a video to a friend from the share sheet does too. Long press and double tap can be remapped or switched off.
-- **A quieter feed.** Hide ads, Shop, livestreams, LIVE replays, stories, image posts, paid partnerships, AI labelled videos, verified accounts, series, playlists, promotional music, videos you've already seen, and anything matching your own caption words, creator handles, sound names, length or engagement rules, the country it was posted from, or a pattern over creator names.
+- **A quieter feed.** Hide ads, Shop, livestreams, LIVE replays, stories, image posts, paid partnerships, AI labelled videos, verified accounts, series, playlists, promotional music, videos you've already seen, and anything matching your own caption words, creator handles, locally hidden creator ids, sound names, length or engagement rules, the country it was posted from, or a pattern over creator names.
 - **A quieter screen.** Hide the caption, the music line, the action column, survey cards, the status bar, the visual search prompt, the Live entrance, floating promotions and the CAPTCHA puzzles. Clear display can turn itself on after each video starts.
 - **An inbox you choose.** A switch for every Inbox row and header control, stories tray, suggested accounts, message requests and conversations.
 - **Comments on your terms.** Keyword and account filters, thumbs down that blocks the commenter, quick reactions and brand animations hidden, comments beside the video on wide screens, translation with language exclusions.
@@ -30,7 +30,7 @@ It started as a private fork of [icysymmetra's Metra patches](https://github.com
 - **Region.** SIM, locale and timezone presets, with an optional store region override.
 - **Under the hood.** Feature Gate Lab exposes TikTok's own A/B flags with recording and typed overrides. Settings back up to a JSON file with restore, reset and undo. Diagnostics export a report.
 
-The block, sound and Not interested controls, rendered in a local UI test:
+The block, local hide, sound and Not interested controls, rendered in a local UI test:
 
 ![Overlay controls](assets/overlay-controls.png)
 
@@ -63,7 +63,7 @@ The Settings patch adds the entry point and is selected by default. Deselect it 
 | `AMOLED dark theme` | Replaces the dark background palette with black or a chosen opaque color. Select the patch and its color in the patcher. Light theme colors stay unchanged. |
 | `Always show publish date` | Keeps the video's publish date visible in its author information. |
 | `Not interested button` | Sends feedback about the current video through TikTok's own service. The button works independently of the block switch. |
-| `Block author button` | Adds a button to the video player that blocks the account that posted the current video in one tap, with an undo banner. Long press it to move it. A second button blocks the current sound. |
+| `Block author button` | Adds a button to the video player that blocks the account that posted the current video in one tap, with an undo banner. A companion button hides the creator locally without a server call, and the Feed filter page keeps a searchable list for removing individual entries. Long press the block button to move it. A second button blocks the current sound. |
 | `Comment tools` | Hides comments containing chosen words or from chosen accounts, and turns the thumbs down on each comment into a block button. A switch hides comments made of an image or a sticker rather than words, and another puts a box above the comments that narrows them to what you are looking for. |
 | `Copy comments without username` | Copies only the comment text without including the creator's username. |
 | `Custom offline videos limit` | Adds a custom entry to TikTok's offline videos menu with a configurable limit from 1 to 1000 videos. Values outside the range use the nearest valid limit. |
@@ -129,6 +129,7 @@ The settings pages use grouped controls on an AMOLED background. Light mode foll
 | Page | Screenshot |
 |---|---|
 | Feed filter | [View](assets/settings/feed_filter.png) |
+| Local creator list | [View](assets/settings/creator-list.png) |
 | Feed navigation | [View](assets/settings/feed_navigation.png) |
 | Interface | [View](assets/settings/interface.png) |
 | Comments and translation | [View](assets/settings/comments.png) |

@@ -284,6 +284,45 @@ public class SettingsPagesTest {
         }
     }
 
+    @Test public void localCreatorEditorFiltersAndRemovesIndividualEntries() throws Exception {
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            Settings.LOCAL_HIDDEN_CREATORS.save("alpha, beta");
+            TikTokPreferenceFragment page = attachSection(activity, "FEED_FILTER");
+            Preference preference = page.findPreference("local_hidden_creators");
+            assertNotNull(preference);
+            ListView list = page.getView().findViewById(android.R.id.list);
+            int position = positionOf(list, "local_hidden_creators");
+            assertTrue(position >= 0);
+            assertTrue(list.performItemClick(list.getChildAt(position), position,
+                    list.getAdapter().getItemId(position)));
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+            android.app.AlertDialog dialog = (android.app.AlertDialog)
+                    org.robolectric.shadows.ShadowDialog.getLatestDialog();
+            assertTrue(dialog.isShowing());
+            EditText search = dialog.getWindow().getDecorView().findViewWithTag("creator_list_search");
+            assertNotNull(search);
+            search.setText("beta");
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            UiCapture.save(dialog.getWindow().getDecorView(), "pages/dark/creator-list.png");
+            View remove = dialog.getWindow().getDecorView().findViewWithTag("creator_remove_beta");
+            assertNotNull(remove);
+            assertTrue(remove.performClick());
+            EditText add = dialog.getWindow().getDecorView().findViewWithTag("creator_list_add");
+            assertNotNull(add);
+            add.setText("gamma");
+            TextView addButton = findTextViewContaining(dialog.getWindow().getDecorView(), "Add");
+            assertNotNull(addButton);
+            assertTrue(addButton.performClick());
+            dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).performClick();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertEquals("alpha, gamma", Settings.LOCAL_HIDDEN_CREATORS.get());
+            Settings.LOCAL_HIDDEN_CREATORS.save("");
+        }
+    }
+
     @Test @Config(qualifiers = "de-rDE-w360dp-h800dp-night-mdpi")
     public void longGermanLabelsWrapAtLargeTextSize() throws Exception {
         try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {

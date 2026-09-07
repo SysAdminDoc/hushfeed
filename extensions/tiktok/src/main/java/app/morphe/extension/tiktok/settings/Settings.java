@@ -66,6 +66,7 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting CONFIRM_LIKE = new BooleanSetting("confirm_like", FALSE);
     public static final StringSetting BLOCKED_CAPTION_WORDS = new StringSetting("blocked_caption_words", "");
     public static final StringSetting BLOCKED_CREATORS = new StringSetting("blocked_creators", "");
+    public static final StringSetting LOCAL_HIDDEN_CREATORS = new StringSetting("local_hidden_creators", "");
     public static final StringSetting REGION_ONLY_FROM = new StringSetting("region_only_from", "", true);
     public static final StringSetting REGION_NEVER_FROM = new StringSetting("region_never_from", "", true);
     public static final IntegerSetting MAX_VIDEO_SECONDS =

@@ -34,24 +34,33 @@ public final class AdvancedFeedRules {
     }
 
     public static final class CreatorFilter implements IFilter {
-        public boolean getEnabled() { return !Settings.BLOCKED_CREATORS.get().trim().isEmpty(); }
+        public boolean getEnabled() {
+            return !Settings.BLOCKED_CREATORS.get().trim().isEmpty()
+                    || !Settings.LOCAL_HIDDEN_CREATORS.get().trim().isEmpty();
+        }
         public boolean getFiltered(Aweme item) {
             Object author = Reflect.property(item, "getAuthor", "author");
             String uid = Reflect.string(author, "getUid", "uid");
+            String secUid = Reflect.string(author, "getSecUid", "secUid");
             String handle = Reflect.string(author, "getUniqueId", "uniqueId");
             String nickname = Reflect.string(author, "getNickname", "nickname");
-            for (String entry : rawTerms(Settings.BLOCKED_CREATORS.get())) {
-                if (isPattern(entry)) {
-                    Pattern pattern = compiled(entry);
-                    if (pattern != null && (matches(pattern, handle) || matches(pattern, nickname))) {
-                        return true;
-                    }
-                    continue;
+            for (String list : new String[]{Settings.BLOCKED_CREATORS.get(), Settings.LOCAL_HIDDEN_CREATORS.get()}) {
+                for (String entry : rawTerms(list)) {
+                    if (matchesCreator(entry, uid, secUid, handle, nickname)) return true;
                 }
-                if (entry.startsWith("@")) entry = entry.substring(1);
-                if (!entry.isEmpty() && (entry.equalsIgnoreCase(uid) || entry.equalsIgnoreCase(handle))) return true;
             }
             return false;
+        }
+
+        private static boolean matchesCreator(String entry, String uid, String secUid,
+                                              String handle, String nickname) {
+            if (isPattern(entry)) {
+                Pattern pattern = compiled(entry);
+                return pattern != null && (matches(pattern, handle) || matches(pattern, nickname));
+            }
+            if (entry.startsWith("@")) entry = entry.substring(1);
+            return !entry.isEmpty() && (entry.equalsIgnoreCase(uid)
+                    || entry.equalsIgnoreCase(secUid) || entry.equalsIgnoreCase(handle));
         }
 
         private static boolean matches(Pattern pattern, String value) {
@@ -155,6 +164,70 @@ public final class AdvancedFeedRules {
             }
         }
         return null;
+    }
+
+    /** Returns non-empty creator entries in their stored order. */
+    public static List<String> creatorEntries(String value) {
+        List<String> entries = new ArrayList<>();
+        if (value == null) return entries;
+        for (String entry : rawTerms(value)) {
+            String trimmed = entry.trim();
+            if (!trimmed.isEmpty()) entries.add(trimmed);
+        }
+        return entries;
+    }
+
+    /** Joins creator entries in the format used by the settings editor. */
+    public static String joinCreatorEntries(List<String> entries) {
+        StringBuilder joined = new StringBuilder();
+        if (entries == null) return "";
+        for (String entry : entries) {
+            if (entry == null || entry.trim().isEmpty()) continue;
+            if (joined.length() > 0) joined.append(", ");
+            joined.append(entry.trim());
+        }
+        return joined.toString();
+    }
+
+    /** Adds one exact creator entry unless it is already present, ignoring case and @. */
+    public static String addCreatorEntry(String value, String entry) {
+        String candidate = entry == null ? "" : entry.trim();
+        List<String> entries = creatorEntries(value);
+        if (candidate.isEmpty()) return joinCreatorEntries(entries);
+        if (!hasCreatorEntry(entries, candidate)) entries.add(candidate);
+        return joinCreatorEntries(entries);
+    }
+
+    /** Removes one exact creator entry, ignoring case and a leading @. */
+    public static String removeCreatorEntry(String value, String entry) {
+        String candidate = entry == null ? "" : entry.trim();
+        List<String> entries = creatorEntries(value);
+        if (!candidate.isEmpty()) {
+            for (int index = entries.size() - 1; index >= 0; index--) {
+                if (sameCreatorEntry(entries.get(index), candidate)) entries.remove(index);
+            }
+        }
+        return joinCreatorEntries(entries);
+    }
+
+    /** Whether the exact creator entry is already present, ignoring case and a leading @. */
+    public static boolean hasCreatorEntry(String value, String entry) {
+        return hasCreatorEntry(creatorEntries(value), entry);
+    }
+
+    private static boolean hasCreatorEntry(List<String> entries, String entry) {
+        for (String existing : entries) {
+            if (sameCreatorEntry(existing, entry)) return true;
+        }
+        return false;
+    }
+
+    private static boolean sameCreatorEntry(String left, String right) {
+        String a = left == null ? "" : left.trim();
+        String b = right == null ? "" : right.trim();
+        if (a.startsWith("@")) a = a.substring(1);
+        if (b.startsWith("@")) b = b.substring(1);
+        return !a.isEmpty() && a.equalsIgnoreCase(b);
     }
 
     /** An entry between slashes is a pattern rather than a name to match exactly. */
@@ -267,6 +340,7 @@ public final class AdvancedFeedRules {
      */
     static String[] rawTerms(String value) {
         List<String> entries = new ArrayList<>();
+        if (value == null || value.trim().isEmpty()) return new String[0];
         for (String line : value.trim().split("\\s*\\n\\s*")) {
             List<String> pending = null;
             for (String fragment : line.split("\\s*,\\s*")) {

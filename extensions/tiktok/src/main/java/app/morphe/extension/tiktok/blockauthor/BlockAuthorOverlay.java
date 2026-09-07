@@ -55,6 +55,7 @@ public final class BlockAuthorOverlay {
     private static final float DEFAULT_Y_FRACTION = 0.40f;
 
     private static WeakReference<View> buttonReference = new WeakReference<>(null);
+    private static WeakReference<View> localHideReference = new WeakReference<>(null);
     private static WeakReference<View> soundButtonReference = new WeakReference<>(null);
     private static WeakReference<View> notInterestedReference = new WeakReference<>(null);
     private static WeakReference<ViewGroup> rootReference = new WeakReference<>(null);
@@ -113,8 +114,20 @@ public final class BlockAuthorOverlay {
                 soundButton.setVisibility(soundVisibility);
             }
         }
+        View localHide = localHideReference.get();
+        if (localHide != null) {
+            boolean localWanted = visible && Settings.BLOCK_AUTHOR_BUTTON.get()
+                    && SettingsStatus.feedFilterEnabled;
+            int localVisibility = localWanted ? View.VISIBLE : View.GONE;
+            if (localHide.getVisibility() != localVisibility) {
+                localHide.setVisibility(localVisibility);
+            }
+        }
         View feedback = notInterestedReference.get();
         if (feedback != null) feedback.setVisibility(visible && notInterestedEnabled() ? View.VISIBLE : View.GONE);
+        if (button.getParent() instanceof ViewGroup) {
+            placeSoundButton(button, (ViewGroup) button.getParent());
+        }
     }
 
     /**
@@ -155,6 +168,11 @@ public final class BlockAuthorOverlay {
 
             root.addView(button);
             buttonReference = new WeakReference<>(button);
+
+            final View localHide = createLocalHideButton(activity);
+            localHide.setLayoutParams(new FrameLayout.LayoutParams(size, size, Gravity.TOP | Gravity.START));
+            root.addView(localHide);
+            localHideReference = new WeakReference<>(localHide);
 
             final View soundButton = createSoundButton(activity);
             soundButton.setLayoutParams(new FrameLayout.LayoutParams(size, size, Gravity.TOP | Gravity.START));
@@ -210,6 +228,11 @@ public final class BlockAuthorOverlay {
             ((ViewGroup) soundButton.getParent()).removeView(soundButton);
         }
         soundButtonReference = new WeakReference<>(null);
+        View localHide = localHideReference.get();
+        if (localHide != null && localHide.getParent() instanceof ViewGroup) {
+            ((ViewGroup) localHide.getParent()).removeView(localHide);
+        }
+        localHideReference = new WeakReference<>(null);
         View feedback = notInterestedReference.get();
         if (feedback != null && feedback.getParent() instanceof ViewGroup) {
             ((ViewGroup) feedback.getParent()).removeView(feedback);
@@ -233,6 +256,23 @@ public final class BlockAuthorOverlay {
         button.setBackground(background);
 
         button.setOnClickListener(view -> onBlockSoundTapped());
+        return button;
+    }
+
+    private static View createLocalHideButton(Activity activity) {
+        TextView button = new TextView(activity);
+        button.setText("×");
+        button.setTextColor(Color.WHITE);
+        button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
+        button.setGravity(Gravity.CENTER);
+        button.setContentDescription(L10n.t(activity, "Hide this creator locally"));
+
+        GradientDrawable background = new GradientDrawable();
+        background.setShape(GradientDrawable.OVAL);
+        background.setColor(Color.argb(140, 0, 0, 0));
+        background.setStroke(dp(activity, 1), Color.argb(90, 255, 255, 255));
+        button.setBackground(background);
+        button.setOnClickListener(view -> onLocalHideTapped());
         return button;
     }
 
@@ -295,7 +335,18 @@ public final class BlockAuthorOverlay {
         ViewGroup.MarginLayoutParams soundParams = (ViewGroup.MarginLayoutParams) soundButton.getLayoutParams();
         int size = blockParams.height > 0 ? blockParams.height : blockButton.getHeight();
         int gap = Math.round(BUTTON_GAP_DP * parent.getResources().getDisplayMetrics().density);
-        int top = blockParams.topMargin + size + gap;
+        int nextTop = blockParams.topMargin + size + gap;
+        View localHide = localHideReference.get();
+        boolean localVisible = localHide != null && localHide.getVisibility() == View.VISIBLE
+                && localHide.getParent() == parent;
+        if (localVisible) {
+            ViewGroup.MarginLayoutParams localParams = (ViewGroup.MarginLayoutParams) localHide.getLayoutParams();
+            localParams.leftMargin = blockParams.leftMargin;
+            localParams.topMargin = Math.min(nextTop, Math.max(0, parent.getHeight() - size));
+            localHide.setLayoutParams(localParams);
+            nextTop += size + gap;
+        }
+        int top = nextTop;
         int maxTop = Math.max(0, parent.getHeight() - size);
         soundParams.leftMargin = blockParams.leftMargin;
         soundParams.topMargin = Math.min(top, maxTop);
@@ -492,6 +543,28 @@ public final class BlockAuthorOverlay {
                         ? L10n.f("Could not block %1$s", author.label())
                         : L10n.f("Could not block %1$s: %2$s", author.label(), message));
             }
+        });
+    }
+
+    private static void onLocalHideTapped() {
+        VideoAuthor author = CurrentVideoAuthor.get();
+        if (author == null || !author.isUsable() || author.stableId() == null
+                || author.stableId().isEmpty()) {
+            Utils.showToastShort(L10n.t("No account to hide on this video"));
+            return;
+        }
+
+        String before = Settings.LOCAL_HIDDEN_CREATORS.get();
+        String after = app.morphe.extension.tiktok.feedfilter.AdvancedFeedRules.addCreatorEntry(
+                before, author.stableId());
+        if (after.equals(before)) {
+            Utils.showToastShort(L10n.t("This creator is already hidden"));
+            return;
+        }
+        Settings.LOCAL_HIDDEN_CREATORS.save(after);
+        showUndoBanner(L10n.f("Hidden %1$s locally", author.label()), () -> {
+            Settings.LOCAL_HIDDEN_CREATORS.save(before);
+            Utils.showToastShort(L10n.f("Showing %1$s again", author.label()));
         });
     }
 

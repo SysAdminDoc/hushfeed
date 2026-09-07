@@ -24,10 +24,10 @@ public class OverlayControlsTest {
     @Test public void renderAccessibleOverlayControls() throws Exception {
         Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
         Utils.setContext(activity);
-        Bitmap bitmap = Bitmap.createBitmap(232, 88, Bitmap.Config.ARGB_8888);
+        Bitmap bitmap = Bitmap.createBitmap(304, 88, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         canvas.drawColor(Color.rgb(24, 24, 27));
-        String[] methods = {"createButton", "createSoundButton", "createNotInterestedButton"};
+        String[] methods = {"createButton", "createLocalHideButton", "createSoundButton", "createNotInterestedButton"};
         for (int i = 0; i < methods.length; i++) {
             Method factory = BlockAuthorOverlay.class.getDeclaredMethod(methods[i], Activity.class);
             factory.setAccessible(true);

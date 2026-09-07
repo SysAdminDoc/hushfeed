@@ -568,3 +568,21 @@ Search settings	Einstellungen durchsuchen
 Search translated titles and descriptions, then open the original setting.	Übersetzte Titel und Beschreibungen durchsuchen und dann die ursprüngliche Einstellung öffnen.
 Try a different word or clear the search.	Versuche ein anderes Wort oder lösche die Suche.
 Type to search settings	Tippe, um Einstellungen zu durchsuchen
+Add	Hinzufügen
+Add hidden creator	Ausgeblendeten Creator hinzufügen
+Creator handle or id	Creator-Handle oder ID
+Creators hidden from later feed batches by the player action. Search the list and remove one entry at a time.	Mit der Player-Aktion lokal ausgeblendete Creator aus späteren Feed-Ladungen ausblenden. Durchsuche die Liste und entferne einzelne Einträge.
+Enter a creator handle or id	Gib einen Creator-Handle oder eine ID ein
+Filter the list	Liste filtern
+Hidden %1$s locally	%1$s lokal ausgeblendet
+Hide this creator locally	Diesen Creator lokal ausblenden
+Locally hidden creators	Lokal ausgeblendete Creator
+No account to hide on this video	Auf diesem Video wurde kein ausblendbares Konto gefunden
+No creators are hidden yet	Noch keine Creator ausgeblendet
+No hidden creators match this search	Keine ausgeblendeten Creator passen zu dieser Suche
+Remove	Entfernen
+Remove %1$s	%1$s entfernen
+Search hidden creators	Ausgeblendete Creator durchsuchen
+Showing %1$s again	%1$s wieder anzeigen
+That creator is already in the list	Dieser Creator ist bereits in der Liste
+This creator is already hidden	Dieser Creator ist bereits ausgeblendet

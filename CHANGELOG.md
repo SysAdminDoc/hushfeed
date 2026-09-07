@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The player now has a local creator-hide action. It records the current stable creator id without calling TikTok, skips that creator on later feed batches, and offers a searchable one-entry-at-a-time list with undo.
+
 * Settings now have a translated search page. It matches titles, descriptions and category names, hides controls from unselected or unavailable patches, and opens the existing section at the matching preference without creating duplicate editors.
 
 * Settings headers, captions and editor labels now keep Android's font padding, so large text has room for its full glyphs instead of clipping at narrow widths. Preference rows and native editors remain content-sized for 1.3x and 2x text.

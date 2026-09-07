@@ -156,6 +156,13 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             } else {
                 Setting.privateSetValueFromString(setting, numberInputPreference.getValue());
             }
+        } else if (pref instanceof CreatorListPreference) {
+            CreatorListPreference creatorListPreference = (CreatorListPreference) pref;
+            if (applySettingToPreference) {
+                creatorListPreference.setValue(setting.get().toString());
+            } else {
+                Setting.privateSetValueFromString(setting, creatorListPreference.getValue());
+            }
         } else if (pref instanceof RangeValuePreference) {
             RangeValuePreference rangeValuePref = (RangeValuePreference) pref;
             if (applySettingToPreference) {
@@ -194,6 +201,9 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         String defaultValue = setting.defaultValue.toString();
         if (pref instanceof NumberInputPreference) {
             return defaultValue.equals(((NumberInputPreference) pref).getValue());
+        }
+        if (pref instanceof CreatorListPreference) {
+            return defaultValue.equals(((CreatorListPreference) pref).getValue());
         }
         if (pref instanceof RangeValuePreference) {
             return defaultValue.equals(((RangeValuePreference) pref).getValue());
@@ -491,6 +501,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             addMenu(screen, Section.FEED_FILTER, SettingsMenuPreference.Icon.FILTER, countEnabled(
                     !Settings.BLOCKED_CAPTION_WORDS.get().trim().isEmpty(),
                     !Settings.BLOCKED_CREATORS.get().trim().isEmpty(),
+                    !Settings.LOCAL_HIDDEN_CREATORS.get().trim().isEmpty(),
                     Settings.MAX_VIDEO_SECONDS.get() > 0,
                     Settings.MAX_VIEWS_PER_LIKE.get() > 0,
                     Settings.HIDE_PROMOTIONAL_MUSIC.get(),

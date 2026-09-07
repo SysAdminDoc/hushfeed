@@ -29,6 +29,12 @@ public final class VideoAuthor {
         return (uid != null && !uid.isEmpty()) || (secUid != null && !secUid.isEmpty());
     }
 
+    /** Stable creator key used by local filtering when TikTok omits the ordinary uid. */
+    public String stableId() {
+        if (uid != null && !uid.isEmpty()) return uid;
+        return secUid;
+    }
+
     public String label() {
         if (displayName != null && !displayName.isEmpty()) {
             return displayName;

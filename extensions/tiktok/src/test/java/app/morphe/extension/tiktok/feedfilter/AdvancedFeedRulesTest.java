@@ -24,8 +24,10 @@ public class AdvancedFeedRulesTest {
     }
     public static final class Author {
         String handle;
+        String secUid = "";
         public String getUniqueId() { return handle; }
         public String getUid() { return "123"; }
+        public String getSecUid() { return secUid; }
     }
     public static final class Stats extends AwemeStatistics {
         long views, likes;
@@ -51,6 +53,7 @@ public class AdvancedFeedRulesTest {
         Settings.REMOVE_ADS.save(false);
         Settings.BLOCKED_CAPTION_WORDS.save("");
         Settings.BLOCKED_CREATORS.save("");
+        Settings.LOCAL_HIDDEN_CREATORS.save("");
         Settings.MAX_VIDEO_SECONDS.save(0);
         Settings.MAX_VIEWS_PER_LIKE.save(0);
     }
@@ -80,6 +83,20 @@ public class AdvancedFeedRulesTest {
         Item closest = new Item("3", "allowed", 2000);
         assertEquals(Arrays.asList(closest), page(blocked, longer, closest).items);
         assertTrue(page(blocked).items.isEmpty());
+    }
+
+    @Test public void localCreatorEntriesMatchStableSecUidAndCanBeEditedIndividually() {
+        Item item = new Item("local", "poster", 800);
+        item.author.secUid = "sec-uid";
+        Settings.LOCAL_HIDDEN_CREATORS.save("other, sec-uid");
+        AdvancedFeedRules.CreatorFilter filter = new AdvancedFeedRules.CreatorFilter();
+        assertTrue(filter.getEnabled());
+        assertTrue(filter.getFiltered(item));
+        assertEquals("other, sec-uid, new-id",
+                AdvancedFeedRules.addCreatorEntry(Settings.LOCAL_HIDDEN_CREATORS.get(), "new-id"));
+        assertEquals("other, new-id",
+                AdvancedFeedRules.removeCreatorEntry("other, sec-uid, new-id", "SEC-UID"));
+        assertTrue(AdvancedFeedRules.hasCreatorEntry("@poster", "poster"));
     }
     @Test public void qualityRuleUsesMillisecondsAndAllowsUnknownStats() {
         Settings.MAX_VIDEO_SECONDS.save(1);
