@@ -144,6 +144,10 @@ The settings pages use grouped controls on an AMOLED background. Light mode foll
 | Feature Gate Lab | [View](assets/settings/lab.png) |
 | Gate details | [View](assets/settings/gate_details.png) |
 | Gate recording | [View](assets/settings/gate_recording.png) |
+| Twice the text size | [View](assets/settings/two-times-text.png) |
+| Twice the text size, light | [View](assets/settings/two-times-text-light.png) |
+| Mirrored layout at twice the text size | [View](assets/settings/rtl-large.png) |
+| Mirrored layout, light | [View](assets/settings/rtl-large-light.png) |
 
 </details>
 

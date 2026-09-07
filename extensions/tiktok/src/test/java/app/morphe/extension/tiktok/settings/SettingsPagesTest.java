@@ -379,6 +379,8 @@ public class SettingsPagesTest {
             assertTextFits(caption);
             assertRowsReadable(page.getView().findViewById(android.R.id.list), 48);
             assertEditorRowFits(page, "comment_blocked_keywords", activity, 320, 800, 1);
+            // Captured here: the fragment is replaced below, and its view goes with it.
+            UiCapture.save(page.getView(), "pages/light/two-times-text.png", 320, 800);
             TikTokPreferenceFragment filterPage = attachSection(activity, "FEED_FILTER");
             layout(filterPage.getView(), 320, 800);
             Shadows.shadowOf(Looper.getMainLooper()).idle();
@@ -387,6 +389,36 @@ public class SettingsPagesTest {
             layout(filterPage.getView(), 320, 800);
             Shadows.shadowOf(Looper.getMainLooper()).idle();
             assertEditorRowFits(filterPage, "min_max_views", activity, 320, 800, 2);
+        }
+    }
+
+    /**
+     * The same at twice the text size in the dark theme, which is what most readers are on. A
+     * capture of one theme says nothing about the other: the row backgrounds, the dividers and
+     * the disabled colours are all different, and a caption that fits on white can still be
+     * unreadable on black.
+     */
+    @Test @Config(qualifiers = "de-rDE-w320dp-h800dp-night-mdpi")
+    public void controlsAndEditorsStayReadableAtTwoTimesTextSizeInTheDark() throws Exception {
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            var configuration = activity.getResources().getConfiguration();
+            configuration.fontScale = 2.0f;
+            activity.getResources().updateConfiguration(configuration, activity.getResources().getDisplayMetrics());
+
+            for (String section : MAIN_PAGES) {
+                TikTokPreferenceFragment page = attachSection(activity, section);
+                layout(page.getView(), 320, 800);
+                Shadows.shadowOf(Looper.getMainLooper()).idle();
+                TextView heading = page.getView().findViewWithTag("metra_page_title");
+                assertNotNull(section, heading);
+                assertTextFits(heading);
+                assertRowsReadable(page.getView().findViewById(android.R.id.list), 48);
+                if ("COMMENTS".equals(section)) {
+                    UiCapture.save(page.getView(), "pages/dark/two-times-text.png", 320, 800);
+                }
+            }
         }
     }
 
@@ -411,8 +443,60 @@ public class SettingsPagesTest {
             TextView heading = page.getView().findViewWithTag("metra_page_title");
             assertNotNull(heading);
             assertTextFits(heading);
+            UiCapture.save(page.getView(), "pages/dark/rtl-large.png", 320, 800);
+
+            // One page proves the row shape; the rest are where a caption written for one
+            // language quietly runs off the edge in a mirrored layout.
+            for (String section : MAIN_PAGES) {
+                TikTokPreferenceFragment other = attachSection(activity, section);
+                forceRtl(other.getView());
+                layout(other.getView(), 320, 800);
+                Shadows.shadowOf(Looper.getMainLooper()).idle();
+                forceRtl(other.getView());
+                TextView title = other.getView().findViewWithTag("metra_page_title");
+                assertNotNull(section, title);
+                assertTextFits(title);
+                assertRowsReadable(other.getView().findViewById(android.R.id.list), 48);
+            }
         }
     }
+
+    /**
+     * The mirrored layout in the light theme. Both themes are captured because the two are laid
+     * out from the same code but read very differently, and the only way to know a label has not
+     * run off the edge in one of them is to have both.
+     */
+    @Test @Config(qualifiers = "ar-rXB-w320dp-h800dp-notnight-mdpi")
+    public void rtlLargeTextIsReadableInTheLightThemeToo() throws Exception {
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            var configuration = activity.getResources().getConfiguration();
+            configuration.fontScale = 2.0f;
+            configuration.setLayoutDirection(new java.util.Locale("ar", "XB"));
+            activity.getResources().updateConfiguration(configuration, activity.getResources().getDisplayMetrics());
+            TikTokPreferenceFragment page = attachSection(activity, "COMMENTS");
+            forceRtl(page.getView());
+            layout(page.getView(), 320, 800);
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            forceRtl(page.getView());
+
+            assertEquals(View.LAYOUT_DIRECTION_RTL, configuration.getLayoutDirection());
+            TextView heading = page.getView().findViewWithTag("metra_page_title");
+            assertNotNull(heading);
+            assertTextFits(heading);
+            assertRowsReadable(page.getView().findViewById(android.R.id.list), 48);
+            UiCapture.save(page.getView(), "pages/light/rtl-large.png", 320, 800);
+        }
+    }
+
+    /**
+     * The pages a reader actually opens. Not every section: the Lab and the gate editors have
+     * their own capture suite, and walking them here would double this test's runtime for
+     * coverage that already exists.
+     */
+    private static final String[] MAIN_PAGES = {"FEED_FILTER", "INTERFACE", "COMMENTS",
+            "DOWNLOADS", "PLAYBACK", "INBOX", "SHARE", "BEHAVIOR", "DIAGNOSTICS"};
 
     private static TikTokPreferenceFragment attachSection(Activity activity, String section) {
         TikTokPreferenceFragment fragment = new TikTokPreferenceFragment();

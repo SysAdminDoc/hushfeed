@@ -1,5 +1,7 @@
 ## 0.21.0 (2026-09-07)
 
+* The settings screens are checked at twice the text size and in a mirrored layout, on every page a reader opens rather than one of them, in both themes.
+
 * The five feed count filters take a number the way the feed writes it. Type 20K, 1.5M or 2B instead of counting zeroes, and the row reads the range back in the same form. Nothing is rounded: 1.234M is exactly 1234000, and anything the field cannot read is refused with a message rather than saved as a number nobody meant.
 
 * A download can no longer come out as name_2 when nothing of that name was in the folder it was saved to. The check that produced the suffix was looking in TikTok's private staging directory, which has nothing to do with where the file ends up, so it could only ever be wrong. The gallery settles a name that is already taken, and it does that without a race.
