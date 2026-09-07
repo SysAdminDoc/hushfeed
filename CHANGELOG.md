@@ -1,5 +1,11 @@
 ## 0.21.0 (2026-09-07)
 
+* Saving a still sticker as a GIF is refused rather than written out as a one-frame animation. The model calls anything whose type merely contains "webp" animated, and the decoder reports a still picture as one frame, so between them a plain picture could reach the animation path. The bytes now decide it, and the converter refuses anything with fewer than two frames.
+
+* The Hook status row names the surfaces that are missing something instead of saying only that something is. It reads correctly when one surface has reported, its report is redacted and cleared along with the rest of the diagnostic data, and it follows the "Included diagnostics" choice like every other section. A surface that has stopped counting says so. None of this costs the feed anything: a lookup whose answer is already known no longer takes a lock while you scroll.
+
+* A comment without a thumbs down no longer makes Diagnostics report the whole build as broken.
+
 * There is a daily budget for the feed, off unless you set one. Give it a number of videos or a number of minutes and it says so once when the day is used up. Give it a hold as well and the feed goes behind a countdown for that long, while messages, profiles and search carry on working and nothing in the feed is thrown away. The day starts at four in the morning by default, and you can move that. Both counts and any running hold survive the app being killed. This is separate from the auto-advance limit, which only ever counted videos Hushfeed itself advanced past.
 
 * The converter behind "save an animated sticker as a GIF" is covered by tests for the first time. It now has checks that the frame count and every frame delay survive the conversion, that a patch which replaces what is under it really clears that area first, that a frame asking to be cleared afterwards is, and that a still picture is refused rather than written out as a one-frame animation.

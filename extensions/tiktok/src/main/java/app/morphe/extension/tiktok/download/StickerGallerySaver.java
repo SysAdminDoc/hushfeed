@@ -672,7 +672,10 @@ public final class StickerGallerySaver {
             return MediaFormat.passthrough("image/gif", "gif", false, "GIF");
         }
         if (isWebp(header) || "image/webp".equals(mimeType) || "webp".equals(extension)) {
-            if (animated || isAnimatedWebp(header)) {
+            // The model calls anything whose type merely contains "webp" animated, so the
+            // VP8X animation flag decides it whenever the header was long enough to carry one.
+            boolean readableHeader = header.length >= 21 && isWebp(header);
+            if (readableHeader ? isAnimatedWebp(header) : animated) {
                 return MediaFormat.animated(Settings.DOWNLOAD_STICKER_FORMAT.get());
             }
             return MediaFormat.png();

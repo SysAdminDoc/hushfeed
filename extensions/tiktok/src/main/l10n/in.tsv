@@ -597,8 +597,7 @@ Open a share sheet once, then return here to choose its actions.	Buka lembar ber
 No share actions match this search	Tidak ada tindakan berbagi yang cocok dengan pencarian ini
 Hook status	Status hook
 Nothing has been looked up yet. Use the app for a moment, then come back.	Belum ada yang dicari. Gunakan aplikasi sebentar, lalu kembali ke sini.
-Every hook found what it needed across %d surfaces.	Setiap hook menemukan yang dibutuhkannya di %d permukaan.
-Something is missing from this TikTok build. Tap to see which surface.	Ada yang hilang dari versi TikTok ini. Ketuk untuk melihat permukaan mana.
+Every hook found what it needed across %1$d surfaces.	Setiap hook menemukan yang dibutuhkannya di %d permukaan.
 No surface has looked anything up yet, so there is nothing to report.	Belum ada permukaan yang mencari apa pun, jadi tidak ada yang bisa dilaporkan.
 Daily video budget	Anggaran video harian
 Daily time budget	Anggaran waktu harian
@@ -611,3 +610,6 @@ Less than a minute left	Kurang dari satu menit lagi
 %1$s left	%1$s lagi
 That is the feed for today	Itu feed untuk hari ini
 Messages, profiles and search still work.	Pesan, profil dan pencarian masih berfungsi.
+One surface was checked and found everything it needed.	Satu permukaan diperiksa dan menemukan semua yang dibutuhkannya.
+Something is missing from %1$s. Tap for the whole report.	Ada yang hilang dari %1$s. Ketuk untuk laporan lengkapnya.
+Each surface, how many of the things it looks for are in this build, and how many are not.	Setiap permukaan, berapa banyak hal yang dicarinya ada di versi ini, dan berapa yang tidak.

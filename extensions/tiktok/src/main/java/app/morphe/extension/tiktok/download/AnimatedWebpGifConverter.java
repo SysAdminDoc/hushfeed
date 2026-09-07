@@ -50,6 +50,12 @@ final class AnimatedWebpGifConverter {
             if (width <= 0 || height <= 0 || frameCount <= 0) {
                 throw new IllegalStateException("Invalid animated WebP dimensions or frame count");
             }
+            // libwebp's demuxer stores a still picture as one frame and reports a count of 1,
+            // so "it decoded" is not the same as "it is an animation". Writing that out would
+            // produce a one-frame GIF from a still, which is worse than refusing it.
+            if (frameCount < 2) {
+                throw new IllegalStateException("WebP is a still picture, not an animation");
+            }
             if ((long) width * height * frameCount > MAX_PIXELS) {
                 throw new IllegalStateException("Animated WebP is too large to hold as a GIF");
             }

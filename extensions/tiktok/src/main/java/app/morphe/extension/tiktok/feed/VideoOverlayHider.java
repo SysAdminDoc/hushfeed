@@ -420,11 +420,11 @@ public final class VideoOverlayHider {
         int id = RESOURCE_IDS.resolve(
                 activity == null ? null : activity.getResources(), packageName, name, retryMissing);
         if (id != 0) {
-            HookStatus.bound("overlay", "view id '" + name + "'");
+            HookStatus.bound("overlay", packageName + ':' + name);
             return id;
         }
         if (!retryMissing) {
-            HookStatus.missingViewId("overlay", name);
+            HookStatus.missingViewId("overlay", packageName + ':' + name);
         }
         return id;
     }

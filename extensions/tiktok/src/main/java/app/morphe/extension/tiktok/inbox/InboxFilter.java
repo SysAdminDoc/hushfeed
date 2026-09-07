@@ -470,7 +470,7 @@ public final class InboxFilter {
                 name,
                 false);
         if (id == 0) HookStatus.missingViewId("inbox", name);
-        else HookStatus.bound("inbox", "view id '" + name + "'");
+        else HookStatus.bound("inbox", name);
         return id;
     }
 }

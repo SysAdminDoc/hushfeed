@@ -22,6 +22,10 @@ import java.util.List;
  * runtime is a separate question, and when it does not the switch above still reads on while
  * nothing happens. This row answers that question before someone files a report about a feature
  * that was never running.
+ *
+ * <p>It speaks for the surfaces that report, which are the comments, the inbox, the share sheet,
+ * the feed overlay and the feed models. A patch that reports nothing is not covered by it, so
+ * "everything found what it needed" means everything that is watched, not all 68 patches.
  */
 @SuppressWarnings("deprecation")
 public class HookStatusPreference extends Preference {
@@ -35,8 +39,9 @@ public class HookStatusPreference extends Preference {
     }
 
     /**
-     * Read fresh every time the row is drawn. A surface reports the first time the app opens it,
-     * so the answer changes while the settings screen is still up.
+     * Read whenever the row is drawn, which is when the list binds it. A surface first reports
+     * as the app reaches it, so leaving this screen and coming back is what refreshes the
+     * answer; nothing here pushes an update while the screen is open.
      */
     @Override
     public CharSequence getSummary() {
@@ -46,12 +51,18 @@ public class HookStatusPreference extends Preference {
             return L10n.t(context,
                     "Nothing has been looked up yet. Use the app for a moment, then come back.");
         }
-        if (!HookStatus.anyMissing()) {
-            return L10n.f(context, "Every hook found what it needed across %d surfaces.",
-                    report.size());
+
+        List<String> broken = HookStatus.familiesMissingSomething();
+        if (broken.isEmpty()) {
+            return report.size() == 1
+                    ? L10n.t(context, "One surface was checked and found everything it needed.")
+                    : L10n.f(context, "Every hook found what it needed across %1$d surfaces.",
+                            report.size());
         }
-        return L10n.t(context,
-                "Something is missing from this TikTok build. Tap to see which surface.");
+        // Joined before the call, so the separator is not collected as text to translate.
+        String surfaces = String.join(", ", broken);
+        return L10n.f(context, "Something is missing from %1$s. Tap for the whole report.",
+                surfaces);
     }
 
     private void showReport() {
@@ -62,10 +73,10 @@ public class HookStatusPreference extends Preference {
             message.append(L10n.t(context,
                     "No surface has looked anything up yet, so there is nothing to report."));
         } else {
-            for (String line : report) {
-                if (message.length() > 0) message.append("\n\n");
-                message.append(line);
-            }
+            message.append(L10n.t(context,
+                    "Each surface, how many of the things it looks for are in this build, and "
+                            + "how many are not."));
+            for (String line : report) message.append("\n\n").append(line);
         }
 
         AlertDialog dialog = new AlertDialog.Builder(context)

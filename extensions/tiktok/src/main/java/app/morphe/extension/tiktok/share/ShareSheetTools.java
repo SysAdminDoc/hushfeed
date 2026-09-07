@@ -384,7 +384,7 @@ public final class ShareSheetTools {
         if (id == 0) {
             HookStatus.missingViewId("share sheet", name);
         } else {
-            HookStatus.bound("share sheet", "view id '" + name + "'");
+            HookStatus.bound("share sheet", name);
         }
         return id;
     }

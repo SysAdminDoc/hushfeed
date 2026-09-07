@@ -11,6 +11,7 @@ import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import app.morphe.extension.shared.diagnostics.HookStatus;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.UiCapture;
 import app.morphe.extension.tiktok.settings.preference.TikTokPreferenceFragment;
@@ -98,6 +99,15 @@ public class SettingsPagesTest {
             Settings.AUTO_ADVANCE.save(false);
             Settings.DEFAULT_SPEED_ENABLED.save(true);
             Settings.DEFAULT_SPEED.save("1.5");
+            // The Diagnostics capture is meant to show what a hook report looks like. An empty
+            // registry renders "nothing has been looked up yet", which is the one state that
+            // says nothing about the feature, so the surfaces are seeded the way a few minutes
+            // of use would leave them.
+            HookStatus.clear();
+            HookStatus.bound("overlay", "cover");
+            HookStatus.bound("overlay", "caption");
+            HookStatus.bound("comments", "like_button");
+            HookStatus.missingViewId("comments", "jlk");
             TikTokPreferenceFragment home = new TikTokPreferenceFragment();
             activity.getFragmentManager().beginTransaction().replace(android.R.id.content, home).commit();
             activity.getFragmentManager().executePendingTransactions();

@@ -144,14 +144,30 @@ public class AnimatedWebpGifConverterTest {
 
     @Test
     public void aStillWebpIsRefusedRatherThanWrittenAsAOneFrameGif() {
-        // No ANIM and no ANMF: a plain still, which is what the sticker save must not mistake
-        // for an animation and hand to the GIF encoder.
+        // No ANIM and no ANMF. The decoder does not report this as nothing: libwebp stores the
+        // lone picture as a frame and says the count is one, so "it decoded" and "it is an
+        // animation" are different questions, and only the second one may open the encoder.
         byte[] still = new Webp(8, 6).still().build();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
+        assertEquals("the decoder no longer behaves the way libwebp does for a still",
+                1, WebPImage.create(still).getFrameCount());
         assertThrows(IllegalStateException.class,
                 () -> AnimatedWebpGifConverter.convert(still, out));
         assertEquals("a GIF was written for a still", 0, out.size());
+    }
+
+    @Test
+    public void aSingleFrameAnimationIsRefusedToo() {
+        // One ANMF is not an animation either, and it is the shape a still with alpha or an
+        // EXIF block takes once it has a VP8X header, so it reaches the same guard.
+        byte[] webp = new Webp(8, 6).frame(0, 0, 8, 6, 40, false, false, RED).build();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        assertEquals(1, WebPImage.create(webp).getFrameCount());
+        assertThrows(IllegalStateException.class,
+                () -> AnimatedWebpGifConverter.convert(webp, out));
+        assertEquals(0, out.size());
     }
 
     @Test
@@ -171,8 +187,11 @@ public class AnimatedWebpGifConverterTest {
 
     @Test
     public void aFrameReachingOutsideTheCanvasIsRefused() {
+        // Two frames, because a single-frame file is refused as a still before the loop that
+        // checks where a frame sits ever runs.
         byte[] webp = new Webp(8, 6)
-                .frame(6, 4, 4, 4, 40, false, false, RED)
+                .frame(0, 0, 8, 6, 40, false, false, RED)
+                .frame(6, 4, 4, 4, 70, false, false, GREEN)
                 .build();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 

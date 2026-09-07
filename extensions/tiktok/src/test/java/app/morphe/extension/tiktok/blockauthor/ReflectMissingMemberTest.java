@@ -94,6 +94,6 @@ public class ReflectMissingMemberTest {
     }
 
     private static void clearRegistry() {
-        HookStatus.resetForTests();
+        HookStatus.clear();
     }
 }

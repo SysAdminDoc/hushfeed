@@ -36,7 +36,14 @@ public final class WebPImage {
         this.frames = frames;
     }
 
-    /** The entry point the converter calls; a file with no animation chunks decodes to none. */
+    /**
+      * The entry point the converter calls.
+      *
+      * <p>A file with no ANMF chunks still decodes to one frame, because that is what libwebp's
+      * demuxer does: {@code ParseSingleImage} stores the lone picture as a frame and reports a
+      * frame count of 1. Returning zero here would have let the converter look as though it
+      * refused a still when what it actually does is take the loop once.
+      */
     public static WebPImage create(byte[] data) {
         Reader reader = new Reader(data);
         reader.expect("RIFF");
@@ -57,6 +64,9 @@ public final class WebPImage {
                 frames.add(WebPFrame.parse(reader, payload, size));
             }
             reader.skipTo(payload + size + (size & 1));
+        }
+        if (frames.isEmpty() && width > 0 && height > 0) {
+            frames.add(WebPFrame.still(width, height));
         }
         lastCreated = new WebPImage(width, height, frames);
         return lastCreated;
@@ -121,6 +131,11 @@ public final class WebPImage {
             this.blend = blend;
             this.disposeToBackground = disposeToBackground;
             this.color = color;
+        }
+
+        /** The single frame libwebp reports for a picture with no animation chunks. */
+        static WebPFrame still(int width, int height) {
+            return new WebPFrame(0, 0, width, height, 0, false, false, 0xFF000000);
         }
 
         static WebPFrame parse(Reader reader, int payload, int size) {

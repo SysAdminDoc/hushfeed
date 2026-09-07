@@ -32,12 +32,12 @@ public class LogBufferRedactionTest {
         BaseSettings.DEBUG_LOG_FILTERS.save("downloads");
         LogBufferManager.clearLogBuffer();
         // The export carries a hook table now, and the registry behind it outlives a test class.
-        HookStatus.resetForTests();
+        HookStatus.clear();
     }
 
     @After public void tearDown() {
         LogBufferManager.clearLogBuffer();
-        HookStatus.resetForTests();
+        HookStatus.clear();
     }
 
     @Test public void selectedEventsAreRedactedAtExport() {

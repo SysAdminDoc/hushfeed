@@ -69,6 +69,9 @@ public final class CommentTools {
 
     private static final String APP_PACKAGE = "com.zhiliaoapp.musically";
     private static final String DISLIKE_BUTTON_ID = "jlk";
+
+    /** One log line for a cell with no thumbs down, not a verdict on the build. */
+    private static boolean warnedNoDislikeControl;
     private static final String DISLIKE_ICON_ID = "m3b";
     private static final float BLOCKED_ROW_ALPHA = 0.35f;
     private static final int BLOCKED_TINT = Color.rgb(254, 44, 85);
@@ -165,7 +168,14 @@ public final class CommentTools {
         try {
             View button = cell.findViewById(identifier(cell, DISLIKE_BUTTON_ID));
             if (button == null) {
-                HookStatus.missingView("comments", DISLIKE_BUTTON_ID);
+                // Deliberately not a hook status miss. This runs per comment cell, and a row
+                // variant without the control, or one not fully inflated when the posted
+                // runnable lands, would otherwise mark the whole build broken for good.
+                if (!warnedNoDislikeControl) {
+                    warnedNoDislikeControl = true;
+                    Logger.printInfo(() -> "Comment thumbs down control '" + DISLIKE_BUTTON_ID
+                            + "' not found in this comment cell");
+                }
                 return;
             }
 
@@ -537,7 +547,7 @@ public final class CommentTools {
     private static int identifier(View view, String name) {
         int id = RESOURCE_IDS.resolve(view == null ? null : view.getResources(), APP_PACKAGE, name, false);
         if (id == 0) HookStatus.missingViewId("comments", name);
-        else HookStatus.bound("comments", "view id '" + name + "'");
+        else HookStatus.bound("comments", name);
         return id;
     }
 

@@ -26,7 +26,7 @@ import org.robolectric.annotation.Config;
 public class InboxRowShapesTest {
     @Before public void setUp() {
         Utils.setContext(RuntimeEnvironment.getApplication());
-        HookStatus.resetForTests();
+        HookStatus.clear();
     }
 
     @SuppressWarnings("unused")

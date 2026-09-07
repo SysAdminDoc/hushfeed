@@ -8,11 +8,11 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.settings.preference.LogBufferManager;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * What each hook family found in this TikTok build, and what it did not.
@@ -23,130 +23,144 @@ import java.util.Set;
  * shows a family at a time.
  *
  * <p>Only lookups the caller has no fallback for belong here. Most readers try a getter and
- * then a field, or several shapes of row in turn, and expect most of those to miss.
+ * then a field, or several shapes of row in turn, and expect most of those to miss. Neither
+ * does a condition that varies from row to row: this says whether a build is broken, and a
+ * single comment cell that came up without its thumbs down is not that.
+ *
+ * <p>Reporting runs on the layout callback of a scrolling feed, several times per pass, so an
+ * answer already known has to cost a hash lookup and nothing else. No lock is taken on a
+ * repeat, and the wording of a miss is composed only on the call that records it.
  */
 public final class HookStatus {
-    /** Enough detail to describe a broken build; past this a family stops growing. */
-    private static final int MAX_ENTRIES_PER_FAMILY = 100;
+    /** Enough detail to describe a broken build; past this a family says it stopped counting. */
+    private static final int MAX_ENTRIES_PER_FAMILY = 200;
 
     private static final class Family {
-        final Set<String> bound = new LinkedHashSet<>();
-        final List<String> missing = new ArrayList<>();
+        /** Raw names, so the hot path compares what the caller already holds. */
+        final Set<String> bound = ConcurrentHashMap.newKeySet();
+        final Set<String> missed = ConcurrentHashMap.newKeySet();
+        /** The same misses in the order they arrived, for the first-miss line. */
+        final List<String> order = new CopyOnWriteArrayList<>();
+        volatile boolean truncated;
     }
 
-    /** Insertion ordered so the report reads in the order the app touched each surface. */
-    private static final Map<String, Family> FAMILIES = new LinkedHashMap<>();
+    private static final Map<String, Family> FAMILIES = new ConcurrentHashMap<>();
+    /** Families in the order the app first touched them; the map does not keep that. */
+    private static final List<String> SEEN = new CopyOnWriteArrayList<>();
 
     private HookStatus() {
     }
 
-    /** A lookup that found what it wanted. Repeats of the same {@code detail} count once. */
-    public static void bound(String family, String detail) {
-        synchronized (FAMILIES) {
-            Family entry = family(family);
-            if (entry.bound.size() < MAX_ENTRIES_PER_FAMILY) entry.bound.add(detail);
-        }
-    }
-
-    /** A view this build does not have under the id the extension knows it by. */
-    public static void missingViewId(String family, String name) {
-        record(family, "view id '" + name + "'", "no view id '" + name + "' for " + family);
+    /** A lookup that found what it wanted. A repeat costs one hash lookup and nothing else. */
+    public static void bound(String family, String name) {
+        Family entry = family(family);
+        if (entry.bound.contains(name)) return;
+        if (entry.bound.size() < MAX_ENTRIES_PER_FAMILY) entry.bound.add(name);
     }
 
     /**
-     * A view the id resolves to but that this build does not put where the hook looks for
-     * it. The id existing and the view being there are separate questions, and a layout
-     * TikTok reshuffled answers the first yes and the second no.
+     * A view this build does not have under the id the extension knows it by.
+     *
+     * <p>An id that stays missing is reported again on every layout pass, so the check comes
+     * first and the wording is built only on the pass that records it. Formatting it as an
+     * argument would allocate a string per pass and throw it away.
      */
-    public static void missingView(String family, String name) {
-        record(family, "view '" + name + "'",
-                "no view '" + name + "' where " + family + " looks for it");
+    public static void missingViewId(String family, String name) {
+        Family entry = family(family);
+        if (entry.missed.contains(name)) return;
+        record(entry, family, name, "view id '" + name + "'");
     }
 
     /** A member the extension asked for by name and this build does not have. */
     public static void missingMember(String family, String kind, String owner, String name) {
-        record(family, kind + " " + owner + "#" + name,
-                "no " + kind + " " + owner + "#" + name + " for " + family);
+        Family entry = family(family);
+        String key = owner + '#' + name;
+        if (entry.missed.contains(key)) return;
+        record(entry, family, key, kind + " " + owner + "#" + name);
     }
 
-    private static void record(String family, String detail, String message) {
-        synchronized (FAMILIES) {
-            Family entry = family(family);
-            if (entry.missing.contains(detail)) return;
-            if (entry.missing.size() >= MAX_ENTRIES_PER_FAMILY) return;
-            entry.missing.add(detail);
+    private static void record(Family entry, String family, String key, String detail) {
+        if (entry.missed.size() >= MAX_ENTRIES_PER_FAMILY) {
+            entry.truncated = true;
+            return;
         }
+        if (!entry.missed.add(key)) return;
+        entry.order.add(detail);
 
+        String message = "no " + detail + " for " + family;
         Logger.printInfo(() -> "This TikTok build has " + message);
         LogBufferManager.appendEvent(DiagnosticCategory.PATCH_ERRORS, "HookStatus", "WARN", message);
     }
 
     private static Family family(String name) {
         Family entry = FAMILIES.get(name);
-        if (entry == null) {
-            entry = new Family();
-            FAMILIES.put(name, entry);
-        }
-        return entry;
+        if (entry != null) return entry;
+        Family created = new Family();
+        Family raced = FAMILIES.putIfAbsent(name, created);
+        if (raced != null) return raced;
+        SEEN.add(name);
+        return created;
     }
 
     /** Every lookup that missed, across every family, first miss first. */
     public static List<String> missing() {
         List<String> all = new ArrayList<>();
-        synchronized (FAMILIES) {
-            for (Map.Entry<String, Family> entry : FAMILIES.entrySet()) {
-                for (String detail : entry.getValue().missing) {
-                    all.add(entry.getKey() + ": " + detail);
-                }
-            }
+        for (String name : SEEN) {
+            Family entry = FAMILIES.get(name);
+            if (entry == null) continue;
+            for (String detail : entry.order) all.add(name + ": " + detail);
         }
         return all;
     }
 
     /** What one family looked for and did not find, first miss first. */
     public static List<String> missing(String family) {
-        synchronized (FAMILIES) {
-            Family entry = FAMILIES.get(family);
-            return entry == null ? new ArrayList<>() : new ArrayList<>(entry.missing);
-        }
+        Family entry = FAMILIES.get(family);
+        return entry == null ? new ArrayList<>() : new ArrayList<>(entry.order);
     }
 
     /** True once any family has reported a miss, so a caller can say "all bound" cheaply. */
     public static boolean anyMissing() {
-        synchronized (FAMILIES) {
-            for (Family entry : FAMILIES.values()) {
-                if (!entry.missing.isEmpty()) return true;
-            }
+        for (Family entry : FAMILIES.values()) {
+            if (!entry.order.isEmpty()) return true;
         }
         return false;
+    }
+
+    /** The families missing something, in the order the app first touched them. */
+    public static List<String> familiesMissingSomething() {
+        List<String> names = new ArrayList<>();
+        for (String name : SEEN) {
+            Family entry = FAMILIES.get(name);
+            if (entry != null && !entry.order.isEmpty()) names.add(name);
+        }
+        return names;
     }
 
     /**
      * One line per family it has heard from: how many lookups bound, how many did not, and the
      * first thing that went missing. A family nothing has touched yet says nothing, because a
-     * hook that has not run cannot be called broken.
+     * hook that has not run cannot be called broken. A family that stopped counting says so,
+     * rather than letting a catastrophically broken build read like a mildly broken one.
      */
     public static List<String> report() {
         List<String> lines = new ArrayList<>();
-        synchronized (FAMILIES) {
-            for (Map.Entry<String, Family> named : FAMILIES.entrySet()) {
-                Family entry = named.getValue();
-                StringBuilder line = new StringBuilder(named.getKey())
-                        .append(": ").append(entry.bound.size()).append(" bound, ")
-                        .append(entry.missing.size()).append(" unbound");
-                if (!entry.missing.isEmpty()) {
-                    line.append("; first miss: ").append(entry.missing.get(0));
-                }
-                lines.add(line.toString());
-            }
+        for (String name : SEEN) {
+            Family entry = FAMILIES.get(name);
+            if (entry == null) continue;
+            StringBuilder line = new StringBuilder(name)
+                    .append(": ").append(entry.bound.size()).append(" bound, ")
+                    .append(entry.order.size()).append(" unbound");
+            if (entry.truncated) line.append(" and more it stopped counting");
+            if (!entry.order.isEmpty()) line.append("; first miss: ").append(entry.order.get(0));
+            lines.add(line.toString());
         }
         return lines;
     }
 
-    /** Cleared between tests; nothing in the app resets this. */
-    public static void resetForTests() {
-        synchronized (FAMILIES) {
-            FAMILIES.clear();
-        }
+    /** Forgets everything, which is what clearing the diagnostic data does. */
+    public static void clear() {
+        FAMILIES.clear();
+        SEEN.clear();
     }
 }

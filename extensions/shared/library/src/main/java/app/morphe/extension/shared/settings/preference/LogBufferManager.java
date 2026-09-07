@@ -234,15 +234,23 @@ public final class LogBufferManager {
             events.append(DiagnosticRedactor.redact(event.format()));
         }
 
+        // Hook misses are buffered under PATCH_ERRORS, so the table follows the same choice
+        // the reader made in "Included diagnostics" rather than printing regardless. It goes
+        // through the redactor for the same reason every other section does: the next name put
+        // in it may not be a literal.
         StringBuilder hooks = new StringBuilder();
-        for (String line : app.morphe.extension.shared.diagnostics.HookStatus.report()) {
-            if (hooks.length() > 0) hooks.append('\n');
-            hooks.append(line);
+        if (includeAll || selected.contains(
+                app.morphe.extension.shared.diagnostics.DiagnosticCategory.PATCH_ERRORS.value)) {
+            for (String line : app.morphe.extension.shared.diagnostics.HookStatus.report()) {
+                if (hooks.length() > 0) hooks.append('\n');
+                hooks.append(DiagnosticRedactor.redact(line));
+            }
         }
 
-        if (crash.isEmpty() && npthCrash.isEmpty() && events.length() == 0 && hooks.length() == 0) {
-            return "";
-        }
+        // Deliberately not part of this decision. A family exists from the first layout pass, so
+        // counting the table here would mean a report is never empty and "No matching Morphe
+        // diagnostics found" could never be said again.
+        if (crash.isEmpty() && npthCrash.isEmpty() && events.length() == 0) return "";
 
         StringBuilder report = new StringBuilder();
         report.append("MORPHE DIAGNOSTIC REPORT\n")
@@ -340,6 +348,7 @@ public final class LogBufferManager {
 
     public static void clearLogBuffer() {
         clearLogBufferData();
+        app.morphe.extension.shared.diagnostics.HookStatus.clear();
         clearCrashReports(Utils.getContext());
         Utils.showToastShort("Morphe diagnostic data cleared.");
     }
