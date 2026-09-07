@@ -79,6 +79,8 @@ public final class CommentTools {
     private static final Set<String> BLOCKED_UIDS = Collections.synchronizedSet(new HashSet<>());
 
     private static final ResourceIdCache RESOURCE_IDS = new ResourceIdCache();
+    /** View ids this build does not have, so the miss is said once rather than per bound cell. */
+    private static final Set<String> MISSING_VIEW_IDS = Collections.synchronizedSet(new HashSet<>());
     private static final DislikeTouchListener DISLIKE_TOUCH = new DislikeTouchListener();
 
     private static volatile boolean blockInFlight;
@@ -537,8 +539,13 @@ public final class CommentTools {
         return false;
     }
 
+    /** Resolves a comment view id, saying so once when this build does not have it. */
     private static int identifier(View view, String name) {
-        return RESOURCE_IDS.resolve(view == null ? null : view.getResources(), APP_PACKAGE, name, false);
+        int id = RESOURCE_IDS.resolve(view == null ? null : view.getResources(), APP_PACKAGE, name, false);
+        if (id == 0 && MISSING_VIEW_IDS.add(name)) {
+            Logger.printInfo(() -> "Comment view id '" + name + "' not found in this TikTok build");
+        }
+        return id;
     }
 
     private static List<String> entries(String stored) {
