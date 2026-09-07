@@ -1,6 +1,7 @@
 package app.morphe.patches.tiktok.interaction.antirecording
 
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.util.findMutableMethodOf
@@ -36,11 +37,15 @@ val antiRecordingPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
+        var returnedEarly = 0
         listOf(
             antiRecordingAddedFingerprint,
             antiRecordingRemovedFingerprint,
         ).forEach { fingerprint ->
-            fingerprint.methodOrNull?.returnEarly()
+            fingerprint.methodOrNull?.let {
+                it.returnEarly()
+                returnedEarly++
+            }
         }
 
         val callSites = mutableListOf<ScreenCaptureCallSite>()
@@ -67,6 +72,21 @@ val antiRecordingPatch = bytecodePatch(
                     callSites += ScreenCaptureCallSite(classDef, method, indexes)
                 }
             }
+        }
+
+        // Both anchors are optional and the sweep is allowed to find nothing, so with neither
+        // resolving the patch reported Applied, added its setting, and left screen capture
+        // detection exactly as it was. That is the case the header warns about: a build calling
+        // the API through a subclass reference, or declaring the permission.
+        if (returnedEarly == 0 && callSites.isEmpty()) {
+            throw PatchException(
+                "Screen capture detection was not found. Neither " +
+                    "antiRecordingAddedFingerprint nor antiRecordingRemovedFingerprint resolved, " +
+                    "and no call to Activity.registerScreenCaptureCallback or " +
+                    "unregisterScreenCaptureCallback was reached. This build likely calls it " +
+                    "through a subclass reference or declares DETECT_SCREEN_CAPTURE, either of " +
+                    "which needs the manifest cleanup described above.",
+            )
         }
 
         callSites.forEach { callSite ->
