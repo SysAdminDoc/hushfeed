@@ -22,11 +22,12 @@ public class NumberInputPreference extends EditTextPreference {
     private final IntegerSetting setting;
     private final int minValue;
     private final int maxValue;
-    private final String unit;
+    private final String singularUnit;
+    private final String pluralUnit;
 
     public NumberInputPreference(Context context, String title, String summary,
                                  IntegerSetting setting) {
-        this(context, title, summary, setting, "videos");
+        this(context, title, summary, setting, "video", "videos");
     }
 
     /**
@@ -36,11 +37,18 @@ public class NumberInputPreference extends EditTextPreference {
      */
     public NumberInputPreference(Context context, String title, String summary,
                                  IntegerSetting setting, String unit) {
+        this(context, title, summary, setting, unit, unit);
+    }
+
+    /** Uses the singular label only for one; zero and every other value use the plural. */
+    public NumberInputPreference(Context context, String title, String summary,
+                                 IntegerSetting setting, String singularUnit, String pluralUnit) {
         super(context);
         if (!setting.hasRange()) {
             throw new IllegalArgumentException(setting.key + " has no range to offer");
         }
-        this.unit = unit;
+        this.singularUnit = singularUnit;
+        this.pluralUnit = pluralUnit;
         this.baseSummary = summary;
         this.setting = setting;
         this.minValue = setting.minimum();
@@ -60,7 +68,12 @@ public class NumberInputPreference extends EditTextPreference {
         String text = String.valueOf(clampedValue);
         setText(text);
         setSummary(L10n.t(getContext(), baseSummary) + "\n"
-                + L10n.f(getContext(), "Current: %1$s %2$s", text, L10n.t(getContext(), unit)));
+                + L10n.f(getContext(), "Current: %1$s %2$s", text,
+                L10n.t(getContext(), unitForValue(clampedValue))));
+    }
+
+    private String unitForValue(int value) {
+        return value == 1 ? singularUnit : pluralUnit;
     }
 
     @Override

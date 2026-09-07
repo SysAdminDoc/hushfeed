@@ -162,6 +162,8 @@ Select `Automatic video advance` in the patcher, then enable Advance when a vide
 
 Foldable controls are in App behavior. Settings save immediately. A notification tells you when to restart TikTok.
 
+Numeric feed limits show their actual unit with language-aware singular and plural labels.
+
 <img src="assets/settings/behavior.png" alt="Foldable comment settings" width="300" />
 
 Region spoof requires Override SIM details plus Match locale and timezone to country in Region settings. Each built-in country preset supplies a timezone. Country codes must be two ASCII letters. Locale scripts and extensions are retained, including when a legacy variant needs fallback handling. Restart TikTok after changing these settings. Enable the separate store-region option only if needed; it can affect search. GPS and the network address stay unchanged.

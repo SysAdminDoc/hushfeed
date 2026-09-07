@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Numeric settings now label their values as seconds, days or views per like where those units apply, with singular and plural wording in English, German and Indonesian. Existing stored values and unitless controls keep their behavior.
+
 * Support forms now capture the TikTok package and version, Morphe and Hushfeed versions, selected patches, affected surface and ordered settings changes. `validate-release-facts.ps1` checks those public release facts and the runtime test count before an index is published, rejects failed, errored or skipped test cases, and the bundle description explains that diagnostic exports redact signed URLs and credentials.
 
 * Release dependency resolution now disables `mavenLocal()` after the Morphe settings plugin adds its own repository, unless `-PallowMavenLocal=true` is supplied. The reviewed graph is recorded in Gradle verification metadata with SHA-256 checksums, and the wrapper distribution checksum now matches Gradle's published 9.7.1 binary while the smali and Morphe patcher pins remain intact.

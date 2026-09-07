@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1104);
+        Map<String, String> table = new HashMap<>(1116);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -1069,8 +1069,6 @@ public final class L10nTranslations {
                 "Der Daumen runter an jedem Kommentar blockiert das Konto, das ihn geschrieben hat, statt ihn abzulehnen. Der Kommentar wird abgedunkelt, ein Rückgängig-Banner folgt, und ein zweites Tippen hebt die Blockierung auf. Wirkt nach einem Neustart.");
         table.put("The video couldn't be saved. Try again, or choose Automatic.",
                 "Das Video konnte nicht gespeichert werden. Versuche es noch einmal oder wähle Automatisch.");
-        table.put("Too many media saves are already running. Try again shortly.",
-                "Es laufen bereits zu viele Medienspeicherungen. Versuche es gleich noch einmal.");
         table.put("There was nothing to clear",
                 "Es gab nichts zu löschen");
         table.put("There was nothing to put back",
@@ -1103,6 +1101,8 @@ public final class L10nTranslations {
                 "Platzhalter: {creator}, {date}, {video_id}. Die Dateiendung bleibt automatisch erhalten.");
         table.put("Tokens: {date}, {media_id}. Works for image and video stickers.",
                 "Platzhalter: {date}, {media_id}. Gilt für Bild- und Video-Sticker.");
+        table.put("Too many media saves are already running. Try again shortly.",
+                "Es laufen bereits zu viele Medienspeicherungen. Versuche es gleich noch einmal.");
         table.put("Translate comments as they load, using TikTok's own translator.",
                 "Kommentare beim Laden übersetzen, mit TikToks eigenem Übersetzer.");
         table.put("Transparent",
@@ -1163,11 +1163,11 @@ public final class L10nTranslations {
                 "Wartezeit, bevor die Bedienelemente ausgeblendet werden.");
         table.put("WebP, exactly as TikTok sent it",
                 "WebP, genau so wie TikTok es geschickt hat");
-        table.put("Window width needed to enable the layout. Restart after changing.",
-                "Fensterbreite, ab der das Layout aktiv wird. Nach dem Ändern neu starten.");
     }
 
     private static void fillDe9(Map<String, String> table) {
+        table.put("Window width needed to enable the layout. Restart after changing.",
+                "Fensterbreite, ab der das Layout aktiv wird. Nach dem Ändern neu starten.");
         table.put("Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.",
                 "Den Ton des Videos daneben als .m4a speichern. Ab Android 10 wird Audio getrennt abgelegt, also landet die Datei unter Music im Ordner mit dem Namen deines Videoordners.");
         table.put("YOUR EXPERIENCE",
@@ -1178,6 +1178,8 @@ public final class L10nTranslations {
                 "Der Zahlencode deines Anbieters, etwa 310260.");
         table.put("code %1$s",
                 "Code %1$s");
+        table.put("day",
+                "Tag");
         table.put("days",
                 "Tage");
         table.put("dp",
@@ -1186,16 +1188,24 @@ public final class L10nTranslations {
                 "ms");
         table.put("or",
                 "oder");
+        table.put("second",
+                "Sekunde");
+        table.put("seconds",
+                "Sekunden");
         table.put("sp",
                 "sp");
         table.put("us, gb, jp, ...",
                 "us, gb, jp, ...");
         table.put("videos",
                 "Videos");
+        table.put("view per like",
+                "Aufruf pro Like");
+        table.put("views per like",
+                "Aufrufe pro Like");
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1104);
+        Map<String, String> table = new HashMap<>(1116);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2220,8 +2230,6 @@ public final class L10nTranslations {
                 "Jempol ke bawah pada tiap komentar memblokir akun yang menulisnya, bukan menandai tidak suka. Komentarnya meredup, muncul spanduk untuk mengurungkan, dan ketukan kedua membuka blokirnya. Berlaku setelah mulai ulang.");
         table.put("The video couldn't be saved. Try again, or choose Automatic.",
                 "Videonya tidak bisa disimpan. Coba lagi, atau pilih Otomatis.");
-        table.put("Too many media saves are already running. Try again shortly.",
-                "Terlalu banyak penyimpanan media yang sedang berjalan. Coba lagi sebentar.");
         table.put("There was nothing to clear",
                 "Tidak ada yang bisa dihapus");
         table.put("There was nothing to put back",
@@ -2254,6 +2262,8 @@ public final class L10nTranslations {
                 "Token: {creator}, {date}, {video_id}. Ekstensi berkas dipertahankan otomatis.");
         table.put("Tokens: {date}, {media_id}. Works for image and video stickers.",
                 "Token: {date}, {media_id}. Berlaku untuk stiker gambar dan video.");
+        table.put("Too many media saves are already running. Try again shortly.",
+                "Terlalu banyak penyimpanan media yang sedang berjalan. Coba lagi sebentar.");
         table.put("Translate comments as they load, using TikTok's own translator.",
                 "Terjemahkan komentar saat dimuat, memakai penerjemah TikTok sendiri.");
         table.put("Transparent",
@@ -2314,11 +2324,11 @@ public final class L10nTranslations {
                 "Tunggu sebelum kontrol disembunyikan.");
         table.put("WebP, exactly as TikTok sent it",
                 "WebP, persis seperti yang dikirim TikTok");
-        table.put("Window width needed to enable the layout. Restart after changing.",
-                "Lebar jendela yang dibutuhkan agar tata letak ini aktif. Mulai ulang setelah mengubahnya.");
     }
 
     private static void fillIn9(Map<String, String> table) {
+        table.put("Window width needed to enable the layout. Restart after changing.",
+                "Lebar jendela yang dibutuhkan agar tata letak ini aktif. Mulai ulang setelah mengubahnya.");
         table.put("Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.",
                 "Simpan suara video di sebelahnya sebagai .m4a. Android 10 ke atas menyimpan audio secara terpisah, jadi berkasnya masuk ke Music dengan nama folder yang sama seperti folder videomu.");
         table.put("YOUR EXPERIENCE",
@@ -2329,6 +2339,8 @@ public final class L10nTranslations {
                 "Kode angka operatormu, misalnya 310260.");
         table.put("code %1$s",
                 "kode %1$s");
+        table.put("day",
+                "hari");
         table.put("days",
                 "hari");
         table.put("dp",
@@ -2337,11 +2349,19 @@ public final class L10nTranslations {
                 "ms");
         table.put("or",
                 "atau");
+        table.put("second",
+                "detik");
+        table.put("seconds",
+                "detik");
         table.put("sp",
                 "sp");
         table.put("us, gb, jp, ...",
                 "us, gb, jp, ...");
         table.put("videos",
                 "video");
+        table.put("view per like",
+                "tayangan per like");
+        table.put("views per like",
+                "tayangan per like");
     }
 }

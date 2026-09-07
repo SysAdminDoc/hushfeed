@@ -120,6 +120,7 @@ Current: %1$s %2$s	Aktuell: %1$s %2$s
 Custom offline videos	Eigene Offline-Videos
 Custom SIM details	Eigene SIM-Angaben
 Dark	Dunkel
+day	Tag
 days	Tage
 Days to remember a video. Zero removes the age limit. History keeps at most 10,000 videos.	Tage, die ein Video gemerkt wird. Null hebt die Altersgrenze auf. Der Verlauf behält höchstens 10.000 Videos.
 Default playback speed	Standard-Wiedergabegeschwindigkeit
@@ -413,6 +414,8 @@ Search these comments	Diese Kommentare durchsuchen
 Search without personalisation, whatever your account is set to.	Ohne Personalisierung suchen, unabhängig von deiner Kontoeinstellung.
 Seconds. Zero keeps every length. If a whole batch would be filtered out, the video closest to your limit is kept so the feed is not empty.	Sekunden. Null behält jede Länge. Würde ein ganzer Schwung wegfallen, bleibt das Video, das deinem Limit am nächsten kommt, damit der Feed nicht leer ist.
 Seconds. Zero keeps every length. If only quality rules reject a page, keep the nearest allowed candidate.	Sekunden. Null lässt jede Länge zu. Lehnen nur Qualitätsregeln eine Seite ab, bleibt der nächstliegende erlaubte Kandidat erhalten.
+second	Sekunde
+seconds	Sekunden
 Seek by	Sprungweite
 Seek from the edges	Von den Rändern springen
 Seen video history cleared	Verlauf gesehener Videos gelöscht
@@ -453,6 +456,8 @@ Skipping videos with %1$s	Videos mit %1$s werden übersprungen
 Sound saved to %1$s	Sound gespeichert unter %1$s
 Source code and releases	Quellcode und Versionen
 sp	sp
+view per like	Aufruf pro Like
+views per like	Aufrufe pro Like
 Speed menu choices	Auswahl im Geschwindigkeitsmenü
 Split comment minimum width	Mindestbreite für geteilte Kommentare
 Start each new video at your default. A manual choice lasts until the video changes.	Jedes neue Video mit deinem Standard starten. Eine manuelle Auswahl gilt, bis das Video wechselt.

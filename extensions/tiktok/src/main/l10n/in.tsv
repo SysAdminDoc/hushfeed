@@ -120,6 +120,7 @@ Current: %1$s %2$s	Saat ini: %1$s %2$s
 Custom offline videos	Video offline khusus
 Custom SIM details	Detail SIM khusus
 Dark	Gelap
+day	hari
 days	hari
 Days to remember a video. Zero removes the age limit. History keeps at most 10,000 videos.	Jumlah hari sebuah video diingat. Nol menghapus batas usia. Riwayat menyimpan paling banyak 10.000 video.
 Default playback speed	Kecepatan pemutaran bawaan
@@ -413,6 +414,8 @@ Search these comments	Cari di komentar ini
 Search without personalisation, whatever your account is set to.	Cari tanpa personalisasi, apa pun setelan akunmu.
 Seconds. Zero keeps every length. If a whole batch would be filtered out, the video closest to your limit is kept so the feed is not empty.	Detik. Nol menyimpan semua durasi. Kalau satu batch penuh akan tersaring habis, video yang paling dekat dengan batasmu tetap ada agar feed tidak kosong.
 Seconds. Zero keeps every length. If only quality rules reject a page, keep the nearest allowed candidate.	Dalam detik. Nol berarti semua durasi ditampilkan. Jika hanya aturan kualitas yang menolak satu halaman, video terdekat yang masih diizinkan tetap dipertahankan.
+second	detik
+seconds	detik
 Seek by	Jarak lompatan
 Seek from the edges	Lompat dari tepi layar
 Seen video history cleared	Riwayat video yang sudah ditonton dihapus
@@ -453,6 +456,8 @@ Skipping videos with %1$s	Melewati video dengan %1$s
 Sound saved to %1$s	Suara disimpan di %1$s
 Source code and releases	Kode sumber dan rilis
 sp	sp
+view per like	tayangan per like
+views per like	tayangan per like
 Speed menu choices	Pilihan di menu kecepatan
 Split comment minimum width	Lebar minimum tata letak terbagi
 Start each new video at your default. A manual choice lasts until the video changes.	Mulai tiap video baru pada kecepatan pilihanmu. Pilihan manual bertahan sampai videonya berganti.

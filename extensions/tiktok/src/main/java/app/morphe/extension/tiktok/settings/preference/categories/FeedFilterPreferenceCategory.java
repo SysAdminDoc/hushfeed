@@ -40,8 +40,8 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
                 Settings.REGION_NEVER_FROM));
         addPreference(new InputTextPreference(context, "Blocked creators", "Comma separated account handles or user ids. These accounts are always skipped. An entry between slashes, like /^news_/, is a pattern matched against the handle and the display name.", Settings.BLOCKED_CREATORS)
                 .withCheck(AdvancedFeedRules::creatorEntryProblem));
-        addPreference(new NumberInputPreference(context, "Maximum video length", "Seconds. Zero keeps every length. If a whole batch would be filtered out, the video closest to your limit is kept so the feed is not empty.", Settings.MAX_VIDEO_SECONDS));
-        addPreference(new NumberInputPreference(context, "Maximum views per like", "Hide videos with a lot of views and few likes. Lower numbers are stricter, zero turns the rule off, and one video is kept back if a whole batch would go.", Settings.MAX_VIEWS_PER_LIKE));
+        addPreference(new NumberInputPreference(context, "Maximum video length", "Seconds. Zero keeps every length. If a whole batch would be filtered out, the video closest to your limit is kept so the feed is not empty.", Settings.MAX_VIDEO_SECONDS, "second", "seconds"));
+        addPreference(new NumberInputPreference(context, "Maximum views per like", "Hide videos with a lot of views and few likes. Lower numbers are stricter, zero turns the rule off, and one video is kept back if a whole batch would go.", Settings.MAX_VIEWS_PER_LIKE, "view per like", "views per like"));
         addPreference(new TogglePreference(context, "Hide promotional music", "Skip videos marked as using promotional music.", Settings.HIDE_PROMOTIONAL_MUSIC));
         addPreference(new TogglePreference(context, "Hide LIVE replays", "Skip recorded LIVE broadcasts in the feed.", Settings.HIDE_LIVE_REPLAYS));
         addPreference(new TogglePreference(
@@ -154,7 +154,7 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
                     context,
                     "Forget seen videos after",
                     "Days to remember a video. Zero removes the age limit. History keeps at most 10,000 videos.",
-                    Settings.SEEN_VIDEO_RETENTION_DAYS
+                    Settings.SEEN_VIDEO_RETENTION_DAYS, "day", "days"
             ));
             addPreference(new ClearSeenVideoHistoryPreference(context));
         }
