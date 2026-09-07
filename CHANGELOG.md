@@ -1,5 +1,7 @@
 ## 0.21.0 (2026-09-07)
 
+* Saving a sticker tells you where it went, not where it asked to go. The gallery renames a duplicate, so saving the same sticker twice used to report a path with nothing at it.
+
 * The daily feed budget no longer costs anything when it is switched off, which is how it ships. It counted and wrote to storage on every player report whether or not a budget was set, several times a second. Nothing is counted now until a number goes in, the record is written on a background thread, and the watched time is committed in steps rather than on every report.
 
 * Moving the hour the day starts at, or crossing a timezone, no longer hands back a budget that has been spent. Raising a budget now also lifts a hold that was running under the old one, and a hold no longer charges you for the videos playing behind it.

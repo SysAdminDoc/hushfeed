@@ -295,6 +295,37 @@ public class AdvancedDownloadsTest {
     }
 
     /**
+     * A creator name past the cap, through the path TikTok's own download takes.
+     *
+     * <p>That path fills the template beside the staging file, so it has its own trimming to do
+     * and its own counter to keep. Losing that counter to the cut is what once left every photo
+     * of a slideshow resolving to one name, and the tests that covered it went with the
+     * collision probe they were written around.
+     */
+    @Test public void aTemplateWithACounterStaysInsideTheLimitFromTheRegistrationPath()
+            throws IOException {
+        Utils.setContext(RuntimeEnvironment.getApplication());
+        String photoTemplate = Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.get();
+        try {
+            Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save("{creator}_{index}");
+            File folder = Files.createTempDirectory("hushfeed-registration-cap").toFile();
+            // Multi-byte, so 200 characters are 400 bytes and both budgets have to bite.
+            Item post = new Item("\u00e9".repeat(200), "7712345");
+
+            String name = resolveSavedName(folder, "source_1.jpg", post);
+
+            assertTrue(name + " is " + name.getBytes(StandardCharsets.UTF_8).length + " bytes",
+                    name.getBytes(StandardCharsets.UTF_8).length <= 255);
+            assertTrue(name + " is " + name.length() + " characters", name.length() <= 165);
+            // The counter survived the cut, which is the whole point of the bounded name.
+            assertTrue("the counter was trimmed away: " + name, name.contains("_1."));
+            assertTrue(name, name.startsWith("\u00e9"));
+        } finally {
+            Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save(photoTemplate);
+        }
+    }
+
+    /**
      * Where a taken name is actually settled, on the versions that write real files.
      *
      * <p>The formatter works out its name beside TikTok's private staging file, which is in the

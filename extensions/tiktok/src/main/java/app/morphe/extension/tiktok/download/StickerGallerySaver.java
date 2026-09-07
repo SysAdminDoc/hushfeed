@@ -8,6 +8,7 @@ package app.morphe.extension.tiktok.download;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -331,7 +332,7 @@ public final class StickerGallerySaver {
                         }
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             Uri uri = saveAnimatedWebpMp4WithMediaStore(context, animatedWebp, displayName);
-                            return SaveResult.success(displayPath(displayName, true), uri.toString(), "MP4");
+                            return SaveResult.success(savedPath(context, uri, displayName, true), uri.toString(), "MP4");
                         }
 
                         File outputFile = saveAnimatedWebpMp4WithLegacyStorage(context, animatedWebp, displayName);
@@ -345,7 +346,7 @@ public final class StickerGallerySaver {
                         try (InputStream bytes = new java.io.ByteArrayInputStream(animatedWebp)) {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                                 Uri uri = saveStreamWithMediaStore(context, bytes, webpName, sourceFormat);
-                                return SaveResult.success(displayPath(webpName, false),
+                                return SaveResult.success(savedPath(context, uri, webpName, false),
                                         uri.toString(), sourceFormat.label);
                             }
                             File saved = saveStreamWithLegacyStorage(context, bytes, webpName, sourceFormat.mimeType);
@@ -357,7 +358,8 @@ public final class StickerGallerySaver {
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     Uri uri = saveStreamWithMediaStore(context, inputStream, displayName, format);
-                    return SaveResult.success(displayPath(displayName, format.video), uri.toString(), format.label);
+                    return SaveResult.success(savedPath(context, uri, displayName, format.video),
+                            uri.toString(), format.label);
                 }
 
                 File outputFile = saveStreamWithLegacyStorage(context, inputStream, displayName, format.mimeType);
@@ -371,7 +373,7 @@ public final class StickerGallerySaver {
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     Uri uri = saveBitmapWithMediaStore(context, bitmap, displayName);
-                    return SaveResult.success(displayPath(displayName, false), uri.toString(), "PNG");
+                    return SaveResult.success(savedPath(context, uri, displayName, false), uri.toString(), "PNG");
                 }
 
                 File outputFile = saveBitmapWithLegacyStorage(context, bitmap, displayName);
@@ -533,7 +535,7 @@ public final class StickerGallerySaver {
                             AnimatedWebpGifConverter.convert(animatedWebp, output);
                         }
                     });
-            return SaveResult.success(displayPath(displayName, video), uri.toString(), label);
+            return SaveResult.success(savedPath(context, uri, displayName, video), uri.toString(), label);
         }
 
         File outputFile = saveWithLegacyStorage(context, displayName, mimeType, video,
@@ -580,6 +582,28 @@ public final class StickerGallerySaver {
 
     private static String displayPath(String displayName, boolean video) {
         return stickerRelativePath(video) + "/" + displayName;
+    }
+
+    /**
+     * Where a sticker actually landed.
+     *
+     * <p>The display name handed to MediaStore is a request. Saving the same sticker twice gets
+     * the second one a suffix of the provider's choosing, and telling the reader the name that
+     * was asked for points them at a file that is not the one just written. Falls back to the
+     * requested name, because a path that is probably right beats no path at all.
+     */
+    private static String savedPath(Context context, Uri uri, String requestedName, boolean video) {
+        String name = requestedName;
+        try (Cursor cursor = context.getContentResolver().query(
+                uri, new String[]{MediaStore.MediaColumns.DISPLAY_NAME}, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                String saved = cursor.getString(0);
+                if (saved != null && !saved.isEmpty()) name = saved;
+            }
+        } catch (RuntimeException unreadable) {
+            debugLog("[Morphe Stickers] could not read the saved name back: " + unreadable);
+        }
+        return displayPath(name, video);
     }
 
     private static void writePng(Bitmap bitmap, OutputStream outputStream) throws Exception {
