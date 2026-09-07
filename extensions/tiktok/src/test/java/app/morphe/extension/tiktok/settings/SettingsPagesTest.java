@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Looper;
 import android.preference.Preference;
+import android.graphics.drawable.Drawable;
+import android.widget.CheckedTextView;
 import android.widget.ListView;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.UiCapture;
@@ -140,6 +142,17 @@ public class SettingsPagesTest {
             Shadows.shadowOf(Looper.getMainLooper()).idle();
             UiCapture.save(dialog.getWindow().getDecorView(), "pages/dark/speed-picker.png");
             ListView choices = dialog.getListView();
+            int selected = -1;
+            int unselected = -1;
+            for (int position = 0; position < choices.getChildCount(); position++) {
+                CheckedTextView row = findCheckedTextView(choices.getChildAt(position));
+                if (row != null && row.isChecked()) selected = position;
+                if (row != null && !row.isChecked() && unselected < 0) unselected = position;
+            }
+            assertTrue(selected >= 0);
+            assertTrue(unselected >= 0);
+            assertChoiceIndicator(choices, selected, true, true);
+            assertChoiceIndicator(choices, unselected, false, true);
             choices.performItemClick(null, 0, choices.getAdapter().getItemId(0));
             Shadows.shadowOf(Looper.getMainLooper()).idle();
             assertEquals("0.5", Settings.DEFAULT_SPEED.get());
@@ -174,5 +187,31 @@ public class SettingsPagesTest {
         activity.getFragmentManager().executePendingTransactions();
         Shadows.shadowOf(Looper.getMainLooper()).idle();
         return fragment;
+    }
+
+    private static void assertChoiceIndicator(ListView list, int position, boolean checked, boolean radio)
+            throws Exception {
+        CheckedTextView row = findCheckedTextView(list.getChildAt(position));
+        assertNotNull(row);
+        assertEquals(checked, row.isChecked());
+        assertNull(row.getCheckMarkDrawable());
+        Drawable indicator = row.getCompoundDrawablesRelative()[0];
+        assertNotNull(indicator);
+        assertEquals("DialogCheckMarkDrawable", indicator.getClass().getSimpleName());
+        Field field = indicator.getClass().getDeclaredField("radio");
+        field.setAccessible(true);
+        assertEquals(radio, field.getBoolean(indicator));
+    }
+
+    private static CheckedTextView findCheckedTextView(android.view.View view) {
+        if (view instanceof CheckedTextView) return (CheckedTextView) view;
+        if (view instanceof android.view.ViewGroup) {
+            android.view.ViewGroup group = (android.view.ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                CheckedTextView result = findCheckedTextView(group.getChildAt(i));
+                if (result != null) return result;
+            }
+        }
+        return null;
     }
 }

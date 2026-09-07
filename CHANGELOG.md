@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Native settings lists now use one selection indicator. Single-choice rows draw a radio at the leading edge and multi-choice rows draw a checkbox there, while the platform list adapter still owns checked state, selection and dismissal.
+
 * Numeric settings now label their values as seconds, days or views per like where those units apply, with singular and plural wording in English, German and Indonesian. Existing stored values and unitless controls keep their behavior.
 
 * Support forms now capture the TikTok package and version, Morphe and Hushfeed versions, selected patches, affected surface and ordered settings changes. `validate-release-facts.ps1` checks those public release facts and the runtime test count before an index is published, rejects failed, errored or skipped test cases, and the bundle description explains that diagnostic exports redact signed URLs and credentials.

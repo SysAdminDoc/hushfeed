@@ -322,17 +322,18 @@ public final class SettingsUi {
             return;
         }
 
-        makeDialogPanelsTransparent(window.getDecorView(), dialog.getContext());
-        styleDialogText(window.getDecorView());
-
         ListView list = dialog.getListView();
+        boolean radio = list != null && list.getChoiceMode() == ListView.CHOICE_MODE_SINGLE;
+        makeDialogPanelsTransparent(window.getDecorView(), dialog.getContext());
+        styleDialogText(window.getDecorView(), radio);
+
         if (list != null) {
             list.setBackgroundColor(Color.TRANSPARENT);
             list.setDivider(new ColorDrawable(divider()));
             list.setDividerHeight(Math.max(1, dp(dialog.getContext(), 1)));
             list.post(() -> {
-                styleDialogText(list);
-                list.postDelayed(() -> styleDialogText(list), 50);
+                styleDialogText(list, radio);
+                list.postDelayed(() -> styleDialogText(list, radio), 50);
             });
         }
 
@@ -375,7 +376,7 @@ public final class SettingsUi {
         }
     }
 
-    private static void styleDialogText(View view) {
+    private static void styleDialogText(View view, boolean radio) {
         if (view instanceof CheckBox) {
             CheckBox checkBox = (CheckBox) view;
             checkBox.setTextColor(textPrimary());
@@ -383,7 +384,11 @@ public final class SettingsUi {
         } else if (view instanceof CheckedTextView) {
             CheckedTextView checkedTextView = (CheckedTextView) view;
             checkedTextView.setTextColor(textPrimary());
-            checkedTextView.setCheckMarkDrawable(new DialogCheckMarkDrawable(checkedTextView.getContext()));
+            Drawable[] drawables = checkedTextView.getCompoundDrawablesRelative();
+            checkedTextView.setCheckMarkDrawable(null);
+            checkedTextView.setCompoundDrawablesRelative(
+                    new DialogCheckMarkDrawable(checkedTextView.getContext(), radio),
+                    drawables[1], drawables[2], drawables[3]);
         } else if (view instanceof Button) {
             ((Button) view).setTextColor(accent());
         } else if (view instanceof TextView) {
@@ -393,7 +398,7 @@ public final class SettingsUi {
         if (view instanceof ViewGroup) {
             ViewGroup group = (ViewGroup) view;
             for (int i = 0; i < group.getChildCount(); i++) {
-                styleDialogText(group.getChildAt(i));
+                styleDialogText(group.getChildAt(i), radio);
             }
         }
     }
@@ -438,12 +443,14 @@ public final class SettingsUi {
         private final int intrinsicSize;
         private final float boxSize;
         private final float radius;
+        private final boolean radio;
         private boolean checked;
 
-        DialogCheckMarkDrawable(Context context) {
+        DialogCheckMarkDrawable(Context context, boolean radio) {
             intrinsicSize = dp(context, 32);
             boxSize = dp(context, 18);
             radius = dp(context, 2);
+            this.radio = radio;
             stroke.setStyle(Paint.Style.STROKE);
             stroke.setStrokeWidth(Math.max(2, dp(context, 2)));
             stroke.setStrokeCap(Paint.Cap.ROUND);
@@ -452,8 +459,21 @@ public final class SettingsUi {
 
         @Override
         public void draw(Canvas canvas) {
-            float left = getBounds().exactCenterX() - boxSize / 2f;
-            float top = getBounds().exactCenterY() - boxSize / 2f;
+            float centerX = getBounds().exactCenterX();
+            float centerY = getBounds().exactCenterY();
+            if (radio) {
+                float ringRadius = boxSize / 2f - stroke.getStrokeWidth() / 2f;
+                stroke.setColor(checked ? accent() : textSecondary());
+                canvas.drawCircle(centerX, centerY, ringRadius, stroke);
+                if (checked) {
+                    fill.setColor(accent());
+                    canvas.drawCircle(centerX, centerY, boxSize / 4f, fill);
+                }
+                return;
+            }
+
+            float left = centerX - boxSize / 2f;
+            float top = centerY - boxSize / 2f;
             RectF box = new RectF(left, top, left + boxSize, top + boxSize);
 
             if (checked) {

@@ -145,6 +145,14 @@ The settings pages use grouped controls on an AMOLED background. Light mode foll
 
 </details>
 
+The native choice dialogs keep one indicator at the leading edge. These renders cover selected and
+unselected rows in both themes:
+
+| Dialog | Dark | Light |
+|---|---|---|
+| Single choice | [View](assets/settings/dialog-single-dark.png) | [View](assets/settings/dialog-single-light.png) |
+| Multiple choice | [View](assets/settings/dialog-multi-dark.png) | [View](assets/settings/dialog-multi-light.png) |
+
 
 Select `Subtitle tools` in the patcher, then enable subtitle downloads in Downloads. Captioned videos and their SRT files share the same filename stem. Language names can use Unicode, and filename collisions keep separate tracks. Android 11 and later save the pair in Movies; Android 10 uses Download. The selected subfolder still applies. A failed subtitle transfer leaves the saved video intact and reports the partial result.
 
@@ -163,6 +171,8 @@ Select `Automatic video advance` in the patcher, then enable Advance when a vide
 Foldable controls are in App behavior. Settings save immediately. A notification tells you when to restart TikTok.
 
 Numeric feed limits show their actual unit with language-aware singular and plural labels.
+
+Native settings pickers use one radio indicator for a single choice and one checkbox for multiple choices. The selected state remains accessible and is saved through Android's native list adapter.
 
 <img src="assets/settings/behavior.png" alt="Foldable comment settings" width="300" />
 
