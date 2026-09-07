@@ -1,5 +1,7 @@
 ## 0.21.0 (2026-09-07)
 
+* Settings search no longer treats an accent typed on its own as a match for everything, and it folds each setting's words once when the page opens rather than on every letter you type. Diagnostics also stop filling with a line for every page of search results when logging is off, which was pushing out the events around a crash.
+
 * Choosing a download folder now sticks. The folder picker is its own screen, so Android often rebuilds the settings screen behind it, and the rebuilt one had forgotten which setting was waiting. It took the folder you chose and did nothing, without saying so. The waiting setting is now remembered by name across the rebuild, and a folder that arrives with nothing waiting says so instead of vanishing.
 
 * The player's block, hide and Not interested buttons now say what they are in your own language. They are drawn as glyphs, so their spoken labels are all a reader using TalkBack gets, and those three still read English on a German or Indonesian phone. A build check now covers every spoken label the way it already covered messages.

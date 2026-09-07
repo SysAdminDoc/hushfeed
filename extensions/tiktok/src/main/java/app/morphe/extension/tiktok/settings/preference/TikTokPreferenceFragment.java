@@ -103,6 +103,9 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         final String title;
         final String summary;
         final String category;
+        /** Folded once when the index is built: it never changes, and a query is typed a letter
+         *  at a time over about 170 of these. */
+        final String normalized;
 
         SearchResult(Section section, String key, String title, String summary, String category) {
             this.section = section;
@@ -110,10 +113,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             this.title = title;
             this.summary = summary;
             this.category = category;
-        }
-
-        String searchableText() {
-            return title + " " + summary + " " + category;
+            this.normalized = normalizeSearchText(title + " " + summary + " " + category);
         }
 
         String displaySummary() {
@@ -357,16 +357,17 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         }
         searchRows.clear();
 
-        String trimmedQuery = query == null ? "" : query.trim();
-        if (trimmedQuery.isEmpty()) {
+        // Folding happens before the empty check: a query of nothing but accent marks is not
+        // empty as typed but folds away to nothing, and every setting contains "".
+        String normalizedQuery = normalizeSearchText(query == null ? "" : query.trim());
+        if (normalizedQuery.isEmpty()) {
             addSearchState("Type to search settings", "Search a title, description or category.");
             return;
         }
 
-        String normalizedQuery = normalizeSearchText(trimmedQuery);
         List<SearchResult> matches = new ArrayList<>();
         for (SearchResult result : searchIndex) {
-            if (normalizeSearchText(result.searchableText()).contains(normalizedQuery)) {
+            if (result.normalized.contains(normalizedQuery)) {
                 matches.add(result);
             }
         }

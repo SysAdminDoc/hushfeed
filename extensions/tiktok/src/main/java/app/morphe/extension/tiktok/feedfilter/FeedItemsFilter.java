@@ -214,10 +214,14 @@ public final class FeedItemsFilter {
             return;
         }
 
-        int before = items.size();
-        int after = kept.size();
-        Logger.printInfo(() -> "[Morphe TikTok FeedFilter] filter(SearchMixFeedList): size "
-            + before + " -> " + after + " (removed=" + (before - after) + ")");
+        // printInfo is not gated on the debug switch, unlike printDebug, so every search page
+        // used to append to the bounded diagnostic buffer and push out the events around a crash.
+        if (BaseSettings.DEBUG.get() && shouldLogBatch()) {
+            int before = items.size();
+            int after = kept.size();
+            Logger.printInfo(() -> "[Morphe TikTok FeedFilter] filter(SearchMixFeedList): size "
+                + before + " -> " + after + " (removed=" + (before - after) + ")");
+        }
     }
 
     /** True when the card is an advert, by its own admission or by the video it wraps. */
