@@ -10,7 +10,6 @@ import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.BooleanSetting;
 import app.morphe.extension.tiktok.settings.Settings;
 import java.lang.reflect.Method;
-import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,29 +23,28 @@ import org.robolectric.annotation.GraphicsMode;
 @Config(sdk = 28)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class InboxRowLanguageTest {
-    private final BooleanSetting[] settings = {Settings.HIDE_INBOX_NEW_FOLLOWERS,
-            Settings.HIDE_INBOX_ACTIVITY, Settings.HIDE_INBOX_ARCHIVE,
-            Settings.HIDE_INBOX_TAKO, Settings.HIDE_INBOX_SHOP};
-    private final Object[] models = {new Pod(Kind.FOLLOWER), new Pod(Kind.ACTIVITY),
-            new Archive(), new Entrance(), new Pod(Kind.SHOP)};
+    private BooleanSetting[] settings;
+    private Object[] models;
     private Method predicate;
 
     @Before public void setup() throws Exception {
         Utils.setContext(RuntimeEnvironment.getApplication());
+        settings = new BooleanSetting[]{Settings.HIDE_INBOX_NEW_FOLLOWERS,
+                Settings.HIDE_INBOX_ACTIVITY, Settings.HIDE_INBOX_ARCHIVE,
+                Settings.HIDE_INBOX_TAKO, Settings.HIDE_INBOX_SHOP};
+        models = new Object[]{new Pod(Kind.FOLLOWER), new Pod(Kind.ACTIVITY),
+                new Archive(), new Entrance(), new Pod(Kind.SHOP)};
         for (BooleanSetting setting : settings) setting.save(false);
         Settings.HIDE_INBOX_CONVERSATIONS.save(false);
         Settings.HIDE_INBOX_MESSAGE_REQUESTS.save(false);
         Settings.HIDE_INBOX_CUSTOM_TITLES.save("");
-        var ids = InboxFilter.class.getDeclaredField("RESOLVED_IDS");
-        ids.setAccessible(true);
-        @SuppressWarnings("unchecked") var values = (Map<String, Integer>) ids.get(null);
-        values.clear();
-        values.put("vid", 101);
-        values.put("user_name", 102);
-        values.put("tyh", 103);
-        values.put("bo5", 104);
-        values.put("o1l", 201);
-        values.put("kmx", 200);
+        String packageName = RuntimeEnvironment.getApplication().getPackageName();
+        InboxFilter.resolveForTests(packageName, "vid", 101);
+        InboxFilter.resolveForTests(packageName, "user_name", 102);
+        InboxFilter.resolveForTests(packageName, "tyh", 103);
+        InboxFilter.resolveForTests(packageName, "bo5", 104);
+        InboxFilter.resolveForTests(packageName, "o1l", 201);
+        InboxFilter.resolveForTests(packageName, "kmx", 200);
         predicate = InboxFilter.class.getDeclaredMethod("shouldHideRow", Activity.class, View.class);
         predicate.setAccessible(true);
     }

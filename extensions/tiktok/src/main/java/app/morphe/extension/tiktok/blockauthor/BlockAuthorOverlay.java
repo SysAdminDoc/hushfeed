@@ -161,7 +161,7 @@ public final class BlockAuthorOverlay {
             }
 
             final View button = createButton(activity);
-            final int size = dp(activity, BUTTON_SIZE_DP);
+            final int size = SettingsUi.dp(activity, BUTTON_SIZE_DP);
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                     size, size, Gravity.TOP | Gravity.START);
             button.setLayoutParams(params);
@@ -252,7 +252,7 @@ public final class BlockAuthorOverlay {
         GradientDrawable background = new GradientDrawable();
         background.setShape(GradientDrawable.OVAL);
         background.setColor(Color.argb(140, 0, 0, 0));
-        background.setStroke(dp(activity, 1), Color.argb(90, 255, 255, 255));
+        background.setStroke(SettingsUi.dp(activity, 1), Color.argb(90, 255, 255, 255));
         button.setBackground(background);
 
         button.setOnClickListener(view -> onBlockSoundTapped());
@@ -270,7 +270,7 @@ public final class BlockAuthorOverlay {
         GradientDrawable background = new GradientDrawable();
         background.setShape(GradientDrawable.OVAL);
         background.setColor(Color.argb(140, 0, 0, 0));
-        background.setStroke(dp(activity, 1), Color.argb(90, 255, 255, 255));
+        background.setStroke(SettingsUi.dp(activity, 1), Color.argb(90, 255, 255, 255));
         button.setBackground(background);
         button.setOnClickListener(view -> onLocalHideTapped());
         return button;
@@ -289,8 +289,8 @@ public final class BlockAuthorOverlay {
         button.setContentDescription("Not interested in this video");
         GradientDrawable background = new GradientDrawable();
         background.setColor(Color.argb(180, 0, 0, 0));
-        background.setCornerRadius(dp(activity, 8));
-        background.setStroke(dp(activity, 1), Color.argb(90, 255, 255, 255));
+        background.setCornerRadius(SettingsUi.dp(activity, 8));
+        background.setStroke(SettingsUi.dp(activity, 1), Color.argb(90, 255, 255, 255));
         button.setBackground(background);
         button.setOnClickListener(view -> NotInterested.submit());
         return button;
@@ -370,11 +370,11 @@ public final class BlockAuthorOverlay {
         GradientDrawable background = new GradientDrawable();
         background.setShape(GradientDrawable.OVAL);
         background.setColor(Color.argb(140, 0, 0, 0));
-        background.setStroke(dp(activity, 1), Color.argb(90, 255, 255, 255));
+        background.setStroke(SettingsUi.dp(activity, 1), Color.argb(90, 255, 255, 255));
 
         // The symbol is drawn over the disc instead of set as text, because the font
         // TikTok happens to be using may not carry it.
-        Drawable glyph = new BlockGlyphDrawable(Color.WHITE, dp(activity, 2));
+        Drawable glyph = new BlockGlyphDrawable(Color.WHITE, SettingsUi.dp(activity, 2));
         button.setBackground(new LayerDrawable(new Drawable[]{background, glyph}));
 
         button.setOnClickListener(view -> {
@@ -627,10 +627,10 @@ public final class BlockAuthorOverlay {
                 LinearLayout banner = new LinearLayout(activity);
                 banner.setOrientation(LinearLayout.HORIZONTAL);
                 banner.setGravity(Gravity.CENTER_VERTICAL);
-                banner.setPadding(dp(activity, 16), dp(activity, 12), dp(activity, 16), dp(activity, 12));
+                banner.setPadding(SettingsUi.dp(activity, 16), SettingsUi.dp(activity, 12), SettingsUi.dp(activity, 16), SettingsUi.dp(activity, 12));
 
                 GradientDrawable background = new GradientDrawable();
-                background.setCornerRadius(dp(activity, 10));
+                background.setCornerRadius(SettingsUi.dp(activity, 10));
                 background.setColor(Color.argb(235, 28, 28, 30));
                 banner.setBackground(background);
 
@@ -646,9 +646,9 @@ public final class BlockAuthorOverlay {
                 undo.setTextColor(SettingsUi.OVERLAY_ACCENT);
                 undo.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
                 // A banner that dismisses itself is the worst place for a small target.
-                undo.setPadding(dp(activity, 16), dp(activity, 12), dp(activity, 16), dp(activity, 12));
-                undo.setMinimumHeight(dp(activity, 48));
-                undo.setMinimumWidth(dp(activity, 48));
+                undo.setPadding(SettingsUi.dp(activity, 16), SettingsUi.dp(activity, 12), SettingsUi.dp(activity, 16), SettingsUi.dp(activity, 12));
+                undo.setMinimumHeight(SettingsUi.dp(activity, 48));
+                undo.setMinimumWidth(SettingsUi.dp(activity, 48));
                 undo.setGravity(Gravity.CENTER);
                 undo.setOnClickListener(view -> {
                     dismissUndo();
@@ -662,7 +662,7 @@ public final class BlockAuthorOverlay {
                 // Every window decor is a FrameLayout, so gravity params work in any root.
                 FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(-1, -2,
                         Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
-                params.setMargins(dp(activity, 16), 0, dp(activity, 16), dp(activity, 96));
+                params.setMargins(SettingsUi.dp(activity, 16), 0, SettingsUi.dp(activity, 16), SettingsUi.dp(activity, 96));
                 banner.setLayoutParams(params);
 
                 root.addView(banner);
@@ -684,8 +684,5 @@ public final class BlockAuthorOverlay {
         undoReference = new WeakReference<>(null);
     }
 
-    private static int dp(Activity activity, int value) {
-        float density = activity.getResources().getDisplayMetrics().density;
-        return Math.round(value * density);
-    }
 }
+

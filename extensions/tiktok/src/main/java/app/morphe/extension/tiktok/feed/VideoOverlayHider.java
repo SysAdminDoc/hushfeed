@@ -11,22 +11,22 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 
+import app.morphe.extension.shared.GlobalLayoutHook;
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.ResourceIdCache;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.cleardisplay.RememberClearDisplayPatch;
 import app.morphe.extension.tiktok.settings.Settings;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.WeakHashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * Hides controls TikTok lays over the video player.
@@ -71,7 +71,7 @@ public final class VideoOverlayHider {
             | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
             | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 
-    private static final Map<String, Integer> RESOLVED_IDS = new HashMap<>();
+    private static final ResourceIdCache RESOURCE_IDS = new ResourceIdCache();
 
     /**
      * Views this class hid, with the visibility each had before, so turning a switch back
@@ -92,7 +92,7 @@ public final class VideoOverlayHider {
     /** Whether this class, rather than TikTok, is the one holding the status bar away. */
     private static boolean statusBarHiddenHere;
     private static long statusBarHiddenAt;
-    private static ViewTreeObserver.OnGlobalLayoutListener listener;
+    private static final GlobalLayoutHook LAYOUT_HOOK = new GlobalLayoutHook();
 
     private VideoOverlayHider() {
     }
@@ -108,6 +108,7 @@ public final class VideoOverlayHider {
     private static void installNow(Activity activity) {
         try {
             if (activity.isFinishing()) {
+                LAYOUT_HOOK.detach();
                 return;
             }
             ViewGroup root = activity.findViewById(android.R.id.content);
@@ -115,14 +116,11 @@ public final class VideoOverlayHider {
                 Logger.printInfo(() -> "Video overlay hider found no content view to watch");
                 return;
             }
-            if (listener != null && activityReference.get() == activity) {
-                return;
-            }
-
-            listener = VideoOverlayHider::apply;
-            root.getViewTreeObserver().addOnGlobalLayoutListener(listener);
+            boolean installed = LAYOUT_HOOK.install(root, VideoOverlayHider::apply);
             activityReference = new WeakReference<>(activity);
-            Logger.printDebug(() -> "Video overlay hider installed");
+            if (installed) {
+                Logger.printDebug(() -> "Video overlay hider installed");
+            }
         } catch (Throwable ex) {
             Logger.printException(() -> "Could not install the video overlay hider", ex);
         }
@@ -130,9 +128,15 @@ public final class VideoOverlayHider {
 
     private static void apply() {
         Activity activity = activityReference.get();
-        if (activity != null) {
-            applyTo(activity);
+        if (activity == null) {
+            LAYOUT_HOOK.detach();
+            return;
         }
+        if (activity.isFinishing()) {
+            LAYOUT_HOOK.detach();
+            return;
+        }
+        applyTo(activity);
     }
 
     /** One pass over {@code activity}, the same one the layout listener runs. */
@@ -367,7 +371,7 @@ public final class VideoOverlayHider {
 
     /** Lets a test stand in for a TikTok resource id, which only the real APK resolves. */
     static void resolveForTests(String name, int id) {
-        RESOLVED_IDS.put(APP_PACKAGE + ":" + name, id);
+        RESOURCE_IDS.putForTests(APP_PACKAGE, name, id);
     }
 
     /**
@@ -376,22 +380,13 @@ public final class VideoOverlayHider {
      * rather than cached.
      */
     private static int identifier(Activity activity, String packageName, String name) {
-        String key = packageName + ":" + name;
-        Integer cached = RESOLVED_IDS.get(key);
-        if (cached != null) {
-            return cached;
-        }
-
-        int id;
-        try {
-            id = activity.getResources().getIdentifier(name, "id", packageName);
-        } catch (Throwable ignored) {
-            id = 0;
-        }
+        boolean retryMissing = SEARCH_MODULE_PACKAGE.equals(packageName);
+        int id = RESOURCE_IDS.resolve(
+                activity == null ? null : activity.getResources(), packageName, name, retryMissing);
         if (id != 0) {
-            RESOLVED_IDS.put(key, id);
-        } else if (!SEARCH_MODULE_PACKAGE.equals(packageName)) {
-            RESOLVED_IDS.put(key, 0);
+            return id;
+        }
+        if (!retryMissing) {
             Logger.printInfo(() -> "Overlay view id '" + name + "' not found in this TikTok build");
         }
         return id;

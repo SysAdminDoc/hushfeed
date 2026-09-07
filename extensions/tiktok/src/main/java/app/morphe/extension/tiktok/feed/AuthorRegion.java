@@ -10,9 +10,9 @@ import android.app.Activity;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.TextView;
 
+import app.morphe.extension.shared.GlobalLayoutHook;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.blockauthor.CurrentVideoAuthor;
@@ -44,7 +44,7 @@ public final class AuthorRegion {
     private static int postTimeViewId;
 
     private static WeakReference<Activity> activityReference = new WeakReference<>(null);
-    private static ViewTreeObserver.OnGlobalLayoutListener listener;
+    private static final GlobalLayoutHook LAYOUT_HOOK = new GlobalLayoutHook();
 
     /** The name as TikTok wrote it, before a country was appended to it. */
     private static WeakReference<TextView> decoratedName = new WeakReference<>(null);
@@ -74,6 +74,8 @@ public final class AuthorRegion {
     private static void installNow(Activity activity) {
         try {
             if (activity.isFinishing()) {
+                LAYOUT_HOOK.detach();
+                restore();
                 return;
             }
             ViewGroup root = activity.findViewById(android.R.id.content);
@@ -81,10 +83,6 @@ public final class AuthorRegion {
                 Logger.printInfo(() -> "Author region found no content view to watch");
                 return;
             }
-            if (listener != null && activityReference.get() == activity) {
-                return;
-            }
-
             nameViewId = activity.getResources().getIdentifier(NAME_ID, "id", APP_PACKAGE);
             postTimeViewId = activity.getResources().getIdentifier(POST_TIME_ID, "id", APP_PACKAGE);
             if (nameViewId == 0 || postTimeViewId == 0) {
@@ -92,10 +90,11 @@ public final class AuthorRegion {
                 return;
             }
 
-            listener = AuthorRegion::apply;
-            root.getViewTreeObserver().addOnGlobalLayoutListener(listener);
+            boolean installed = LAYOUT_HOOK.install(root, AuthorRegion::apply);
             activityReference = new WeakReference<>(activity);
-            Logger.printDebug(() -> "Author region installed");
+            if (installed) {
+                Logger.printDebug(() -> "Author region installed");
+            }
         } catch (Throwable ex) {
             Logger.printException(() -> "Could not install the author region", ex);
         }
@@ -104,7 +103,13 @@ public final class AuthorRegion {
     private static void apply() {
         try {
             Activity activity = activityReference.get();
-            if (activity == null || activity.isFinishing()) {
+            if (activity == null) {
+                LAYOUT_HOOK.detach();
+                return;
+            }
+            if (activity.isFinishing()) {
+                LAYOUT_HOOK.detach();
+                restore();
                 return;
             }
 

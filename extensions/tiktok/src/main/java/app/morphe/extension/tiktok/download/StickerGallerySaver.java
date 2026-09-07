@@ -35,6 +35,7 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.tiktok.settings.L10n;
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.settings.preference.SettingsUi;
 
 import com.ss.android.ugc.aweme.base.model.UrlModel;
 
@@ -170,8 +171,8 @@ public final class StickerGallerySaver {
         } else {
             button.setTextColor(Color.WHITE);
             button.setTextSize(16);
-            int paddingHorizontal = dp(context, 16);
-            int paddingVertical = dp(context, 10);
+            int paddingHorizontal = SettingsUi.dp(context, 16);
+            int paddingVertical = SettingsUi.dp(context, 10);
             button.setPadding(paddingHorizontal, paddingVertical, paddingHorizontal, paddingVertical);
         }
 
@@ -391,61 +392,36 @@ public final class StickerGallerySaver {
         return BitmapFactory.decodeFile(source.getAbsolutePath(), options);
     }
 
-    private static Uri saveBitmapWithMediaStore(Context context, Bitmap bitmap, String displayName) throws Exception {
-        MediaBudget.check(null);
-        ContentResolver resolver = context.getContentResolver();
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.DISPLAY_NAME, displayName);
-        values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
-        String relativePath = stickerRelativePath(false);
-        values.put(MediaStore.Images.Media.RELATIVE_PATH, relativePath);
-        values.put(MediaStore.Images.Media.IS_PENDING, 1);
-
-        Uri uri = MediaCache.insertPending(
-                context, resolver, DownloadDestination.collectionUri(relativePath, false), values);
-
-        try {
-            try (OutputStream outputStream = resolver.openOutputStream(uri)) {
-                if (outputStream == null) {
-                    throw new IllegalStateException("MediaStore output stream returned null");
-                }
-                writePng(bitmap, outputStream);
-            }
-            MediaBudget.check(null);
-
-            ContentValues complete = new ContentValues();
-            complete.put(MediaStore.Images.Media.IS_PENDING, 0);
-            completePending(context, resolver, uri, complete);
-            return uri;
-        } catch (Throwable ex) {
-            discardPending(context, resolver, uri, ex);
-            throw ex;
-        }
+    private interface PendingWriter {
+        void write(ContentResolver resolver, Uri uri) throws Exception;
     }
 
-    private static Uri saveStreamWithMediaStore(
+    private interface FileWriter {
+        void write(File file) throws Exception;
+    }
+
+    /** Publishes one pending MediaStore row and removes it again when writing fails. */
+    private static Uri savePendingWithMediaStore(
             Context context,
-            InputStream inputStream,
             String displayName,
-            MediaFormat format
+            String mimeType,
+            boolean video,
+            PendingWriter writer
     ) throws Exception {
         MediaBudget.check(null);
         ContentResolver resolver = context.getContentResolver();
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, displayName);
-        values.put(MediaStore.MediaColumns.MIME_TYPE, format.mimeType);
-        String relativePath = stickerRelativePath(format.video);
+        values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
+        String relativePath = stickerRelativePath(video);
         values.put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath);
         values.put(MediaStore.MediaColumns.IS_PENDING, 1);
 
-        Uri collection = DownloadDestination.collectionUri(relativePath, format.video);
-        Uri uri = MediaCache.insertPending(context, resolver, collection, values);
-
+        Uri uri = MediaCache.insertPending(
+                context, resolver, DownloadDestination.collectionUri(relativePath, video), values);
         try {
-            try (OutputStream outputStream = resolver.openOutputStream(uri)) {
-                if (outputStream == null) throw new IllegalStateException("MediaStore output stream returned null");
-                copy(inputStream, outputStream);
-            }
+            writer.write(resolver, uri);
+            MediaBudget.check(null);
             ContentValues complete = new ContentValues();
             complete.put(MediaStore.MediaColumns.IS_PENDING, 0);
             completePending(context, resolver, uri, complete);
@@ -456,18 +432,23 @@ public final class StickerGallerySaver {
         }
     }
 
-    private static File saveBitmapWithLegacyStorage(Context context, Bitmap bitmap, String displayName) throws Exception {
+    /** Claims a unique legacy file, scans it after writing and removes only that file on failure. */
+    private static File saveWithLegacyStorage(
+            Context context,
+            String displayName,
+            String mimeType,
+            boolean video,
+            FileWriter writer
+    ) throws Exception {
         MediaBudget.check(null);
-        File directory = new File(Environment.getExternalStorageDirectory(), stickerRelativePath(false));
-        if (!directory.exists() && !directory.mkdirs()) {
+        File directory = new File(Environment.getExternalStorageDirectory(), stickerRelativePath(video));
+        if (!directory.isDirectory() && !directory.mkdirs()) {
             throw new IllegalStateException("Could not create " + directory);
         }
 
         File outputFile = MediaFileWriter.claim(directory, displayName);
         try {
-            try (OutputStream outputStream = new FileOutputStream(outputFile)) {
-                writePng(bitmap, outputStream);
-            }
+            writer.write(outputFile);
             MediaBudget.check(null);
         } catch (Throwable ex) {
             if (outputFile.exists() && !outputFile.delete()) {
@@ -475,8 +456,47 @@ public final class StickerGallerySaver {
             }
             throw ex;
         }
-        MediaScannerConnection.scanFile(context, new String[]{outputFile.getAbsolutePath()}, new String[]{"image/png"}, null);
+        MediaScannerConnection.scanFile(context, new String[]{outputFile.getAbsolutePath()},
+                new String[]{mimeType}, null);
         return outputFile;
+    }
+
+    private static Uri saveBitmapWithMediaStore(Context context, Bitmap bitmap, String displayName) throws Exception {
+        return savePendingWithMediaStore(context, displayName, "image/png", false,
+                (resolver, uri) -> {
+                    try (OutputStream outputStream = resolver.openOutputStream(uri)) {
+                        if (outputStream == null) {
+                            throw new IllegalStateException("MediaStore output stream returned null");
+                        }
+                        writePng(bitmap, outputStream);
+                    }
+                });
+    }
+
+    private static Uri saveStreamWithMediaStore(
+            Context context,
+            InputStream inputStream,
+            String displayName,
+            MediaFormat format
+    ) throws Exception {
+        return savePendingWithMediaStore(context, displayName, format.mimeType, format.video,
+                (resolver, uri) -> {
+                    try (OutputStream outputStream = resolver.openOutputStream(uri)) {
+                        if (outputStream == null) {
+                            throw new IllegalStateException("MediaStore output stream returned null");
+                        }
+                        copy(inputStream, outputStream);
+                    }
+                });
+    }
+
+    private static File saveBitmapWithLegacyStorage(Context context, Bitmap bitmap, String displayName) throws Exception {
+        return saveWithLegacyStorage(context, displayName, "image/png", false,
+                outputFile -> {
+                    try (OutputStream outputStream = new FileOutputStream(outputFile)) {
+                        writePng(bitmap, outputStream);
+                    }
+                });
     }
 
     private static File saveStreamWithLegacyStorage(
@@ -485,26 +505,13 @@ public final class StickerGallerySaver {
             String displayName,
             String mimeType
     ) throws Exception {
-        MediaBudget.check(null);
         boolean video = mimeType != null && mimeType.startsWith("video/");
-        File directory = new File(Environment.getExternalStorageDirectory(), stickerRelativePath(video));
-        if (!directory.exists() && !directory.mkdirs()) {
-            throw new IllegalStateException("Could not create " + directory);
-        }
-
-        File outputFile = MediaFileWriter.claim(directory, displayName);
-        try {
-            try (OutputStream outputStream = new FileOutputStream(outputFile)) {
-                copy(inputStream, outputStream);
-            }
-        } catch (Throwable ex) {
-            if (outputFile.exists() && !outputFile.delete()) {
-                debugLog("[Morphe Stickers] could not remove partial file=" + outputFile.getAbsolutePath());
-            }
-            throw ex;
-        }
-        MediaScannerConnection.scanFile(context, new String[]{outputFile.getAbsolutePath()}, new String[]{mimeType}, null);
-        return outputFile;
+        return saveWithLegacyStorage(context, displayName, mimeType, video,
+                outputFile -> {
+                    try (OutputStream outputStream = new FileOutputStream(outputFile)) {
+                        copy(inputStream, outputStream);
+                    }
+                });
     }
 
     /** Runs a converter into the gallery, and cleans up after itself when it throws. */
@@ -516,51 +523,25 @@ public final class StickerGallerySaver {
             boolean video,
             String label
     ) throws Exception {
-        MediaBudget.check(null);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ContentResolver resolver = context.getContentResolver();
-            ContentValues values = new ContentValues();
-            values.put(MediaStore.MediaColumns.DISPLAY_NAME, displayName);
-            values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
-            String relativePath = stickerRelativePath(video);
-            values.put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath);
-            values.put(MediaStore.MediaColumns.IS_PENDING, 1);
-            Uri uri = MediaCache.insertPending(
-                    context, resolver, DownloadDestination.collectionUri(relativePath, video), values);
-            try {
-                try (OutputStream output = resolver.openOutputStream(uri)) {
-                    if (output == null) throw new IllegalStateException("MediaStore output stream returned null");
-                    AnimatedWebpGifConverter.convert(animatedWebp, output);
-                }
-                MediaBudget.check(null);
-                ContentValues complete = new ContentValues();
-                complete.put(MediaStore.MediaColumns.IS_PENDING, 0);
-                completePending(context, resolver, uri, complete);
-                return SaveResult.success(displayPath(displayName, video), uri.toString(), label);
-            } catch (Throwable ex) {
-                discardPending(context, resolver, uri, ex);
-                throw ex;
-            }
+            Uri uri = savePendingWithMediaStore(context, displayName, mimeType, video,
+                    (resolver, pendingUri) -> {
+                        try (OutputStream output = resolver.openOutputStream(pendingUri)) {
+                            if (output == null) {
+                                throw new IllegalStateException("MediaStore output stream returned null");
+                            }
+                            AnimatedWebpGifConverter.convert(animatedWebp, output);
+                        }
+                    });
+            return SaveResult.success(displayPath(displayName, video), uri.toString(), label);
         }
 
-        File directory = new File(Environment.getExternalStorageDirectory(), stickerRelativePath(video));
-        if (!directory.isDirectory() && !directory.mkdirs()) {
-            throw new IllegalStateException("Could not create " + directory);
-        }
-        File outputFile = MediaFileWriter.claim(directory, displayName);
-        try {
-            try (OutputStream output = new FileOutputStream(outputFile)) {
-                AnimatedWebpGifConverter.convert(animatedWebp, output);
-            }
-            MediaBudget.check(null);
-        } catch (Throwable ex) {
-            if (outputFile.exists() && !outputFile.delete()) {
-                debugLog("[Morphe Stickers] could not remove partial file=" + outputFile.getAbsolutePath());
-            }
-            throw ex;
-        }
-        MediaScannerConnection.scanFile(context, new String[]{outputFile.getAbsolutePath()},
-                new String[]{mimeType}, null);
+        File outputFile = saveWithLegacyStorage(context, displayName, mimeType, video,
+                file -> {
+                    try (OutputStream output = new FileOutputStream(file)) {
+                        AnimatedWebpGifConverter.convert(animatedWebp, output);
+                    }
+                });
         return SaveResult.success(outputFile.getAbsolutePath(), outputFile.getAbsolutePath(), label);
     }
 
@@ -569,32 +550,15 @@ public final class StickerGallerySaver {
             byte[] animatedWebp,
             String displayName
     ) throws Exception {
-        MediaBudget.check(null);
-        ContentResolver resolver = context.getContentResolver();
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Video.Media.DISPLAY_NAME, displayName);
-        values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
-        String relativePath = stickerRelativePath(true);
-        values.put(MediaStore.Video.Media.RELATIVE_PATH, relativePath);
-        values.put(MediaStore.Video.Media.IS_PENDING, 1);
-
-        Uri uri = MediaCache.insertPending(
-                context, resolver, DownloadDestination.collectionUri(relativePath, true), values);
-
-        try {
-            try (ParcelFileDescriptor output = resolver.openFileDescriptor(uri, "w")) {
-                if (output == null) throw new IllegalStateException("MediaStore file descriptor returned null");
-                AnimatedWebpMp4Converter.convert(animatedWebp, output.getFileDescriptor());
-            }
-            MediaBudget.check(null);
-            ContentValues complete = new ContentValues();
-            complete.put(MediaStore.Video.Media.IS_PENDING, 0);
-            completePending(context, resolver, uri, complete);
-            return uri;
-        } catch (Throwable ex) {
-            discardPending(context, resolver, uri, ex);
-            throw ex;
-        }
+        return savePendingWithMediaStore(context, displayName, "video/mp4", true,
+                (resolver, uri) -> {
+                    try (ParcelFileDescriptor output = resolver.openFileDescriptor(uri, "w")) {
+                        if (output == null) {
+                            throw new IllegalStateException("MediaStore file descriptor returned null");
+                        }
+                        AnimatedWebpMp4Converter.convert(animatedWebp, output.getFileDescriptor());
+                    }
+                });
     }
 
     private static File saveAnimatedWebpMp4WithLegacyStorage(
@@ -602,27 +566,8 @@ public final class StickerGallerySaver {
             byte[] animatedWebp,
             String displayName
     ) throws Exception {
-        File directory = new File(Environment.getExternalStorageDirectory(), stickerRelativePath(true));
-        if (!directory.exists() && !directory.mkdirs()) {
-            throw new IllegalStateException("Could not create " + directory);
-        }
-
-        File outputFile = new File(directory, displayName);
-        try {
-            AnimatedWebpMp4Converter.convert(animatedWebp, outputFile.getAbsolutePath());
-        } catch (Throwable ex) {
-            if (outputFile.exists() && !outputFile.delete()) {
-                debugLog("[Morphe Stickers] could not remove partial file=" + outputFile.getAbsolutePath());
-            }
-            throw ex;
-        }
-        MediaScannerConnection.scanFile(
-                context,
-                new String[]{outputFile.getAbsolutePath()},
-                new String[]{"video/mp4"},
-                null
-        );
-        return outputFile;
+        return saveWithLegacyStorage(context, displayName, "video/mp4", true,
+                outputFile -> AnimatedWebpMp4Converter.convert(animatedWebp, outputFile.getAbsolutePath()));
     }
 
     private static String stickerRelativePath(boolean video) {
@@ -1116,10 +1061,6 @@ public final class StickerGallerySaver {
             String withoutQuery = queryIndex >= 0 ? url.substring(0, queryIndex) : url;
             return withoutQuery.length() <= 96 ? withoutQuery : withoutQuery.substring(0, 96) + "...";
         }
-    }
-
-    private static int dp(Context context, int value) {
-        return Math.round(value * context.getResources().getDisplayMetrics().density);
     }
 
     private static void toast(Context context, String message) {

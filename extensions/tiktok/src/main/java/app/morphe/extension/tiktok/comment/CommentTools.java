@@ -17,6 +17,7 @@ import android.view.ViewParent;
 import android.widget.ImageView;
 
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.ResourceIdCache;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.blockauthor.BlockAuthorOverlay;
 import app.morphe.extension.tiktok.blockauthor.BlockAuthorService;
@@ -29,12 +30,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -79,7 +78,7 @@ public final class CommentTools {
     /** Accounts blocked this session, by uid, so a recycled cell shows the right state. */
     private static final Set<String> BLOCKED_UIDS = Collections.synchronizedSet(new HashSet<>());
 
-    private static final Map<String, Integer> RESOLVED_IDS = new HashMap<>();
+    private static final ResourceIdCache RESOURCE_IDS = new ResourceIdCache();
     private static final DislikeTouchListener DISLIKE_TOUCH = new DislikeTouchListener();
 
     private static volatile boolean blockInFlight;
@@ -495,18 +494,7 @@ public final class CommentTools {
     }
 
     private static int identifier(View view, String name) {
-        Integer cached = RESOLVED_IDS.get(name);
-        if (cached != null) {
-            return cached;
-        }
-        int id;
-        try {
-            id = view.getResources().getIdentifier(name, "id", APP_PACKAGE);
-        } catch (Throwable ignored) {
-            id = 0;
-        }
-        RESOLVED_IDS.put(name, id);
-        return id;
+        return RESOURCE_IDS.resolve(view == null ? null : view.getResources(), APP_PACKAGE, name, false);
     }
 
     private static List<String> entries(String stored) {

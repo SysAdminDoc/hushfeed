@@ -1,12 +1,12 @@
 package app.morphe.extension.tiktok.navigation;
 
-import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.tiktok.settings.Settings;
 
@@ -229,13 +229,8 @@ public final class NavigationTabsFilter {
     }
 
     private static String invokeStringMethod(Object target, String methodName) {
-        try {
-            Method method = target.getClass().getMethod(methodName);
-            Object value = method.invoke(target);
-            return value instanceof String ? (String) value : null;
-        } catch (Throwable ignored) {
-            return null;
-        }
+        Object value = Reflect.invoke(target, methodName);
+        return value instanceof String ? (String) value : null;
     }
 
     private static void debugTabs(String state, List<?> original, List<?> filtered) {

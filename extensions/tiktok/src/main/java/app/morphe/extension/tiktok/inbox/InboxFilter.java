@@ -12,11 +12,12 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.GlobalLayoutHook;
+import app.morphe.extension.shared.ResourceIdCache;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.BooleanSetting;
 import app.morphe.extension.tiktok.settings.Settings;
@@ -24,9 +25,7 @@ import app.morphe.extension.tiktok.settings.preference.SettingsUi;
 import app.morphe.extension.tiktok.settings.L10n;
 
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -86,7 +85,7 @@ public final class InboxFilter {
      * activity, and a resource name lookup is a string search through the resource
      * table, so without this the feed would pay for a dozen lookups per frame.
      */
-    private static final Map<String, Integer> RESOLVED_IDS = new HashMap<>();
+    private static final ResourceIdCache RESOURCE_IDS = new ResourceIdCache();
 
     /**
      * Accounts dismissed in the current Clear all run, keyed by the remove button's
@@ -113,7 +112,7 @@ public final class InboxFilter {
     }
 
     private static WeakReference<Activity> activityReference = new WeakReference<>(null);
-    private static ViewTreeObserver.OnGlobalLayoutListener listener;
+    private static final GlobalLayoutHook LAYOUT_HOOK = new GlobalLayoutHook();
 
     private InboxFilter() {
     }
@@ -135,6 +134,7 @@ public final class InboxFilter {
     private static void installNow(Activity activity) {
         try {
             if (activity.isFinishing()) {
+                LAYOUT_HOOK.detach();
                 return;
             }
 
@@ -144,15 +144,11 @@ public final class InboxFilter {
                 return;
             }
 
-            if (listener != null && activityReference.get() == activity) {
-                return;
-            }
-
-            listener = InboxFilter::apply;
-            root.getViewTreeObserver().addOnGlobalLayoutListener(listener);
+            boolean installed = LAYOUT_HOOK.install(root, InboxFilter::apply);
             activityReference = new WeakReference<>(activity);
-
-            Logger.printDebug(() -> "Inbox filter installed");
+            if (installed) {
+                Logger.printDebug(() -> "Inbox filter installed");
+            }
         } catch (Throwable ex) {
             Logger.printException(() -> "Could not install the inbox filter", ex);
         }
@@ -161,7 +157,12 @@ public final class InboxFilter {
     private static void apply() {
         try {
             Activity activity = activityReference.get();
-            if (activity == null || activity.isFinishing()) {
+            if (activity == null) {
+                LAYOUT_HOOK.detach();
+                return;
+            }
+            if (activity.isFinishing()) {
+                LAYOUT_HOOK.detach();
                 return;
             }
 
@@ -257,6 +258,10 @@ public final class InboxFilter {
             }
         }
         return false;
+    }
+
+    static void resolveForTests(String packageName, String name, int id) {
+        RESOURCE_IDS.putForTests(packageName, name, id);
     }
 
     /**
@@ -457,21 +462,14 @@ public final class InboxFilter {
 
     /** Resolves a resource id by name once and remembers it, including a miss. */
     private static int identifier(Activity activity, String name) {
-        Integer cached = RESOLVED_IDS.get(name);
-        if (cached != null) {
-            return cached;
-        }
-
-        int id;
-        try {
-            id = activity.getResources().getIdentifier(name, "id", activity.getPackageName());
-        } catch (Throwable ignored) {
-            id = 0;
-        }
+        int id = RESOURCE_IDS.resolve(
+                activity == null ? null : activity.getResources(),
+                activity == null ? "" : activity.getPackageName(),
+                name,
+                false);
         if (id == 0) {
             Logger.printInfo(() -> "Inbox view id '" + name + "' not found in this TikTok build");
         }
-        RESOLVED_IDS.put(name, id);
         return id;
     }
 }
