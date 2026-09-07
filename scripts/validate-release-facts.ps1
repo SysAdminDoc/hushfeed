@@ -9,7 +9,9 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$Root = (Split-Path -Parent $PSScriptRoot)
+    [string]$Root = (Split-Path -Parent $PSScriptRoot),
+    [switch]$VerifyPublishedAsset,
+    [string]$ArtifactPath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -114,5 +116,65 @@ foreach ($file in $testFiles) {
     $testCount += @($results.testsuite.testcase).Count
 }
 Require-Match -Text ([string]$bundle.description) -Pattern "\b$testCount runtime tests passed\b" -Description 'bundle description test count'
+
+if ($VerifyPublishedAsset) {
+    if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {
+        $ArtifactPath = Join-Path $rootPath "patches/build/libs/patches-$releaseVersion.mpp"
+    }
+    if (-not (Test-Path -LiteralPath $ArtifactPath -PathType Leaf)) {
+        throw "The local release artifact is missing: $ArtifactPath"
+    }
+
+    $assetUri = [Uri]$bundle.download_url
+    if ($assetUri.Scheme -ne 'https') {
+        throw "The published bundle URL must use HTTPS: $($bundle.download_url)"
+    }
+    $assetName = [IO.Path]::GetFileName($assetUri.AbsolutePath)
+    if ($assetName -ne "patches-$releaseVersion.mpp") {
+        throw "The published bundle URL names $assetName instead of patches-$releaseVersion.mpp."
+    }
+
+    $temporaryArtifact = Join-Path ([IO.Path]::GetTempPath()) ("hushfeed-$([Guid]::NewGuid()).mpp")
+    try {
+        try {
+            $assetResponse = Invoke-WebRequest -Uri $assetUri -OutFile $temporaryArtifact -MaximumRedirection 5 -TimeoutSec 60 -PassThru
+        } catch {
+            throw "Could not download the indexed bundle URL: $($_.Exception.Message)"
+        }
+        if ($assetResponse.StatusCode -ne 200) {
+            throw "The indexed bundle URL returned HTTP $($assetResponse.StatusCode)."
+        }
+
+        $localHash = (Get-FileHash -LiteralPath $ArtifactPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        $publishedHash = (Get-FileHash -LiteralPath $temporaryArtifact -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($localHash -ne $publishedHash) {
+            throw "The hosted bundle hash $publishedHash does not match the local artifact hash $localHash."
+        }
+
+        $checksumUri = [Uri]::new($assetUri, 'SHA256SUMS.txt')
+        try {
+            $checksumResponse = Invoke-WebRequest -Uri $checksumUri -MaximumRedirection 5 -TimeoutSec 60
+        } catch {
+            throw "Could not download the hosted SHA256SUMS.txt: $($_.Exception.Message)"
+        }
+        if ($checksumResponse.StatusCode -ne 200) {
+            throw "The hosted SHA256SUMS.txt returned HTTP $($checksumResponse.StatusCode)."
+        }
+        $checksumMatch = [regex]::Match(
+            $checksumResponse.Content,
+            "(?im)^\s*([0-9a-f]{64})\s+\*?$([regex]::Escape($assetName))\s*$"
+        )
+        if (-not $checksumMatch.Success) {
+            throw "SHA256SUMS.txt has no entry for $assetName."
+        }
+        $listedHash = $checksumMatch.Groups[1].Value.ToLowerInvariant()
+        if ($listedHash -ne $publishedHash) {
+            throw "SHA256SUMS.txt lists $listedHash for $assetName, but the hosted artifact is $publishedHash."
+        }
+        Write-Host ("[release] verified " + $assetName + " from the indexed URL; sha256=" + $publishedHash)
+    } finally {
+        Remove-Item -LiteralPath $temporaryArtifact -Force -ErrorAction SilentlyContinue
+    }
+}
 
 Write-Host ("[facts] " + $sourceVersion + ": " + $patchCount + " patches for " + $targetPackage + " " + $targetVersion + "; " + $testCount + " runtime tests")

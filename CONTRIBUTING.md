@@ -21,8 +21,10 @@ when possible, and remove any private messages or account details from screensho
 
 Before publishing a release, run `scripts/validate-release-facts.ps1` after the runtime tests
 and patch list generation. It checks the generated version, target package, target version,
-patch count and test count against the README and `patches-bundle.json`. The local release
-helpers are `scripts/gen-l10n.py`, `scripts/verify-all-patches.ps1` and
+patch count and test count against the README and `patches-bundle.json`. After uploading the
+bundle and `SHA256SUMS.txt`, run it again with `-VerifyPublishedAsset` to check the indexed URL,
+the local artifact hash and the hosted checksum entry. The local release helpers are
+`scripts/gen-l10n.py`, `scripts/verify-all-patches.ps1` and
 `scripts/measure-patch-heap.ps1`; the latter two need a Morphe desktop jar and a fixture APK.
 
 ## Source notices

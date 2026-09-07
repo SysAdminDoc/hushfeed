@@ -225,6 +225,14 @@ patches/build/libs/patches-<version>.mpp
 
 Morphe reads `patches-bundle.json` from this repository, downloads the `.mpp` release asset listed there, and loads the patch metadata from that bundle.
 
+After uploading the bundle and a `SHA256SUMS.txt` file to the GitHub release, verify the published asset against the local build:
+
+```bash
+pwsh -File scripts/validate-release-facts.ps1 -VerifyPublishedAsset -ArtifactPath patches/build/libs/patches-<version>.mpp
+```
+
+The check follows the indexed URL, compares its SHA-256 with the local artifact, and checks the matching entry in `SHA256SUMS.txt` before the source index is promoted.
+
 ### Adding a language to the settings screen
 
 The English text in the code is the key. Each language is one tab separated table under `extensions/tiktok/src/main/l10n/`, `de.tsv` for German and `in.tsv` for Indonesian, with the English on the left and the translation on the right. Copy one to `<language code>.tsv`, translate the right hand column, then run:
@@ -262,7 +270,7 @@ Only the global package is declared in the compatibility metadata.
 - `patches/`: Kotlin patch definitions, fingerprints and shared patch utilities.
 - `extensions/`: Java extension code the patches inject into TikTok, with the Robolectric tests beside it.
 - `extensions/tiktok/src/main/l10n/`: the settings translation tables.
-- `scripts/`: `gen-l10n.py` generates translations, `verify-all-patches.ps1` checks every patch against a fixture, `measure-patch-heap.ps1` checks selected memory limits, and `validate-release-facts.ps1` checks the public version and patch facts.
+- `scripts/`: `gen-l10n.py` generates translations, `verify-all-patches.ps1` checks every patch against a fixture, `measure-patch-heap.ps1` checks selected memory limits, and `validate-release-facts.ps1` checks the public version, patch facts and published bundle hash.
 - `patches-list.json`: generated patch metadata.
 - `patches-bundle.json`: the Morphe source index for the published bundle.
 

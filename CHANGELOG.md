@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Release checks can now fetch the indexed Morphe bundle and its SHA256SUMS entry, comparing both with the locally built artifact before an index is promoted.
+
 * Feed filtering can now hide posts older than a chosen number of days. The switch is off at zero, and posts with missing, zero, future or overflowing timestamps stay visible. Quality fallback never restores an age-rejected post.
 
 * The player now has a local creator-hide action. It records the current stable creator id without calling TikTok, skips that creator on later feed batches, and offers a searchable one-entry-at-a-time list with undo.
