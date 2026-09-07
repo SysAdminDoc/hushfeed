@@ -4,7 +4,6 @@ import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.settings.Settings;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /** Runs before the share panel builds its rows. Never mutates the builder's lists. */
 public final class ShareModelFilter {
@@ -15,6 +14,7 @@ public final class ShareModelFilter {
     }
 
     public static List<?> actions(List<?> items) {
+        ShareActionCatalog.observe(items);
         return filter(items, Settings.HIDE_SHARE_ACTIONS.get());
     }
 
@@ -33,7 +33,8 @@ public final class ShareModelFilter {
             boolean hide = false;
             if (key != null) {
                 for (String entry : hidden.split("[,\\n]")) {
-                    if (!entry.trim().isEmpty() && canonical(entry).equals(canonical(key))) {
+                    if (!entry.trim().isEmpty()
+                            && ShareActionCatalog.canonical(entry).equals(ShareActionCatalog.canonical(key))) {
                         hide = true;
                         break;
                     }
@@ -44,18 +45,4 @@ public final class ShareModelFilter {
         return kept.size() == items.size() ? items : kept;
     }
 
-    private static String canonical(String value) {
-        String key = value.trim().toLowerCase(Locale.ROOT).replace('_', ' ').replace('-', ' ');
-        switch (key) {
-            case "copy": case "copy link": return "copy";
-            case "not interested": case "dislike": return "dislike";
-            case "save video": case "download": case "save": return "save";
-            case "create group": case "im create group": return "im create group";
-            case "why this post": case "why this video": return "why this video";
-            case "add to story": case "share to story": return "share to story";
-            case "set as wallpaper": case "live photo": return "live photo";
-            case "promote": case "promote for others fyp": return "promote for others fyp";
-            default: return key;
-        }
-    }
 }

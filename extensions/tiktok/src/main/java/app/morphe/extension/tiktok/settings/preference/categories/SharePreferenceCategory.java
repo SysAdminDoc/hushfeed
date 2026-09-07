@@ -12,6 +12,7 @@ import android.preference.PreferenceScreen;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.InputTextPreference;
+import app.morphe.extension.tiktok.settings.preference.ShareActionChecklistPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 
 @SuppressWarnings("deprecation")
@@ -43,6 +44,7 @@ public final class SharePreferenceCategory extends ConditionalPreferenceCategory
                 "Remove the row of friends from the top of the share sheet.",
                 Settings.HIDE_SHARE_CONTACTS
         ));
+        addPreference(new ShareActionChecklistPreference(context));
         addPreference(new InputTextPreference(
                 context,
                 "Hide people and options by name",

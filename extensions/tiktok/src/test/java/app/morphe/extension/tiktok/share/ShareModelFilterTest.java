@@ -15,14 +15,18 @@ import org.robolectric.annotation.Config;
 public class ShareModelFilterTest {
     public static final class Item {
         private final String key;
-        Item(String key) { this.key = key; }
+        private final String label;
+        Item(String key) { this(key, null); }
+        Item(String key, String label) { this.key = key; this.label = label; }
         public String key() { return key; }
+        public String getLabel() { return label; }
     }
     @After public void reset() {
         Settings.SHARE_HIDDEN_ITEMS.save("");
         Settings.HIDE_SHARE_CHANNELS.save(false);
         Settings.HIDE_SHARE_ACTIONS.save(false);
         Settings.HIDE_SHARE_CONTACTS.save(false);
+        Settings.SHARE_ACTION_CATALOG.save("");
     }
     @Test public void filtersBeforeRenderingWithoutChangingTheBuilderOrUnknownItems() {
         Object copy = new Item("copy"), save = new Item("save"), unknown = new Object();
@@ -43,5 +47,19 @@ public class ShareModelFilterTest {
         Settings.HIDE_SHARE_CONTACTS.save(true);
         assertFalse(ShareModelFilter.contacts(true));
         assertFalse(ShareModelFilter.contacts(false));
+    }
+
+    @Test public void actionModelsAreRememberedWithReadableLabelsAndStableKeys() {
+        List<?> input = Arrays.asList(
+                new Item("copy", "Copy link"),
+                new Item("save_video", "Save video")
+        );
+        assertSame(input, ShareModelFilter.actions(input));
+        List<ShareActionCatalog.Entry> catalog = ShareActionCatalog.entries();
+        assertEquals(2, catalog.size());
+        assertEquals("copy", catalog.get(0).key);
+        assertEquals("Copy link", catalog.get(0).label);
+        assertEquals("save", catalog.get(1).key);
+        assertEquals("Save video", catalog.get(1).label);
     }
 }

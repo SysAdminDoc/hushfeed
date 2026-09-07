@@ -612,3 +612,9 @@ Hushfeed filtered this batch	Hushfeed menyaring pemuatan ini
 No videos remained after Hushfeed applied your feed filters to %1$d batches. Most matches: %2$s.	Tidak ada video tersisa setelah Hushfeed menerapkan filter feed ke %1$d pemuatan. Yang paling sering: %2$s.
 Open feed filter settings	Buka setelan filter feed
 Dismiss	Tutup
+Share action checklist	Daftar periksa tindakan berbagi
+Choose observed share actions to hide. The stable identifier is shown below each label; unknown saved identifiers stay in the manual list.	Pilih tindakan berbagi yang telah diamati untuk disembunyikan. Pengenal stabil ditampilkan di bawah setiap label; pengenal tersimpan yang tidak dikenal tetap ada di daftar manual.
+Search share actions	Cari tindakan berbagi
+No share actions have been observed yet	Belum ada tindakan berbagi yang diamati
+Open a share sheet once, then return here to choose its actions.	Buka lembar berbagi sekali, lalu kembali ke sini untuk memilih tindakannya.
+No share actions match this search	Tidak ada tindakan berbagi yang cocok dengan pencarian ini
