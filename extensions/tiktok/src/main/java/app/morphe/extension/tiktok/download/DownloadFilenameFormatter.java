@@ -23,6 +23,8 @@ public final class DownloadFilenameFormatter {
     private static final int MAX_BASENAME_LENGTH = 160;
     /** What is left of a 255 byte filename once an extension and a collision suffix fit too. */
     private static final int MAX_BASENAME_BYTES = 200;
+    /** A slideshow tops out well below this; the cap only has to stop an unbounded search. */
+    private static final int MAX_COLLISION_ATTEMPTS = 999;
     private static final long PENDING_NAME_TTL_MS = 10 * 60 * 1000L;
     private static final Map<String, PendingName> PENDING_NAMES = new LinkedHashMap<String, PendingName>() {
         @Override
@@ -181,28 +183,51 @@ public final class DownloadFilenameFormatter {
 
         String originalBase = stripExtension(original.getName());
         boolean hasIndexToken = source.contains("{index}");
-        int index = 1;
-        while (true) {
+        for (int index = 1; index <= MAX_COLLISION_ATTEMPTS; index++) {
+            String counter = String.valueOf(index);
             String base = source
                     .replace("{creator}", safeToken(creator))
                     .replace("{date}", safeToken(date))
                     .replace("{video_id}", safeToken(videoId))
                     .replace("{media_id}", safeToken(mediaId))
-                    .replace("{index}", String.valueOf(index))
+                    .replace("{index}", counter)
                     .replace("{original}", sanitizeToken(originalBase));
             base = sanitizeBaseName(base);
             if (base.isEmpty()) {
                 return original;
             }
 
-            String suffix = !hasIndexToken && index > 1 ? "_" + index : "";
-            String boundedBase = trimToLength(base, Math.max(1, MAX_BASENAME_LENGTH - suffix.length()));
+            String suffix = !hasIndexToken && index > 1 ? "_" + counter : "";
+            String boundedBase = hasIndexToken
+                    ? boundTemplatedName(base, MAX_BASENAME_LENGTH, counter)
+                    : trimToLength(base, Math.max(1, MAX_BASENAME_LENGTH - suffix.length()));
             File target = new File(original.getParentFile(), boundedBase + suffix + "." + sanitizeExtension(extension));
             if (target.equals(original) || !target.exists()) {
                 return target;
             }
-            index++;
         }
+
+        Logger.printInfo(() -> "Kept the original name for " + original.getName()
+                + ": nothing free was found in " + MAX_COLLISION_ATTEMPTS + " tries");
+        return original;
+    }
+
+    /**
+     * Keeps a filled-in template inside the length limits without losing its counter. A creator
+     * name long enough to reach the cut would otherwise take {@code index} with it, leaving every
+     * photo of a slideshow with one name and the collision search with nothing to advance, so a
+     * name that had to be shortened carries the counter on its end instead.
+     */
+    private static String boundTemplatedName(String base, int limit, String counter) {
+        int room = Math.max(1, limit);
+        String bounded = trimToLength(base, room);
+        if (bounded.equals(base)) {
+            return bounded;
+        }
+
+        int reserved = counter.length() + 1;
+        String stem = trimToLength(base, Math.max(1, room - reserved), Math.max(1, MAX_BASENAME_BYTES - reserved));
+        return sanitizeBaseName(stem + "_" + counter);
     }
 
     private static boolean isPhotoAweme(Object aweme) {
@@ -320,11 +345,15 @@ public final class DownloadFilenameFormatter {
      * on a code point rather than between the halves of a surrogate pair.
      */
     private static String trimToLength(String value, int maxLength) {
+        return trimToLength(value, maxLength, MAX_BASENAME_BYTES);
+    }
+
+    private static String trimToLength(String value, int maxLength, int maxBytes) {
         String trimmed = value;
         if (trimmed.codePointCount(0, trimmed.length()) > maxLength) {
             trimmed = trimmed.substring(0, trimmed.offsetByCodePoints(0, maxLength));
         }
-        while (trimmed.getBytes(StandardCharsets.UTF_8).length > MAX_BASENAME_BYTES) {
+        while (!trimmed.isEmpty() && trimmed.getBytes(StandardCharsets.UTF_8).length > maxBytes) {
             trimmed = trimmed.substring(0, trimmed.offsetByCodePoints(trimmed.length(), -1));
         }
         return trimmed.trim();

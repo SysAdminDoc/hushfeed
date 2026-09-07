@@ -229,6 +229,85 @@ public class AdvancedDownloadsTest {
         assertEquals("dancer-7712345.m4a", DownloadFilenameFormatter.formatSelectedAudioName(item));
     }
 
+    /**
+     * A creator name long enough to reach the length cap used to take the template's index with
+     * it, so every photo of one slideshow resolved to the same taken name and the search for a
+     * free one never advanced. The timeout is the point of the test: without the bound it hangs.
+     */
+    @Test(timeout = 30_000) public void aLongCreatorNameStillNamesEachSlideshowPhotoApart() throws IOException {
+        Utils.setContext(RuntimeEnvironment.getApplication());
+        String photoTemplate = Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.get();
+        try {
+            Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save("{creator}_{index}");
+            String creator = "a".repeat(200);
+            File folder = Files.createTempDirectory("hushfeed-slideshow").toFile();
+            Item post = new Item(creator, "7712345");
+
+            String first = resolveSavedName(folder, "source_1.jpg", post);
+            // The saver writes that file, so the next photo of the same post lands on it.
+            Files.write(new File(folder, first).toPath(), new byte[]{1});
+            String second = resolveSavedName(folder, "source_2.jpg", post);
+
+            assertNotEquals("The second photo would overwrite the first", first, second);
+            // Both keep the creator's name, so neither fell back to the source file's own name.
+            assertTrue(first, first.startsWith("aaaa"));
+            assertTrue(second, second.startsWith("aaaa"));
+            assertTrue(first, first.endsWith(".jpg"));
+            assertTrue(second, second.endsWith(".jpg"));
+            // 160 characters of base name, an underscore, the counter and the extension.
+            assertTrue(first + " is too long", first.length() <= 165);
+            assertTrue(second + " is too long", second.length() <= 165);
+        } finally {
+            Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save(photoTemplate);
+        }
+    }
+
+    /** An ordinary name is short enough to keep the template's own shape. */
+    @Test public void anOrdinaryCreatorNameKeepsTheTemplateShape() throws IOException {
+        Utils.setContext(RuntimeEnvironment.getApplication());
+        String photoTemplate = Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.get();
+        try {
+            Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save("{creator}_{index}");
+            File folder = Files.createTempDirectory("hushfeed-slideshow-short").toFile();
+            Item post = new Item("dancer", "7712345");
+
+            String first = resolveSavedName(folder, "source_1.jpg", post);
+            assertEquals("dancer_1.jpg", first);
+            Files.write(new File(folder, first).toPath(), new byte[]{1});
+            assertEquals("dancer_2.jpg", resolveSavedName(folder, "source_2.jpg", post));
+        } finally {
+            Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save(photoTemplate);
+        }
+    }
+
+    /**
+     * Once every name the template can produce is taken the search gives up and keeps the file's
+     * own name, rather than counting upwards for as long as the process lives.
+     */
+    @Test(timeout = 60_000) public void anExhaustedNameSearchKeepsTheOriginalName() throws IOException {
+        Utils.setContext(RuntimeEnvironment.getApplication());
+        String photoTemplate = Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.get();
+        try {
+            Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save("{creator}_{index}");
+            File folder = Files.createTempDirectory("hushfeed-slideshow-full").toFile();
+            for (int index = 1; index <= 999; index++) {
+                Files.write(new File(folder, "dancer_" + index + ".jpg").toPath(), new byte[]{1});
+            }
+
+            assertEquals("source_1.jpg", resolveSavedName(folder, "source_1.jpg", new Item("dancer", "7712345")));
+        } finally {
+            Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save(photoTemplate);
+        }
+    }
+
+    /** Runs the real registration path and reports the name the saver would publish. */
+    private static String resolveSavedName(File folder, String sourceName, Item post) throws IOException {
+        File source = new File(folder, sourceName);
+        Files.write(source.toPath(), new byte[]{1});
+        DownloadFilenameFormatter.registerDownloadedMediaName(source.getPath(), post);
+        return DownloadFilenameFormatter.consumeDestinationName(source.getName());
+    }
+
     @Test public void soundGoesToTheAudioTreeOnlyWhereTheGalleryDemandsIt() {
         // Android 10 and later refuse an audio file in the video collection, so the folder
         // name is mirrored under Music. Older versions write real files side by side.
