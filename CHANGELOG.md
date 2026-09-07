@@ -1,4 +1,4 @@
-## Unreleased
+## 0.20.0 (2026-09-07)
 
 * An interrupted Feature Gate recording is discarded before the next baseline is taken, so a session stopped by its setting cannot make later reads look changed. The isolated boundary test now passes on its own as well as in the full suite.
 
