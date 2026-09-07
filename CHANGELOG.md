@@ -1,5 +1,7 @@
 ## 0.21.0 (2026-09-07)
 
+* The converter behind "save an animated sticker as a GIF" is covered by tests for the first time. It now has checks that the frame count and every frame delay survive the conversion, that a patch which replaces what is under it really clears that area first, that a frame asking to be cleared afterwards is, and that a still picture is refused rather than written out as a one-frame animation.
+
 * Diagnostics has a Hook status row. Patches attach to code TikTok renames on every release, and until now a hook that lost its anchor failed quietly while the switch above it still read on. The row shows one line per surface: how many of the things it looks for are in this build, how many are not, and the first one that went missing. The exported diagnostic report carries the same table.
 
 * Two settings-backup messages are translated again. Their wording gained a full stop at some point and the tables kept the older version, so a failed backup or restore spoke English on a German or Indonesian phone.
