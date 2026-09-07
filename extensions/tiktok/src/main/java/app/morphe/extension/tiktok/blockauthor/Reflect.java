@@ -6,9 +6,18 @@
  */
 package app.morphe.extension.tiktok.blockauthor;
 
+import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.diagnostics.DiagnosticCategory;
+import app.morphe.extension.shared.settings.preference.LogBufferManager;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -24,7 +33,45 @@ public final class Reflect {
     private static final Map<String, Object> METHODS = new ConcurrentHashMap<>();
     private static final Map<String, Object> FIELDS = new ConcurrentHashMap<>();
 
+    /**
+     * Members a caller depends on and this TikTok build does not have. A reader that returns null
+     * because the member is gone looks exactly like one that returned null legitimately, and the
+     * callers here treat both as "no", so a renamed accessor turns a filter off while its switch
+     * still reads on.
+     *
+     * <p>Only lookups made through {@link #required} land here. Most reads in this class try a
+     * getter and then a field, or several named predicates in turn, and expect most of those to
+     * miss; recording those would fill the report with names that were never going to resolve.
+     */
+    private static final int MAX_RECORDED_MISSES = 200;
+    private static final Set<String> MISSING_MEMBERS =
+            Collections.synchronizedSet(new LinkedHashSet<>());
+
     private Reflect() {
+    }
+
+    /** Every member looked for and not found, first miss first. */
+    public static List<String> missingMembers() {
+        synchronized (MISSING_MEMBERS) {
+            return new ArrayList<>(MISSING_MEMBERS);
+        }
+    }
+
+    private static void noteMissing(String kind, Class<?> type, String name) {
+        String member = type.getName() + '#' + name;
+        synchronized (MISSING_MEMBERS) {
+            if (MISSING_MEMBERS.size() >= MAX_RECORDED_MISSES || !MISSING_MEMBERS.add(kind + ' ' + member)) {
+                return;
+            }
+        }
+
+        Logger.printInfo(() -> "This TikTok build has no " + kind + " " + member);
+        LogBufferManager.appendEvent(
+                DiagnosticCategory.PATCH_ERRORS,
+                "Reflect",
+                "WARN",
+                "no " + kind + " " + member
+        );
     }
 
     /** The no-argument method {@code name} on {@code type} or a superclass, or null. */
@@ -73,6 +120,22 @@ public final class Reflect {
             FIELDS.put(key, cached);
         }
         return cached == MISSING ? null : (Field) cached;
+    }
+
+    /**
+     * Calls a no-argument method the caller has no fallback for, and reports it once if this
+     * build does not have it. Returns null both when the member is gone and when it returned
+     * null; {@link #missingMembers()} is what tells those apart afterwards.
+     */
+    public static Object required(Object target, String methodName) {
+        if (target == null) {
+            return null;
+        }
+        if (method(target.getClass(), methodName) == null) {
+            noteMissing("method", target.getClass(), methodName);
+            return null;
+        }
+        return invoke(target, methodName);
     }
 
     public static Object invoke(Object target, String methodName) {

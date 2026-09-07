@@ -223,7 +223,9 @@ public final class FeedItemsFilter {
     /** True when the card is an advert, by its own admission or by the video it wraps. */
     static boolean isSearchAd(Object card) {
         if (card == null) return false;
-        if (Boolean.TRUE.equals(Reflect.invoke(card, "isAdOrContainAd"))) return true;
+        // The card's own answer, with no other shape to fall back on, so a build that renamed it
+        // leaves search ads unfiltered and the report has to say so.
+        if (Boolean.TRUE.equals(Reflect.required(card, "isAdOrContainAd"))) return true;
 
         for (String name : SEARCH_AD_FIELDS) {
             if (Reflect.readField(card, name) != null) return true;
