@@ -424,6 +424,18 @@ public class SettingsBackupTest {
         assertEquals(75, (int) Settings.MAX_VIDEO_SECONDS.get());
     }
 
+    @Test public void anOlderBackupWithRemovedSettingKeyStillImports() throws Exception {
+        Settings.MAX_VIDEO_SECONDS.save(81);
+        JSONObject root = new JSONObject(SettingsBackup.create(false));
+        root.getJSONObject("settings").put("comment_translation_excluded_languages", "es");
+        root.getJSONArray("setting_keys").put("comment_translation_excluded_languages");
+        Settings.MAX_VIDEO_SECONDS.save(0);
+
+        SettingsBackup.restore(Utils.getContext(), root.toString(), true);
+
+        assertEquals(81, (int) Settings.MAX_VIDEO_SECONDS.get());
+    }
+
     private static android.content.SharedPreferences failingCommits(android.content.SharedPreferences target,
             java.util.function.BooleanSupplier fail, Runnable committed) {
         return (android.content.SharedPreferences) java.lang.reflect.Proxy.newProxyInstance(

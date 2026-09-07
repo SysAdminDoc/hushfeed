@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The extension payload no longer carries unreachable APNG conversion, retired language-editor or Lab preference code. Declaration-only fingerprints and unused compatibility metadata are gone, and the keep rule now covers only extension classes while preserving injected and reflective entry points. The shared payload fell from 229,024 to 221,720 bytes and the TikTok payload from 1,377,012 to 1,361,300 bytes.
+
 * Release checks can now fetch the indexed Morphe bundle and its SHA256SUMS entry, comparing both with the locally built artifact before an index is promoted.
 
 * Repeated fully filtered feed batches now explain the top rejection reasons without exposing post data and offer a direct link back to Feed filter settings. Empty server responses do not trigger the notice.

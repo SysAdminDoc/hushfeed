@@ -1,7 +1,9 @@
 -dontobfuscate
 -dontoptimize
 -keepattributes *
--keep class app.morphe.** {
+# Extension classes are called from injected target bytecode and by reflection.
+# Keep the extension namespace intact while allowing unrelated Morphe classes to shrink.
+-keep class app.morphe.extension.** {
   *;
 }
 -keep class com.google.** {

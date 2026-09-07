@@ -3,7 +3,6 @@
 # Keep %s and %d placeholders, {tokens} and product names as they are.
 %1$s destinations must start with %2$s	%1$s-Ziele müssen mit %2$s beginnen
 %1$s isn't installed or doesn't take links	%1$s ist nicht installiert oder nimmt keine Links an
-%d languages excluded	%d Sprachen ausgeschlossen
 %s on	%s aktiv
 A creator pattern is taking too long and was switched off: %1$s	Ein Kreator-Muster braucht zu lange und wurde abgeschaltet: %1$s
 A hidden puzzle may be the cause.	Ein ausgeblendetes Rätsel kann die Ursache sein.
@@ -59,7 +58,6 @@ Caption background	Untertitel-Hintergrund
 Caption text size	Textgröße der Untertitel
 Captions, gestures and on-screen controls	Untertitel, Gesten und Bildschirmelemente
 Capture crash reports locally	Absturzberichte lokal speichern
-Checked languages keep their original comments. TikTok's current catalog is supplemented by languages bundled with this app version.	Kommentare in angehakten Sprachen bleiben, wie sie sind. Zu TikToks aktueller Liste kommen die Sprachen dazu, die diese App-Version mitbringt.
 Choose 1-1000 videos. Values outside this range use the nearest valid limit. Restart TikTok after saving.	Wähle 1 bis 1000 Videos. Werte außerhalb dieses Bereichs nutzen das nächstgelegene gültige Limit. Starte TikTok nach dem Speichern neu.
 Choose a backup file. Your current settings are kept for Undo.	Wähle eine Sicherungsdatei. Deine aktuellen Einstellungen bleiben zum Rückgängigmachen erhalten.
 Choose what reaches your feed	Wähle aus, was in deinem Feed erscheint
@@ -132,7 +130,6 @@ Disable long-press quick share	Schnelles Teilen abschalten
 Disable long-press repost	Reposten bei langem Drücken abschalten
 Dismissed %1$s suggested accounts	%1$s Kontovorschläge entfernt
 Dismissed one suggested account	Ein Kontovorschlag entfernt
-Do not translate languages	Sprachen nicht übersetzen
 Do nothing	Nichts tun
 Do you wish to proceed?	Möchtest du fortfahren?
 Double tap	Doppeltippen
@@ -321,8 +318,6 @@ Minimum	Minimum
 ms	ms
 Never from these countries	Nie aus diesen Ländern
 No account to block on this video	Bei diesem Video gibt es kein Konto zum Blockieren
-No additional languages excluded	Keine weiteren Sprachen ausgeschlossen
-No language matches that	Keine Sprache passt dazu
 No limit	Keine Grenze
 No matching countries	Keine passenden Länder
 No preset selected	Keine Vorgabe gewählt
@@ -407,7 +402,6 @@ Saving the selected video quality without sound	Die gewählte Videoqualität wir
 Saving the story	Story wird gespeichert
 Saving video and subtitles to %1$s	Video und Untertitel werden in %1$s gespeichert
 Search and override gate flags	Gate-Flags suchen und überschreiben
-Search language or code	Sprache oder Code suchen
 Search local TikTok gate metadata and configure isolated typed overrides.	Lokale TikTok-Gate-Metadaten durchsuchen und isolierte typisierte Überschreibungen einrichten.
 Search the comments	Kommentare durchsuchen
 Search these comments	Diese Kommentare durchsuchen

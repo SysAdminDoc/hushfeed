@@ -11,15 +11,6 @@ internal object OfflineModeSheetOptionsFingerprint : Fingerprint(
     },
 )
 
-internal object OfflineModeListConstructorFingerprint : Fingerprint(
-    returnType = "V",
-    custom = { method, classDef ->
-        classDef.endsWith("/OfflineModeListVM;") &&
-            method.name == "<init>" &&
-            method.parameterTypes.isEmpty()
-    },
-)
-
 internal object OfflineModeOptionConfigFingerprint : Fingerprint(
     returnType = "V",
     custom = { method, classDef ->

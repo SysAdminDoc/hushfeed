@@ -22,15 +22,6 @@ private fun isTargetClass(classDef: ClassDef): Boolean =
         } == true
     }
 
-internal object VanillaLongFilterFingerprint : Fingerprint(
-    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC, AccessFlags.FINAL),
-    returnType = "Z",
-    parameters = listOf(AWEME_CLASS),
-    custom = { method, classDef ->
-        isTargetClass(classDef) && (method.implementation?.instructions?.count() ?: 0) > 20
-    },
-)
-
 internal object ShouldShowProgressBarFingerprint : Fingerprint(
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC, AccessFlags.FINAL),
     returnType = "Z",

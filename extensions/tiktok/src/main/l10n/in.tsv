@@ -3,7 +3,6 @@
 # Keep %s and %d placeholders, {tokens} and product names as they are.
 %1$s destinations must start with %2$s	Tujuan %1$s harus diawali %2$s
 %1$s isn't installed or doesn't take links	%1$s tidak terpasang atau tidak menerima tautan
-%d languages excluded	%d bahasa dikecualikan
 %s on	%s aktif
 A creator pattern is taking too long and was switched off: %1$s	Ada pola kreator yang terlalu lama, jadi dimatikan: %1$s
 A hidden puzzle may be the cause.	Teka-teki yang disembunyikan bisa jadi penyebabnya.
@@ -59,7 +58,6 @@ Caption background	Latar keterangan
 Caption text size	Ukuran teks keterangan
 Captions, gestures and on-screen controls	Keterangan, gestur, dan kontrol di layar
 Capture crash reports locally	Rekam laporan mogok di perangkat
-Checked languages keep their original comments. TikTok's current catalog is supplemented by languages bundled with this app version.	Komentar dalam bahasa yang dicentang dibiarkan apa adanya. Daftar TikTok sekarang ditambah bahasa yang dibawa versi aplikasi ini.
 Choose 1-1000 videos. Values outside this range use the nearest valid limit. Restart TikTok after saving.	Pilih 1 sampai 1000 video. Nilai di luar rentang ini memakai batas sah terdekat. Mulai ulang TikTok setelah menyimpan.
 Choose a backup file. Your current settings are kept for Undo.	Pilih berkas cadangan. Pengaturanmu yang sekarang disimpan untuk Urungkan.
 Choose what reaches your feed	Pilih apa yang sampai ke feed-mu
@@ -132,7 +130,6 @@ Disable long-press quick share	Matikan bagikan cepat lewat tekan lama
 Disable long-press repost	Matikan bagikan ulang lewat tekan lama
 Dismissed %1$s suggested accounts	%1$s akun saran dihapus
 Dismissed one suggested account	Satu akun saran dihapus
-Do not translate languages	Bahasa yang tidak diterjemahkan
 Do nothing	Tidak melakukan apa pun
 Do you wish to proceed?	Mau lanjut?
 Double tap	Ketuk dua kali
@@ -321,8 +318,6 @@ Minimum	Minimum
 ms	ms
 Never from these countries	Tidak pernah dari negara ini
 No account to block on this video	Tidak ada akun untuk diblokir di video ini
-No additional languages excluded	Tidak ada bahasa tambahan yang dikecualikan
-No language matches that	Tidak ada bahasa yang cocok
 No limit	Tanpa batas
 No matching countries	Tidak ada negara yang cocok
 No preset selected	Tidak ada praset yang dipilih
@@ -407,7 +402,6 @@ Saving the selected video quality without sound	Menyimpan kualitas video pilihan
 Saving the story	Menyimpan Story
 Saving video and subtitles to %1$s	Menyimpan video dan subtitel ke %1$s
 Search and override gate flags	Cari dan timpa flag gate
-Search language or code	Cari bahasa atau kode
 Search local TikTok gate metadata and configure isolated typed overrides.	Cari metadata gate TikTok yang tersimpan di perangkat dan atur penimpaan bertipe secara terpisah.
 Search the comments	Cari di komentar
 Search these comments	Cari di komentar ini

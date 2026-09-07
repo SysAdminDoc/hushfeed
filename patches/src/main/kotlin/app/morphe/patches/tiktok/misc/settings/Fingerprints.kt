@@ -74,12 +74,3 @@ internal object OpenDebugCellVmDefaultStateFingerprint : Fingerprint(
         classDef.endsWith("/OpenDebugCellVM;") && method.name == "defaultState"
     },
 )
-
-internal object OpenDebugCellClickWrapperFingerprint : Fingerprint(
-    custom = { method, classDef ->
-        classDef.endsWith("Lkotlin/jvm/internal/AwS350S0200000_2;") &&
-            method.name == "invoke\$85" &&
-            method.parameterTypes == listOf("Lkotlin/jvm/internal/AwS350S0200000_2;")
-    },
-)
-
