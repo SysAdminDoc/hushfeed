@@ -63,7 +63,6 @@ import java.util.regex.Pattern;
 import app.morphe.extension.shared.settings.AppLanguage;
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.shared.settings.BooleanSetting;
-import app.morphe.extension.shared.settings.preference.MorpheAboutPreference;
 import app.morphe.extension.shared.ui.Dim;
 
 @SuppressWarnings("NewApi")
@@ -1155,9 +1154,9 @@ public class Utils {
             int order = index++;
             Preference pref = pair.second;
 
-            // Move any screens, intents, and the one off About preference to the top.
-            if (pref instanceof PreferenceScreen || pref instanceof MorpheAboutPreference
-                    || pref.getIntent() != null) {
+            // Move any screens and intents to the top. The About preference this also named was
+            // never built here and its class is gone.
+            if (pref instanceof PreferenceScreen || pref.getIntent() != null) {
                 // Any arbitrary large number.
                 order -= 1000;
             }

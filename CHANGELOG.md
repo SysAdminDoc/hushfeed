@@ -1,5 +1,7 @@
 ## 0.21.0 (2026-09-07)
 
+* The shared payload is 18,032 bytes smaller. It carried an About screen that nothing ever opened, which came with a browser view that ran scripts and loaded a page over the network, and two keep rules for libraries this project does not use.
+
 * Undo on the seen video history now answers even when a newer clear has taken over, instead of leaving the row waiting on a reply that was never coming, and it says so. Watching videos also stops running a whole-table cleanup after every single one.
 
 * Thirty-three translations for wording the app no longer uses have been removed, and the backup screen's undo row is translated again after its wording changed and left its translation behind.
