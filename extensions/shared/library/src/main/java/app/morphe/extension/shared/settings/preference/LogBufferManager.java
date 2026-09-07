@@ -1,17 +1,21 @@
 package app.morphe.extension.shared.settings.preference;
 
 import android.content.ContentValues;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.AtomicFile;
+import android.database.Cursor;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,6 +27,8 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.RejectedExecutionException;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
@@ -42,6 +48,7 @@ public final class LogBufferManager {
     private static final Deque<DiagnosticEvent> logBuffer = new ConcurrentLinkedDeque<>();
     private static final AtomicInteger logBufferCharSize = new AtomicInteger();
     private static final Object CRASH_FILE_LOCK = new Object();
+    private static final AtomicBoolean FILE_EXPORT_RUNNING = new AtomicBoolean();
 
     private LogBufferManager() {
     }
@@ -99,52 +106,117 @@ public final class LogBufferManager {
 
     public static void exportToFile() {
         Context context = Utils.getContext();
-        Uri pendingUri = null;
+        if (context == null) {
+            Utils.showToastLong("Failed to save Morphe diagnostics: application context unavailable.");
+            return;
+        }
+        Context application = context.getApplicationContext();
+        final Context app = application == null ? context : application;
+        if (!FILE_EXPORT_RUNNING.compareAndSet(false, true)) {
+            Utils.showToastShort("A diagnostic report is already being saved.");
+            return;
+        }
         try {
-            String exportText = buildExportText();
-            if (exportText.isEmpty()) {
-                Utils.showToastShort("No matching Morphe diagnostics found.");
-                return;
-            }
-
-            String fileName = "morphe-diagnostics-" + fileTimestamp() + ".txt";
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
-                values.put(MediaStore.MediaColumns.MIME_TYPE, "text/plain");
-                values.put(MediaStore.MediaColumns.RELATIVE_PATH,
-                        Environment.DIRECTORY_DOWNLOADS + "/Morphe");
-                values.put(MediaStore.MediaColumns.IS_PENDING, 1);
-                pendingUri = context.getContentResolver().insert(
-                        MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-                if (pendingUri == null) throw new IllegalStateException("Could not create report file");
-
-                try (OutputStream output = context.getContentResolver().openOutputStream(pendingUri)) {
-                    if (output == null) throw new IllegalStateException("Could not open report file");
-                    output.write(exportText.getBytes(StandardCharsets.UTF_8));
+            Utils.submitOnBackgroundThread(() -> {
+                try {
+                    String exportText = buildExportText();
+                    if (exportText.isEmpty()) {
+                        Utils.showToastShort("No matching Morphe diagnostics found.");
+                    } else {
+                        Utils.showToastLong("Full report saved to " + writeToFile(app, exportText));
+                    }
+                } catch (Exception ex) {
+                    String message = "Failed to save Morphe diagnostics: " + ex.getMessage();
+                    Utils.showToastLong(message);
+                    Logger.printDebug(() -> message, ex);
+                } finally {
+                    FILE_EXPORT_RUNNING.set(false);
                 }
+                return null;
+            });
+        } catch (RejectedExecutionException error) {
+            FILE_EXPORT_RUNNING.set(false);
+            Logger.printException(() -> "Could not start diagnostic export", error);
+            Utils.showToastLong("Could not start report export. Try again shortly.");
+        }
+    }
 
+    static String writeToFile(Context context, String exportText) throws Exception {
+        if (context == null) throw new IOException("Application context unavailable");
+        String fileName = "morphe-diagnostics-" + fileTimestamp() + "-"
+                + Long.toHexString(System.nanoTime()) + ".txt";
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContentResolver resolver = context.getContentResolver();
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "text/plain");
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH,
+                    Environment.DIRECTORY_DOWNLOADS + "/Morphe");
+            values.put(MediaStore.MediaColumns.IS_PENDING, 1);
+            Uri pendingUri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+            if (pendingUri == null) throw new IOException("Could not create report file");
+            try {
+                try (OutputStream output = resolver.openOutputStream(pendingUri, "w")) {
+                    writeText(output, exportText);
+                }
+                String savedName = providerDisplayName(resolver, pendingUri);
                 values.clear();
                 values.put(MediaStore.MediaColumns.IS_PENDING, 0);
-                context.getContentResolver().update(pendingUri, values, null, null);
-            } else {
-                File directory = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
-                if (directory == null) throw new IllegalStateException("Documents directory unavailable");
-                if (!directory.exists() && !directory.mkdirs()) {
-                    throw new IllegalStateException("Could not create Documents directory");
+                if (resolver.update(pendingUri, values, null, null) != 1) {
+                    throw new IOException("Could not publish report file");
                 }
-                try (FileOutputStream output = new FileOutputStream(new File(directory, fileName))) {
-                    output.write(exportText.getBytes(StandardCharsets.UTF_8));
-                }
+                return Environment.DIRECTORY_DOWNLOADS + "/Morphe/" + savedName;
+            } catch (Exception error) {
+                deleteIncomplete(resolver, pendingUri, error);
+                throw error;
             }
-            Utils.showToastLong("Full report saved to Downloads/Morphe.");
-        } catch (Exception ex) {
-            if (pendingUri != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                context.getContentResolver().delete(pendingUri, null, null);
+        }
+
+        File directory = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+        if (directory == null) throw new IOException("Documents directory unavailable");
+        if (!directory.exists() && !directory.mkdirs()) {
+            throw new IOException("Could not create Documents directory");
+        }
+        File file = File.createTempFile("morphe-diagnostics-", ".txt", directory);
+        try {
+            try (FileOutputStream output = new FileOutputStream(file)) {
+                writeText(output, exportText);
             }
-            String message = "Failed to save Morphe diagnostics: " + ex.getMessage();
-            Utils.showToastLong(message);
-            Logger.printDebug(() -> message, ex);
+            return file.getAbsolutePath();
+        } catch (Exception error) {
+            if (file.exists() && !file.delete()) {
+                error.addSuppressed(new IOException("Could not remove incomplete report"));
+            }
+            throw error;
+        }
+    }
+
+    private static String providerDisplayName(ContentResolver resolver, Uri uri) throws IOException {
+        try (Cursor cursor = resolver.query(uri,
+                new String[]{MediaStore.MediaColumns.DISPLAY_NAME}, null, null, null)) {
+            if (cursor == null || !cursor.moveToFirst()) throw new IOException("Could not read saved report name");
+            int column = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME);
+            if (column < 0) throw new IOException("Saved report name is unavailable");
+            String name = cursor.getString(column);
+            if (name == null || name.isEmpty()) throw new IOException("Saved report name is empty");
+            return name;
+        }
+    }
+
+    private static void deleteIncomplete(ContentResolver resolver, Uri uri, Exception failure) {
+        try {
+            if (resolver.delete(uri, null, null) != 1) {
+                failure.addSuppressed(new IOException("Could not remove incomplete report"));
+            }
+        } catch (RuntimeException cleanup) {
+            failure.addSuppressed(cleanup);
+        }
+    }
+
+    private static void writeText(OutputStream output, String report) throws IOException {
+        if (output == null) throw new IOException("Could not open report file");
+        try (OutputStreamWriter writer = new OutputStreamWriter(output, StandardCharsets.UTF_8)) {
+            writer.write(report);
         }
     }
 

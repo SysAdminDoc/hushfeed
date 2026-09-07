@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Diagnostic file exports now build and publish on the shared worker pool. The save reports null streams and failed publication, returns the provider's actual destination, and uses unique app-document files on Android 9 and earlier so repeated reports remain available.
+
 * Interrupted media work now lives in an extension-owned cache namespace. Startup reconciliation removes stale temporary files and only pending MediaStore rows recorded by Hushfeed, while completed media and unrelated TikTok cache stay alone.
 
 * Media saves now share a bounded worker queue. Transfers have byte, deadline and free-space budgets, transient mirrors retry with capped backoff, request data is snapshotted before enqueueing, and cancellation removes unpublished work without falling back to the UI thread.
