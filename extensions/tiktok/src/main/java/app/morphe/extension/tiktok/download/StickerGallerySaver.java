@@ -41,14 +41,17 @@ import com.ss.android.ugc.aweme.base.model.UrlModel;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.InterruptedIOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.WeakHashMap;
 
@@ -57,6 +60,7 @@ public final class StickerGallerySaver {
     private static final String ACTION_LABEL = "Save media";
     /** A sticker is a few hundred KB. Anything past this is not one. */
     private static final long MAX_STICKER_BYTES = 24L * 1024 * 1024;
+    private static final long MAX_STICKER_PIXELS = 16L * 1024 * 1024;
     private static final int CONNECT_TIMEOUT_MS = 15_000;
     private static final int READ_TIMEOUT_MS = 20_000;
 
@@ -207,113 +211,188 @@ public final class StickerGallerySaver {
     }
 
     private static SaveResult saveSticker(Context context, StickerAsset asset) {
-        HttpURLConnection connection = null;
-        Uri pendingUri = null;
         MediaBudget.Deadline deadline = MediaBudget.deadline();
-
-        try {
-            MediaBudget.check(deadline);
-            connection = (HttpURLConnection) new URL(asset.url).openConnection();
-            connection.setConnectTimeout(MediaBudget.timeoutMillis(deadline, CONNECT_TIMEOUT_MS));
-            connection.setReadTimeout(MediaBudget.timeoutMillis(deadline, READ_TIMEOUT_MS));
-            connection.setInstanceFollowRedirects(true);
-            connection.setRequestProperty("User-Agent", "TikTok 46.2.3 Morphe");
-
-            int responseCode = connection.getResponseCode();
-            if (responseCode < 200 || responseCode >= 300) {
-                return SaveResult.failure(L10n.t("The sticker could not be downloaded"));
+        IOException failure = new IOException("No sticker URL succeeded");
+        for (String url : asset.urls) {
+            File source = null;
+            try {
+                source = MediaCache.createTempFile(context, "sticker-source-", ".tmp");
+                String contentType = downloadSticker(url, source, context, deadline);
+                SaveResult result = saveDownloadedSticker(context, asset, url, source, contentType);
+                if (!result.success) throw new IOException(result.message);
+                return result;
+            } catch (Throwable error) {
+                if (MediaBudget.isCancellation(error)) {
+                    if (BaseSettings.DEBUG.get()) {
+                        Logger.printException(() -> "[Morphe Stickers] saveSticker cancelled", error);
+                    }
+                    return SaveResult.failure(L10n.t("The sticker could not be saved"));
+                }
+                failure.addSuppressed(new IOException(
+                        "Sticker mirror failed (" + error.getClass().getSimpleName() + "): "
+                                + summarizeUrl(url), error));
+            } finally {
+                if (source != null && !MediaCache.delete(source)) {
+                    Logger.printInfo(() -> "Could not remove sticker source file");
+                }
             }
-            long declaredLength = connection.getContentLength();
-            MediaBudget.checkTransferLength(declaredLength);
-            MediaBudget.checkDiskSpace(context.getCacheDir(), declaredLength);
+        }
+        if (BaseSettings.DEBUG.get()) {
+            Logger.printException(() -> "[Morphe Stickers] saveSticker failure", failure);
+        }
+        return SaveResult.failure(L10n.t("The sticker could not be saved"));
+    }
 
-            try (BufferedInputStream inputStream = new BufferedInputStream(connection.getInputStream())) {
-                MediaFormat format = detectMediaFormat(connection.getContentType(), asset.url, inputStream, asset.animated);
-                String mediaId = Integer.toUnsignedString(asset.url.hashCode(), 16);
-                String displayName = DownloadFilenameFormatter.formatCommentMediaName(format.extension, mediaId);
+    private static String downloadSticker(
+            String url,
+            File target,
+            Context context,
+            MediaBudget.Deadline deadline
+    ) throws IOException {
+        IOException failure = new IOException("Sticker URL failed");
+        for (int attempt = 0; attempt < MediaBudget.MAX_ATTEMPTS_PER_MIRROR; attempt++) {
+            HttpURLConnection connection = null;
+            try {
+                MediaBudget.check(deadline);
+                connection = (HttpURLConnection) new URL(url).openConnection();
+                connection.setConnectTimeout(MediaBudget.timeoutMillis(deadline, CONNECT_TIMEOUT_MS));
+                connection.setReadTimeout(MediaBudget.timeoutMillis(deadline, READ_TIMEOUT_MS));
+                connection.setInstanceFollowRedirects(true);
+                connection.setRequestProperty("User-Agent", "TikTok 46.2.3 Morphe");
+                int responseCode = connection.getResponseCode();
+                if (MediaBudget.isTransientStatus(responseCode)
+                        && attempt + 1 < MediaBudget.MAX_ATTEMPTS_PER_MIRROR) {
+                    MediaBudget.waitBeforeRetry(connection.getHeaderField("Retry-After"), attempt, deadline);
+                    continue;
+                }
+                if (responseCode < 200 || responseCode >= 300) {
+                    throw new IOException("Sticker server returned " + responseCode);
+                }
+                long declaredLength = contentLength(connection);
+                MediaBudget.checkTransferLength(declaredLength);
+                MediaBudget.checkDiskSpace(context.getCacheDir(), declaredLength, deadline);
+                try (InputStream input = connection.getInputStream();
+                     OutputStream output = new FileOutputStream(target)) {
+                    MediaFileWriter.copy(input, output, MAX_STICKER_BYTES, deadline);
+                }
+                return connection.getContentType();
+            } catch (IOException | RuntimeException error) {
+                if (MediaBudget.isCancellation(error)) {
+                    if (error instanceof InterruptedIOException) throw (InterruptedIOException) error;
+                    throw new InterruptedIOException("Media job cancelled");
+                }
+                boolean retryable = MediaBudget.isRetryableTransport(error);
+                if (retryable && attempt + 1 < MediaBudget.MAX_ATTEMPTS_PER_MIRROR) {
+                    MediaBudget.waitBeforeRetry(null, attempt, deadline);
+                    continue;
+                }
+                failure.addSuppressed(new IOException(
+                        "Sticker attempt failed (" + error.getClass().getSimpleName() + "): "
+                                + summarizeUrl(url), error));
+                break;
+            } finally {
+                if (connection != null) connection.disconnect();
+            }
+        }
+        throw failure;
+    }
 
-                if (!format.convertToPng) {
-                    if (format.convertToMp4 || format.convertToGif) {
-                        byte[] animatedWebp = readFully(inputStream);
-                        try {
-                            if (format.convertToGif) {
-                                return saveConvertedSticker(context, animatedWebp, displayName,
-                                        "image/gif", false, "GIF");
-                            }
+    private static long contentLength(HttpURLConnection connection) {
+        String header = connection.getHeaderField("Content-Length");
+        if (header == null) return -1L;
+        try {
+            return Long.parseLong(header.trim());
+        } catch (NumberFormatException ignored) {
+            return -1L;
+        }
+    }
+
+    private static SaveResult saveDownloadedSticker(
+            Context context,
+            StickerAsset asset,
+            String url,
+            File source,
+            String contentType
+    ) throws Exception {
+        MediaBudget.check(null);
+        try (BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(source))) {
+            MediaFormat format = detectMediaFormat(contentType, url, inputStream, asset.animated);
+            String mediaId = Integer.toUnsignedString(url.hashCode(), 16);
+            String displayName = DownloadFilenameFormatter.formatCommentMediaName(format.extension, mediaId);
+
+            if (!format.convertToPng) {
+                if (format.convertToMp4 || format.convertToGif) {
+                    byte[] animatedWebp = readFully(inputStream);
+                    try {
+                        if (format.convertToGif) {
+                            return saveConvertedSticker(context, animatedWebp, displayName,
+                                    "image/gif", false, "GIF");
+                        }
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            Uri uri = saveAnimatedWebpMp4WithMediaStore(context, animatedWebp, displayName);
+                            return SaveResult.success(displayPath(displayName, true), uri.toString(), "MP4");
+                        }
+
+                        File outputFile = saveAnimatedWebpMp4WithLegacyStorage(context, animatedWebp, displayName);
+                        return SaveResult.success(outputFile.getAbsolutePath(), outputFile.getAbsolutePath(), "MP4");
+                    } catch (Throwable ex) {
+                        // Better the sticker in the format it arrived in than nothing at all.
+                        debugLog("[Morphe Stickers] conversion failed, keeping the WebP: " + ex);
+                        MediaFormat sourceFormat = MediaFormat.webp();
+                        String webpName = DownloadFilenameFormatter.formatCommentMediaName(
+                                sourceFormat.extension, mediaId);
+                        try (InputStream bytes = new java.io.ByteArrayInputStream(animatedWebp)) {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                pendingUri = saveAnimatedWebpMp4WithMediaStore(context, animatedWebp, displayName);
-                                return SaveResult.success(displayPath(displayName, true), pendingUri.toString(), "MP4");
+                                Uri uri = saveStreamWithMediaStore(context, bytes, webpName, sourceFormat);
+                                return SaveResult.success(displayPath(webpName, false),
+                                        uri.toString(), sourceFormat.label);
                             }
-
-                            File outputFile = saveAnimatedWebpMp4WithLegacyStorage(context, animatedWebp, displayName);
-                            return SaveResult.success(outputFile.getAbsolutePath(), outputFile.getAbsolutePath(), "MP4");
-                        } catch (Throwable ex) {
-                            // Better the sticker in the format it arrived in than nothing at all.
-                            debugLog("[Morphe Stickers] conversion failed, keeping the WebP: " + ex);
-                            pendingUri = null;
-                            MediaFormat source = MediaFormat.webp();
-                            String webpName = DownloadFilenameFormatter.formatCommentMediaName(
-                                    source.extension, mediaId);
-                            try (InputStream bytes = new java.io.ByteArrayInputStream(animatedWebp)) {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                    pendingUri = saveStreamWithMediaStore(context, bytes, webpName, source);
-                                    return SaveResult.success(displayPath(webpName, false),
-                                            pendingUri.toString(), source.label);
-                                }
-                                File saved = saveStreamWithLegacyStorage(context, bytes, webpName, source.mimeType);
-                                return SaveResult.success(saved.getAbsolutePath(), saved.getAbsolutePath(),
-                                        source.label);
-                            }
+                            File saved = saveStreamWithLegacyStorage(context, bytes, webpName, sourceFormat.mimeType);
+                            return SaveResult.success(saved.getAbsolutePath(), saved.getAbsolutePath(),
+                                    sourceFormat.label);
                         }
                     }
-
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        pendingUri = saveStreamWithMediaStore(context, inputStream, displayName, format);
-                        return SaveResult.success(displayPath(displayName, format.video), pendingUri.toString(), format.label);
-                    }
-
-                    File outputFile = saveStreamWithLegacyStorage(context, inputStream, displayName, format.mimeType);
-                    return SaveResult.success(outputFile.getAbsolutePath(), outputFile.getAbsolutePath(), format.label);
                 }
 
-                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                if (bitmap == null) return SaveResult.failure(
-                        L10n.t("That sticker is in a format Hushfeed cannot read"));
-
-                try {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        pendingUri = saveBitmapWithMediaStore(context, bitmap, displayName);
-                        return SaveResult.success(displayPath(displayName, false), pendingUri.toString(), "PNG");
-                    }
-
-                    File outputFile = saveBitmapWithLegacyStorage(context, bitmap, displayName);
-                    return SaveResult.success(outputFile.getAbsolutePath(), outputFile.getAbsolutePath(), "PNG");
-                } finally {
-                    bitmap.recycle();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    Uri uri = saveStreamWithMediaStore(context, inputStream, displayName, format);
+                    return SaveResult.success(displayPath(displayName, format.video), uri.toString(), format.label);
                 }
-            } catch (Throwable ex) {
-                if (pendingUri != null) {
-                    try {
-                        context.getContentResolver().delete(pendingUri, null, null);
-                    } catch (Throwable ignored) {
-                        // Best effort cleanup.
-                    }
-                }
-                throw ex;
+
+                File outputFile = saveStreamWithLegacyStorage(context, inputStream, displayName, format.mimeType);
+                return SaveResult.success(outputFile.getAbsolutePath(), outputFile.getAbsolutePath(), format.label);
             }
-        } catch (Throwable ex) {
-            if (BaseSettings.DEBUG.get()) {
-                Logger.printException(() -> "[Morphe Stickers] saveSticker failure", ex);
-            }
-            return SaveResult.failure(L10n.t("The sticker could not be saved"));
-        } finally {
-            if (connection != null) {
-                connection.disconnect();
+
+            Bitmap bitmap = decodeStaticSticker(source);
+            if (bitmap == null) return SaveResult.failure(
+                    L10n.t("That sticker is in a format Hushfeed cannot read"));
+
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    Uri uri = saveBitmapWithMediaStore(context, bitmap, displayName);
+                    return SaveResult.success(displayPath(displayName, false), uri.toString(), "PNG");
+                }
+
+                File outputFile = saveBitmapWithLegacyStorage(context, bitmap, displayName);
+                return SaveResult.success(outputFile.getAbsolutePath(), outputFile.getAbsolutePath(), "PNG");
+            } finally {
+                bitmap.recycle();
             }
         }
     }
 
+    private static Bitmap decodeStaticSticker(File source) {
+        BitmapFactory.Options bounds = new BitmapFactory.Options();
+        bounds.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(source.getAbsolutePath(), bounds);
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0
+                || (long) bounds.outWidth * bounds.outHeight > MAX_STICKER_PIXELS) return null;
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        return BitmapFactory.decodeFile(source.getAbsolutePath(), options);
+    }
+
     private static Uri saveBitmapWithMediaStore(Context context, Bitmap bitmap, String displayName) throws Exception {
+        MediaBudget.check(null);
         ContentResolver resolver = context.getContentResolver();
         ContentValues values = new ContentValues();
         values.put(MediaStore.Images.Media.DISPLAY_NAME, displayName);
@@ -322,11 +401,8 @@ public final class StickerGallerySaver {
         values.put(MediaStore.Images.Media.RELATIVE_PATH, relativePath);
         values.put(MediaStore.Images.Media.IS_PENDING, 1);
 
-        Uri uri = resolver.insert(DownloadDestination.collectionUri(relativePath, false), values);
-        if (uri == null) {
-            throw new IllegalStateException("MediaStore insert returned null");
-        }
-        registerPending(context, resolver, uri);
+        Uri uri = MediaCache.insertPending(
+                context, resolver, DownloadDestination.collectionUri(relativePath, false), values);
 
         try {
             try (OutputStream outputStream = resolver.openOutputStream(uri)) {
@@ -335,6 +411,7 @@ public final class StickerGallerySaver {
                 }
                 writePng(bitmap, outputStream);
             }
+            MediaBudget.check(null);
 
             ContentValues complete = new ContentValues();
             complete.put(MediaStore.Images.Media.IS_PENDING, 0);
@@ -352,6 +429,7 @@ public final class StickerGallerySaver {
             String displayName,
             MediaFormat format
     ) throws Exception {
+        MediaBudget.check(null);
         ContentResolver resolver = context.getContentResolver();
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, displayName);
@@ -361,9 +439,7 @@ public final class StickerGallerySaver {
         values.put(MediaStore.MediaColumns.IS_PENDING, 1);
 
         Uri collection = DownloadDestination.collectionUri(relativePath, format.video);
-        Uri uri = resolver.insert(collection, values);
-        if (uri == null) throw new IllegalStateException("MediaStore insert returned null");
-        registerPending(context, resolver, uri);
+        Uri uri = MediaCache.insertPending(context, resolver, collection, values);
 
         try {
             try (OutputStream outputStream = resolver.openOutputStream(uri)) {
@@ -381,6 +457,7 @@ public final class StickerGallerySaver {
     }
 
     private static File saveBitmapWithLegacyStorage(Context context, Bitmap bitmap, String displayName) throws Exception {
+        MediaBudget.check(null);
         File directory = new File(Environment.getExternalStorageDirectory(), stickerRelativePath(false));
         if (!directory.exists() && !directory.mkdirs()) {
             throw new IllegalStateException("Could not create " + directory);
@@ -391,6 +468,7 @@ public final class StickerGallerySaver {
             try (OutputStream outputStream = new FileOutputStream(outputFile)) {
                 writePng(bitmap, outputStream);
             }
+            MediaBudget.check(null);
         } catch (Throwable ex) {
             if (outputFile.exists() && !outputFile.delete()) {
                 debugLog("[Morphe Stickers] could not remove partial file=" + outputFile.getAbsolutePath());
@@ -407,6 +485,7 @@ public final class StickerGallerySaver {
             String displayName,
             String mimeType
     ) throws Exception {
+        MediaBudget.check(null);
         boolean video = mimeType != null && mimeType.startsWith("video/");
         File directory = new File(Environment.getExternalStorageDirectory(), stickerRelativePath(video));
         if (!directory.exists() && !directory.mkdirs()) {
@@ -437,6 +516,7 @@ public final class StickerGallerySaver {
             boolean video,
             String label
     ) throws Exception {
+        MediaBudget.check(null);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ContentResolver resolver = context.getContentResolver();
             ContentValues values = new ContentValues();
@@ -445,14 +525,14 @@ public final class StickerGallerySaver {
             String relativePath = stickerRelativePath(video);
             values.put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath);
             values.put(MediaStore.MediaColumns.IS_PENDING, 1);
-            Uri uri = resolver.insert(DownloadDestination.collectionUri(relativePath, video), values);
-            if (uri == null) throw new IllegalStateException("MediaStore insert returned null");
-            registerPending(context, resolver, uri);
+            Uri uri = MediaCache.insertPending(
+                    context, resolver, DownloadDestination.collectionUri(relativePath, video), values);
             try {
                 try (OutputStream output = resolver.openOutputStream(uri)) {
                     if (output == null) throw new IllegalStateException("MediaStore output stream returned null");
                     AnimatedWebpGifConverter.convert(animatedWebp, output);
                 }
+                MediaBudget.check(null);
                 ContentValues complete = new ContentValues();
                 complete.put(MediaStore.MediaColumns.IS_PENDING, 0);
                 completePending(context, resolver, uri, complete);
@@ -472,6 +552,7 @@ public final class StickerGallerySaver {
             try (OutputStream output = new FileOutputStream(outputFile)) {
                 AnimatedWebpGifConverter.convert(animatedWebp, output);
             }
+            MediaBudget.check(null);
         } catch (Throwable ex) {
             if (outputFile.exists() && !outputFile.delete()) {
                 debugLog("[Morphe Stickers] could not remove partial file=" + outputFile.getAbsolutePath());
@@ -488,6 +569,7 @@ public final class StickerGallerySaver {
             byte[] animatedWebp,
             String displayName
     ) throws Exception {
+        MediaBudget.check(null);
         ContentResolver resolver = context.getContentResolver();
         ContentValues values = new ContentValues();
         values.put(MediaStore.Video.Media.DISPLAY_NAME, displayName);
@@ -496,15 +578,15 @@ public final class StickerGallerySaver {
         values.put(MediaStore.Video.Media.RELATIVE_PATH, relativePath);
         values.put(MediaStore.Video.Media.IS_PENDING, 1);
 
-        Uri uri = resolver.insert(DownloadDestination.collectionUri(relativePath, true), values);
-        if (uri == null) throw new IllegalStateException("MediaStore insert returned null");
-        registerPending(context, resolver, uri);
+        Uri uri = MediaCache.insertPending(
+                context, resolver, DownloadDestination.collectionUri(relativePath, true), values);
 
         try {
             try (ParcelFileDescriptor output = resolver.openFileDescriptor(uri, "w")) {
                 if (output == null) throw new IllegalStateException("MediaStore file descriptor returned null");
                 AnimatedWebpMp4Converter.convert(animatedWebp, output.getFileDescriptor());
             }
+            MediaBudget.check(null);
             ContentValues complete = new ContentValues();
             complete.put(MediaStore.Video.Media.IS_PENDING, 0);
             completePending(context, resolver, uri, complete);
@@ -562,19 +644,6 @@ public final class StickerGallerySaver {
         outputStream.flush();
     }
 
-    private static void registerPending(Context context, ContentResolver resolver, Uri uri) throws IOException {
-        try {
-            MediaCache.markPending(context, uri);
-        } catch (IOException error) {
-            try {
-                resolver.delete(uri, null, null);
-            } catch (RuntimeException cleanup) {
-                error.addSuppressed(cleanup);
-            }
-            throw error;
-        }
-    }
-
     private static void completePending(
             Context context,
             ContentResolver resolver,
@@ -599,15 +668,18 @@ public final class StickerGallerySaver {
             Uri uri,
             Throwable failure
     ) {
+        boolean deleted = false;
         try {
-            resolver.delete(uri, null, null);
+            deleted = resolver.delete(uri, null, null) > 0;
         } catch (Throwable cleanup) {
             failure.addSuppressed(cleanup);
         }
-        try {
-            MediaCache.clearPending(context, uri);
-        } catch (IOException journalError) {
-            failure.addSuppressed(journalError);
+        if (deleted) {
+            try {
+                MediaCache.clearPending(context, uri);
+            } catch (IOException journalError) {
+                failure.addSuppressed(journalError);
+            }
         }
     }
 
@@ -733,9 +805,9 @@ public final class StickerGallerySaver {
         if (sourceAsset != null) return sourceAsset;
 
         UrlModel urlModel = findUrlModel(model);
-        String url = firstUsableUrl(urlModel);
-        if (url == null) return null;
-        return new StickerAsset(url, isAnimatedStickerModel(model));
+        List<String> urls = usableUrls(urlModel);
+        if (urls.isEmpty()) return null;
+        return new StickerAsset(urls, isAnimatedStickerModel(model));
     }
 
     private static StickerAsset findSourceStickerAsset(Object previewModel) {
@@ -749,18 +821,20 @@ public final class StickerGallerySaver {
         if (sticker != null) {
             for (String methodName : new String[]{"getAnimateUrl", "getAnimatedUrl"}) {
                 UrlModel animated = bestResolutionUrl(invokeNoArg(sticker, methodName));
-                String animatedUrl = firstUsableUrl(animated);
-                if (animatedUrl != null) {
+                List<String> animatedUrls = usableUrls(animated);
+                if (!animatedUrls.isEmpty()) {
+                    String animatedUrl = animatedUrls.get(0);
                     debugLog("[Morphe Stickers] selected source animated URL " + summarizeUrl(animatedUrl));
-                    return new StickerAsset(animatedUrl, true);
+                    return new StickerAsset(animatedUrls, true);
                 }
             }
 
             UrlModel staticModel = bestResolutionUrl(invokeNoArg(sticker, "getStaticUrl"));
-            String staticUrl = firstUsableUrl(staticModel);
-            if (staticUrl != null) {
+            List<String> staticUrls = usableUrls(staticModel);
+            if (!staticUrls.isEmpty()) {
+                String staticUrl = staticUrls.get(0);
                 debugLog("[Morphe Stickers] selected source static URL " + summarizeUrl(staticUrl));
-                return new StickerAsset(staticUrl, false);
+                return new StickerAsset(staticUrls, false);
             }
 
             Object directValue = invokeNoArg(sticker, "getUrl");
@@ -783,15 +857,16 @@ public final class StickerGallerySaver {
         }
 
         Object image = invokeNoArg(source, "currentImage");
-        String directUrl = firstUsableUrlList(readNamedField(image, "urlList"));
-        if (directUrl == null) return null;
+        List<String> directUrls = usableUrlList(readNamedField(image, "urlList"));
+        if (directUrls.isEmpty()) return null;
+        String directUrl = directUrls.get(0);
 
         Object imageTypeValue = readNamedField(image, "imageType");
         String imageType = imageTypeValue == null ? "" : imageTypeValue.toString().toLowerCase(java.util.Locale.ROOT);
         boolean animated = imageType.contains("anim") || imageType.contains("webp") || imageType.contains("gif");
         debugLog("[Morphe Stickers] selected StickerItem image URL " + summarizeUrl(directUrl)
                 + " type=" + imageType);
-        return new StickerAsset(directUrl, animated);
+        return new StickerAsset(directUrls, animated);
     }
 
     private static Object resolveSourceSticker(Object source) {
@@ -831,14 +906,15 @@ public final class StickerGallerySaver {
                 || name.endsWith(".IMGiphyInfo");
     }
 
-    private static String firstUsableUrlList(Object value) {
-        if (!(value instanceof List<?>)) return null;
+    private static List<String> usableUrlList(Object value) {
+        if (!(value instanceof List<?>)) return Collections.emptyList();
+        List<String> result = new ArrayList<>();
         for (Object item : (List<?>) value) {
             if (item == null) continue;
             String url = item.toString().trim();
-            if (!url.isEmpty() && !"null".equalsIgnoreCase(url)) return url;
+            if (!url.isEmpty() && !"null".equalsIgnoreCase(url)) result.add(url);
         }
-        return null;
+        return result.isEmpty() ? Collections.emptyList() : List.copyOf(result);
     }
 
     private static UrlModel bestResolutionUrl(Object stickerUrlStruct) {
@@ -939,22 +1015,17 @@ public final class StickerGallerySaver {
     }
 
     private static String firstUsableUrl(UrlModel model) {
-        if (model == null) return null;
+        List<String> urls = usableUrls(model);
+        return urls.isEmpty() ? null : urls.get(0);
+    }
 
+    private static List<String> usableUrls(UrlModel model) {
+        if (model == null) return Collections.emptyList();
         try {
-            List<String> urls = model.getUrlList();
-            if (urls == null || urls.isEmpty()) return null;
-
-            for (String url : urls) {
-                if (url != null && !url.trim().isEmpty() && !"null".equalsIgnoreCase(url.trim())) {
-                    return url;
-                }
-            }
+            return usableUrlList(model.getUrlList());
         } catch (Throwable ignored) {
-            return null;
+            return Collections.emptyList();
         }
-
-        return null;
     }
 
     private static List<View> findViewsByClassName(View root, String... classNames) {
@@ -1063,10 +1134,17 @@ public final class StickerGallerySaver {
 
     private static final class StickerAsset {
         final String url;
+        final List<String> urls;
         final boolean animated;
 
         StickerAsset(String url, boolean animated) {
-            this.url = url;
+            this(Collections.singletonList(url), animated);
+        }
+
+        StickerAsset(List<String> urls, boolean animated) {
+            this.urls = urls == null || urls.isEmpty()
+                    ? Collections.emptyList() : List.copyOf(urls);
+            this.url = this.urls.isEmpty() ? "" : this.urls.get(0);
             this.animated = animated;
         }
     }

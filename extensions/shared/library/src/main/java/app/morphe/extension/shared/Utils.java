@@ -243,7 +243,7 @@ public class Utils {
             new ArrayBlockingQueue<>(32),
             r -> { // ThreadFactory
                 Thread t = new Thread(r);
-                t.setPriority(Thread.MAX_PRIORITY); // Run at max priority.
+                t.setPriority(Thread.NORM_PRIORITY);
                 t.setDaemon(true);
                 return t;
             },

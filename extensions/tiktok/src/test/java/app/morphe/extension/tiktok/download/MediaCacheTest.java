@@ -4,6 +4,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
+import android.net.Uri;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,6 +13,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.io.File;
+import java.io.IOException;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
@@ -37,6 +39,22 @@ public class MediaCacheTest {
             stale.delete();
             recent.delete();
             unrelated.delete();
+            owned.delete();
+        }
+    }
+
+    @Test public void anUnreadableJournalIsNotReplacedByTheNextPendingRow() throws Exception {
+        Context context = RuntimeEnvironment.getApplication();
+        File owned = new File(context.getCacheDir(), MediaCache.DIRECTORY_NAME);
+        assertTrue(owned.isDirectory() || owned.mkdirs());
+        File journal = new File(owned, "pending-uris.tsv");
+        assertTrue(journal.mkdir());
+        try {
+            org.junit.Assert.assertThrows(IOException.class, () -> MediaCache.markPending(
+                    context, Uri.parse("content://media/existing")));
+            assertTrue("the unreadable journal must remain for recovery", journal.isDirectory());
+        } finally {
+            journal.delete();
             owned.delete();
         }
     }

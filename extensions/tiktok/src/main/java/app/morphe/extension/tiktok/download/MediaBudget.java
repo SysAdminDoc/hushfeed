@@ -3,6 +3,7 @@ package app.morphe.extension.tiktok.download;
 import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.net.SocketTimeoutException;
 
 /** Shared transfer, disk and deadline limits for extension-owned media jobs. */
 final class MediaBudget {
@@ -14,14 +15,29 @@ final class MediaBudget {
     static final int MAX_ATTEMPTS_PER_MIRROR = 2;
     static final long DEFAULT_RETRY_DELAY_MS = 250L;
     static final long MAX_RETRY_DELAY_MS = 2_000L;
+    private static final ThreadLocal<Deadline> CURRENT_DEADLINE = new ThreadLocal<>();
 
     private MediaBudget() {}
 
     static Deadline deadline() {
+        Deadline current = CURRENT_DEADLINE.get();
+        if (current != null) return current;
         return new Deadline(System.nanoTime() + JOB_DEADLINE_MS * 1_000_000L);
     }
 
+    static void runWithJobDeadline(Runnable work) {
+        Deadline previous = CURRENT_DEADLINE.get();
+        if (previous == null) CURRENT_DEADLINE.set(deadline());
+        try {
+            work.run();
+        } finally {
+            if (previous == null) CURRENT_DEADLINE.remove();
+            else CURRENT_DEADLINE.set(previous);
+        }
+    }
+
     static void check(Deadline deadline) throws IOException {
+        if (deadline == null) deadline = CURRENT_DEADLINE.get();
         if (Thread.currentThread().isInterrupted()) {
             throw new InterruptedIOException("Media job cancelled");
         }
@@ -32,15 +48,27 @@ final class MediaBudget {
 
     static int timeoutMillis(Deadline deadline, int configuredMillis) throws IOException {
         check(deadline);
-        if (deadline == null) return configuredMillis;
+        Deadline active = deadline == null ? CURRENT_DEADLINE.get() : deadline;
+        if (active == null) return configuredMillis;
         long remainingMs = Math.max(1L,
-                (deadline.endNanos - System.nanoTime() + 999_999L) / 1_000_000L);
+                (active.endNanos - System.nanoTime() + 999_999L) / 1_000_000L);
         return (int) Math.min(configuredMillis, Math.min(Integer.MAX_VALUE, remainingMs));
+    }
+
+    static boolean isRetryableTransport(Throwable error) {
+        for (Throwable current = error; current != null; current = current.getCause()) {
+            if (current instanceof SocketTimeoutException || current instanceof java.net.ConnectException) {
+                return true;
+            }
+        }
+        return false;
     }
 
     static boolean isCancellation(Throwable error) {
         for (Throwable current = error; current != null; current = current.getCause()) {
-            if (current instanceof InterruptedIOException) return true;
+            if (current instanceof InterruptedIOException && !(current instanceof SocketTimeoutException)) {
+                return true;
+            }
         }
         return false;
     }
@@ -52,6 +80,11 @@ final class MediaBudget {
     }
 
     static void checkDiskSpace(File directory, long transferBytes) throws IOException {
+        checkDiskSpace(directory, transferBytes, null);
+    }
+
+    static void checkDiskSpace(File directory, long transferBytes, Deadline deadline) throws IOException {
+        check(deadline);
         checkTransferLength(transferBytes);
         if (directory == null) return;
         long free = directory.getUsableSpace();
@@ -77,13 +110,15 @@ final class MediaBudget {
         try {
             long seconds = Long.parseLong(header.trim());
             if (seconds < 0) return fallback;
-            return Math.min(MAX_RETRY_DELAY_MS, seconds * 1000L);
+            long maxSeconds = MAX_RETRY_DELAY_MS / 1000L;
+            return seconds > maxSeconds ? MAX_RETRY_DELAY_MS : seconds * 1000L;
         } catch (NumberFormatException ignored) {
             return fallback;
         }
     }
 
     static void waitBeforeRetry(String retryAfter, int attempt, Deadline deadline) throws IOException {
+        if (deadline == null) deadline = CURRENT_DEADLINE.get();
         long delay = retryAfterMillis(retryAfter, attempt);
         if (deadline != null) {
             long remainingMs = Math.max(0L,

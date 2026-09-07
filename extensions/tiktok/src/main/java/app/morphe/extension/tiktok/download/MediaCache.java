@@ -1,9 +1,12 @@
 package app.morphe.extension.tiktok.download;
 
 import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.util.Base64;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.util.AtomicFile;
@@ -26,12 +29,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.RejectedExecutionException;
 
 /** Owns temporary media files and the pending publications created by this extension. */
 public final class MediaCache {
     static final String DIRECTORY_NAME = "hushfeed-media";
     static final long STALE_AFTER_MS = 24L * 60 * 60 * 1000;
     private static final String PENDING_FILE_NAME = "pending-uris.tsv";
+    private static final String PENDING_INTENT_PREFIX = "intent:";
     private static final Object LOCK = new Object();
     private static final AtomicBoolean RECONCILIATION_STARTED = new AtomicBoolean();
     private static final Set<String> ACTIVE_FILES = Collections.newSetFromMap(
@@ -62,19 +67,103 @@ public final class MediaCache {
         }
     }
 
-    static void clearPending(Context context, Uri uri) throws IOException {
-        if (uri == null) return;
+    /** Records the insert intent before asking MediaStore for a row, closing the crash window. */
+    static String beginPending(Context context, Uri collection, String displayName) throws IOException {
+        if (collection == null || displayName == null || displayName.isEmpty()) {
+            throw new IOException("MediaStore publication details are missing");
+        }
+        String token = PENDING_INTENT_PREFIX + Long.toHexString(System.nanoTime()) + ":"
+                + encode(collection.toString()) + ":" + encode(displayName);
         synchronized (LOCK) {
             File directory = directory(context);
             Map<String, Long> records = readPending(directory);
-            if (records.remove(uri.toString()) != null) writePending(directory, records);
+            records.put(token, System.currentTimeMillis());
+            writePending(directory, records);
+        }
+        return token;
+    }
+
+    /** Inserts and journals a pending row as one recoverable operation. */
+    static Uri insertPending(
+            Context context,
+            ContentResolver resolver,
+            Uri collection,
+            ContentValues values
+    ) throws IOException {
+        String displayName = values == null
+                ? null : values.getAsString(MediaStore.MediaColumns.DISPLAY_NAME);
+        String token = beginPending(context, collection, displayName);
+        Uri uri = null;
+        try {
+            uri = resolver.insert(collection, values);
+            if (uri == null) throw new IOException("MediaStore returned no URI");
+            markPending(context, token, uri);
+            return uri;
+        } catch (IOException | RuntimeException error) {
+            boolean deleted = uri == null;
+            if (uri != null) {
+                try {
+                    deleted = resolver.delete(uri, null, null) > 0;
+                } catch (RuntimeException cleanup) {
+                    error.addSuppressed(cleanup);
+                }
+            }
+            if (deleted) {
+                try {
+                    clearPendingIntent(context, token);
+                } catch (IOException journalError) {
+                    error.addSuppressed(journalError);
+                }
+            }
+            throw error;
+        }
+    }
+
+    private static void markPending(Context context, String token, Uri uri) throws IOException {
+        if (uri == null) throw new IOException("MediaStore returned no URI");
+        synchronized (LOCK) {
+            File directory = directory(context);
+            Map<String, Long> records = readPending(directory);
+            records.remove(token);
+            records.put(uri.toString(), System.currentTimeMillis());
+            writePending(directory, records);
+        }
+    }
+
+    static void clearPending(Context context, Uri uri) throws IOException {
+        if (uri == null) return;
+        clearPendingKey(context, uri.toString());
+    }
+
+    private static void clearPendingIntent(Context context, String token) throws IOException {
+        clearPendingKey(context, token);
+    }
+
+    private static void clearPendingKey(Context context, String key) throws IOException {
+        if (key == null) return;
+        synchronized (LOCK) {
+            File directory = directory(context);
+            Map<String, Long> records = readPending(directory);
+            if (records.remove(key) != null) writePending(directory, records);
         }
     }
 
     public static void reconcileAsync(Context context) {
         if (context == null || !RECONCILIATION_STARTED.compareAndSet(false, true)) return;
         Context app = context.getApplicationContext();
-        Utils.runOnBackgroundThread(() -> reconcile(app));
+        try {
+            Utils.submitOnBackgroundThread(() -> {
+                try {
+                    reconcile(app);
+                } finally {
+                    RECONCILIATION_STARTED.set(false);
+                }
+                return null;
+            });
+        } catch (RejectedExecutionException error) {
+            RECONCILIATION_STARTED.set(false);
+            Logger.printException(() -> "Could not schedule media cache reconciliation", error);
+        }
     }
 
     static void reconcile(Context context) {
@@ -103,7 +192,7 @@ public final class MediaCache {
                 while (iterator.hasNext()) {
                     Map.Entry<String, Long> entry = iterator.next();
                     if (entry.getValue() >= cutoff) continue;
-                    if (reconcilePendingUri(app.getContentResolver(), entry.getKey())) {
+                    if (reconcilePendingEntry(app.getContentResolver(), entry.getKey())) {
                         iterator.remove();
                         changed = true;
                     }
@@ -126,7 +215,7 @@ public final class MediaCache {
         return directory;
     }
 
-    private static Map<String, Long> readPending(File directory) {
+    private static Map<String, Long> readPending(File directory) throws IOException {
         Map<String, Long> records = new LinkedHashMap<>();
         File base = new File(directory, PENDING_FILE_NAME);
         if (!base.exists() && !new File(directory, PENDING_FILE_NAME + ".bak").exists()) return records;
@@ -148,7 +237,9 @@ public final class MediaCache {
                 }
             }
         } catch (IOException | RuntimeException error) {
-            Logger.printException(() -> "Could not read media publication journal", error);
+            IOException failure = error instanceof IOException
+                    ? (IOException) error : new IOException("Could not read media publication journal", error);
+            throw failure;
         }
         return records;
     }
@@ -179,22 +270,93 @@ public final class MediaCache {
         }
     }
 
+    private static boolean reconcilePendingEntry(ContentResolver resolver, String value) {
+        if (value != null && value.startsWith(PENDING_INTENT_PREFIX)) {
+            return reconcilePendingIntent(resolver, value);
+        }
+        return reconcilePendingUri(resolver, value);
+    }
+
     private static boolean reconcilePendingUri(ContentResolver resolver, String value) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return true;
         Uri uri;
         try {
             uri = Uri.parse(value);
-            if (uri == null) return true;
+            if (uri == null) return false;
             try (Cursor cursor = resolver.query(uri,
                     new String[]{MediaStore.MediaColumns.IS_PENDING}, null, null, null)) {
-                if (cursor == null || !cursor.moveToFirst()) return true;
+                if (cursor == null) return false;
+                if (!cursor.moveToFirst()) return true;
                 int column = cursor.getColumnIndex(MediaStore.MediaColumns.IS_PENDING);
-                if (column < 0 || cursor.getInt(column) == 0) return true;
+                if (column < 0) return false;
+                if (cursor.getInt(column) == 0) return true;
             }
             return resolver.delete(uri, null, null) > 0;
         } catch (RuntimeException error) {
             Logger.printException(() -> "Could not reconcile pending media URI", error);
             return false;
+        }
+    }
+
+    private static boolean reconcilePendingIntent(ContentResolver resolver, String value) {
+        PendingIntent intent = decodeIntent(value);
+        if (intent == null) return false;
+        try (Cursor cursor = resolver.query(intent.collection,
+                new String[]{MediaStore.MediaColumns._ID, MediaStore.MediaColumns.DISPLAY_NAME,
+                        MediaStore.MediaColumns.IS_PENDING},
+                MediaStore.MediaColumns.DISPLAY_NAME + "=?", new String[]{intent.displayName}, null)) {
+            if (cursor == null) return false;
+            int idColumn = cursor.getColumnIndex(MediaStore.MediaColumns._ID);
+            int nameColumn = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME);
+            int pendingColumn = cursor.getColumnIndex(MediaStore.MediaColumns.IS_PENDING);
+            if (idColumn < 0 || nameColumn < 0 || pendingColumn < 0) return false;
+            boolean found = false;
+            boolean allDeleted = true;
+            if (!cursor.moveToFirst()) return true;
+            do {
+                if (intent.displayName.equals(cursor.getString(nameColumn))) {
+                    found = true;
+                    if (cursor.getInt(pendingColumn) == 0) return true;
+                    Uri uri = ContentUris.withAppendedId(intent.collection, cursor.getLong(idColumn));
+                    if (resolver.delete(uri, null, null) <= 0) allDeleted = false;
+                }
+            } while (cursor.moveToNext());
+            return !found || allDeleted;
+        } catch (RuntimeException error) {
+            Logger.printException(() -> "Could not reconcile pending media insert", error);
+            return false;
+        }
+    }
+
+    private static String encode(String value) {
+        return Base64.encodeToString(value.getBytes(StandardCharsets.UTF_8), Base64.URL_SAFE | Base64.NO_WRAP);
+    }
+
+    private static PendingIntent decodeIntent(String value) {
+        try {
+            String encoded = value.substring(PENDING_INTENT_PREFIX.length());
+            int firstSeparator = encoded.indexOf(':');
+            int secondSeparator = firstSeparator < 0 ? -1 : encoded.indexOf(':', firstSeparator + 1);
+            if (firstSeparator <= 0 || secondSeparator == firstSeparator + 1
+                    || secondSeparator == encoded.length() - 1) return null;
+            String collection = new String(Base64.decode(
+                    encoded.substring(firstSeparator + 1, secondSeparator), Base64.URL_SAFE),
+                    StandardCharsets.UTF_8);
+            String displayName = new String(Base64.decode(encoded.substring(secondSeparator + 1), Base64.URL_SAFE),
+                    StandardCharsets.UTF_8);
+            return new PendingIntent(Uri.parse(collection), displayName);
+        } catch (RuntimeException error) {
+            return null;
+        }
+    }
+
+    private static final class PendingIntent {
+        final Uri collection;
+        final String displayName;
+
+        PendingIntent(Uri collection, String displayName) {
+            this.collection = collection;
+            this.displayName = displayName;
         }
     }
 }

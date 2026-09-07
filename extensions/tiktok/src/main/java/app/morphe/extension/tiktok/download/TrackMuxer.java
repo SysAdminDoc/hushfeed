@@ -13,6 +13,7 @@ final class TrackMuxer {
     private TrackMuxer() {}
 
     static void combine(File video, File audio, File output) throws IOException {
+        MediaBudget.check(null);
         MediaBudget.checkDiskSpace(output.getParentFile(), video.length() + audio.length());
         MediaExtractor picture = new MediaExtractor(), sound = new MediaExtractor();
         MediaMuxer muxer = null;
@@ -27,6 +28,7 @@ final class TrackMuxer {
             copy(picture, muxer, videoTrack);
             copy(sound, muxer, audioTrack);
             muxer.stop();
+            MediaBudget.check(null);
         } finally {
             picture.release();
             sound.release();
@@ -37,6 +39,7 @@ final class TrackMuxer {
 
     /** Copies just the sound into its own MP4 container, which is what an .m4a is. */
     static void audioOnly(File source, File output) throws IOException {
+        MediaBudget.check(null);
         MediaBudget.checkDiskSpace(output.getParentFile(), source.length());
         MediaExtractor sound = new MediaExtractor();
         MediaMuxer muxer = null;
@@ -48,6 +51,7 @@ final class TrackMuxer {
             muxer.start();
             copy(sound, muxer, audioTrack);
             muxer.stop();
+            MediaBudget.check(null);
         } finally {
             sound.release();
             if (muxer != null) muxer.release();
@@ -57,6 +61,7 @@ final class TrackMuxer {
 
     /** Copies just the picture, which is a download of a video with the sound left out. */
     static void videoOnly(File source, File output) throws IOException {
+        MediaBudget.check(null);
         MediaBudget.checkDiskSpace(output.getParentFile(), source.length());
         MediaExtractor picture = new MediaExtractor();
         MediaMuxer muxer = null;
@@ -68,6 +73,7 @@ final class TrackMuxer {
             muxer.start();
             copy(picture, muxer, videoTrack);
             muxer.stop();
+            MediaBudget.check(null);
         } finally {
             picture.release();
             if (muxer != null) muxer.release();

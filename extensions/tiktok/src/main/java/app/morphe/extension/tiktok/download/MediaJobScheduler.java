@@ -74,7 +74,9 @@ final class MediaJobScheduler {
         }
 
         boolean cancel() {
-            return task.cancel(true);
+            boolean cancelled = task.cancel(true);
+            if (cancelled) EXECUTOR.remove(task);
+            return cancelled;
         }
 
         boolean isCancelled() {
@@ -94,7 +96,7 @@ final class MediaJobScheduler {
         private TrackedTask(String label, Runnable work, Runnable onQueuedCancel, AtomicBoolean started) {
             super(() -> {
                 started.set(true);
-                work.run();
+                MediaBudget.runWithJobDeadline(work);
                 return null;
             });
             this.label = label;

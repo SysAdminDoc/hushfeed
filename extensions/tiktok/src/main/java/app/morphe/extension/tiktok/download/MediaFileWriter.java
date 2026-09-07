@@ -19,6 +19,7 @@ final class MediaFileWriter {
     private MediaFileWriter() {}
 
     static String publish(Context context, File source, String name, String mime, String path, boolean video) throws IOException {
+        MediaBudget.check(null);
         File destinationDirectory = path == null
                 ? Environment.getExternalStorageDirectory()
                 : new File(Environment.getExternalStorageDirectory(), path);
@@ -40,19 +41,13 @@ final class MediaFileWriter {
             } else {
                 collection = DownloadDestination.collectionUri(path, video);
             }
-            Uri uri = resolver.insert(collection, values);
-            if (uri == null) throw new IOException("Could not create gallery entry");
-            try {
-                MediaCache.markPending(context, uri);
-            } catch (IOException error) {
-                try { resolver.delete(uri, null, null); } catch (RuntimeException cleanup) { error.addSuppressed(cleanup); }
-                throw error;
-            }
+            Uri uri = MediaCache.insertPending(context, resolver, collection, values);
             try {
                 try (InputStream input = new FileInputStream(source); OutputStream output = resolver.openOutputStream(uri, "w")) {
                     if (output == null) throw new IOException("Could not open gallery entry");
                     copy(input, output);
                 }
+                MediaBudget.check(null);
                 String savedName;
                 try (var cursor = resolver.query(uri, new String[]{MediaStore.MediaColumns.DISPLAY_NAME}, null, null, null)) {
                     if (cursor == null || !cursor.moveToFirst()) throw new IOException("Could not read saved filename");
@@ -71,8 +66,19 @@ final class MediaFileWriter {
                 }
                 return savedName;
             } catch (IOException | RuntimeException exception) {
-                try { resolver.delete(uri, null, null); } catch (RuntimeException cleanup) { exception.addSuppressed(cleanup); }
-                try { MediaCache.clearPending(context, uri); } catch (IOException journalError) { exception.addSuppressed(journalError); }
+                boolean deleted = false;
+                try {
+                    deleted = resolver.delete(uri, null, null) > 0;
+                } catch (RuntimeException cleanup) {
+                    exception.addSuppressed(cleanup);
+                }
+                if (deleted) {
+                    try {
+                        MediaCache.clearPending(context, uri);
+                    } catch (IOException journalError) {
+                        exception.addSuppressed(journalError);
+                    }
+                }
                 throw exception;
             }
         } else {

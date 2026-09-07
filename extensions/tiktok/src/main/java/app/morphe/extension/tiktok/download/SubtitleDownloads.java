@@ -9,9 +9,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.net.ConnectException;
 import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -156,11 +154,13 @@ final class SubtitleDownloads {
                     try (var input = connection.getInputStream(); var output = new ByteArrayOutputStream()) {
                         MediaFileWriter.copy(input, output, 2 * 1024 * 1024, deadline);
                         return SubtitleFormat.toSrt(new String(output.toByteArray(), StandardCharsets.UTF_8), format);
-                    }
+                }
                 } catch (IOException | RuntimeException error) {
-                    if (error instanceof InterruptedIOException) throw (InterruptedIOException) error;
-                    boolean retryable = error instanceof SocketTimeoutException
-                            || error instanceof ConnectException;
+                    if (MediaBudget.isCancellation(error)) {
+                        if (error instanceof InterruptedIOException) throw (InterruptedIOException) error;
+                        throw new InterruptedIOException("Media job cancelled");
+                    }
+                    boolean retryable = MediaBudget.isRetryableTransport(error);
                     if (retryable && attempt + 1 < MediaBudget.MAX_ATTEMPTS_PER_MIRROR) {
                         MediaBudget.waitBeforeRetry(null, attempt, deadline);
                         continue;
