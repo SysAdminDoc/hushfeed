@@ -115,6 +115,32 @@ public class CommentBatchTranslatorTest {
         assertEquals(1, pendingRequestCount());
     }
 
+    @Test public void lateCompletionCannotRemoveANewerRetryReservation() throws Exception {
+        Anchor anchor = loadedAnchor("aid-completion-race", "cid-completion-race");
+        NativeManager.blockFirst = true;
+
+        Thread firstRequest = new Thread(() ->
+                CommentBatchTranslator.registerCommentCell(new View(context), anchor));
+        firstRequest.start();
+        assertTrue(NativeManager.firstStarted.await(5, TimeUnit.SECONDS));
+
+        invokePrune(SystemClock.elapsedRealtime() + 16_000L);
+        NativeManager.blockFirst = false;
+        CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+
+        CommentBatchTranslator.onNativeBatchComplete(new Runner(new Object(), anchor.comment));
+        assertEquals(1, pendingRequestCount());
+
+        NativeManager.releaseFirst.countDown();
+        firstRequest.join(5_000L);
+        assertFalse(firstRequest.isAlive());
+        CommentBatchTranslator.onNativeBatchComplete(new Runner(new Object(), anchor.comment));
+        assertEquals(0, pendingRequestCount());
+
+        CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+        assertEquals(2, NativeManager.requests);
+    }
+
     private static Anchor loadedAnchor(String aid, String cid) {
         Anchor anchor = anchor(aid, cid);
         CommentBatchTranslator.onCommentListLoaded(new CommentItemList(anchor.comment));
@@ -156,7 +182,7 @@ public class CommentBatchTranslatorTest {
         Object lock = lockField.get(null);
         synchronized (lock) {
             for (String name : new String[]{"visibleComments", "loadedBatches",
-                    "requestedLoadedBatchKeys", "pendingRequests"}) {
+                    "requestedLoadedBatchKeys", "pendingRequests", "retiredRequests"}) {
                 Field field = CommentBatchTranslator.class.getDeclaredField(name);
                 field.setAccessible(true);
                 Object value = field.get(null);
@@ -169,6 +195,9 @@ public class CommentBatchTranslatorTest {
             Field manager = CommentBatchTranslator.class.getDeclaredField("lastManager");
             manager.setAccessible(true);
             manager.set(null, new WeakReference<>(null));
+            Field generation = CommentBatchTranslator.class.getDeclaredField("nextRequestGeneration");
+            generation.setAccessible(true);
+            generation.setLong(null, 0L);
         }
     }
 

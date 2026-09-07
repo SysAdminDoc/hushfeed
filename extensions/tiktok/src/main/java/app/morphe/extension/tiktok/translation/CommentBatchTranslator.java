@@ -32,12 +32,15 @@ public final class CommentBatchTranslator {
     private static final long PENDING_REQUEST_STALE_MS = 15_000L;
     private static final int MAX_LOADED_BATCHES = 4;
     private static final int MAX_REQUESTED_BATCH_KEYS = 12;
+    private static final int MAX_RETIRED_REQUESTS = MAX_REQUESTED_BATCH_KEYS * 2;
 
     private static final Object LOCK = new Object();
     private static final LinkedHashMap<String, VisibleComment> visibleComments = new LinkedHashMap<>();
     private static final LinkedHashMap<String, LoadedBatch> loadedBatches = new LinkedHashMap<>();
     private static final LinkedHashSet<String> requestedLoadedBatchKeys = new LinkedHashSet<>();
     private static final LinkedHashMap<String, PendingRequest> pendingRequests = new LinkedHashMap<>();
+    private static final LinkedHashMap<Long, PendingRequest> retiredRequests = new LinkedHashMap<>();
+    private static long nextRequestGeneration;
     private static LoadedBatch latestLoadedBatch;
     private static WeakReference<Object> lastManager = new WeakReference<>(null);
     private static volatile Object nativeLanguageService;
@@ -185,7 +188,8 @@ public final class CommentBatchTranslator {
                 effectiveRequestKey,
                 commentIds(batch.comments),
                 SystemClock.elapsedRealtime(),
-                batch.comments);
+                batch.comments,
+                ++nextRequestGeneration);
         synchronized (LOCK) {
             pruneLocked(pending.startedAtMs);
             if (requestedLoadedBatchKeys.contains(effectiveRequestKey)
@@ -348,16 +352,23 @@ public final class CommentBatchTranslator {
         synchronized (LOCK) {
             if (pendingRequests.get(key) == expected) {
                 pendingRequests.remove(key);
+            } else if (expected != null && retiredRequests.get(expected.generation) == expected) {
+                retiredRequests.remove(expected.generation);
             }
         }
     }
 
     private static boolean removePendingRequestLocked(PendingRequest expected) {
-        if (expected == null || pendingRequests.get(expected.key) != expected) {
-            return false;
+        if (expected == null) return false;
+        if (pendingRequests.get(expected.key) == expected) {
+            pendingRequests.remove(expected.key);
+            return true;
         }
-        pendingRequests.remove(expected.key);
-        return true;
+        if (retiredRequests.get(expected.generation) == expected) {
+            retiredRequests.remove(expected.generation);
+            return true;
+        }
+        return false;
     }
 
     private static void rememberRequestedKeyLocked(String key) {
@@ -376,11 +387,13 @@ public final class CommentBatchTranslator {
     ) {
         if (requestedCids.isEmpty()) return null;
         PendingRequest overlapping = null;
-        for (PendingRequest pending : pendingRequests.values()) {
+        for (PendingRequest pending : allRequestsInGenerationOrder()) {
             if (pending.requestedComments == requestedComments) return pending;
             for (String cid : requestedCids) {
                 if (pending.cids.contains(cid)) {
-                    overlapping = pending;
+                    if (overlapping == null || pending.generation < overlapping.generation) {
+                        overlapping = pending;
+                    }
                     break;
                 }
             }
@@ -459,8 +472,26 @@ public final class CommentBatchTranslator {
         Iterator<Map.Entry<String, PendingRequest>> requestIterator = pendingRequests.entrySet().iterator();
         while (requestIterator.hasNext()) {
             PendingRequest entry = requestIterator.next().getValue();
-            if (now - entry.startedAtMs > PENDING_REQUEST_STALE_MS) requestIterator.remove();
+            if (now - entry.startedAtMs > PENDING_REQUEST_STALE_MS) {
+                requestIterator.remove();
+                retiredRequests.put(entry.generation, entry);
+            }
         }
+        while (retiredRequests.size() > MAX_RETIRED_REQUESTS) {
+            Iterator<Long> retiredIterator = retiredRequests.keySet().iterator();
+            if (!retiredIterator.hasNext()) break;
+            retiredIterator.next();
+            retiredIterator.remove();
+        }
+    }
+
+    private static List<PendingRequest> allRequestsInGenerationOrder() {
+        ArrayList<PendingRequest> requests = new ArrayList<>(
+                retiredRequests.size() + pendingRequests.size());
+        requests.addAll(retiredRequests.values());
+        requests.addAll(pendingRequests.values());
+        Collections.sort(requests, (left, right) -> Long.compare(left.generation, right.generation));
+        return requests;
     }
 
     private static boolean isTranslated(Object comment) {
@@ -788,12 +819,20 @@ public final class CommentBatchTranslator {
         final Set<String> cids;
         final long startedAtMs;
         final Object requestedComments;
+        final long generation;
 
-        PendingRequest(String key, Set<String> cids, long startedAtMs, Object requestedComments) {
+        PendingRequest(
+                String key,
+                Set<String> cids,
+                long startedAtMs,
+                Object requestedComments,
+                long generation
+        ) {
             this.key = key;
             this.cids = cids;
             this.startedAtMs = startedAtMs;
             this.requestedComments = requestedComments;
+            this.generation = generation;
         }
     }
 
