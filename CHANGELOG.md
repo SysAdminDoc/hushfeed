@@ -1,5 +1,7 @@
 ## 0.21.0 (2026-09-07)
 
+* The thumbs down on a comment blocks only the account you pressed. Where a press started was kept on a single object shared by every comment on screen, so a second finger, or the list reusing a row between the press and the release, could let a release act on a comment it never belonged to. Each control now keeps its own press, and a release with no press behind it does nothing.
+
 * Saving a slideshow posted by an account with a very long name no longer stalls. Each photo's name is cut down to fit the filesystem, and the counter that tells one photo from the next was the part being cut, so every photo after the first landed on a name that was already taken and the search for a free one never moved on. A shortened name now carries its counter on the end, and the search gives up and keeps the original name rather than counting upwards forever.
 
 ## 0.20.0 (2026-09-07)

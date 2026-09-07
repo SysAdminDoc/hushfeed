@@ -171,10 +171,14 @@ public final class CommentTools {
 
             // Replaces TikTok's listener on the control; the icon gets one too so a touch
             // that lands on it never reaches TikTok's handling either.
+            // This cell now holds a different comment, so a press taken before it was rebound
+            // must not be released onto the account that just arrived.
             button.setOnTouchListener(DISLIKE_TOUCH);
+            DISLIKE_TOUCH.forget(button);
             View icon = cell.findViewById(identifier(cell, DISLIKE_ICON_ID));
             if (icon != null) {
                 icon.setOnTouchListener(DISLIKE_TOUCH);
+                DISLIKE_TOUCH.forget(icon);
             }
 
             applyBlockedState(cell);
@@ -189,33 +193,57 @@ public final class CommentTools {
      * before the control sees more than the first events).
      */
     private static final class DislikeTouchListener implements View.OnTouchListener {
-        private float downX;
-        private float downY;
-        private boolean moved;
+        /** Where one control's press started, and whether it has since become a drag. */
+        private static final class Gesture {
+            final float downX;
+            final float downY;
+            boolean moved;
+
+            Gesture(float downX, float downY) {
+                this.downX = downX;
+                this.downY = downY;
+            }
+        }
+
+        /**
+         * One press per control. The listener is shared by every comment on screen, so keeping
+         * the press on the listener let a second finger, or a cell rebound between the press and
+         * the release, decide what a release somewhere else did. A release with no press of its
+         * own now does nothing rather than blocking whoever the other press was aimed at.
+         */
+        private final WeakHashMap<View, Gesture> gestures = new WeakHashMap<>();
+
+        void forget(View view) {
+            if (view != null) {
+                gestures.remove(view);
+            }
+        }
 
         @Override
         public boolean onTouch(View view, MotionEvent event) {
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
-                    downX = event.getX();
-                    downY = event.getY();
-                    moved = false;
+                    gestures.put(view, new Gesture(event.getX(), event.getY()));
                     return true;
-                case MotionEvent.ACTION_MOVE:
-                    if (!moved) {
+                case MotionEvent.ACTION_MOVE: {
+                    Gesture gesture = gestures.get(view);
+                    if (gesture != null && !gesture.moved) {
                         int slop = ViewConfiguration.get(view.getContext()).getScaledTouchSlop();
-                        moved = Math.abs(event.getX() - downX) > slop
-                                || Math.abs(event.getY() - downY) > slop;
+                        gesture.moved = Math.abs(event.getX() - gesture.downX) > slop
+                                || Math.abs(event.getY() - gesture.downY) > slop;
                     }
                     return true;
+                }
                 case MotionEvent.ACTION_CANCEL:
-                    moved = true;
+                    gestures.remove(view);
                     return true;
-                case MotionEvent.ACTION_UP:
-                    if (!moved) {
+                case MotionEvent.ACTION_UP: {
+                    Gesture gesture = gestures.remove(view);
+                    if (gesture != null && !gesture.moved) {
                         onDislikeTapped(view);
                     }
                     return true;
+                }
                 default:
                     return true;
             }
