@@ -26,6 +26,14 @@ bundle and `SHA256SUMS.txt`, run it again with `-VerifyPublishedAsset` to check 
 the local artifact hash and the hosted checksum entry. The local release helpers are
 `scripts/gen-l10n.py`, `scripts/verify-all-patches.ps1` and
 `scripts/measure-patch-heap.ps1`; the latter two need a Morphe desktop jar and a fixture APK.
+The release check also refuses results older than the sources, so rerun the tests after an edit
+rather than reusing the last run's XML.
+
+Run `scripts/install-hooks.ps1` once per checkout. It installs a pre-push hook that runs the
+runtime tests when a push changes anything under `extensions/` or `patches/`, and the release
+check when it changes `README.md`, `gradle.properties`, `patches-list.json` or
+`patches-bundle.json`. Nothing builds on GitHub, so a push is the last place either can run.
+Set `HUSHFEED_SKIP_PRE_PUSH=1` to push without it.
 
 ## Source notices
 
