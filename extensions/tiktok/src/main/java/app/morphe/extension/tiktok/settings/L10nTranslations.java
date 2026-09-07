@@ -1209,8 +1209,8 @@ public final class L10nTranslations {
                 "TikTok hat die Rückmeldung nicht angenommen. Versuche es später noch einmal.");
         table.put("TikTok refused the follow: %1$s",
                 "TikTok hat das Folgen abgelehnt: %1$s");
-        table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow and is 1 for a video. The file extension is kept automatically.",
-                "Tokens: {creator}, {date}, {video_id}, {index}. {index} nummeriert die Fotos einer Diashow und ist 1 bei einem Video. Die Dateiendung wird automatisch beibehalten.");
+        table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Save original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",
+                "Tokens: {creator}, {date}, {video_id}, {index}. {index} nummeriert die Fotos einer Diashow, die du mit „Originalfotos speichern\" sicherst; alles, was über TikToks eigene Schaltfläche gespeichert wird, nummeriert stattdessen der Ordner. Die Dateiendung wird automatisch beibehalten.");
         table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
                 "Platzhalter: {creator}, {date}, {video_id}. Die Dateiendung bleibt automatisch erhalten.");
         table.put("Tokens: {date}, {media_id}. Works for image and video stickers.",
@@ -2494,8 +2494,8 @@ public final class L10nTranslations {
                 "TikTok tidak menerima masukannya. Coba lagi nanti.");
         table.put("TikTok refused the follow: %1$s",
                 "TikTok menolak permintaan mengikuti: %1$s");
-        table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow and is 1 for a video. The file extension is kept automatically.",
-                "Token: {creator}, {date}, {video_id}, {index}. {index} menomori foto dalam slideshow dan bernilai 1 untuk video. Ekstensi file dipertahankan otomatis.");
+        table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Save original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",
+                "Token: {creator}, {date}, {video_id}, {index}. {index} menomori foto slideshow yang kamu simpan dengan Simpan foto asli; apa pun yang disimpan lewat tombol TikTok sendiri dinomori oleh folder. Ekstensi file dipertahankan otomatis.");
         table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
                 "Token: {creator}, {date}, {video_id}. Ekstensi berkas dipertahankan otomatis.");
         table.put("Tokens: {date}, {media_id}. Works for image and video stickers.",

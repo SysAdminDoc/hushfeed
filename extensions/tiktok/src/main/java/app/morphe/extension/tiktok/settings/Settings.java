@@ -221,8 +221,13 @@ public class Settings extends BaseSettings {
             "session_budget_lock_minutes", 0).withRange(0, 720);
     public static final IntegerSetting SESSION_BUDGET_RESET_HOUR = new IntegerSetting(
             "session_budget_reset_hour", 4).withRange(0, 23);
-    /** Today's counts and any running lock, so both survive the process being killed. */
-    public static final StringSetting SESSION_BUDGET_STATE = new StringSetting("session_budget_state", "");
+    /**
+     * Today's counts and any running hold, so both survive the process being killed. Kept out
+     * of backups: it is a record of one day, and restoring last week's would either hand back a
+     * day or take one away, neither of which anyone asked for.
+     */
+    public static final StringSetting SESSION_BUDGET_STATE =
+            new StringSetting("session_budget_state", "", false, false);
 
     public static final BooleanSetting ENABLE_LONG_PRESS_SPEED_LOCK = new BooleanSetting("enable_long_press_speed_lock", FALSE, true);
     public static final BooleanSetting NOT_INTERESTED_BUTTON = new BooleanSetting("not_interested_button", FALSE);

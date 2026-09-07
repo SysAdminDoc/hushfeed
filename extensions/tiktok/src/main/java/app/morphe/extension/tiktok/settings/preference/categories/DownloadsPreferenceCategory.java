@@ -106,8 +106,10 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
         addPreference(new InputTextPreference(
                 context,
                 "Photo filename",
-                "Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow "
-                        + "and is 1 for a video. The file extension is kept automatically.",
+                "Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a "
+                        + "slideshow you save with Save original photos; anything saved through "
+                        + "TikTok's own button is numbered by the folder instead. The file "
+                        + "extension is kept automatically.",
                 Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE
         ));
         if (!SettingsStatus.downloadEnabled) return;
