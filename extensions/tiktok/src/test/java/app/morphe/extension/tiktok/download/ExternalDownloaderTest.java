@@ -173,6 +173,74 @@ public class ExternalDownloaderTest {
         }
     }
 
+    @Test public void ytdlnisReceivesDocumentedAudioVideoAndBackgroundExtras() {
+        try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            Settings.EXTERNAL_DOWNLOADER_PACKAGE.save(Settings.YTDLNIS_PACKAGE_NAME);
+            Settings.YTDLNIS_DOWNLOAD_TYPE.save("audio");
+            Settings.YTDLNIS_BACKGROUND.save(true);
+            assertTrue(ExternalDownloader.handOff(
+                    new Shared("https://www.tiktok.com/@dancer/video/7712345"), activity));
+
+            Intent audio = Shadows.shadowOf(activity).getNextStartedActivity();
+            assertNotNull(audio);
+            assertEquals(Settings.YTDLNIS_PACKAGE_NAME, audio.getPackage());
+            assertEquals("audio", audio.getStringExtra("TYPE"));
+            assertTrue(audio.getBooleanExtra("BACKGROUND", false));
+
+            Settings.YTDLNIS_DOWNLOAD_TYPE.save("video");
+            Settings.YTDLNIS_BACKGROUND.save(false);
+            assertTrue(ExternalDownloader.handOff(
+                    new Shared("https://www.tiktok.com/@dancer/video/7712345"), activity));
+            Intent video = Shadows.shadowOf(activity).getNextStartedActivity();
+            assertNotNull(video);
+            assertEquals("video", video.getStringExtra("TYPE"));
+            assertFalse(video.getBooleanExtra("BACKGROUND", true));
+        } finally {
+            Settings.EXTERNAL_DOWNLOADER_PACKAGE.save("");
+            Settings.YTDLNIS_DOWNLOAD_TYPE.save("video");
+            Settings.YTDLNIS_BACKGROUND.save(false);
+        }
+    }
+
+    @Test public void genericPackagesReceiveNoYtdlnisExtras() {
+        try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            Settings.EXTERNAL_DOWNLOADER_PACKAGE.save("com.dv.adm");
+            Settings.YTDLNIS_DOWNLOAD_TYPE.save("audio");
+            Settings.YTDLNIS_BACKGROUND.save(true);
+            assertTrue(ExternalDownloader.handOff(
+                    new Shared("https://www.tiktok.com/@dancer/video/7712345"), activity));
+            Intent sent = Shadows.shadowOf(activity).getNextStartedActivity();
+            assertNotNull(sent);
+            assertFalse(sent.hasExtra("TYPE"));
+            assertFalse(sent.hasExtra("BACKGROUND"));
+        } finally {
+            Settings.EXTERNAL_DOWNLOADER_PACKAGE.save("");
+            Settings.YTDLNIS_DOWNLOAD_TYPE.save("video");
+            Settings.YTDLNIS_BACKGROUND.save(false);
+        }
+    }
+
+    @Test public void ytdlnisProfileFallsBackToVideoForUnknownImportedType() {
+        try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            Settings.EXTERNAL_DOWNLOADER_PACKAGE.save(Settings.YTDLNIS_PACKAGE_NAME);
+            Settings.YTDLNIS_DOWNLOAD_TYPE.save("command");
+            assertEquals("video", ExternalDownloader.ytdlnisDownloadType());
+            assertTrue(ExternalDownloader.handOff(
+                    new Shared("https://www.tiktok.com/@dancer/video/7712345"), activity));
+            Intent sent = Shadows.shadowOf(activity).getNextStartedActivity();
+            assertEquals("video", sent.getStringExtra("TYPE"));
+        } finally {
+            Settings.EXTERNAL_DOWNLOADER_PACKAGE.save("");
+            Settings.YTDLNIS_DOWNLOAD_TYPE.save("video");
+        }
+    }
+
     @Test public void bothControlsAreReachable() {
         try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
             var activity = controller.get();
@@ -182,8 +250,26 @@ public class ExternalDownloaderTest {
             new DownloadsPreferenceCategory(activity, screen);
             assertNotNull(screen.findPreference("download_without_sound"));
             assertNotNull(screen.findPreference("external_downloader_package"));
+            assertNotNull(screen.findPreference("ytdlnis_download_type"));
+            assertNotNull(screen.findPreference("ytdlnis_background"));
         } finally {
             SettingsStatus.advancedDownloadsEnabled = false;
+        }
+    }
+
+    @Test public void ytdlnisControlsAreEnabledOnlyForTheDocumentedPackage() {
+        try {
+            Settings.EXTERNAL_DOWNLOADER_PACKAGE.save("");
+            assertFalse(Settings.YTDLNIS_DOWNLOAD_TYPE.isAvailable());
+            assertFalse(Settings.YTDLNIS_BACKGROUND.isAvailable());
+            Settings.EXTERNAL_DOWNLOADER_PACKAGE.save("com.dv.adm");
+            assertFalse(Settings.YTDLNIS_DOWNLOAD_TYPE.isAvailable());
+            assertFalse(Settings.YTDLNIS_BACKGROUND.isAvailable());
+            Settings.EXTERNAL_DOWNLOADER_PACKAGE.save(Settings.YTDLNIS_PACKAGE_NAME);
+            assertTrue(Settings.YTDLNIS_DOWNLOAD_TYPE.isAvailable());
+            assertTrue(Settings.YTDLNIS_BACKGROUND.isAvailable());
+        } finally {
+            Settings.EXTERNAL_DOWNLOADER_PACKAGE.save("");
         }
     }
 }

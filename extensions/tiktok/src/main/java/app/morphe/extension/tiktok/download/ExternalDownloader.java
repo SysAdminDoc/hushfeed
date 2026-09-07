@@ -27,6 +27,9 @@ import app.morphe.extension.tiktok.share.ShareUrlSanitizer;
  * kept its name, and when it is empty the handle and the id build the same address.
  */
 public final class ExternalDownloader {
+    private static final String YTDLNIS_TYPE_EXTRA = "TYPE";
+    private static final String YTDLNIS_BACKGROUND_EXTRA = "BACKGROUND";
+
     private ExternalDownloader() {}
 
     /** True when the link went to another app, so nothing here should save anything. */
@@ -46,6 +49,10 @@ public final class ExternalDownloader {
         // The same treatment a shared link gets. TikTok's own link carries the parameters that
         // say who sent it, and handing that to another app is still handing it out.
         send.putExtra(Intent.EXTRA_TEXT, ShareUrlSanitizer.rewriteShareUrl(url));
+        if (isYtdlnis()) {
+            send.putExtra(YTDLNIS_TYPE_EXTRA, ytdlnisDownloadType());
+            send.putExtra(YTDLNIS_BACKGROUND_EXTRA, Settings.YTDLNIS_BACKGROUND.get());
+        }
         send.setPackage(target);
         send.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
@@ -87,6 +94,16 @@ public final class ExternalDownloader {
             return "";
         }
         return name;
+    }
+
+    /** True only for the provider whose extra names and values are documented. */
+    static boolean isYtdlnis() {
+        return Settings.YTDLNIS_PACKAGE_NAME.equals(packageName());
+    }
+
+    /** A malformed imported value must never turn into an unsupported provider command. */
+    static String ytdlnisDownloadType() {
+        return "audio".equals(Settings.YTDLNIS_DOWNLOAD_TYPE.get()) ? "audio" : "video";
     }
 
     /** TikTok's own link for the video, or one built from the handle and the id. */

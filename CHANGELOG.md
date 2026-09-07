@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Advanced downloads can hand a sanitized link to YTDLnis with its documented audio or video type and optional background mode. The profile controls activate only for `com.deniscerri.ytdl`; generic package names still receive a plain link, and an unavailable target leaves TikTok's save in place. Runtime coverage is 458 tests.
+
 * Feature Gate Lab boundary tests now cover malformed persisted scalars, disabled profile imports, master and reset cycles, recorder enablement and concurrent observation limits. Translation retry state expires cleanly, and SIM preset matching keeps null current values and unsupported region fallbacks safe. Runtime coverage is 454 tests.
 
 * Deep feed and account checks now cover repeated response caching, late and final follow delivery, cached and offline fallback policy, hard-filter preservation, bounded probe rotation and malformed verdicts. Every supported account-write route keeps its challenge visible, and the 160-event diagnostics cap is reserved atomically when callbacks arrive together. Non-finite or malformed status codes remain unconfirmed. Runtime coverage is 446 tests.

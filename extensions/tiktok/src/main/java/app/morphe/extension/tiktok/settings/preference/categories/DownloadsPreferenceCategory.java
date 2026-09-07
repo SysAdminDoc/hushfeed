@@ -64,6 +64,15 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
                             + "link there instead of saving it here. Leave it empty to save here.",
                     Settings.EXTERNAL_DOWNLOADER_PACKAGE)
                     .withCheck(value -> ExternalDownloader.packageNameProblem(value.trim())));
+            ChoicePreference ytdlnisType = new ChoicePreference(context, "YTDLnis download type",
+                    Settings.YTDLNIS_DOWNLOAD_TYPE, new String[]{"Video", "Audio"},
+                    new String[]{"video", "audio"});
+            ytdlnisType.setSummary("For com.deniscerri.ytdl only. Ask YTDLnis for audio or video "
+                    + "when the save button hands it a link.");
+            addPreference(ytdlnisType);
+            addPreference(new TogglePreference(context, "YTDLnis background mode",
+                    "For com.deniscerri.ytdl only. Hide its download card and start the handoff in "
+                            + "the background.", Settings.YTDLNIS_BACKGROUND));
         }
         addPreference(new DownloadPathPreference(
                 context,

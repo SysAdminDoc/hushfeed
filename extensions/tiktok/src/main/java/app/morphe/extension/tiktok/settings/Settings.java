@@ -19,6 +19,8 @@ import app.morphe.extension.shared.settings.StringSetting;
 import app.morphe.extension.tiktok.navigation.BottomNavigationTabOptions;
 import app.morphe.extension.tiktok.navigation.NavigationTabOptions;
 
+import java.util.Collections;
+
 public class Settings extends BaseSettings {
     public static final BooleanSetting REGION_SPOOF = new BooleanSetting("region_spoof", FALSE, true);
     public static final BooleanSetting REGION_STORE_SPOOF = new BooleanSetting("region_store_spoof", FALSE, true);
@@ -43,6 +45,23 @@ public class Settings extends BaseSettings {
             new BooleanSetting("download_without_sound", FALSE);
     public static final StringSetting EXTERNAL_DOWNLOADER_PACKAGE =
             new StringSetting("external_downloader_package", "");
+    /** The only package whose documented intent extras Hushfeed knows how to request. */
+    public static final String YTDLNIS_PACKAGE_NAME = "com.deniscerri.ytdl";
+    private static final Setting.Availability YTDLNIS_ONLY = new Setting.Availability() {
+        @Override
+        public boolean isAvailable() {
+            return YTDLNIS_PACKAGE_NAME.equals(EXTERNAL_DOWNLOADER_PACKAGE.get().trim());
+        }
+
+        @Override
+        public java.util.List<Setting<?>> getParentSettings() {
+            return Collections.singletonList(EXTERNAL_DOWNLOADER_PACKAGE);
+        }
+    };
+    public static final StringSetting YTDLNIS_DOWNLOAD_TYPE = new StringSetting(
+            "ytdlnis_download_type", "video", false, YTDLNIS_ONLY);
+    public static final BooleanSetting YTDLNIS_BACKGROUND = new BooleanSetting(
+            "ytdlnis_background", FALSE, false, YTDLNIS_ONLY);
     public static final StringSetting DOWNLOAD_STICKER_FORMAT = new StringSetting("download_sticker_format", "mp4");
     public static final BooleanSetting SAVE_PROFILE_PICTURE = new BooleanSetting("save_profile_picture", FALSE);
     public static final BooleanSetting SAVE_STORY = new BooleanSetting("save_story", FALSE);
