@@ -34,6 +34,13 @@ final class AnimatedWebpGifConverter {
     }
 
     static void convert(byte[] webpData, OutputStream outputStream) throws Exception {
+        // The file itself says whether it is an animation, and it is the only thing that knows.
+        // Counting frames cannot tell a still from a one-frame animation, because libwebp
+        // reports both as one: it stores a lone picture as a frame like any other.
+        if (!isAnimated(webpData)) {
+            throw new IllegalStateException("WebP is a still picture, not an animation");
+        }
+
         Object image = null;
         Bitmap canvas = null;
         try {
@@ -49,12 +56,6 @@ final class AnimatedWebpGifConverter {
             int[] durations = (int[]) invoke(image, "getFrameDurations");
             if (width <= 0 || height <= 0 || frameCount <= 0) {
                 throw new IllegalStateException("Invalid animated WebP dimensions or frame count");
-            }
-            // libwebp's demuxer stores a still picture as one frame and reports a count of 1,
-            // so "it decoded" is not the same as "it is an animation". Writing that out would
-            // produce a one-frame GIF from a still, which is worse than refusing it.
-            if (frameCount < 2) {
-                throw new IllegalStateException("WebP is a still picture, not an animation");
             }
             if ((long) width * height * frameCount > MAX_PIXELS) {
                 throw new IllegalStateException("Animated WebP is too large to hold as a GIF");
@@ -112,6 +113,22 @@ final class AnimatedWebpGifConverter {
             if (canvas != null) canvas.recycle();
             dispose(image);
         }
+    }
+
+    /**
+     * Whether the container says it holds an animation.
+     *
+     * <p>An extended WebP puts its flags in the byte after the VP8X tag and its size, and bit 1
+     * of those is the animation flag. A file with no VP8X chunk cannot be animated at all. This
+     * is the same test the sticker save makes before choosing a format, made again here so the
+     * converter is not relying on having been called correctly.
+     */
+    private static boolean isAnimated(byte[] data) {
+        return data != null && data.length >= 21
+                && data[0] == 'R' && data[1] == 'I' && data[2] == 'F' && data[3] == 'F'
+                && data[8] == 'W' && data[9] == 'E' && data[10] == 'B' && data[11] == 'P'
+                && data[12] == 'V' && data[13] == 'P' && data[14] == '8' && data[15] == 'X'
+                && (data[20] & 0x02) != 0;
     }
 
     private static Object invokeFrame(Object image, int index) throws Exception {

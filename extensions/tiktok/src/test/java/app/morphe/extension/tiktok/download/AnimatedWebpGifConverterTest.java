@@ -150,6 +150,8 @@ public class AnimatedWebpGifConverterTest {
         byte[] still = new Webp(8, 6).still().build();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
+        // The decoder does not report a still as nothing: libwebp stores the lone picture as
+        // a frame and says the count is one, so the count cannot be what decides this.
         assertEquals("the decoder no longer behaves the way libwebp does for a still",
                 1, WebPImage.create(still).getFrameCount());
         assertThrows(IllegalStateException.class,
@@ -158,13 +160,27 @@ public class AnimatedWebpGifConverterTest {
     }
 
     @Test
-    public void aSingleFrameAnimationIsRefusedToo() {
-        // One ANMF is not an animation either, and it is the shape a still with alpha or an
-        // EXIF block takes once it has a VP8X header, so it reaches the same guard.
+    public void aSingleFrameAnimationIsConverted() throws Exception {
+        // One frame is a short animation, not a still. Refusing it on the count would also
+        // refuse this, and the container is what tells the two apart.
         byte[] webp = new Webp(8, 6).frame(0, 0, 8, 6, 40, false, false, RED).build();
+
+        GifReader gif = convert(webp, 8, 6);
+
+        assertEquals(1, gif.frames.size());
+        assertEquals(List.of(4), gif.delays);
+        assertColor(gif, 0, 8, 0, 0, RED);
+    }
+
+    @Test
+    public void aPictureWithAnExtendedHeaderButNoAnimationIsRefused() {
+        // A still gains a VP8X header as soon as it has alpha or an EXIF block, and the
+        // animation flag in it is the only thing that says whether it moves.
+        byte[] webp = new Webp(8, 6).still().build();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        assertEquals(1, WebPImage.create(webp).getFrameCount());
+        assertEquals("the fixture is not the shape this is about",
+                0x00, webp[20] & 0x02);
         assertThrows(IllegalStateException.class,
                 () -> AnimatedWebpGifConverter.convert(webp, out));
         assertEquals(0, out.size());

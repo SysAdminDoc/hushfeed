@@ -10,7 +10,11 @@ import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 import app.morphe.extension.tiktok.settings.preference.InputTextPreference;
 import app.morphe.extension.tiktok.settings.preference.NumberInputPreference;
 import app.morphe.extension.tiktok.speed.PlaybackSpeedPatch;
+import android.preference.Preference;
+
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.tiktok.wellbeing.SessionBudget;
+import app.morphe.extension.tiktok.wellbeing.SessionLockOverlay;
 
 @SuppressWarnings("deprecation")
 public final class PlaybackPreferenceCategory extends ConditionalPreferenceCategory {
@@ -58,6 +62,19 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
                 "The hour both budgets reset, on a 24 hour clock. Four in the morning by default, "
                         + "because someone still scrolling at one is having last night.",
                 Settings.SESSION_BUDGET_RESET_HOUR, "o'clock", "o'clock"));
+
+        Preference clearBudget = new Preference(context);
+        clearBudget.setTitle(L10n.t(context, "Start today over"));
+        clearBudget.setSummary(L10n.t(context,
+                "Forget what has been counted today and end any hold. The budgets themselves "
+                        + "are left alone."));
+        clearBudget.setOnPreferenceClickListener(preference -> {
+            SessionBudget.clear();
+            SessionLockOverlay.sync();
+            Utils.showToastShort(L10n.t(context, "Today starts again"));
+            return true;
+        });
+        addPreference(clearBudget);
         }
 
         if (SettingsStatus.playbackSpeedEnabled) {
