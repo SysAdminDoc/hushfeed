@@ -98,6 +98,24 @@ $testFiles = @(Get-ChildItem -LiteralPath $testRoot -Filter '*.xml' -File -Error
 if ($testFiles.Count -eq 0) {
     throw "No runtime test results found under $testRoot. Run :extensions:tiktok:test first."
 }
+
+# Gradle leaves the previous run's XML in place, so results from before the last edit satisfy
+# every check below and a release can be validated against code that was never tested.
+$sourceRoots = @('extensions/tiktok/src', 'extensions/shared/library/src', 'patches/src') |
+    ForEach-Object { Join-Path $rootPath $_ } |
+    Where-Object { Test-Path -LiteralPath $_ }
+$newestSource = $sourceRoots |
+    ForEach-Object { Get-ChildItem -LiteralPath $_ -Recurse -File -ErrorAction SilentlyContinue } |
+    Sort-Object LastWriteTimeUtc -Descending |
+    Select-Object -First 1
+if ($null -ne $newestSource) {
+    $oldestResult = $testFiles | Sort-Object LastWriteTimeUtc | Select-Object -First 1
+    if ($oldestResult.LastWriteTimeUtc -lt $newestSource.LastWriteTimeUtc) {
+        throw ("Runtime test results are older than the sources. $($oldestResult.Name) was written " +
+            "$($oldestResult.LastWriteTimeUtc.ToString('u')) but $($newestSource.FullName) changed " +
+            "$($newestSource.LastWriteTimeUtc.ToString('u')). Run :extensions:tiktok:test again.")
+    }
+}
 $testCount = 0
 foreach ($file in $testFiles) {
     try {
