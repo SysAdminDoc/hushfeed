@@ -333,6 +333,46 @@ public class SeenVideoHistoryTest {
         assertTrue(SeenVideoHistory.shouldHide("92"));
     }
 
+    /**
+     * An undo that a newer clear overtakes used to return from its worker without telling anyone,
+     * so a caller waiting on the callback waited forever and its row stayed offering an undo that
+     * would never run.
+     */
+    @Test public void anUndoOvertakenByANewerClearStillReportsBack() throws Exception {
+        SeenVideoHistory.onPlayProgressChange("81", 5000, 10000);
+        drain();
+        SeenVideoHistory.clear();
+        drain();
+        assertTrue(SeenVideoHistory.canUndo());
+
+        // Hold the worker so the undo queues, then let a newer clear take the generation.
+        CountDownLatch ready = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        io().execute(() -> {
+            ready.countDown();
+            try { release.await(5, TimeUnit.SECONDS); }
+            catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        });
+        assertTrue(ready.await(5, TimeUnit.SECONDS));
+
+        AtomicReference<SeenVideoHistory.UndoResult> result = new AtomicReference<>();
+        CountDownLatch callback = new CountDownLatch(1);
+        try {
+            assertTrue(SeenVideoHistory.undoClear(undoResult -> {
+                result.set(undoResult);
+                callback.countDown();
+            }));
+            SeenVideoHistory.clear();
+        } finally {
+            release.countDown();
+        }
+        drain();
+        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+
+        assertTrue("the overtaken undo never reported back", callback.await(5, TimeUnit.SECONDS));
+        assertEquals(SeenVideoHistory.UndoResult.SUPERSEDED, result.get());
+    }
+
     @Test public void puttingTheRecordBackKeepsTheNewerSighting() throws Exception {
         SeenVideoHistory.onPlayProgressChange("55", 5000, 10000);
         drain();

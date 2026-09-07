@@ -372,7 +372,7 @@ public class SettingsL10nTest {
     private static boolean isValueRatherThanProse(String text) {
         return text.matches("\\d+p")
                 || text.matches("\\d+(\\.\\d+)?x")
-                || text.matches("[A-Za-z]+(/[A-Za-z0-9 _-]+)+")
+                || text.matches("[A-Za-z]+(/[A-Za-z0-9_-]+)+")
                 || text.matches(".*\\(\\d{5,6}\\)");
     }
 
@@ -479,29 +479,71 @@ public class SettingsL10nTest {
         return plain.toString();
     }
 
-    /** Every string literal in the extension's own source, which is where L10n keys come from. */
+    /**
+     * Every string the extension's own source says, from both trees that reach the table. A
+     * message written as several literals with a plus between them counts as its parts and as
+     * the whole, the way the compiler joins it.
+     *
+     * <p>L10nTranslations.java is skipped on purpose. It is generated from the tsv files and
+     * repeats every key back as a literal, so including it left the orphan check unable to fail:
+     * a key was "shown" because the generator had written it out again.
+     */
     private static Set<String> runtimeStringsInSource() throws Exception {
-        java.io.File root = new java.io.File("src/main/java/app/morphe/extension/tiktok");
-        if (!root.isDirectory()) root = new java.io.File(
-                "extensions/tiktok/src/main/java/app/morphe/extension/tiktok");
-        assertTrue("could not find the source tree", root.isDirectory());
-
         Set<String> literals = new LinkedHashSet<>();
-        java.util.regex.Pattern literal = java.util.regex.Pattern.compile("\"((?:[^\"\\\\]|\\\\.)*)\"");
-        try (java.util.stream.Stream<java.nio.file.Path> files =
-                     java.nio.file.Files.walk(root.toPath())) {
-            for (java.nio.file.Path file : files.filter(p -> p.toString().endsWith(".java"))
-                    .collect(java.util.stream.Collectors.toList())) {
-                String text = new String(java.nio.file.Files.readAllBytes(file),
-                        java.nio.charset.StandardCharsets.UTF_8);
-                java.util.regex.Matcher match = literal.matcher(text);
-                while (match.find()) {
-                    literals.add(match.group(1)
-                            .replace("\\n", "\n").replace("\\\"", "\"").replace("\\\\", "\\"));
+        for (String relative : new String[]{
+                "extensions/tiktok/src/main/java",
+                "extensions/shared/library/src/main/java"}) {
+            java.io.File root = new java.io.File(relative);
+            if (!root.isDirectory()) {
+                root = new java.io.File(relative.replaceFirst("^extensions/tiktok/", ""));
+            }
+            if (!root.isDirectory()) continue;
+            try (java.util.stream.Stream<java.nio.file.Path> files =
+                         java.nio.file.Files.walk(root.toPath())) {
+                for (java.nio.file.Path file : files.filter(p -> p.toString().endsWith(".java"))
+                        .collect(java.util.stream.Collectors.toList())) {
+                    if (file.getFileName().toString().equals("L10nTranslations.java")) continue;
+                    collectStrings(new String(java.nio.file.Files.readAllBytes(file),
+                            java.nio.charset.StandardCharsets.UTF_8), literals);
                 }
             }
         }
+        assertTrue("the scan found no source to read", literals.size() > 100);
         return literals;
+    }
+
+    /** Adds each literal, and for a run joined by plus signs the joined message as well. */
+    private static void collectStrings(String text, Set<String> into) {
+        byte[] kind = classify(text);
+        int at = 0;
+        while (at < text.length()) {
+            if (kind[at] != LITERAL || text.charAt(at) != '"') {
+                at++;
+                continue;
+            }
+            List<String> parts = new ArrayList<>();
+            while (at < text.length() && kind[at] == LITERAL && text.charAt(at) == '"') {
+                int end = at + 1;
+                while (end < text.length() && kind[end] == LITERAL) end++;
+                int contentEnd = end > at + 1 && text.charAt(end - 1) == '"' ? end - 1 : end;
+                parts.add(unescape(text.substring(at + 1, contentEnd)));
+                into.add(parts.get(parts.size() - 1));
+
+                int probe = end;
+                while (probe < text.length() && kind[probe] == CODE
+                        && Character.isWhitespace(text.charAt(probe))) probe++;
+                if (probe < text.length() && kind[probe] == CODE && text.charAt(probe) == '+') {
+                    probe++;
+                    while (probe < text.length() && kind[probe] == CODE
+                            && Character.isWhitespace(text.charAt(probe))) probe++;
+                    at = probe;
+                    continue;
+                }
+                at = end;
+                break;
+            }
+            if (parts.size() > 1) into.add(String.join("", parts));
+        }
     }
 
     @Test
@@ -564,7 +606,9 @@ public class SettingsL10nTest {
             strings.add(L10n.t(activity, "Back up settings"));
             strings.add(L10n.t(activity, "Restore settings"));
             strings.add(L10n.t(activity, "Reset settings"));
-            strings.add(L10n.t(activity, "Undo last restore"));
+            // The wording the backup row actually uses. This list said "Undo last restore" long
+            // after the row started saying "or reset" too, which kept a dead tsv row alive.
+            strings.add(L10n.t(activity, "Undo last restore or reset"));
         }
         return strings;
     }

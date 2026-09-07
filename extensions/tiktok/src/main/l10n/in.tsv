@@ -5,6 +5,7 @@
 %1$s isn't installed or doesn't take links	%1$s tidak terpasang atau tidak menerima tautan
 %s on	%s aktif
 A creator pattern is taking too long and was switched off: %1$s	Ada pola kreator yang terlalu lama, jadi dimatikan: %1$s
+A newer change replaced that undo. Tap Undo again.	Perubahan yang lebih baru menggantikan pembatalan itu. Ketuk Urungkan lagi.
 A hidden puzzle may be the cause.	Teka-teki yang disembunyikan bisa jadi penyebabnya.
 A host to put in place of tiktok.com when you share or copy a link, like vxtiktok.com. Leave it empty to share TikTok's own links. Only TikTok links are changed, and only the host: nothing is sent anywhere new.	Host pengganti tiktok.com saat kamu membagikan atau menyalin tautan, misalnya vxtiktok.com. Kosongkan untuk membagikan tautan TikTok sendiri. Hanya tautan TikTok yang diubah, dan hanya bagian host-nya, tidak ada yang dikirim ke mana pun.
 A settings operation is already running	Sudah ada proses pengaturan yang berjalan
@@ -13,10 +14,8 @@ Recovered an interrupted settings change. Restart TikTok to apply it.	Perubahan 
 Settings recovery needs attention. Use Undo or restore your backup.	Pemulihan pengaturan memerlukan perhatian. Gunakan Urungkan atau pulihkan cadanganmu.
 Settings recovery could not finish. Use Undo or restore your backup.	Pemulihan pengaturan tidak dapat diselesaikan. Gunakan Urungkan atau pulihkan cadanganmu.
 A tap on a person in the Send to row only selects them. A second tap on the same person within four seconds sends the video.	Satu ketukan pada orang di baris Kirim ke hanya memilihnya. Ketukan kedua pada orang yang sama dalam empat detik mengirim videonya.
-About Hushfeed	Tentang Hushfeed
 Add a block button to the video player that blocks the account that posted the current video in one tap. An undo action is shown after each block.	Tambahkan tombol blokir di pemutar video yang memblokir akun pengunggah video ini dalam satu ketukan. Aksi untuk mengurungkan muncul setelah tiap pemblokiran.
 Add a button beside the block control to send feedback about the current video.	Tambahkan tombol di samping kontrol blokir untuk mengirim masukan tentang video ini.
-Adds a custom option to TikTok's offline videos menu after restart.	Menambahkan opsi khusus ke menu video offline TikTok setelah mulai ulang.
 Advance when a video ends	Lanjut saat video berakhir
 All available languages	Semua bahasa yang tersedia
 All loaded tabs	Semua tab yang dimuat
@@ -35,7 +34,6 @@ Animated sticker format	Format stiker animasi
 Automatic advance stopped after %1$d videos	Lanjut otomatis dihentikan setelah %1$d video
 App behavior	Perilaku aplikasi
 Applies to both video and photo downloads.	Berlaku untuk unduhan video dan foto.
-Apply to video downloads and image downloads.	Berlaku untuk unduhan video dan unduhan gambar.
 Arrange your feed and bottom tabs	Atur feed dan tab bawahmu
 Auto-advance session limit	Batas lanjut otomatis per sesi
 Zero keeps auto-advance unlimited. Count only videos that finish while Hushfeed started automatic advance; prefetches, manual swipes and native-only advance do not count. The count resets when the feed component is recreated and stays stopped across backgrounding until it is recreated or the limit changes.	Nol membuat lanjut otomatis tanpa batas. Hitung hanya video yang selesai saat Hushfeed memulai lanjut otomatis; pramuat, usapan manual, dan lanjut otomatis bawaan saja tidak dihitung. Hitungan diatur ulang saat komponen feed dibuat ulang dan tetap berhenti setelah aplikasi masuk latar belakang sampai komponen dibuat ulang atau batas diubah.
@@ -43,7 +41,6 @@ Auto translate comments	Terjemahkan komentar otomatis
 Audio	Audio
 Automatic	Otomatis
 Automatic clear display	Tampilan bersih otomatis
-Automatically translates loaded comment batches using TikTok's translation system.	Menerjemahkan komentar yang dimuat secara otomatis lewat sistem terjemahan TikTok.
 Back	Kembali
 Back up settings	Cadangkan pengaturan
 Backups and troubleshooting	Cadangan dan pemecahan masalah
@@ -70,19 +67,15 @@ Choose what reaches your feed	Pilih apa yang sampai ke feed-mu
 Choose which loaded TikTok bottom navigation tabs should stay visible.	Pilih tab navigasi bawah TikTok mana yang tetap terlihat.
 Choose which loaded TikTok feed tabs should stay visible.	Pilih tab feed TikTok mana yang tetap terlihat.
 Choose which rows and controls appear	Pilih baris dan kontrol yang muncul
-Clear	Hapus
 Clear all	Hapus semua
 Clear all suggested accounts	Hapus semua akun yang disarankan
 Clear buffered events and saved crash reports.	Hapus peristiwa yang tertahan dan laporan mogok yang tersimpan.
 Clear diagnostic data	Hapus data diagnostik
 Clear display delay	Jeda tampilan bersih
 Clear the seen video history	Hapus riwayat video yang sudah ditonton
-Clear the seen video history?	Hapus riwayat video yang sudah ditonton?
-Cleared %1$s videos. Tap again to put them back.	%1$s video terhapus. Ketuk lagi untuk mengembalikannya.
 Cleared. Tap again to put the record back.	Terhapus. Ketuk lagi untuk mengembalikan catatannya.
 Close	Tutup
 code %1$s	kode %1$s
-Comma separated account handles or user ids. These accounts are always skipped.	Nama pengguna atau id pengguna dipisahkan koma. Akun ini selalu dilewati.
 Comma separated account handles or user ids. These accounts are always skipped. An entry between slashes, like /^news_/, is a pattern matched against the handle and the display name.	Nama pengguna atau id pengguna dipisahkan koma. Akun ini selalu dilewati. Entri di antara garis miring, seperti /^news_/, adalah pola yang dicocokkan dengan nama pengguna dan nama tampilan.
 Comma separated country codes, like GB, IE. Videos posted from anywhere else are hidden. Leave empty for all countries.	Kode negara dipisahkan koma, seperti GB, IE. Video dari tempat lain disembunyikan. Kosongkan untuk semua negara.
 Comma separated country codes. Videos posted from these are hidden, whatever the list above says.	Kode negara dipisahkan koma. Video dari negara ini disembunyikan, apa pun isi daftar di atas.
@@ -115,8 +108,6 @@ Could not confirm unblock for %1$s	Pembukaan blokir %1$s tidak dapat dikonfirmas
 Could not copy report. Use Save JSON.	Laporan tidak bisa disalin. Pakai Simpan JSON.
 Could not open settings section	Bagian pengaturan tidak bisa dibuka
 Could not read who posted this comment	Tidak bisa membaca siapa yang menulis komentar ini
-Could not restore settings	Pengaturan tidak bisa dipulihkan
-Could not save settings backup	Cadangan pengaturan tidak bisa disimpan
 Could not unblock %1$s	Blokir %1$s tidak bisa dibuka
 Could not unblock %1$s: %2$s	Blokir %1$s tidak bisa dibuka: %2$s
 Country and network preferences	Preferensi negara dan jaringan
@@ -150,8 +141,6 @@ Enable diagnostic logging	Aktifkan pencatatan diagnostik
 Enable hold-and-slide 2x lock	Aktifkan kunci 2x tahan lalu geser
 Enter a valid two-letter country code	Masukkan kode negara dua huruf yang sah
 Enter up to 8 comma-separated speeds from 0.5 to 3	Masukkan sampai 8 kecepatan dari 0.5 hingga 3, dipisahkan koma
-Example: 310260	Contoh: 310260
-Example: T-Mobile	Contoh: T-Mobile
 Expand activity list	Bentangkan daftar aktivitas
 Export diagnostic report	Ekspor laporan diagnostik
 Feature Gate Lab	Feature Gate Lab
@@ -195,7 +184,6 @@ Hide inserted cards	Sembunyikan kartu sisipan
 Hide Live entrance	Sembunyikan pintu masuk LIVE
 Hide LIVE replays	Sembunyikan tayangan ulang LIVE
 Hide livestreams	Sembunyikan siaran LIVE
-Hide livestreams from feed.	Sembunyikan siaran LIVE dari feed.
 Hide livestreams from the feed.	Sembunyikan siaran langsung dari feed.
 Hide message requests	Sembunyikan permintaan pesan
 Hide message streaks	Sembunyikan rentetan pesan
@@ -228,9 +216,7 @@ Hide the add people icon in the Inbox header.	Sembunyikan ikon tambah orang di h
 Hide the Archive row.	Sembunyikan baris Arsip.
 Hide the arrow and its count in the right column.	Sembunyikan ikon panah dan angkanya di kolom kanan.
 Hide the avatar and follow button	Sembunyikan foto profil dan tombol ikuti
-Hide the bookmark and its count in the right column.	Sembunyikan ikon markah dan angkanya di kolom kanan.
 Hide the caption	Sembunyikan keterangan
-Hide the column on the right: avatar, like, comments, favourite, share and the music disc.	Sembunyikan kolom di sebelah kanan: foto profil, suka, komentar, favorit, bagikan, dan piringan musik.
 Hide the comments button	Sembunyikan tombol komentar
 Hide the counts on the right column	Sembunyikan angka di kolom kanan
 Hide the creator's picture and the plus button at the top of the right column.	Sembunyikan foto kreator dan tombol tambah di bagian atas kolom kanan.
@@ -267,7 +253,6 @@ Hide the Tako AI feed bubble above the profile button.	Sembunyikan gelembung Tak
 Hide the TikTok Tako assistant conversation.	Sembunyikan percakapan asisten TikTok Tako.
 Hide the whole column on the right, from the avatar down to the music disc.	Sembunyikan seluruh kolom kanan, dari avatar sampai piringan musik.
 Hide TikTok Shop	Sembunyikan TikTok Shop
-Hide TikTok shop from feed.	Sembunyikan TikTok Shop dari feed.
 Hide TikTok Shop posts from the feed.	Sembunyikan kiriman TikTok Shop dari feed.
 Hide TikTok Shop updates and coupon messages.	Sembunyikan info terbaru TikTok Shop dan pesan kupon.
 Hide TikTok Tako	Sembunyikan TikTok Tako
@@ -306,7 +291,6 @@ Let screenshots, screen recording and Circle to Search work on TikTok again. Res
 Let the Offline videos menu use your own limit instead of TikTok's fixed one. Restart TikTok after turning this on.	Menu Video offline memakai batasmu sendiri, bukan batas tetap TikTok. Mulai ulang TikTok setelah menyalakannya.
 Links, privacy and player tools	Tautan, privasi, dan perkakas pemutar
 Long press	Tekan lama
-Lower values require more likes per view. Zero disables this rule. One candidate may be kept to avoid an empty page.	Nilai lebih kecil menuntut lebih banyak suka per tayangan. Nol mematikan aturan ini. Satu video bisa dipertahankan supaya halaman tidak kosong.
 Lowest	Terendah
 Make TikTok yours.	Jadikan TikTok milikmu.
 Marked as not interested	Ditandai tidak tertarik
@@ -315,7 +299,6 @@ Maximum	Maksimum
 Maximum video length	Durasi video maksimum
 Maximum views per like	Tayangan maksimum per suka
 Media	Media
-MENUS	MENU
 Min/Max comments	Komentar min/maks
 Min/Max favourites	Favorit min/maks
 Min/Max likes	Suka min/maks
@@ -363,16 +346,13 @@ Press and hold a story to save it. Stories have no save button of their own, and
 Press and hold the left or right third of the screen to jump back or forward. The middle third keeps the Long press action.	Tekan dan tahan sepertiga kiri atau kanan layar untuk melompat mundur atau maju. Sepertiga bagian tengah tetap memakai aksi Tekan lama.
 Profile picture saved to %1$s	Foto profil disimpan ke %1$s
 Put a box above the comments that narrows them to the ones matching what you type, by what they say or who said it. Clearing the box brings the rest back.	Kotak di atas komentar yang mempersempit ke komentar yang cocok dengan ketikanmu, berdasarkan isinya atau siapa yang menulis. Mengosongkan kotaknya mengembalikan sisanya.
-Put back %1$s videos	%1$s video dikembalikan
 Quality, files, subtitles and hand-off	Kualitas, berkas, subtitel, dan penerusan
 Quality, speed and automatic advance	Kualitas, kecepatan, dan lanjut otomatis
 Recorded gate reads (%d)	Pembacaan gate yang terekam (%d)
 Recording gate reads. Use a feature, then return here to stop.	Merekam pembacaan gate. Pakai sebuah fitur, lalu kembali ke sini untuk berhenti.
 Recover the settings saved before the last restore or reset.	Ambil kembali pengaturan yang tersimpan sebelum pemulihan atau penyetelan ulang terakhir.
 Region settings	Pengaturan wilayah
-Remove ads from feed.	Hapus iklan dari feed.
 Remove feed ads	Hapus iklan di feed
-Remove secure window flags. Restart TikTok after changing.	Hapus flag jendela aman. Mulai ulang TikTok setelah mengubahnya.
 Remove the actions row from the share sheet.	Hapus baris aksi dari menu bagikan.
 Remove the ads TikTok puts between videos.	Hapus iklan yang TikTok sisipkan di antara video.
 Remove the row of friends from the top of the share sheet.	Hapus baris teman dari bagian atas menu bagikan.
@@ -410,17 +390,14 @@ Saving the selected video quality without sound	Menyimpan kualitas video pilihan
 Saving the story	Menyimpan Story
 Saving video and subtitles to %1$s	Menyimpan video dan subtitel ke %1$s
 Search and override gate flags	Cari dan timpa flag gate
-Search local TikTok gate metadata and configure isolated typed overrides.	Cari metadata gate TikTok yang tersimpan di perangkat dan atur penimpaan bertipe secara terpisah.
 Search the comments	Cari di komentar
 Search these comments	Cari di komentar ini
 Search without personalisation, whatever your account is set to.	Cari tanpa personalisasi, apa pun setelan akunmu.
 Seconds. Zero keeps every length. If a whole batch would be filtered out, the video closest to your limit is kept so the feed is not empty.	Detik. Nol menyimpan semua durasi. Kalau satu batch penuh akan tersaring habis, video yang paling dekat dengan batasmu tetap ada agar feed tidak kosong.
-Seconds. Zero keeps every length. If only quality rules reject a page, keep the nearest allowed candidate.	Dalam detik. Nol berarti semua durasi ditampilkan. Jika hanya aturan kualitas yang menolak satu halaman, video terdekat yang masih diizinkan tetap dipertahankan.
 second	detik
 seconds	detik
 Seek by	Jarak lompatan
 Seek from the edges	Lompat dari tepi layar
-Seen video history cleared	Riwayat video yang sudah ditonton dihapus
 Seen video history cleared. Tap again to put it back.	Riwayat video yang sudah ditonton dihapus. Ketuk lagi untuk mengembalikannya.
 Seen video history put back	Riwayat video yang sudah ditonton dikembalikan
 Could not put back the seen video history. Try again.	Riwayat video yang sudah ditonton tidak dapat dikembalikan. Coba lagi.
@@ -440,7 +417,6 @@ Show seekbar thumbnail	Tampilkan pratinjau video di bilah progres
 Show the country a video was posted from next to the creator's name.	Tampilkan negara asal unggahan video di sebelah nama kreator.
 Show the current spoken caption while the other controls are hidden.	Tampilkan teks ucapan yang sedang berjalan meski kontrol lain disembunyikan.
 Show the handle instead of the name	Tampilkan nama pengguna, bukan nama tampilan
-Show the native seekbar on videos where TikTok would normally hide it.	Tampilkan bilah progres bawaan pada video yang biasanya disembunyikan TikTok.
 Show the whole Activity and New followers lists instead of stopping at a View all button.	Tampilkan seluruh daftar Aktivitas dan Pengikut baru, bukan berhenti di tombol Lihat semua.
 Show the whole video instead of cropping it to the window. Nothing changes on a tall phone, where it already fits. On a folding phone opened up, a squarer screen or a split view the sides or the ends stop being cut off.	Tampilkan video secara utuh, bukan dipotong mengikuti jendela. Di ponsel yang tinggi tidak ada yang berubah karena videonya memang sudah pas. Di ponsel lipat yang dibuka, layar yang lebih persegi, atau mode layar terbagi, sisi atau ujung videonya tidak lagi terpotong.
 Show TikTok's own progress bar on videos where it is normally hidden.	Tampilkan bilah progres TikTok pada video yang biasanya menyembunyikannya.
@@ -501,16 +477,12 @@ The original photos aren't available, so TikTok's own save runs instead	Foto asl
 The profile picture couldn't be saved.	Foto profilnya tidak bisa disimpan.
 The report could not be saved.	Laporannya tidak bisa disimpan.
 The sound couldn't be saved.	Suaranya tidak bisa disimpan.
-The sticker could not be downloaded	Stikernya tidak bisa diunduh
 The sticker could not be saved	Stikernya tidak bisa disimpan
 The story couldn't be saved.	Story-nya tidak bisa disimpan.
 The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks.	Jempol ke bawah pada tiap komentar memblokir akun penulisnya, bukan memberi dislike. Komentarnya meredup, ada spanduk untuk membatalkan, dan ketukan kedua membuka blokirnya.
-The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks. Takes effect after a restart.	Jempol ke bawah pada tiap komentar memblokir akun yang menulisnya, bukan menandai tidak suka. Komentarnya meredup, muncul spanduk untuk mengurungkan, dan ketukan kedua membuka blokirnya. Berlaku setelah mulai ulang.
 The video couldn't be saved. Try again, or choose Automatic.	Videonya tidak bisa disimpan. Coba lagi, atau pilih Otomatis.
 Too many media saves are already running. Try again shortly.	Terlalu banyak penyimpanan media yang sedang berjalan. Coba lagi sebentar.
-There was nothing to clear	Tidak ada yang bisa dihapus
 There was nothing to put back	Tidak ada yang bisa dikembalikan
-This deletes the local record only. Your TikTok account history is not touched.	Ini hanya menghapus catatan di perangkat. Riwayat akun TikTok-mu tidak disentuh.
 This profile picture isn't available to save	Foto profil ini tidak bisa disimpan
 This quality isn't available as a complete file, so TikTok's own save runs instead	Kualitas ini tidak tersedia sebagai berkas utuh, jadi TikTok yang menyimpannya
 This story isn't available to save	Story ini tidak bisa disimpan
@@ -519,7 +491,6 @@ Thumbs down blocks the commenter	Jempol ke bawah memblokir pengomentar
 TikTok default	Bawaan TikTok
 TikTok default (2x hold, quick share)	Bawaan TikTok (tahan 2x, bagikan cepat)
 TikTok didn't accept the feedback. Try again later.	TikTok tidak menerima masukannya. Coba lagi nanti.
-TikTok patches for Morphe, built on the Metra patches by icysymmetra and the community sets before them. Tap to open the project page.	Patch TikTok untuk Morphe, dibangun di atas patch Metra buatan icysymmetra dan kumpulan komunitas sebelumnya. Ketuk untuk membuka halaman proyek.
 TikTok refused the follow: %1$s	TikTok menolak permintaan mengikuti: %1$s
 Tokens: {creator}, {date}, {video_id}, {index}. The file extension is kept automatically.	Token: {creator}, {date}, {video_id}, {index}. Ekstensi berkas dipertahankan otomatis.
 Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.	Token: {creator}, {date}, {video_id}. Ekstensi berkas dipertahankan otomatis.
@@ -530,11 +501,10 @@ Try a country name, or a two-letter code	Coba nama negara, atau kode dua huruf
 Two letters, like us, gb or jp.	Dua huruf, misalnya us, gb atau jp.
 Unblocked %1$s	%1$s dibuka blokirnya
 Undo	Urungkan
-Undo last restore	Urungkan pemulihan terakhir
+Undo last restore or reset	Urungkan pemulihan atau reset terakhir
 Unlimited	Tanpa batas
 Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.	Sampai 8 kecepatan dari 0.5 hingga 3, dipisahkan koma. Contoh: 0.5, 1, 1.5, 2, 2.5, 3. Kosongkan untuk memakai daftar TikTok. Mulai ulang setelah mengubah daftar ini.
 Updating settings	Memperbarui pengaturan
-us, gb, jp, ...	us, gb, jp, ...
 Use 0 for TikTok's size, or 12 to 48 sp. Applies to the next caption.	Pakai 0 untuk ukuran bawaan TikTok, atau 12 sampai 48 sp. Berlaku untuk keterangan berikutnya.
 Use a default playback speed	Pakai kecepatan pemutaran bawaan
 Use non-personalized search	Pakai pencarian nonpersonal
@@ -543,7 +513,6 @@ Use the preset for TikTok's account and store region getters too. May affect sea
 Use the selected country and operator values. Restart TikTok after changing region settings.	Pakai nilai negara dan operator yang dipilih. Mulai ulang TikTok setelah mengubah pengaturan wilayah.
 Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.	Pakai tata letak terbagi pada layar yang lebih lebar. Mulai ulang TikTok setelah mengubah opsi ini atau setelah membuka lipatan jika tata letak lama masih muncul.
 Use TikTok's native hold, slide down, and release gesture to lock 2x speed.	Pakai gestur bawaan TikTok, tahan lalu geser ke bawah dan lepas, untuk mengunci kecepatan 2x.
-Use TikTok's non-personalized search state instead of the saved account choice.	Pakai mode pencarian nonpersonal milik TikTok, bukan pilihan akun yang tersimpan.
 Video	Video
 Video (MP4)	Video (MP4)
 Video destination	Lokasi simpan video

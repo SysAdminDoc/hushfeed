@@ -92,6 +92,44 @@ public class DownloadFolderPickerTest {
         assertTrue(String.valueOf(stored), String.valueOf(stored).contains("Chosen"));
     }
 
+    /**
+     * The rebuild above keeps the key because it is static, which covers Android destroying the
+     * screen while the process lives. Killing the process takes the static with it, and only the
+     * saved bundle carries the key across that, so this clears the static first.
+     */
+    @Test public void aFolderChosenAcrossAKilledProcessStillLands() {
+        Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
+        TikTokPreferenceFragment first = attach(activity, "DOWNLOADS");
+        Preference path = firstDownloadPath(first);
+        assertNotNull(path);
+        String before = path.getSharedPreferences().getString(path.getKey(), null);
+
+        TikTokPreferenceFragment.openDownloadPathFolderPicker(
+                (app.morphe.extension.tiktok.settings.preference.DownloadPathPreference) path);
+        Bundle state = new Bundle();
+        first.onSaveInstanceState(state);
+        assertEquals(path.getKey(), state.getString("morphe_pending_download_path"));
+
+        // Nothing of the old process is left but what Android wrote down.
+        ReflectionHelpers.setStaticField(TikTokPreferenceFragment.class, "pendingDownloadPathKey", null);
+        activity.getFragmentManager().beginTransaction().remove(first).commit();
+        activity.getFragmentManager().executePendingTransactions();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+        TikTokPreferenceFragment second = attach(activity, "DOWNLOADS");
+        second.onActivityCreated(state);
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        second.onActivityResult(REQUEST_DOWNLOAD_PATH_FOLDER, Activity.RESULT_OK,
+                treeIntent("primary:Movies/Restored"));
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+        Preference after = firstDownloadPath(second);
+        assertNotNull(after);
+        String stored = after.getSharedPreferences().getString(after.getKey(), null);
+        assertNotEquals("the folder was lost with the process", before, stored);
+        assertTrue(String.valueOf(stored), String.valueOf(stored).contains("Restored"));
+    }
+
     @Test public void aResultWithNothingWaitingSaysSo() {
         Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
         TikTokPreferenceFragment page = attach(activity, "DOWNLOADS");

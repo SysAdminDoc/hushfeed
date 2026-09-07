@@ -75,9 +75,9 @@ val antiRecordingPatch = bytecodePatch(
         }
 
         // Both anchors are optional and the sweep is allowed to find nothing, so with neither
-        // resolving the patch reported Applied, added its setting, and left screen capture
-        // detection exactly as it was. That is the case the header warns about: a build calling
-        // the API through a subclass reference, or declaring the permission.
+        // resolving the patch reported Applied and left screen capture detection exactly as it
+        // was. That is the case the header warns about: a build calling the API through a
+        // subclass reference, or declaring the permission.
         if (returnedEarly == 0 && callSites.isEmpty()) {
             throw PatchException(
                 "Screen capture detection was not found. Neither " +

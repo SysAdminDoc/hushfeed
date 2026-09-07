@@ -5,6 +5,7 @@
 %1$s isn't installed or doesn't take links	%1$s ist nicht installiert oder nimmt keine Links an
 %s on	%s aktiv
 A creator pattern is taking too long and was switched off: %1$s	Ein Kreator-Muster braucht zu lange und wurde abgeschaltet: %1$s
+A newer change replaced that undo. Tap Undo again.	Eine neuere Änderung hat dieses Rückgängig ersetzt. Erneut auf Rückgängig tippen.
 A hidden puzzle may be the cause.	Ein ausgeblendetes Rätsel kann die Ursache sein.
 A host to put in place of tiktok.com when you share or copy a link, like vxtiktok.com. Leave it empty to share TikTok's own links. Only TikTok links are changed, and only the host: nothing is sent anywhere new.	Ein Host, der beim Teilen oder Kopieren an die Stelle von tiktok.com tritt, zum Beispiel vxtiktok.com. Leer lassen, um TikToks eigene Links zu teilen. Geändert werden nur TikTok-Links und nur der Host, es wird nichts irgendwohin geschickt.
 A settings operation is already running	Es läuft bereits eine Einstellungsaktion
@@ -13,10 +14,8 @@ Recovered an interrupted settings change. Restart TikTok to apply it.	Eine unter
 Settings recovery needs attention. Use Undo or restore your backup.	Die Einstellungswiederherstellung benötigt Aufmerksamkeit. Nutze Rückgängig oder stelle deine Sicherung wieder her.
 Settings recovery could not finish. Use Undo or restore your backup.	Die Einstellungswiederherstellung konnte nicht abgeschlossen werden. Nutze Rückgängig oder stelle deine Sicherung wieder her.
 A tap on a person in the Send to row only selects them. A second tap on the same person within four seconds sends the video.	Ein Tippen auf eine Person in der Zeile „Senden an“ wählt sie nur aus. Ein zweites Tippen auf dieselbe Person innerhalb von vier Sekunden sendet das Video.
-About Hushfeed	Über Hushfeed
 Add a block button to the video player that blocks the account that posted the current video in one tap. An undo action is shown after each block.	Dem Videoplayer eine Schaltfläche hinzufügen, die das Konto hinter dem aktuellen Video mit einem Tippen blockiert. Nach jeder Blockierung wird eine Rückgängig-Aktion angezeigt.
 Add a button beside the block control to send feedback about the current video.	Neben der Blockieren-Schaltfläche eine Schaltfläche hinzufügen, um Feedback zum aktuellen Video zu senden.
-Adds a custom option to TikTok's offline videos menu after restart.	Fügt TikToks Menü für Offline-Videos nach einem Neustart eine eigene Option hinzu.
 Advance when a video ends	Weiterschalten, wenn ein Video endet
 All available languages	Alle verfügbaren Sprachen
 All loaded tabs	Alle geladenen Tabs
@@ -35,7 +34,6 @@ Animated sticker format	Format animierter Sticker
 Automatic advance stopped after %1$d videos	Automatisches Weiterschalten nach %1$d Videos angehalten
 App behavior	App-Verhalten
 Applies to both video and photo downloads.	Gilt für Video- und Foto-Downloads.
-Apply to video downloads and image downloads.	Gilt für Video- und Bild-Downloads.
 Arrange your feed and bottom tabs	Ordne deine Feed-Tabs und unteren Tabs an
 Auto-advance session limit	Limit für automatisches Weiterschalten pro Sitzung
 Zero keeps auto-advance unlimited. Count only videos that finish while Hushfeed started automatic advance; prefetches, manual swipes and native-only advance do not count. The count resets when the feed component is recreated and stays stopped across backgrounding until it is recreated or the limit changes.	Null lässt das automatische Weiterschalten unbegrenzt. Gezählt werden nur Videos, die enden, während Hushfeed das automatische Weiterschalten gestartet hat; Vorabladen, manuelles Wischen und reines natives Weiterschalten zählen nicht. Der Zähler wird beim Erstellen der Feed-Komponente zurückgesetzt und bleibt nach dem Wechsel in den Hintergrund angehalten, bis sie neu erstellt oder das Limit geändert wird.
@@ -43,7 +41,6 @@ Auto translate comments	Kommentare automatisch übersetzen
 Audio	Audio
 Automatic	Automatisch
 Automatic clear display	Automatische freie Ansicht
-Automatically translates loaded comment batches using TikTok's translation system.	Übersetzt geladene Kommentare automatisch über TikToks Übersetzungssystem.
 Back	Zurück
 Back up settings	Einstellungen sichern
 Backups and troubleshooting	Sicherungen und Fehlerdiagnose
@@ -70,19 +67,15 @@ Choose what reaches your feed	Wähle aus, was in deinem Feed erscheint
 Choose which loaded TikTok bottom navigation tabs should stay visible.	Wähle, welche geladenen Tabs der unteren TikTok-Navigation sichtbar bleiben.
 Choose which loaded TikTok feed tabs should stay visible.	Wähle, welche geladenen TikTok-Feed-Tabs sichtbar bleiben.
 Choose which rows and controls appear	Wähle sichtbare Zeilen und Bedienelemente
-Clear	Löschen
 Clear all	Alle löschen
 Clear all suggested accounts	Alle vorgeschlagenen Konten löschen
 Clear buffered events and saved crash reports.	Zwischengespeicherte Ereignisse und gespeicherte Absturzberichte löschen.
 Clear diagnostic data	Diagnosedaten löschen
 Clear display delay	Verzögerung der freien Ansicht
 Clear the seen video history	Verlauf gesehener Videos löschen
-Clear the seen video history?	Verlauf gesehener Videos löschen?
-Cleared %1$s videos. Tap again to put them back.	%1$s Videos gelöscht. Tippe erneut, um sie zurückzuholen.
 Cleared. Tap again to put the record back.	Gelöscht. Tippe erneut, um alles zurückzuholen.
 Close	Schließen
 code %1$s	Code %1$s
-Comma separated account handles or user ids. These accounts are always skipped.	Kontonamen oder Nutzer-IDs, durch Kommas getrennt. Diese Konten werden immer übersprungen.
 Comma separated account handles or user ids. These accounts are always skipped. An entry between slashes, like /^news_/, is a pattern matched against the handle and the display name.	Kommagetrennte Konto-Namen oder Nutzer-IDs. Diese Konten werden immer übersprungen. Ein Eintrag zwischen Schrägstrichen, etwa /^news_/, ist ein Muster für den @Namen und den Anzeigenamen.
 Comma separated country codes, like GB, IE. Videos posted from anywhere else are hidden. Leave empty for all countries.	Kommagetrennte Ländercodes, etwa GB, IE. Videos von überall sonst werden ausgeblendet. Leer lassen für alle Länder.
 Comma separated country codes. Videos posted from these are hidden, whatever the list above says.	Kommagetrennte Ländercodes. Videos von dort werden ausgeblendet, egal was die Liste darüber sagt.
@@ -115,8 +108,6 @@ Could not confirm unblock for %1$s	Die Aufhebung der Blockierung von %1$s konnte
 Could not copy report. Use Save JSON.	Bericht konnte nicht kopiert werden. Nutze „JSON speichern“.
 Could not open settings section	Einstellungsbereich konnte nicht geöffnet werden
 Could not read who posted this comment	Konnte nicht lesen, wer diesen Kommentar geschrieben hat
-Could not restore settings	Einstellungen konnten nicht wiederhergestellt werden
-Could not save settings backup	Einstellungssicherung konnte nicht gespeichert werden
 Could not unblock %1$s	Die Blockierung von %1$s konnte nicht aufgehoben werden
 Could not unblock %1$s: %2$s	Die Blockierung von %1$s konnte nicht aufgehoben werden: %2$s
 Country and network preferences	Land und Netzwerkeinstellungen
@@ -150,8 +141,6 @@ Enable diagnostic logging	Diagnoseprotokoll einschalten
 Enable hold-and-slide 2x lock	2x-Sperre per Halten und Wischen
 Enter a valid two-letter country code	Gib einen gültigen Ländercode aus zwei Buchstaben ein
 Enter up to 8 comma-separated speeds from 0.5 to 3	Bis zu 8 durch Kommas getrennte Geschwindigkeiten von 0.5 bis 3 eingeben
-Example: 310260	Beispiel: 310260
-Example: T-Mobile	Beispiel: T-Mobile
 Expand activity list	Aktivitätsliste ausklappen
 Export diagnostic report	Diagnosebericht exportieren
 Feature Gate Lab	Feature Gate Lab
@@ -195,7 +184,6 @@ Hide inserted cards	Eingeschobene Karten ausblenden
 Hide Live entrance	Live-Zugang ausblenden
 Hide LIVE replays	LIVE-Wiederholungen ausblenden
 Hide livestreams	Livestreams ausblenden
-Hide livestreams from feed.	Livestreams aus dem Feed ausblenden.
 Hide livestreams from the feed.	Livestreams aus dem Feed ausblenden.
 Hide message requests	Nachrichtenanfragen ausblenden
 Hide message streaks	Nachrichten-Serien ausblenden
@@ -228,9 +216,7 @@ Hide the add people icon in the Inbox header.	Das Symbol zum Hinzufügen von Per
 Hide the Archive row.	Die Zeile „Archiv“ ausblenden.
 Hide the arrow and its count in the right column.	Pfeil und Zähler in der rechten Spalte ausblenden
 Hide the avatar and follow button	Bild und Folgen-Button ausblenden
-Hide the bookmark and its count in the right column.	Lesezeichen und Zähler in der rechten Spalte ausblenden
 Hide the caption	Beschreibung ausblenden
-Hide the column on the right: avatar, like, comments, favourite, share and the music disc.	Die Spalte rechts ausblenden: Avatar, Like, Kommentare, Favorit, Teilen und die Musikscheibe.
 Hide the comments button	Kommentar-Button ausblenden
 Hide the counts on the right column	Zahlen in der rechten Spalte ausblenden
 Hide the creator's picture and the plus button at the top of the right column.	Bild und Plus-Button oben in der rechten Spalte ausblenden
@@ -267,7 +253,6 @@ Hide the Tako AI feed bubble above the profile button.	Die Tako-AI-Blase im Feed
 Hide the TikTok Tako assistant conversation.	Die Unterhaltung mit dem TikTok-Tako-Assistenten ausblenden.
 Hide the whole column on the right, from the avatar down to the music disc.	Die ganze rechte Spalte ausblenden, vom Avatar bis zur Musikscheibe.
 Hide TikTok Shop	TikTok Shop ausblenden
-Hide TikTok shop from feed.	TikTok Shop aus dem Feed ausblenden.
 Hide TikTok Shop posts from the feed.	TikTok-Shop-Beiträge aus dem Feed ausblenden.
 Hide TikTok Shop updates and coupon messages.	TikTok-Shop-Updates und Gutschein-Nachrichten ausblenden.
 Hide TikTok Tako	TikTok Tako ausblenden
@@ -306,7 +291,6 @@ Let screenshots, screen recording and Circle to Search work on TikTok again. Res
 Let the Offline videos menu use your own limit instead of TikTok's fixed one. Restart TikTok after turning this on.	Das Menü „Offline-Videos“ nutzt dein eigenes Limit statt TikToks festem. Starte TikTok nach dem Einschalten neu.
 Links, privacy and player tools	Links, Datenschutz und Wiedergabewerkzeuge
 Long press	Langes Drücken
-Lower values require more likes per view. Zero disables this rule. One candidate may be kept to avoid an empty page.	Niedrigere Werte verlangen mehr Likes pro Aufruf. Null schaltet diese Regel ab. Ein Kandidat kann bleiben, damit die Seite nicht leer ist.
 Lowest	Niedrigste
 Make TikTok yours.	Mach TikTok zu deinem TikTok.
 Marked as not interested	Als „Kein Interesse“ markiert
@@ -315,7 +299,6 @@ Maximum	Maximum
 Maximum video length	Maximale Videolänge
 Maximum views per like	Maximale Aufrufe pro Like
 Media	Medien
-MENUS	MENÜS
 Min/Max comments	Min/Max Kommentare
 Min/Max favourites	Min/Max Favoriten
 Min/Max likes	Min./Max. Likes
@@ -363,16 +346,13 @@ Press and hold a story to save it. Stories have no save button of their own, and
 Press and hold the left or right third of the screen to jump back or forward. The middle third keeps the Long press action.	Halte das linke oder rechte Drittel des Bildschirms gedrückt, um zurück oder vorwärts zu springen. Im mittleren Drittel gilt weiterhin die Aktion für langes Drücken.
 Profile picture saved to %1$s	Profilbild gespeichert unter %1$s
 Put a box above the comments that narrows them to the ones matching what you type, by what they say or who said it. Clearing the box brings the rest back.	Ein Feld über den Kommentaren, das auf die passenden eingrenzt, nach Inhalt oder nach der Person. Feld leeren bringt die übrigen zurück.
-Put back %1$s videos	%1$s Videos zurückgeholt
 Quality, files, subtitles and hand-off	Qualität, Dateien, Untertitel und Weitergabe
 Quality, speed and automatic advance	Qualität, Tempo und automatischer Wechsel
 Recorded gate reads (%d)	Aufgezeichnete Gate-Zugriffe (%d)
 Recording gate reads. Use a feature, then return here to stop.	Gate-Zugriffe werden aufgezeichnet. Nutze eine Funktion und komm zum Beenden zurück.
 Recover the settings saved before the last restore or reset.	Die vor der letzten Wiederherstellung oder Zurücksetzung gespeicherten Einstellungen zurückholen.
 Region settings	Regionseinstellungen
-Remove ads from feed.	Werbung aus dem Feed entfernen.
 Remove feed ads	Werbung im Feed entfernen
-Remove secure window flags. Restart TikTok after changing.	Sichere Fenster-Flags entfernen. Starte TikTok nach der Änderung neu.
 Remove the actions row from the share sheet.	Die Aktionszeile aus dem Teilen-Menü entfernen.
 Remove the ads TikTok puts between videos.	Die Werbung entfernen, die TikTok zwischen die Videos setzt.
 Remove the row of friends from the top of the share sheet.	Die Freundesreihe oben im Teilen-Menü entfernen.
@@ -410,17 +390,14 @@ Saving the selected video quality without sound	Die gewählte Videoqualität wir
 Saving the story	Story wird gespeichert
 Saving video and subtitles to %1$s	Video und Untertitel werden in %1$s gespeichert
 Search and override gate flags	Gate-Flags suchen und überschreiben
-Search local TikTok gate metadata and configure isolated typed overrides.	Lokale TikTok-Gate-Metadaten durchsuchen und isolierte typisierte Überschreibungen einrichten.
 Search the comments	Kommentare durchsuchen
 Search these comments	Diese Kommentare durchsuchen
 Search without personalisation, whatever your account is set to.	Ohne Personalisierung suchen, unabhängig von deiner Kontoeinstellung.
 Seconds. Zero keeps every length. If a whole batch would be filtered out, the video closest to your limit is kept so the feed is not empty.	Sekunden. Null behält jede Länge. Würde ein ganzer Schwung wegfallen, bleibt das Video, das deinem Limit am nächsten kommt, damit der Feed nicht leer ist.
-Seconds. Zero keeps every length. If only quality rules reject a page, keep the nearest allowed candidate.	Sekunden. Null lässt jede Länge zu. Lehnen nur Qualitätsregeln eine Seite ab, bleibt der nächstliegende erlaubte Kandidat erhalten.
 second	Sekunde
 seconds	Sekunden
 Seek by	Sprungweite
 Seek from the edges	Von den Rändern springen
-Seen video history cleared	Verlauf gesehener Videos gelöscht
 Seen video history cleared. Tap again to put it back.	Verlauf gesehener Videos gelöscht. Tippe erneut, um ihn zurückzuholen.
 Seen video history put back	Verlauf gesehener Videos zurückgeholt
 Could not put back the seen video history. Try again.	Der Verlauf gesehener Videos konnte nicht zurückgeholt werden. Versuche es erneut.
@@ -440,7 +417,6 @@ Show seekbar thumbnail	Vorschaubild beim Ziehen
 Show the country a video was posted from next to the creator's name.	Das Land, aus dem ein Video veröffentlicht wurde, neben dem Namen des Creators anzeigen.
 Show the current spoken caption while the other controls are hidden.	Den aktuell gesprochenen Untertitel anzeigen, während die anderen Bedienelemente ausgeblendet sind.
 Show the handle instead of the name	@Namen statt Anzeigenamen zeigen
-Show the native seekbar on videos where TikTok would normally hide it.	Die native Fortschrittsleiste auch bei Videos anzeigen, bei denen TikTok sie sonst ausblendet.
 Show the whole Activity and New followers lists instead of stopping at a View all button.	Die vollständigen Listen „Aktivität“ und „Neue Follower“ anzeigen, statt bei einer Schaltfläche „Alle anzeigen“ zu enden.
 Show the whole video instead of cropping it to the window. Nothing changes on a tall phone, where it already fits. On a folding phone opened up, a squarer screen or a split view the sides or the ends stop being cut off.	Das ganze Video zeigen, statt es auf das Fenster zuzuschneiden. Auf einem hohen Telefon ändert sich nichts, dort passt es bereits. Auf einem aufgeklappten Falttelefon, einem quadratischeren Bildschirm oder im geteilten Bildschirm werden die Seiten oder die Enden nicht mehr abgeschnitten.
 Show TikTok's own progress bar on videos where it is normally hidden.	TikToks eigene Fortschrittsleiste bei Videos zeigen, wo sie sonst versteckt ist.
@@ -501,16 +477,12 @@ The original photos aren't available, so TikTok's own save runs instead	Die Orig
 The profile picture couldn't be saved.	Das Profilbild konnte nicht gespeichert werden.
 The report could not be saved.	Der Bericht konnte nicht gespeichert werden.
 The sound couldn't be saved.	Der Sound konnte nicht gespeichert werden.
-The sticker could not be downloaded	Der Sticker konnte nicht geladen werden
 The sticker could not be saved	Der Sticker konnte nicht gespeichert werden
 The story couldn't be saved.	Die Story konnte nicht gespeichert werden.
 The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks.	Der Daumen runter an jedem Kommentar blockiert das Konto dahinter, statt zu disliken. Der Kommentar wird blasser, ein Banner bietet den Weg zurück, und ein zweiter Tipp hebt die Blockierung auf.
-The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks. Takes effect after a restart.	Der Daumen runter an jedem Kommentar blockiert das Konto, das ihn geschrieben hat, statt ihn abzulehnen. Der Kommentar wird abgedunkelt, ein Rückgängig-Banner folgt, und ein zweites Tippen hebt die Blockierung auf. Wirkt nach einem Neustart.
 The video couldn't be saved. Try again, or choose Automatic.	Das Video konnte nicht gespeichert werden. Versuche es noch einmal oder wähle Automatisch.
 Too many media saves are already running. Try again shortly.	Es laufen bereits zu viele Medienspeicherungen. Versuche es gleich noch einmal.
-There was nothing to clear	Es gab nichts zu löschen
 There was nothing to put back	Es gab nichts zurückzuholen
-This deletes the local record only. Your TikTok account history is not touched.	Das löscht nur die lokale Aufzeichnung. Dein TikTok-Kontoverlauf bleibt unberührt.
 This profile picture isn't available to save	Dieses Profilbild lässt sich nicht speichern
 This quality isn't available as a complete file, so TikTok's own save runs instead	Diese Qualität gibt es nicht als vollständige Datei, also speichert TikTok selbst
 This story isn't available to save	Diese Story lässt sich nicht speichern
@@ -519,7 +491,6 @@ Thumbs down blocks the commenter	Daumen runter blockiert den Kommentierenden
 TikTok default	TikTok-Standard
 TikTok default (2x hold, quick share)	TikTok-Standard (2x halten, schnelles Teilen)
 TikTok didn't accept the feedback. Try again later.	TikTok hat die Rückmeldung nicht angenommen. Versuche es später noch einmal.
-TikTok patches for Morphe, built on the Metra patches by icysymmetra and the community sets before them. Tap to open the project page.	TikTok-Patches für Morphe, aufgebaut auf den Metra-Patches von icysymmetra und den Community-Sammlungen davor. Tippe, um die Projektseite zu öffnen.
 TikTok refused the follow: %1$s	TikTok hat das Folgen abgelehnt: %1$s
 Tokens: {creator}, {date}, {video_id}, {index}. The file extension is kept automatically.	Platzhalter: {creator}, {date}, {video_id}, {index}. Die Dateiendung bleibt automatisch erhalten.
 Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.	Platzhalter: {creator}, {date}, {video_id}. Die Dateiendung bleibt automatisch erhalten.
@@ -530,11 +501,10 @@ Try a country name, or a two-letter code	Versuche einen Ländernamen oder ein K�
 Two letters, like us, gb or jp.	Zwei Buchstaben, etwa us, gb oder jp.
 Unblocked %1$s	%1$s entblockt
 Undo	Rückgängig
-Undo last restore	Letzte Wiederherstellung rückgängig machen
+Undo last restore or reset	Letzte Wiederherstellung oder Zurücksetzung rückgängig machen
 Unlimited	Unbegrenzt
 Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.	Bis zu 8 Geschwindigkeiten von 0.5 bis 3, durch Kommas getrennt. Beispiel: 0.5, 1, 1.5, 2, 2.5, 3. Leer lassen für TikToks Liste. Nach dem Ändern der Liste neu starten.
 Updating settings	Einstellungen werden aktualisiert
-us, gb, jp, ...	us, gb, jp, ...
 Use 0 for TikTok's size, or 12 to 48 sp. Applies to the next caption.	0 für TikToks Größe oder 12 bis 48 sp. Gilt ab dem nächsten Untertitel.
 Use a default playback speed	Standardgeschwindigkeit verwenden
 Use non-personalized search	Nicht personalisierte Suche verwenden
@@ -543,7 +513,6 @@ Use the preset for TikTok's account and store region getters too. May affect sea
 Use the selected country and operator values. Restart TikTok after changing region settings.	Die gewählten Werte für Land und Netzbetreiber verwenden. Starte TikTok nach dem Ändern der Regionseinstellungen neu.
 Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.	Das geteilte Layout auf breiteren Bildschirmen verwenden. Starte TikTok nach dem Ändern dieser Option oder nach dem Aufklappen neu, falls das alte Layout bleibt.
 Use TikTok's native hold, slide down, and release gesture to lock 2x speed.	TikToks eigene Geste „Halten, nach unten wischen, loslassen“ verwenden, um die 2x-Geschwindigkeit zu fixieren.
-Use TikTok's non-personalized search state instead of the saved account choice.	TikToks nicht personalisierten Suchmodus statt der gespeicherten Kontoauswahl verwenden.
 Video	Video
 Video (MP4)	Video (MP4)
 Video destination	Speicherort für Videos

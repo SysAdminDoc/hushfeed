@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
@@ -37,7 +38,9 @@ public final class SeenVideoHistory {
         NOT_READY,
         EMPTY,
         RESTORED,
-        FAILED
+        FAILED,
+        /** A newer clear took over while this undo was queued, so it no longer applies. */
+        SUPERSEDED
     }
 
     public interface UndoCallback {
@@ -271,14 +274,21 @@ public final class SeenVideoHistory {
                         // Read the current in-memory timestamps at execution time. A video
                         // watched again while this job waited keeps its newer sighting.
                         Map<String, Long> rows = new HashMap<>();
+                        boolean superseded;
                         synchronized (HISTORY_LOCK) {
-                            if (generation != undoGeneration || undo != copy) {
-                                return;
+                            superseded = generation != undoGeneration || undo != copy;
+                            if (!superseded) {
+                                for (String aid : copy.keySet()) {
+                                    Long merged = SEEN.get(aid);
+                                    if (merged != null) rows.put(aid, merged);
+                                }
                             }
-                            for (String aid : copy.keySet()) {
-                                Long merged = SEEN.get(aid);
-                                if (merged != null) rows.put(aid, merged);
-                            }
+                        }
+                        if (superseded) {
+                            // Returning here left the caller waiting for a callback that was
+                            // never going to come, with its row stuck offering an undo.
+                            notifyUndo(callback, UndoResult.SUPERSEDED);
+                            return;
                         }
 
                         SQLiteDatabase writable = getDatabase().getWritableDatabase();
@@ -335,6 +345,17 @@ public final class SeenVideoHistory {
         return SEEN.size();
     }
 
+    /**
+     * Pruning runs a delete whose subquery orders the whole table, and it ran after every video
+     * watched. The table only has to stay near its cap, so once every so many writes is enough.
+     */
+    private static final int WRITES_BETWEEN_PRUNES = 200;
+    private static final AtomicInteger writesSincePrune = new AtomicInteger();
+
+    private static boolean pruneIsDue() {
+        return writesSincePrune.incrementAndGet() % WRITES_BETWEEN_PRUNES == 0;
+    }
+
     private static void markSeen(String aid, long nowMs) {
         synchronized (HISTORY_LOCK) {
             ensureLoaded();
@@ -351,7 +372,9 @@ public final class SeenVideoHistory {
                             values,
                             SQLiteDatabase.CONFLICT_REPLACE
                     );
-                    pruneDatabase(nowMs);
+                    if (pruneIsDue()) {
+                        pruneDatabase(nowMs);
+                    }
                 } catch (Throwable throwable) {
                     Logger.printException(() -> "Seen video history write failed", throwable);
                 }

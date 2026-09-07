@@ -1,5 +1,9 @@
 ## 0.21.0 (2026-09-07)
 
+* Undo on the seen video history now answers even when a newer clear has taken over, instead of leaving the row waiting on a reply that was never coming, and it says so. Watching videos also stops running a whole-table cleanup after every single one.
+
+* Thirty-three translations for wording the app no longer uses have been removed, and the backup screen's undo row is translated again after its wording changed and left its translation behind.
+
 * A caption file that is nested unreasonably deeply is now refused with a reason instead of killing the download in progress, and saving a video whose frames are unusually large no longer fails on Android 8 and older. Ordinary captions and downloads are unchanged.
 
 * Settings search no longer treats an accent typed on its own as a match for everything, and it folds each setting's words once when the page opens rather than on every letter you type. Diagnostics also stop filling with a line for every page of search results when logging is off, which was pushing out the events around a crash.

@@ -66,12 +66,21 @@ public class SettingsSearchQueryTest {
 
     @Test public void anOrdinaryQueryStillNarrowsTheList() throws Exception {
         TikTokPreferenceFragment search = attachSearch();
-        int empty = search(search, "").size();
+        int indexed = indexSize(search);
         int matches = search(search, "comment").size();
 
-        assertTrue("nothing matched an ordinary word", matches >= 1);
-        assertTrue("the query did not narrow anything: " + matches + " of " + empty,
-                matches > empty);
+        assertTrue("the index is too small to tell narrowing from matching everything", indexed > 20);
+        assertTrue("nothing matched an ordinary word", matches > 1);
+        // Against the whole catalogue, not against the one row the empty state shows: comparing
+        // with the empty query only proved the word produced two rows rather than one.
+        assertTrue("the query matched the whole catalogue: " + matches + " rows of " + indexed,
+                matches < indexed);
+    }
+
+    private static int indexSize(TikTokPreferenceFragment fragment) throws Exception {
+        java.lang.reflect.Field field = TikTokPreferenceFragment.class.getDeclaredField("searchIndex");
+        field.setAccessible(true);
+        return ((java.util.List<?>) field.get(fragment)).size();
     }
 
     @Test public void anAccentedQueryStillFindsItsUnaccentedSetting() throws Exception {
