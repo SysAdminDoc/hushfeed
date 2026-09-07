@@ -5,6 +5,7 @@
 
 package app.morphe.extension.tiktok.settings.preference;
 
+import app.morphe.extension.tiktok.feedfilter.CompactCount;
 import app.morphe.extension.tiktok.settings.L10n;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -36,12 +37,34 @@ public class RangeValuePreference extends DialogPreference {
 
     private boolean mValueSet;
 
+    /** The wording the row was given, kept so the current range can be added after it. */
+    private final String baseSummary;
+
     public RangeValuePreference(Context context, String title, String summary, StringSetting setting) {
         super(context);
         setTitle(title);
-        setSummary(summary);
+        baseSummary = summary;
         setKey(setting.key);
         setValue(setting.get());
+        describeRange();
+    }
+
+    /**
+     * Adds the range to the row's own wording, written the way it is typed. Reading "1.5M" back
+     * off the row is the point: a row that says 1500000 is a row nobody can check at a glance.
+     *
+     * <p>The two halves are translated separately and joined here, so the joined text is never
+     * looked up as though it were a phrase of its own.
+     */
+    private void describeRange() {
+        String[] values = getValue() == null ? new String[0] : getValue().split("-");
+        long min = parseStored(values, 0, 0L);
+        long max = parseStored(values, 1, Long.MAX_VALUE);
+        String range = max == Long.MAX_VALUE
+                ? L10n.f(getContext(), "%1$s and above", CompactCount.format(min))
+                : L10n.f(getContext(), "%1$s to %2$s",
+                        CompactCount.format(min), CompactCount.format(max));
+        super.setSummary(L10n.t(getContext(), baseSummary) + "\n" + range);
     }
 
     public void setValue(String value) {
@@ -65,8 +88,9 @@ public class RangeValuePreference extends DialogPreference {
     @Override
     protected View onCreateDialogView() {
         String[] values = getValue().split("-");
-        minValue = values.length > 0 ? values[0] : "0";
-        maxValue = values.length > 1 ? values[1] : Long.toString(Long.MAX_VALUE);
+        // Shown the way the feed writes a count, so 1500000 comes back as 1.5M.
+        minValue = CompactCount.format(parseStored(values, 0, 0L));
+        maxValue = CompactCount.format(parseStored(values, 1, Long.MAX_VALUE));
 
         Context context = getContext();
 
@@ -105,7 +129,9 @@ public class RangeValuePreference extends DialogPreference {
         dialogView.addView(min);
 
         EditText minEditText = new EditText(context);
-        minEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
+        // Not TYPE_CLASS_NUMBER: a number keyboard has no letter on it, and a field that
+        // accepts 1.5M has to be typeable.
+        minEditText.setInputType(InputType.TYPE_CLASS_TEXT);
         minEditText.setSingleLine(true);
         minEditText.setText(minValue);
         SettingsUi.styleEditText(minEditText);
@@ -123,7 +149,7 @@ public class RangeValuePreference extends DialogPreference {
         dialogView.addView(max, maxLabelParams);
 
         EditText maxEditText = new EditText(context);
-        maxEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
+        maxEditText.setInputType(InputType.TYPE_CLASS_TEXT);
         maxEditText.setSingleLine(true);
         maxEditText.setHint(L10n.t(context, "Unlimited"));
         maxEditText.setText(Long.toString(Long.MAX_VALUE).equals(maxValue) ? "" : maxValue);
@@ -181,9 +207,37 @@ public class RangeValuePreference extends DialogPreference {
 
     @Override
     protected void onDialogClosed(boolean positiveResult) {
-        if (positiveResult) {
-            String newValue = normalizeRangeValue(minValue, maxValue);
-            setValue(newValue);
+        if (!positiveResult) return;
+
+        long min = readField(minValue, 0L);
+        long max = readField(maxValue, Long.MAX_VALUE);
+        if (min < 0 || max < 0) {
+            app.morphe.extension.shared.Utils.showToastShort(L10n.t(getContext(),
+                    "Enter a whole number, or one like 20K, 1.5M or 2B"));
+            return;
+        }
+        if (min > max) {
+            app.morphe.extension.shared.Utils.showToastShort(
+                    L10n.t(getContext(), "The smallest value is above the largest"));
+            return;
+        }
+        // Only digits are stored. Everything downstream reads a plain number and always has.
+        setValue(min + "-" + max);
+        describeRange();
+    }
+
+    /** An empty field means "no bound at this end" rather than a value that cannot be read. */
+    private static long readField(String text, long empty) {
+        return text == null || text.trim().isEmpty() ? empty : CompactCount.parse(text);
+    }
+
+    private static long parseStored(String[] values, int index, long fallback) {
+        if (values.length <= index) return fallback;
+        try {
+            long stored = Long.parseLong(values[index].trim());
+            return stored < 0 ? fallback : stored;
+        } catch (NumberFormatException unreadable) {
+            return fallback;
         }
     }
 
@@ -191,12 +245,6 @@ public class RangeValuePreference extends DialogPreference {
     protected void showDialog(Bundle state) {
         super.showDialog(state);
         SettingsUi.styleFramedDialog(getDialog());
-    }
-
-    private static String normalizeRangeValue(String min, String max) {
-        String normalizedMin = min == null || min.length() == 0 ? "0" : min;
-        String normalizedMax = max == null || max.length() == 0 ? Long.toString(Long.MAX_VALUE) : max;
-        return normalizedMin + "-" + normalizedMax;
     }
 
     @Override
