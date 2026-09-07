@@ -100,10 +100,18 @@ $testCount = 0
 foreach ($file in $testFiles) {
     try {
         $results = [xml](Get-Content -LiteralPath $file.FullName -Raw)
-        $testCount += @($results.testsuite.testcase).Count
     } catch {
         throw "Could not read test results from $($file.FullName): $($_.Exception.Message)"
     }
+    foreach ($suite in @($results.testsuite)) {
+        $failed = [int]$suite.failures
+        $errors = [int]$suite.errors
+        $skipped = [int]$suite.skipped
+        if ($failed -gt 0 -or $errors -gt 0 -or $skipped -gt 0) {
+            throw "Runtime test suite $($file.Name) has failures=$failed, errors=$errors, skipped=$skipped."
+        }
+    }
+    $testCount += @($results.testsuite.testcase).Count
 }
 Require-Match -Text ([string]$bundle.description) -Pattern "\b$testCount runtime tests passed\b" -Description 'bundle description test count'
 
