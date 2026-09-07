@@ -247,7 +247,7 @@ public final class BlockAuthorOverlay {
         button.setTextColor(Color.WHITE);
         button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
         button.setGravity(Gravity.CENTER);
-        button.setContentDescription("Block this sound");
+        button.setContentDescription(L10n.t(activity, "Block this sound"));
 
         GradientDrawable background = new GradientDrawable();
         background.setShape(GradientDrawable.OVAL);
@@ -286,7 +286,7 @@ public final class BlockAuthorOverlay {
         button.setTextColor(Color.WHITE);
         button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
         button.setGravity(Gravity.CENTER);
-        button.setContentDescription("Not interested in this video");
+        button.setContentDescription(L10n.t(activity, "Not interested in this video"));
         GradientDrawable background = new GradientDrawable();
         background.setColor(Color.argb(180, 0, 0, 0));
         background.setCornerRadius(SettingsUi.dp(activity, 8));
@@ -365,7 +365,7 @@ public final class BlockAuthorOverlay {
     private static View createButton(Activity activity) {
         TextView button = new TextView(activity);
         button.setGravity(Gravity.CENTER);
-        button.setContentDescription("Block this account");
+        button.setContentDescription(L10n.t(activity, "Block this account"));
 
         GradientDrawable background = new GradientDrawable();
         background.setShape(GradientDrawable.OVAL);

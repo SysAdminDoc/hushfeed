@@ -116,11 +116,16 @@ public class SettingsL10nTest {
      * however it is spelled, plus the platform call those wrap and the undo banner,
      * which is a toast in every way that matters to a reader.
      *
+     * <p>A content description counts too. Nothing shows it on screen, but it is the only
+     * words a reader using TalkBack gets for a button drawn as a glyph, and three of the
+     * player's overlay buttons reached that reader in English on a German phone.
+     *
      * <p>Named this widely on purpose. The first version knew two method names, and a
      * file with a private toast helper of its own walked past it carrying five English
      * messages.
      */
-    private static final String SHOWS_TEXT = "(?:\\b\\w*[Tt]oast\\w*|Toast\\s*\\.\\s*makeText|showUndoBanner)\\s*\\(";
+    private static final String SHOWS_TEXT = "(?:\\b\\w*[Tt]oast\\w*|Toast\\s*\\.\\s*makeText|showUndoBanner"
+            + "|setContentDescription)\\s*\\(";
 
     /** Marks every character of a source file as code, inside a literal, or inside a comment. */
     private static final byte CODE = 0, LITERAL = 1, COMMENT = 2;
