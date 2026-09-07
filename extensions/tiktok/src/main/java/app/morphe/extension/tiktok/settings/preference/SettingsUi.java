@@ -252,7 +252,7 @@ public final class SettingsUi {
     public static TextView text(Context context, String value, float sizeSp, int color, int style) {
         TextView textView = new TextView(context);
         textView.setText(value);
-        textView.setIncludeFontPadding(false);
+        textView.setIncludeFontPadding(true);
         textView.setTextColor(color);
         textView.setTextSize(sizeSp);
         textView.setTypeface(textView.getTypeface(), style);
