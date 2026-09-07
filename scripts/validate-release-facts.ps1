@@ -160,8 +160,9 @@ if ($VerifyPublishedAsset) {
         if ($checksumResponse.StatusCode -ne 200) {
             throw "The hosted SHA256SUMS.txt returned HTTP $($checksumResponse.StatusCode)."
         }
+        $checksumText = [Text.Encoding]::UTF8.GetString([byte[]]$checksumResponse.Content)
         $checksumMatch = [regex]::Match(
-            $checksumResponse.Content,
+            $checksumText,
             "(?im)^\s*([0-9a-f]{64})\s+\*?$([regex]::Escape($assetName))\s*$"
         )
         if (-not $checksumMatch.Success) {
