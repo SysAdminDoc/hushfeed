@@ -36,6 +36,25 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
                             + "recreated and stays stopped across backgrounding until it is recreated "
                             + "or the limit changes.", Settings.AUTO_ADVANCE_LIMIT, "video", "videos"));
         }
+        addPreference(new NumberInputPreference(context, "Daily video budget",
+                "Zero switches this off. Count every video that comes up in the feed, however you "
+                        + "got to it, and say so once the count is reached. This is separate from "
+                        + "the auto-advance limit above, which only counts videos Hushfeed itself "
+                        + "advanced past.", Settings.SESSION_BUDGET_VIDEOS, "video", "videos"));
+        addPreference(new NumberInputPreference(context, "Daily time budget",
+                "Zero switches this off. Count the minutes the player spends running in the feed. "
+                        + "Time on messages, a profile or search does not count.",
+                Settings.SESSION_BUDGET_MINUTES, "minute", "minutes"));
+        addPreference(new NumberInputPreference(context, "Hold the feed after the budget",
+                "Zero shows the notice and leaves the feed alone. Anything else covers the feed "
+                        + "for that many minutes once a budget is reached. Messages, profiles and "
+                        + "search keep working, and nothing in the feed is thrown away.",
+                Settings.SESSION_BUDGET_LOCK_MINUTES, "minute", "minutes"));
+        addPreference(new NumberInputPreference(context, "Start the day at",
+                "The hour both budgets reset, on a 24 hour clock. Four in the morning by default, "
+                        + "because someone still scrolling at one is having last night.",
+                Settings.SESSION_BUDGET_RESET_HOUR, "o'clock", "o'clock"));
+
         if (SettingsStatus.playbackSpeedEnabled) {
             addPreference(new TogglePreference(context, "Use a default playback speed",
                     "Start each new video at your default. A manual choice lasts until the video changes.",

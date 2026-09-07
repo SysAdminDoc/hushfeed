@@ -186,6 +186,8 @@ Region spoof requires Override SIM details plus Match locale and timezone to cou
 
 <img src="assets/settings/region.png" alt="Country and region settings" width="300" />
 
+Playback carries a daily budget for the feed. It is off until you put a number in it. Set a video count, a number of minutes, or both, and Hushfeed says once that the day is used up. Set a hold too and the feed goes behind a countdown for that many minutes, with an Undo on the notice for the times you decide otherwise. Messages, profiles and search are untouched, and so is the feed itself: nothing is dropped, so TikTok never refetches a batch it already sent. The day rolls over at four in the morning unless you move it, and the count and the hold both survive the app being killed.
+
 Diagnostics includes Back up settings, Restore settings and Reset settings even without the logging patch. Backups include patch preferences and Feature Gate Lab rules with their enabled state. Choose a JSON file through Android's file picker. Invalid files leave settings unchanged. Restore and reset keep one undo copy inside TikTok; export a backup first if you plan to clear app data or reinstall, since that removes the undo copy too. Restart after restoring or resetting.
 
 Backups record which settings they contain, so missing entries are rejected. A complete backup from an older build uses defaults for controls added later. If saving fails, recovery attempts both preference stores and keeps the undo copy available.

@@ -209,6 +209,21 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting AUTO_ADVANCE = new BooleanSetting("auto_advance", FALSE, true);
     public static final IntegerSetting AUTO_ADVANCE_LIMIT = new IntegerSetting(
             "auto_advance_limit", 0, false, Setting.parent(AUTO_ADVANCE)).withRange(0, 1000);
+    /**
+     * A daily budget for the feed, off at zero. The two counts are independent of
+     * {@link #AUTO_ADVANCE_LIMIT}, which only ever counted videos Hushfeed itself advanced past.
+     */
+    public static final IntegerSetting SESSION_BUDGET_VIDEOS = new IntegerSetting(
+            "session_budget_videos", 0).withRange(0, 2000);
+    public static final IntegerSetting SESSION_BUDGET_MINUTES = new IntegerSetting(
+            "session_budget_minutes", 0).withRange(0, 600);
+    public static final IntegerSetting SESSION_BUDGET_LOCK_MINUTES = new IntegerSetting(
+            "session_budget_lock_minutes", 0).withRange(0, 720);
+    public static final IntegerSetting SESSION_BUDGET_RESET_HOUR = new IntegerSetting(
+            "session_budget_reset_hour", 4).withRange(0, 23);
+    /** Today's counts and any running lock, so both survive the process being killed. */
+    public static final StringSetting SESSION_BUDGET_STATE = new StringSetting("session_budget_state", "");
+
     public static final BooleanSetting ENABLE_LONG_PRESS_SPEED_LOCK = new BooleanSetting("enable_long_press_speed_lock", FALSE, true);
     public static final BooleanSetting NOT_INTERESTED_BUTTON = new BooleanSetting("not_interested_button", FALSE);
     public static final BooleanSetting HIDE_FEED_CAPTION = new BooleanSetting("hide_feed_caption", FALSE);
