@@ -9,6 +9,9 @@ import java.util.List;
 
 @SuppressWarnings("unused")
 public class Aweme {
+    /** Test fixture value used by the cache-delivery boundary tests. */
+    public int cacheSourceType;
+
     public String getAid() {
         throw new UnsupportedOperationException("Stub");
     }
@@ -65,4 +68,3 @@ public class Aweme {
         throw new UnsupportedOperationException("Stub");
     }
 }
-

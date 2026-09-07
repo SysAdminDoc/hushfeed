@@ -226,4 +226,32 @@ public class CaptchaGateTest {
         assertNotNull(CaptchaGate.pendingWriteAction());
         assertEquals("follow", CaptchaGate.pendingWriteAction(now + 10_000L));
     }
+
+    @Test
+    public void everyAccountWriteKeepsItsChallengeVisible() {
+        String[][] writes = {
+                {"/aweme/v1/commit/follow/user/", "follow"},
+                {"/aweme/v3/f2f/follow/", "follow"},
+                {"/aweme/v1/commit/item/digg/", "like"},
+                {"/aweme/v1/comment/publish/", "comment"},
+                {"/webcast/room/chat/", "comment"},
+                {"/tiktok/v1/upvote/publish/", "repost"},
+                {"/tiktok/story/maf/mute", "story"},
+        };
+
+        for (String[] write : writes) {
+            CaptchaGate.resetForTests();
+            CaptchaGate.recordRequest(new Request(write[0]));
+            assertEquals(write[1], CaptchaGate.pendingWriteAction(now));
+            assertEquals("it gates a " + write[1],
+                    CaptchaGate.showReason(null, "{\"subtype\":\"slide\"}", now));
+
+            // Every native popup route shares this answer, including account security wrappers.
+            assertFalse(CaptchaGate.shouldHideCaptchaPopup(null, "{\"subtype\":\"slide\"}"));
+            assertFalse(CaptchaGate.shouldHideLegacyCaptchaPopup(null, 2148));
+            assertFalse(CaptchaGate.shouldHideOecCaptchaPopup(new VerifyRequest("follow")));
+            assertFalse(CaptchaGate.shouldHideTuringDialog(null, new VerifyRequest("follow")));
+            assertFalse(CaptchaGate.shouldHideTuringCaptchaPopup(null, "common_verify"));
+        }
+    }
 }

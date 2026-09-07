@@ -362,6 +362,25 @@ public final class FollowDiagnostics {
         }
     }
 
+    /** Clears bounded diagnostics state between deterministic runtime tests. */
+    static void resetForTests() {
+        eventCount.set(0);
+        callId.set(0);
+        activeCallId.remove();
+        synchronized (networkContextLock) {
+            networkContexts.clear();
+        }
+        loggedSettingsSnapshot = false;
+        followReadbackWindowUntil = 0L;
+        activeReadbackContext = null;
+        recentDirectContext = null;
+        warnedAboutRefusedFollow.set(false);
+    }
+
+    static int eventCountForTests() {
+        return eventCount.get();
+    }
+
     private static boolean reserveNetworkEvent() {
         try {
             if (!BaseSettings.DEBUG.get()) return false;
@@ -488,8 +507,8 @@ public final class FollowDiagnostics {
 
     /** True only when the server said no in a way that cannot be read as anything else. */
     static boolean followWasRefused(FollowRequestContext context) {
-        return FollowVerdict.isRefusalCode(context.statusCode)
-                || "false".equals(context.bodyIsFollowSuccess);
+        return context != null && (FollowVerdict.isRefusalCode(context.statusCode)
+                || "false".equals(context.bodyIsFollowSuccess));
     }
 
     /**

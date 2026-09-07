@@ -44,9 +44,10 @@ public final class FollowVerdict {
     public static boolean isRefusalCode(String code) {
         if (code == null || UNKNOWN.equals(code)) return false;
         try {
-            return Double.parseDouble(code) != 0d;
+            double parsed = Double.parseDouble(code.trim());
+            return !Double.isNaN(parsed) && !Double.isInfinite(parsed) && parsed != 0d;
         } catch (NumberFormatException ignored) {
-            return !"0".equals(code);
+            return false;
         }
     }
 

@@ -89,6 +89,45 @@ public final class FeedItemsFilter {
 
     private FeedItemsFilter() {}
 
+    /** Clears process-wide probe state between deterministic runtime tests. */
+    static void resetDiagnosticsForTests() {
+        feedItemListNullItemsLogCount.set(0);
+        followFeedListNullItemsLogCount.set(0);
+        batchLogCount.set(0);
+        itemLogCount.set(0);
+        filterExceptionLogCount.set(0);
+        listReplacementLogCount.set(0);
+        filterCallProbeCount.set(0);
+        synchronized (filterCallProbeSeenLists) {
+            filterCallProbeSeenLists.clear();
+        }
+        synchronized (processedListCache) {
+            processedListCache.clear();
+        }
+        synchronized (filterCallProbeSummaryLock) {
+            filterCallProbeSummary = new ProbeSummary(System.currentTimeMillis());
+        }
+        FeedFilterFeedback.resetForTests();
+    }
+
+    static int probeSeenListCountForTests() {
+        synchronized (filterCallProbeSeenLists) {
+            return filterCallProbeSeenLists.size();
+        }
+    }
+
+    static int processedListCacheSizeForTests() {
+        synchronized (processedListCache) {
+            return processedListCache.size();
+        }
+    }
+
+    static String rotateProbeSummaryForTests(long nowMs) {
+        synchronized (filterCallProbeSummaryLock) {
+            return rotateProbeSummaryIfReadyLocked(nowMs);
+        }
+    }
+
     public static void filter(FeedItemList feedItemList) {
         boolean verbose = BaseSettings.DEBUG.get();
 

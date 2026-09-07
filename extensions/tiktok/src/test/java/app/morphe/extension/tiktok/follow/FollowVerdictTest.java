@@ -184,6 +184,16 @@ public class FollowVerdictTest {
     }
 
     @Test
+    public void malformedAndNonFiniteCodesStayUnconfirmed() {
+        assertFalse(FollowVerdict.isRefusalCode("not-a-code"));
+        assertFalse(FollowVerdict.isRefusalCode("NaN"));
+        assertFalse(FollowVerdict.isRefusalCode("Infinity"));
+        assertFalse(FollowVerdict.isRefusalCode("1e999"));
+        assertFalse(FollowVerdict.parse("{\"status_code\":\"NaN\"}").isRefusal());
+        assertFalse(FollowVerdict.parse("{\"status_code\":{\"value\":2098}}").isRefusal());
+    }
+
+    @Test
     public void theTextFormNamesBothFields() {
         assertEquals("status_code=2098 status_msg=You’re following too fast. Try again later.",
                 FollowVerdict.parse(REFUSED_BODY).toString());
