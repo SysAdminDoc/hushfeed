@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import android.content.Context;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.view.View;
 
 import app.morphe.extension.shared.Utils;
@@ -16,10 +17,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.Shadows;
@@ -90,6 +95,26 @@ public class CommentBatchTranslatorTest {
         assertEquals(3, NativeManager.requests);
     }
 
+    @Test public void lateFailureCannotRemoveANewerRetryReservation() throws Exception {
+        Anchor anchor = loadedAnchor("aid-race", "cid-race");
+        NativeManager.blockFirst = true;
+        NativeManager.failFirst = true;
+
+        Thread firstRequest = new Thread(() ->
+                CommentBatchTranslator.registerCommentCell(new View(context), anchor));
+        firstRequest.start();
+        assertTrue(NativeManager.firstStarted.await(5, TimeUnit.SECONDS));
+
+        invokePrune(SystemClock.elapsedRealtime() + 16_000L);
+        NativeManager.blockFirst = false;
+        CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+
+        NativeManager.releaseFirst.countDown();
+        firstRequest.join(5_000L);
+        assertFalse(firstRequest.isAlive());
+        assertEquals(1, pendingRequestCount());
+    }
+
     private static Anchor loadedAnchor(String aid, String cid) {
         Anchor anchor = anchor(aid, cid);
         CommentBatchTranslator.onCommentListLoaded(new CommentItemList(anchor.comment));
@@ -98,6 +123,30 @@ public class CommentBatchTranslatorTest {
 
     private static Anchor anchor(String aid, String cid) {
         return new Anchor(new Comment(aid, cid), new TranslationContext(aid));
+    }
+
+    private static void invokePrune(long now) throws Exception {
+        Field lockField = CommentBatchTranslator.class.getDeclaredField("LOCK");
+        lockField.setAccessible(true);
+        Object lock = lockField.get(null);
+        java.lang.reflect.Method prune = CommentBatchTranslator.class.getDeclaredMethod(
+                "pruneLocked", long.class);
+        prune.setAccessible(true);
+        synchronized (lock) {
+            prune.invoke(null, now);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static int pendingRequestCount() throws Exception {
+        Field lockField = CommentBatchTranslator.class.getDeclaredField("LOCK");
+        lockField.setAccessible(true);
+        Object lock = lockField.get(null);
+        Field pendingField = CommentBatchTranslator.class.getDeclaredField("pendingRequests");
+        pendingField.setAccessible(true);
+        synchronized (lock) {
+            return ((Map<String, ?>) pendingField.get(null)).size();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -169,15 +218,32 @@ public class CommentBatchTranslatorTest {
     public static final class NativeManager {
         static int requests;
         static boolean fail;
+        static boolean blockFirst;
+        static boolean failFirst;
+        static CountDownLatch firstStarted = new CountDownLatch(1);
+        static CountDownLatch releaseFirst = new CountDownLatch(1);
 
         public static void LJFF(List<Object> comments, TranslationContext context, boolean force) {
-            requests++;
+            int requestNumber = ++requests;
+            if (requestNumber == 1 && blockFirst) {
+                firstStarted.countDown();
+                try {
+                    releaseFirst.await(5, TimeUnit.SECONDS);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+                if (failFirst) throw new IllegalStateException("simulated late failure");
+            }
             if (fail) throw new IllegalStateException("simulated translation failure");
         }
 
         static void reset() {
             requests = 0;
             fail = false;
+            blockFirst = false;
+            failFirst = false;
+            firstStarted = new CountDownLatch(1);
+            releaseFirst = new CountDownLatch(1);
         }
     }
 

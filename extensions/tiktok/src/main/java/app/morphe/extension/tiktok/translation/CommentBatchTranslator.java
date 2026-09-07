@@ -158,9 +158,8 @@ public final class CommentBatchTranslator {
         Set<String> requestedCids = commentIds(requested);
         boolean succeeded = results != null && !hasCompletionFailure(runner, task);
         synchronized (LOCK) {
-            PendingRequest pending = findPendingRequestLocked(requestedCids);
-            if (pending != null) {
-                pendingRequests.remove(pending.key);
+            PendingRequest pending = findPendingRequestLocked(requestedCids, requested);
+            if (removePendingRequestLocked(pending)) {
                 if (succeeded) rememberRequestedKeyLocked(pending.key);
             }
             pruneLocked(SystemClock.elapsedRealtime());
@@ -183,7 +182,10 @@ public final class CommentBatchTranslator {
         String effectiveRequestKey = batch.requestKey + ":language-policy:" + currentLanguagePolicyKey();
 
         PendingRequest pending = new PendingRequest(
-                effectiveRequestKey, commentIds(batch.comments), SystemClock.elapsedRealtime());
+                effectiveRequestKey,
+                commentIds(batch.comments),
+                SystemClock.elapsedRealtime(),
+                batch.comments);
         synchronized (LOCK) {
             pruneLocked(pending.startedAtMs);
             if (requestedLoadedBatchKeys.contains(effectiveRequestKey)
@@ -193,7 +195,7 @@ public final class CommentBatchTranslator {
 
         try {
             if (!Settings.COMMENT_BATCH_TRANSLATION.get()) {
-                removePendingRequest(effectiveRequestKey);
+                removePendingRequest(effectiveRequestKey, pending);
                 return;
             }
             Method method = findNativeBatchMethod(batch.nativeManagerClass, batch.context.getClass());
@@ -205,7 +207,7 @@ public final class CommentBatchTranslator {
             }
             method.setAccessible(true);
             if (!Settings.COMMENT_BATCH_TRANSLATION.get()) {
-                removePendingRequest(effectiveRequestKey);
+                removePendingRequest(effectiveRequestKey, pending);
                 return;
             }
             method.invoke(null, batch.comments, batch.context, false);
@@ -215,7 +217,7 @@ public final class CommentBatchTranslator {
                     + " requestKey=" + effectiveRequestKey
                     + " aid=" + value(readFieldQuiet(batch.context, "LIZIZ")));
         } catch (Throwable ex) {
-            removePendingRequest(effectiveRequestKey);
+            removePendingRequest(effectiveRequestKey, pending);
             Logger.printException(() -> "[Morphe CommentBatchTranslator] native request failed", ex);
         }
     }
@@ -342,10 +344,20 @@ public final class CommentBatchTranslator {
         return null;
     }
 
-    private static void removePendingRequest(String key) {
+    private static void removePendingRequest(String key, PendingRequest expected) {
         synchronized (LOCK) {
-            pendingRequests.remove(key);
+            if (pendingRequests.get(key) == expected) {
+                pendingRequests.remove(key);
+            }
         }
+    }
+
+    private static boolean removePendingRequestLocked(PendingRequest expected) {
+        if (expected == null || pendingRequests.get(expected.key) != expected) {
+            return false;
+        }
+        pendingRequests.remove(expected.key);
+        return true;
     }
 
     private static void rememberRequestedKeyLocked(String key) {
@@ -358,14 +370,22 @@ public final class CommentBatchTranslator {
         }
     }
 
-    private static PendingRequest findPendingRequestLocked(Set<String> requestedCids) {
+    private static PendingRequest findPendingRequestLocked(
+            Set<String> requestedCids,
+            Object requestedComments
+    ) {
         if (requestedCids.isEmpty()) return null;
+        PendingRequest overlapping = null;
         for (PendingRequest pending : pendingRequests.values()) {
+            if (pending.requestedComments == requestedComments) return pending;
             for (String cid : requestedCids) {
-                if (pending.cids.contains(cid)) return pending;
+                if (pending.cids.contains(cid)) {
+                    overlapping = pending;
+                    break;
+                }
             }
         }
-        return null;
+        return overlapping;
     }
 
     private static Set<String> commentIds(Object comments) {
@@ -767,11 +787,13 @@ public final class CommentBatchTranslator {
         final String key;
         final Set<String> cids;
         final long startedAtMs;
+        final Object requestedComments;
 
-        PendingRequest(String key, Set<String> cids, long startedAtMs) {
+        PendingRequest(String key, Set<String> cids, long startedAtMs, Object requestedComments) {
             this.key = key;
             this.cids = cids;
             this.startedAtMs = startedAtMs;
+            this.requestedComments = requestedComments;
         }
     }
 
