@@ -99,6 +99,24 @@ try {
 
     if ($touchesCode) {
         Write-Step 'extension or patch sources changed, running the runtime tests'
+
+        # The Morphe settings plugin resolves from GitHub Packages, which needs a reader token.
+        # A hook runs with git's environment, not the shell's, so these are usually absent and
+        # the build fails while applying the plugin, long before a test runs.
+        if (-not $env:GITHUB_ACTOR -or -not $env:GITHUB_TOKEN) {
+            if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
+                throw ('Set GITHUB_ACTOR and GITHUB_TOKEN, or install the gh CLI: the patches ' +
+                    'plugin resolves from GitHub Packages and cannot be applied without them.')
+            }
+            $login = (& gh api user --jq .login 2>$null)
+            $token = (& gh auth token 2>$null)
+            if ([string]::IsNullOrWhiteSpace($login) -or [string]::IsNullOrWhiteSpace($token)) {
+                throw 'gh is not signed in, so the patches plugin cannot be resolved. Run gh auth login.'
+            }
+            $env:GITHUB_ACTOR = $login
+            $env:GITHUB_TOKEN = $token
+        }
+
         $governor = Join-Path $HOME '.claude/scripts/build-governor.ps1'
         if (Test-Path -LiteralPath $governor) {
             & $governor -ProjectDir $Root -MinFreeGb 2 -NoReap -Tasks ':extensions:tiktok:test'
@@ -106,7 +124,8 @@ try {
             & (Join-Path $Root 'gradlew.bat') ':extensions:tiktok:test'
         }
         if ($LASTEXITCODE -ne 0) {
-            throw 'The runtime tests failed. Fix them or push with HUSHFEED_SKIP_PRE_PUSH=1.'
+            throw ('The runtime test build did not pass. Read the output above: it says whether a ' +
+                'test failed or the build could not start. Push anyway with HUSHFEED_SKIP_PRE_PUSH=1.')
         }
     }
 
