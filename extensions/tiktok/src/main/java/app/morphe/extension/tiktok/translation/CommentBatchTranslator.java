@@ -184,16 +184,18 @@ public final class CommentBatchTranslator {
 
         String effectiveRequestKey = batch.requestKey + ":language-policy:" + currentLanguagePolicyKey();
 
-        PendingRequest pending = new PendingRequest(
-                effectiveRequestKey,
-                commentIds(batch.comments),
-                SystemClock.elapsedRealtime(),
-                batch.comments,
-                ++nextRequestGeneration);
+        long startedAtMs = SystemClock.elapsedRealtime();
+        PendingRequest pending;
         synchronized (LOCK) {
-            pruneLocked(pending.startedAtMs);
+            pruneLocked(startedAtMs);
             if (requestedLoadedBatchKeys.contains(effectiveRequestKey)
                     || pendingRequests.containsKey(effectiveRequestKey)) return;
+            pending = new PendingRequest(
+                    effectiveRequestKey,
+                    commentIds(batch.comments),
+                    startedAtMs,
+                    batch.comments,
+                    ++nextRequestGeneration);
             pendingRequests.put(effectiveRequestKey, pending);
         }
 

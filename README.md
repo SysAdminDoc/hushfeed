@@ -115,7 +115,7 @@ The Settings patch adds the entry point and is selected by default. Deselect it 
 | `Show seekbar` | Shows TikTok's native video seekbar where it would normally be hidden. |
 | `Show seekbar thumbnail` | Shows TikTok's video preview thumbnail while dragging the seekbar. |
 | `Stop video looping` | Stops a completed video instead of automatically replaying it. |
-| `Translate comments` | Adds comment translation controls using TikTok's translation system, with selectable language exclusions. |
+| `Translate comments` | Adds comment translation controls using TikTok's translation system, with selectable language exclusions and one in-flight request per loaded batch. |
 
 ## Settings tour
 

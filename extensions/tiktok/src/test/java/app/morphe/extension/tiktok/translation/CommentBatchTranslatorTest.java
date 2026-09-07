@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.junit.After;
 import org.junit.Before;
@@ -68,6 +71,37 @@ public class CommentBatchTranslatorTest {
         CommentBatchTranslator.registerCommentCell(new View(context), anchor);
 
         assertEquals(1, NativeManager.requests);
+    }
+
+    @Test public void concurrentDistinctBatchesKeepUniqueRequestGenerations() throws Exception {
+        Anchor first = loadedAnchor("aid-generation-first", "cid-generation-first");
+        Anchor second = loadedAnchor("aid-generation-second", "cid-generation-second");
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            Future<?> firstRequest = executor.submit(() ->
+                    CommentBatchTranslator.registerCommentCell(new View(context), first));
+            Future<?> secondRequest = executor.submit(() ->
+                    CommentBatchTranslator.registerCommentCell(new View(context), second));
+            firstRequest.get(5, TimeUnit.SECONDS);
+            secondRequest.get(5, TimeUnit.SECONDS);
+        } finally {
+            executor.shutdownNow();
+        }
+
+        Field pendingField = CommentBatchTranslator.class.getDeclaredField("pendingRequests");
+        pendingField.setAccessible(true);
+        Field generationField = Class.forName(
+                "app.morphe.extension.tiktok.translation.CommentBatchTranslator$PendingRequest"
+        ).getDeclaredField("generation");
+        generationField.setAccessible(true);
+        java.util.Set<Long> generations = new java.util.HashSet<>();
+        synchronized (getTranslatorLock()) {
+            for (Object pending : ((Map<?, ?>) pendingField.get(null)).values()) {
+                generations.add(generationField.getLong(pending));
+            }
+        }
+        assertEquals(2, generations.size());
+        assertEquals(2, pendingRequestCount());
     }
 
     @Test public void aThrownNativeRequestCanBeRetried() {
@@ -165,14 +199,18 @@ public class CommentBatchTranslatorTest {
 
     @SuppressWarnings("unchecked")
     private static int pendingRequestCount() throws Exception {
-        Field lockField = CommentBatchTranslator.class.getDeclaredField("LOCK");
-        lockField.setAccessible(true);
-        Object lock = lockField.get(null);
+        Object lock = getTranslatorLock();
         Field pendingField = CommentBatchTranslator.class.getDeclaredField("pendingRequests");
         pendingField.setAccessible(true);
         synchronized (lock) {
             return ((Map<String, ?>) pendingField.get(null)).size();
         }
+    }
+
+    private static Object getTranslatorLock() throws Exception {
+        Field lockField = CommentBatchTranslator.class.getDeclaredField("LOCK");
+        lockField.setAccessible(true);
+        return lockField.get(null);
     }
 
     @SuppressWarnings("unchecked")

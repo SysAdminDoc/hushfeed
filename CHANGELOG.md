@@ -6,7 +6,7 @@
 
 * Release dependency resolution now disables `mavenLocal()` after the Morphe settings plugin adds its own repository, unless `-PallowMavenLocal=true` is supplied. The reviewed graph is recorded in Gradle verification metadata with SHA-256 checksums, and the wrapper distribution checksum now matches Gradle's published 9.7.1 binary while the smali and Morphe patcher pins remain intact.
 
-* Comment translation checks the switch again before a delayed native call, reserves one request per loaded batch, retries failed completions and remembers only successful ones. Expiration uses elapsed time, and generation-tagged cleanup resolves a late failure or completion against the retired request before it can clear a newer retry.
+* Comment translation checks the switch again before a delayed native call, reserves one request per loaded batch, retries failed completions and remembers only successful ones. Expiration uses elapsed time, generation allocation is serialized with reservations, and cleanup resolves a late failure or completion against the retired request before it can clear a newer retry.
 
 * Diagnostic file exports now build and publish on the shared worker pool. The save reports null streams and failed publication, returns the provider's actual destination, and uses unique app-document files on Android 9 and earlier so repeated reports remain available.
 
