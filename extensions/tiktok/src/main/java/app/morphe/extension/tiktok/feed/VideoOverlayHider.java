@@ -20,6 +20,7 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.ResourceIdCache;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.cleardisplay.RememberClearDisplayPatch;
+import app.morphe.extension.shared.diagnostics.HookStatus;
 import app.morphe.extension.tiktok.settings.Settings;
 
 import java.lang.ref.WeakReference;
@@ -419,10 +420,11 @@ public final class VideoOverlayHider {
         int id = RESOURCE_IDS.resolve(
                 activity == null ? null : activity.getResources(), packageName, name, retryMissing);
         if (id != 0) {
+            HookStatus.bound("overlay", "view id '" + name + "'");
             return id;
         }
         if (!retryMissing) {
-            Logger.printInfo(() -> "Overlay view id '" + name + "' not found in this TikTok build");
+            HookStatus.missingViewId("overlay", name);
         }
         return id;
     }

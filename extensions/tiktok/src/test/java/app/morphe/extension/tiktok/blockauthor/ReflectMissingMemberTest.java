@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import app.morphe.extension.shared.diagnostics.HookStatus;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.shared.settings.preference.LogBufferManager;
@@ -15,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.ReflectionHelpers;
 
 /**
  * A reader that returns null because TikTok renamed the member looks the same as one that
@@ -94,6 +94,6 @@ public class ReflectMissingMemberTest {
     }
 
     private static void clearRegistry() {
-        ReflectionHelpers.<java.util.Set<String>>getStaticField(Reflect.class, "MISSING_MEMBERS").clear();
+        HookStatus.resetForTests();
     }
 }

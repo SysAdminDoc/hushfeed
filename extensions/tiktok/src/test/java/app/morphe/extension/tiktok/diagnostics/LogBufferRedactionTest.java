@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 
+import app.morphe.extension.shared.diagnostics.HookStatus;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.diagnostics.DiagnosticCategory;
 import app.morphe.extension.shared.settings.BaseSettings;
@@ -30,10 +31,13 @@ public class LogBufferRedactionTest {
         Utils.setContext(context);
         BaseSettings.DEBUG_LOG_FILTERS.save("downloads");
         LogBufferManager.clearLogBuffer();
+        // The export carries a hook table now, and the registry behind it outlives a test class.
+        HookStatus.resetForTests();
     }
 
     @After public void tearDown() {
         LogBufferManager.clearLogBuffer();
+        HookStatus.resetForTests();
     }
 
     @Test public void selectedEventsAreRedactedAtExport() {

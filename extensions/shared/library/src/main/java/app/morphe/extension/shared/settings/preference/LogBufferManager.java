@@ -234,7 +234,15 @@ public final class LogBufferManager {
             events.append(DiagnosticRedactor.redact(event.format()));
         }
 
-        if (crash.isEmpty() && npthCrash.isEmpty() && events.length() == 0) return "";
+        StringBuilder hooks = new StringBuilder();
+        for (String line : app.morphe.extension.shared.diagnostics.HookStatus.report()) {
+            if (hooks.length() > 0) hooks.append('\n');
+            hooks.append(line);
+        }
+
+        if (crash.isEmpty() && npthCrash.isEmpty() && events.length() == 0 && hooks.length() == 0) {
+            return "";
+        }
 
         StringBuilder report = new StringBuilder();
         report.append("MORPHE DIAGNOSTIC REPORT\n")
@@ -249,6 +257,9 @@ public final class LogBufferManager {
         }
         if (!npthCrash.isEmpty()) {
             report.append("\n[LATEST TIKTOK CRASH SIGNAL]\n").append(npthCrash);
+        }
+        if (hooks.length() > 0) {
+            report.append("\n[HOOK STATUS]\n").append(hooks).append('\n');
         }
         if (events.length() > 0) {
             report.append("\n\n[SELECTED EVENTS]\n")

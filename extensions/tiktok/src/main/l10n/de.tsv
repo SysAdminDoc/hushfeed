@@ -595,3 +595,8 @@ Search share actions	Share-Aktionen durchsuchen
 No share actions have been observed yet	Noch keine Share-Aktionen beobachtet
 Open a share sheet once, then return here to choose its actions.	Öffne einmal ein Share-Menü und kehre dann zurück, um seine Aktionen auszuwählen.
 No share actions match this search	Keine Share-Aktionen passen zu dieser Suche
+Hook status	Hook-Status
+Nothing has been looked up yet. Use the app for a moment, then come back.	Bisher wurde nichts nachgeschlagen. Nutze die App einen Moment und komm dann zurück.
+Every hook found what it needed across %d surfaces.	Jeder Hook hat auf %d Oberflächen gefunden, was er braucht.
+Something is missing from this TikTok build. Tap to see which surface.	In diesem TikTok-Build fehlt etwas. Tippe, um zu sehen, auf welcher Oberfläche.
+No surface has looked anything up yet, so there is nothing to report.	Noch hat keine Oberfläche etwas nachgeschlagen, es gibt also nichts zu melden.

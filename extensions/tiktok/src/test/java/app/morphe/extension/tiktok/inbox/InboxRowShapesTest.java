@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
+import app.morphe.extension.shared.diagnostics.HookStatus;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.settings.Settings;
@@ -13,7 +14,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.ReflectionHelpers;
 
 /**
  * The Inbox reads one shape after another on rows of different types: itemUniqueId belongs to the
@@ -26,7 +26,7 @@ import org.robolectric.util.ReflectionHelpers;
 public class InboxRowShapesTest {
     @Before public void setUp() {
         Utils.setContext(RuntimeEnvironment.getApplication());
-        ReflectionHelpers.<java.util.Set<String>>getStaticField(Reflect.class, "MISSING_MEMBERS").clear();
+        HookStatus.resetForTests();
     }
 
     @SuppressWarnings("unused")

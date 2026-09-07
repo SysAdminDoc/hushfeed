@@ -20,6 +20,7 @@ import app.morphe.extension.shared.GlobalLayoutHook;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.ResourceIdCache;
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.shared.diagnostics.HookStatus;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.L10n;
 
@@ -381,7 +382,9 @@ public final class ShareSheetTools {
         int id = RESOURCE_IDS.resolve(
                 activity == null ? null : activity.getResources(), APP_PACKAGE, name, false);
         if (id == 0) {
-            Logger.printInfo(() -> "Share sheet view id '" + name + "' not found in this TikTok build");
+            HookStatus.missingViewId("share sheet", name);
+        } else {
+            HookStatus.bound("share sheet", "view id '" + name + "'");
         }
         return id;
     }

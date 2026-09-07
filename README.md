@@ -190,7 +190,9 @@ Diagnostics includes Back up settings, Restore settings and Reset settings even 
 
 Backups record which settings they contain, so missing entries are rejected. A complete backup from an older build uses defaults for controls added later. If saving fails, recovery attempts both preference stores and keeps the undo copy available.
 
-<img src="assets/settings/diagnostics.png" alt="Settings backup, restore, reset and undo controls" width="300" />
+The Hook status row answers a question the patch list cannot. The patcher knows what it wrote into the APK, not whether a hook then found its anchor once TikTok was running, and TikTok renames things every release. When a hook loses its anchor the switch above it still reads on while nothing happens. Tap the row for a line per surface: how many lookups bound, how many did not, and the first thing that went missing. The same table goes into the exported diagnostic report, so it travels with a bug report.
+
+<img src="assets/settings/diagnostics.png" alt="Settings backup, restore, reset and undo controls" width="300" /> <img src="assets/settings/diagnostics-light.png" alt="Diagnostics in light mode" width="300" />
 
 Feature Gate Lab saves its master switch immediately. Its menu can reset overrides while the switch is off, reset all Lab data, or undo the last reset or import. Imported values stay disabled. Changes run in the background and report their result with a notification. The recorder discards an interrupted session before taking the next baseline. The undo copy stores Lab configuration privately; full-reset undo also restores captured observations during the same app run. Other patch preferences are unchanged.
 

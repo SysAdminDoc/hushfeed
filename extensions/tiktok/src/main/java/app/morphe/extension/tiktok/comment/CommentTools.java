@@ -23,6 +23,7 @@ import app.morphe.extension.tiktok.blockauthor.BlockAuthorOverlay;
 import app.morphe.extension.tiktok.blockauthor.BlockAuthorService;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.blockauthor.VideoAuthor;
+import app.morphe.extension.shared.diagnostics.HookStatus;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.L10n;
 
@@ -79,12 +80,9 @@ public final class CommentTools {
     private static final Set<String> BLOCKED_UIDS = Collections.synchronizedSet(new HashSet<>());
 
     private static final ResourceIdCache RESOURCE_IDS = new ResourceIdCache();
-    /** View ids this build does not have, so the miss is said once rather than per bound cell. */
-    private static final Set<String> MISSING_VIEW_IDS = Collections.synchronizedSet(new HashSet<>());
     private static final DislikeTouchListener DISLIKE_TOUCH = new DislikeTouchListener();
 
     private static volatile boolean blockInFlight;
-    private static boolean warnedNoDislikeControl;
 
     private CommentTools() {
     }
@@ -167,11 +165,7 @@ public final class CommentTools {
         try {
             View button = cell.findViewById(identifier(cell, DISLIKE_BUTTON_ID));
             if (button == null) {
-                if (!warnedNoDislikeControl) {
-                    warnedNoDislikeControl = true;
-                    Logger.printInfo(() -> "Comment thumbs down control '" + DISLIKE_BUTTON_ID
-                            + "' not found in this TikTok build");
-                }
+                HookStatus.missingView("comments", DISLIKE_BUTTON_ID);
                 return;
             }
 
@@ -542,9 +536,8 @@ public final class CommentTools {
     /** Resolves a comment view id, saying so once when this build does not have it. */
     private static int identifier(View view, String name) {
         int id = RESOURCE_IDS.resolve(view == null ? null : view.getResources(), APP_PACKAGE, name, false);
-        if (id == 0 && MISSING_VIEW_IDS.add(name)) {
-            Logger.printInfo(() -> "Comment view id '" + name + "' not found in this TikTok build");
-        }
+        if (id == 0) HookStatus.missingViewId("comments", name);
+        else HookStatus.bound("comments", "view id '" + name + "'");
         return id;
     }
 

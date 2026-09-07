@@ -20,6 +20,7 @@ import app.morphe.extension.shared.GlobalLayoutHook;
 import app.morphe.extension.shared.ResourceIdCache;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.BooleanSetting;
+import app.morphe.extension.shared.diagnostics.HookStatus;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.preference.SettingsUi;
 import app.morphe.extension.tiktok.settings.L10n;
@@ -468,9 +469,8 @@ public final class InboxFilter {
                 activity == null ? "" : activity.getPackageName(),
                 name,
                 false);
-        if (id == 0) {
-            Logger.printInfo(() -> "Inbox view id '" + name + "' not found in this TikTok build");
-        }
+        if (id == 0) HookStatus.missingViewId("inbox", name);
+        else HookStatus.bound("inbox", "view id '" + name + "'");
         return id;
     }
 }
