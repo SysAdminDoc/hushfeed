@@ -1,5 +1,7 @@
 ## 0.21.0 (2026-09-07)
 
+* A saved subtitle no longer takes the whole download down with it. The gallery decides the video's filename and can hand back one with no extension, and cutting that name at its dot threw, which the download path reports as the save having failed even though the video was already on disk. The subtitle now keeps the whole name.
+
 * A diagnostic report no longer carries the videos and comments you were looking at. Reports already hid addresses and credentials, but the id of a video, comment or message went through untouched, and each of those opens a post anybody can read. Both the named ids and the bare lists the feed probe prints are now removed before a report is copied or saved. The counts and timings that make a report worth reading are kept.
 
 * The thumbs down on a comment blocks only the account you pressed. Where a press started was kept on a single object shared by every comment on screen, so a second finger, or the list reusing a row between the press and the release, could let a release act on a comment it never belonged to. Each control now keeps its own press, and a release with no press behind it does nothing.

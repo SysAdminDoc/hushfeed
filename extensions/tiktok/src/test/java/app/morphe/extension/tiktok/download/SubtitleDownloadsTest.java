@@ -122,6 +122,50 @@ public class SubtitleDownloadsTest {
         }
     }
 
+    /**
+     * The provider decides the saved video's display name and may return one with no extension.
+     * Cutting at the dot then threw, and because the caller treats that as the whole download
+     * failing, the subtitle was lost and the video that had already saved was reported as a
+     * failure too.
+     */
+    @Test public void aSavedVideoNameWithNoExtensionStillGetsItsSubtitle() throws Exception {
+        var context = RuntimeEnvironment.getApplication();
+        Utils.setContext(context);
+        String srt = "1\n00:00:00,500 --> 00:00:02,000\nSaved caption\n\n";
+        try (ServerSocket server = new ServerSocket(0, 1, java.net.InetAddress.getByName("127.0.0.1"))) {
+            var response = new java.util.concurrent.FutureTask<Void>(() -> {
+                try (var socket = server.accept()) {
+                    socket.setSoTimeout(5000);
+                    var input = new java.io.BufferedReader(new java.io.InputStreamReader(socket.getInputStream()));
+                    while (true) {
+                        String line = input.readLine();
+                        if (line == null || line.isEmpty()) break;
+                    }
+                    byte[] data = srt.getBytes(StandardCharsets.UTF_8);
+                    socket.getOutputStream().write(("HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Length: "
+                            + data.length + "\r\n\r\n").getBytes(StandardCharsets.US_ASCII));
+                    socket.getOutputStream().write(data);
+                }
+                return null;
+            });
+            Thread thread = new Thread(response);
+            thread.setDaemon(true);
+            thread.start();
+
+            String path = "DCIM/SubtitleNoExtensionTest";
+            var track = new SubtitleDownloads.Track(
+                    "en", "srt", List.of("http://127.0.0.1:" + server.getLocalPort() + "/captions"), true);
+
+            assertEquals(1, SubtitleDownloads.save(context, List.of(track), "clip", path));
+            response.get(5, java.util.concurrent.TimeUnit.SECONDS);
+
+            File directory = new File(Environment.getExternalStorageDirectory(), path);
+            File captions = new File(directory, "clip.en.srt");
+            assertEquals(srt, new String(Files.readAllBytes(captions.toPath()), StandardCharsets.UTF_8));
+            assertTrue(captions.delete());
+        }
+    }
+
     @Test public void languageIdentitySurvivesUnicodeAndFilenameSanitization() {
         Track japanese = new Track(null, "vtt", true);
         japanese.languageName = "日本語";

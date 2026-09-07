@@ -102,7 +102,11 @@ final class SubtitleDownloads {
 
     static int save(Context context, List<Track> tracks, String videoName, String path) {
         int saved = 0;
-        String stem = videoName.substring(0, videoName.lastIndexOf('.'));
+        // The name comes back from the media provider, which is free to hand back one with no
+        // extension. Taking the whole name then keeps the subtitle beside its video instead of
+        // throwing away a save whose video is already on disk.
+        int dot = videoName == null ? -1 : videoName.lastIndexOf('.');
+        String stem = dot > 0 ? videoName.substring(0, dot) : (videoName == null ? "video" : videoName);
         for (Track track : tracks) {
             File temp = null;
             try {
