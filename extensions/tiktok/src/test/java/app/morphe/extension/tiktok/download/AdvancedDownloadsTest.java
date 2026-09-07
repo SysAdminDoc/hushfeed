@@ -11,6 +11,7 @@ import app.morphe.extension.tiktok.settings.preference.categories.DownloadsPrefe
 import com.ss.android.ugc.aweme.base.model.UrlModel;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.util.Base64;
@@ -306,6 +307,30 @@ public class AdvancedDownloadsTest {
             }
         } finally {
             Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save(photoTemplate);
+        }
+    }
+
+    /** A filename has to fit the filesystem whatever the host called the file it handed over. */
+    @Test public void aLongExtensionAndACollisionSuffixStayInsideTheFilesystemLimit() throws IOException {
+        Utils.setContext(RuntimeEnvironment.getApplication());
+        String videoTemplate = Settings.DOWNLOAD_VIDEO_FILENAME_TEMPLATE.get();
+        try {
+            // No index token, so a collision appends _2, _3 and so on to a name already at the cap.
+            Settings.DOWNLOAD_VIDEO_FILENAME_TEMPLATE.save("{creator}");
+            File folder = Files.createTempDirectory("hushfeed-long-extension").toFile();
+            Item post = new Item("é".repeat(200), "7712345");
+
+            String first = resolveSavedName(folder, "source." + "x".repeat(40), post);
+            Files.write(new File(folder, first).toPath(), new byte[]{1});
+            String second = resolveSavedName(folder, "source2." + "x".repeat(40), post);
+
+            for (String name : new String[]{first, second}) {
+                assertTrue(name + " is " + name.getBytes(StandardCharsets.UTF_8).length + " bytes",
+                        name.getBytes(StandardCharsets.UTF_8).length <= 255);
+            }
+            assertNotEquals(first, second);
+        } finally {
+            Settings.DOWNLOAD_VIDEO_FILENAME_TEMPLATE.save(videoTemplate);
         }
     }
 

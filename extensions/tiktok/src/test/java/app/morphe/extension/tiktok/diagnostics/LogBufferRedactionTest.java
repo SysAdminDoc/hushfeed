@@ -108,6 +108,22 @@ public class LogBufferRedactionTest {
         assertTrue(report, report.contains("elapsedMs=13"));
     }
 
+    /** A list of ids under one name, and names that carry a prefix in front of the id. */
+    @Test public void idListsAndPrefixedIdNamesAreRedactedAtExport() {
+        LogBufferManager.appendEvent(
+                DiagnosticCategory.DOWNLOADS,
+                "FeedFilter",
+                "INFO",
+                "aweme_id=aa11,bb22 first_item_id=cc33 parent_cid=dd44 removed=2");
+
+        String report = LogBufferManager.buildExportText();
+
+        for (String id : new String[]{"aa11", "bb22", "cc33", "dd44"}) {
+            assertFalse(report + " still carries " + id, report.contains(id));
+        }
+        assertTrue(report, report.contains("removed=2"));
+    }
+
     /** A setting whose name happens to contain "aid" keeps the value a reader needs. */
     @Test public void settingNamesThatContainAnIdWordKeepTheirValues() {
         LogBufferManager.appendEvent(

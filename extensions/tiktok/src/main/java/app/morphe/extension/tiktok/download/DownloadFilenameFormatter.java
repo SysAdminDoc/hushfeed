@@ -25,6 +25,7 @@ public final class DownloadFilenameFormatter {
     private static final int MAX_BASENAME_BYTES = 200;
     /** A slideshow tops out well below this; the cap only has to stop an unbounded search. */
     private static final int MAX_COLLISION_ATTEMPTS = 999;
+    private static final int MAX_EXTENSION_LENGTH = 12;
     private static final long PENDING_NAME_TTL_MS = 10 * 60 * 1000L;
     private static final Map<String, PendingName> PENDING_NAMES = new LinkedHashMap<String, PendingName>() {
         @Override
@@ -204,9 +205,13 @@ public final class DownloadFilenameFormatter {
             }
 
             String suffix = !hasIndexToken && index > 1 ? "_" + counter : "";
+            // The collision suffix comes off both budgets. Taking it off the character count
+            // alone let a name reach 200 bytes and then grow by the suffix on top.
             String boundedBase = hasIndexToken
                     ? boundTemplatedName(base, MAX_BASENAME_LENGTH, counter)
-                    : trimToLength(base, Math.max(1, MAX_BASENAME_LENGTH - suffix.length()));
+                    : trimToLength(base,
+                            Math.max(1, MAX_BASENAME_LENGTH - suffix.length()),
+                            Math.max(1, MAX_BASENAME_BYTES - suffix.length()));
             File target = new File(original.getParentFile(), boundedBase + suffix + "." + sanitizeExtension(extension));
             if (target.equals(original) || !target.exists()) {
                 return target;
@@ -331,7 +336,10 @@ public final class DownloadFilenameFormatter {
 
     private static String sanitizeExtension(String extension) {
         String cleaned = extension == null ? "bin" : extension.replaceAll("[^A-Za-z0-9]", "").toLowerCase(Locale.ROOT);
-        return cleaned.isEmpty() ? "bin" : cleaned;
+        if (cleaned.isEmpty()) return "bin";
+        // An extension comes from the name the host handed over, so it is as arbitrary as the
+        // rest of it. Nothing real is longer than this, and the byte budget assumes a short one.
+        return cleaned.length() > MAX_EXTENSION_LENGTH ? cleaned.substring(0, MAX_EXTENSION_LENGTH) : cleaned;
     }
 
     private static String extensionOf(String name) {

@@ -21,7 +21,12 @@ public final class DiagnosticRedactor {
      * {@code hide_paid_partnership} keeps its value.
      */
     private static final String CONTENT_ID_NAMES =
-            "(?:aid|aweme_?id|item_?id|group_?id|cid|comment_?id|msg_?id|message_?id)";
+            "(?:[a-z0-9]+_)*(?:aid|aweme_?id|item_?id|group_?id|cid|comment_?id|msg_?id|message_?id)";
+    /**
+     * Ids are printed in comma separated lists, and the value pattern the credential rule uses
+     * stops at the first comma, so everything after the first id stayed in the report.
+     */
+    private static final String CONTENT_ID_VALUE = "\"?[^\\s;&\"'<>]+";
     /**
      * A bare id, for the places that print a list of them with no name in front. TikTok's ids run
      * to nineteen digits; nothing else these reports carry is a number that long.
@@ -39,7 +44,7 @@ public final class DiagnosticRedactor {
                         "[host omitted]")
                 .replaceAll("(?i)\\b(" + CREDENTIAL_NAMES + ")\\s*[=:]\\s*\"?[^\\s;,&\"'<>]+",
                         "$1=[omitted]")
-                .replaceAll("(?i)\\b(" + CONTENT_ID_NAMES + ")\\s*[=:]\\s*\"?[^\\s;,&\"'<>]+",
+                .replaceAll("(?i)\\b(" + CONTENT_ID_NAMES + ")\\s*[=:]\\s*" + CONTENT_ID_VALUE,
                         "$1=[omitted]")
                 .replaceAll(BARE_CONTENT_ID, "[id omitted]");
     }
