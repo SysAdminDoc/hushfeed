@@ -25,6 +25,11 @@ import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 
+import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.shared.settings.Setting;
@@ -50,9 +55,14 @@ import app.morphe.extension.tiktok.settings.preference.categories.SimSpoofPrefer
 public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
     private static final int REQUEST_DOWNLOAD_PATH_FOLDER = 8841;
     private static final String ARG_SECTION = "morphe_settings_section";
+    private static final String ARG_SEARCH = "morphe_settings_search";
+    private static final String ARG_TARGET_KEY = "morphe_settings_target_key";
     private static TikTokPreferenceFragment activeFragment;
     private static DownloadPathPreference pendingDownloadPathPreference;
     private SettingsListAdapter styledAdapter;
+    private PreferenceScreen searchScreen;
+    private List<SearchResult> searchIndex;
+    private final List<Preference> searchRows = new ArrayList<>();
 
     /**
      * Each section carries one sentence, used both as the subtitle on the home row and as the
@@ -78,6 +88,33 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         Section(String title, String description) {
             this.title = title;
             this.description = description;
+        }
+    }
+
+    private static final class SearchResult {
+        final Section section;
+        final String key;
+        final String title;
+        final String summary;
+        final String category;
+
+        SearchResult(Section section, String key, String title, String summary, String category) {
+            this.section = section;
+            this.key = key;
+            this.title = title;
+            this.summary = summary;
+            this.category = category;
+        }
+
+        String searchableText() {
+            return title + " " + summary + " " + category;
+        }
+
+        String displaySummary() {
+            if (summary.isEmpty()) {
+                return category;
+            }
+            return category + " · " + summary;
         }
     }
 
@@ -187,7 +224,9 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         setPreferenceScreen(preferenceScreen);
 
         Section section = getRequestedSection();
-        if (section == null) {
+        if (isSearchRequested()) {
+            createSearchMenu(context, preferenceScreen);
+        } else if (section == null) {
             createMasterMenu(context, preferenceScreen);
         } else {
             createSectionMenu(context, preferenceScreen, section);
@@ -240,6 +279,11 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         if (list != null && list.getAdapter() != null) {
             styledAdapter = new SettingsListAdapter(list.getAdapter());
             list.setAdapter(styledAdapter);
+            String targetKey = getTargetKey();
+            if (targetKey != null) {
+                scrollToPreference(list, targetKey);
+                list.post(() -> scrollToPreference(list, targetKey));
+            }
         }
     }
 
@@ -267,8 +311,181 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         }
     }
 
+    private boolean isSearchRequested() {
+        Bundle arguments = getArguments();
+        return arguments != null && arguments.getBoolean(ARG_SEARCH, false);
+    }
+
+    private String getTargetKey() {
+        Bundle arguments = getArguments();
+        if (arguments == null) {
+            return null;
+        }
+        String key = arguments.getString(ARG_TARGET_KEY);
+        return key == null || key.isEmpty() ? null : key;
+    }
+
+    private void createSearchMenu(Context context, PreferenceScreen screen) {
+        searchScreen = screen;
+        screen.addPreference(SettingsHeaderPreference.section(context, "Search settings", this::navigateBack));
+        screen.addPreference(SettingsHeaderPreference.caption(context,
+                "Search translated titles and descriptions, then open the original setting."));
+        screen.addPreference(new SettingsSearchInputPreference(context, this::updateSearchResults));
+        searchIndex = buildSearchIndex(context);
+        updateSearchResults("");
+    }
+
+    private void updateSearchResults(String query) {
+        if (searchScreen == null) {
+            return;
+        }
+        for (Preference row : searchRows) {
+            searchScreen.removePreference(row);
+        }
+        searchRows.clear();
+
+        String trimmedQuery = query == null ? "" : query.trim();
+        if (trimmedQuery.isEmpty()) {
+            addSearchState("Type to search settings", "Search a title, description or category.");
+            return;
+        }
+
+        String normalizedQuery = normalizeSearchText(trimmedQuery);
+        List<SearchResult> matches = new ArrayList<>();
+        for (SearchResult result : searchIndex) {
+            if (normalizeSearchText(result.searchableText()).contains(normalizedQuery)) {
+                matches.add(result);
+            }
+        }
+        if (matches.isEmpty()) {
+            addSearchState("No matching settings", "Try a different word or clear the search.");
+            return;
+        }
+
+        int order = 0;
+        for (SearchResult result : matches) {
+            Preference row = new Preference(getActivity());
+            row.setTitle(result.title);
+            row.setSummary(result.displaySummary());
+            row.setOrder(order++);
+            row.setOnPreferenceClickListener(preference -> {
+                openSection(result.section, result.key);
+                return true;
+            });
+            searchRows.add(row);
+            searchScreen.addPreference(row);
+        }
+    }
+
+    private void addSearchState(String title, String summary) {
+        Preference state = new Preference(getActivity());
+        state.setTitle(L10n.t(getActivity(), title));
+        state.setSummary(L10n.t(getActivity(), summary));
+        state.setSelectable(false);
+        state.setOrder(0);
+        searchRows.add(state);
+        searchScreen.addPreference(state);
+    }
+
+    private List<SearchResult> buildSearchIndex(Context context) {
+        List<SearchResult> results = new ArrayList<>();
+        PreferenceScreen scratch = getPreferenceManager().createPreferenceScreen(context);
+        for (Section section : Section.values()) {
+            PreferenceCategory category = createCategory(context, scratch, section);
+            if (category == null) {
+                continue;
+            }
+            String categoryTitle = String.valueOf(category.getTitle());
+            for (int index = 0; index < category.getPreferenceCount(); index++) {
+                Preference preference = category.getPreference(index);
+                if (!preference.hasKey() || !preference.isSelectable()) {
+                    continue;
+                }
+                Setting<?> setting = Setting.getSettingFromPath(preference.getKey());
+                if (setting != null && !setting.isAvailable()) {
+                    continue;
+                }
+                CharSequence title = preference.getTitle();
+                if (title == null || title.length() == 0) {
+                    continue;
+                }
+                CharSequence summary = preference.getSummary();
+                results.add(new SearchResult(
+                        section,
+                        preference.getKey(),
+                        title.toString(),
+                        summary == null ? "" : summary.toString(),
+                        categoryTitle
+                ));
+            }
+            scratch.removePreference(category);
+        }
+        return results;
+    }
+
+    private static String normalizeSearchText(String value) {
+        String normalized = Normalizer.normalize(value == null ? "" : value, Normalizer.Form.NFD);
+        return normalized.replaceAll("\\p{M}+", "").toLowerCase(Locale.ROOT);
+    }
+
+    private static PreferenceCategory createCategory(
+            Context context,
+            PreferenceScreen screen,
+            Section section
+    ) {
+        switch (section) {
+            case FEED_FILTER:
+                return new FeedFilterPreferenceCategory(context, screen);
+            case FEED_NAVIGATION:
+                return new FeedNavigationPreferenceCategory(context, screen);
+            case INTERFACE:
+                return new InterfacePreferenceCategory(context, screen);
+            case COMMENTS:
+                return new CommentsPreferenceCategory(context, screen);
+            case DOWNLOADS:
+                return new DownloadsPreferenceCategory(context, screen);
+            case PLAYBACK:
+                return new PlaybackPreferenceCategory(context, screen);
+            case INBOX:
+                return new InboxPreferenceCategory(context, screen);
+            case SHARE:
+                return new SharePreferenceCategory(context, screen);
+            case REGION:
+                return new SimSpoofPreferenceCategory(context, screen);
+            case DIAGNOSTICS:
+                return new DebugPreferenceCategory(context, screen);
+            case BEHAVIOR:
+            default:
+                return new ExtensionPreferenceCategory(context, screen);
+        }
+    }
+
+    private static void scrollToPreference(ListView list, String key) {
+        if (list == null || list.getAdapter() == null) {
+            return;
+        }
+        for (int position = 0; position < list.getAdapter().getCount(); position++) {
+            Object item = list.getAdapter().getItem(position);
+            if (item instanceof Preference && key.equals(((Preference) item).getKey())) {
+                list.setSelection(position);
+                return;
+            }
+        }
+    }
+
     private void createMasterMenu(Context context, PreferenceScreen screen) {
         screen.addPreference(SettingsHeaderPreference.master(context, this::closeSettings));
+        screen.addPreference(new SettingsMenuPreference(
+                context,
+                "Search settings",
+                "Find a setting by title or description",
+                SettingsMenuPreference.Icon.SEARCH,
+                0,
+                preference -> {
+                    openSearch();
+                    return true;
+                }
+        ));
 
         if (SettingsStatus.feedFilterEnabled) {
             addMenu(screen, Section.FEED_FILTER, SettingsMenuPreference.Icon.FILTER, countEnabled(
@@ -489,43 +706,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         screen.addPreference(SettingsHeaderPreference.section(context, section.title, this::navigateBack));
         screen.addPreference(SettingsHeaderPreference.caption(context, section.description));
 
-        PreferenceCategory category;
-        switch (section) {
-            case FEED_FILTER:
-                category = new FeedFilterPreferenceCategory(context, screen);
-                break;
-            case FEED_NAVIGATION:
-                category = new FeedNavigationPreferenceCategory(context, screen);
-                break;
-            case INTERFACE:
-                category = new InterfacePreferenceCategory(context, screen);
-                break;
-            case COMMENTS:
-                category = new CommentsPreferenceCategory(context, screen);
-                break;
-            case DOWNLOADS:
-                category = new DownloadsPreferenceCategory(context, screen);
-                break;
-            case PLAYBACK:
-                category = new PlaybackPreferenceCategory(context, screen);
-                break;
-            case INBOX:
-                category = new InboxPreferenceCategory(context, screen);
-                break;
-            case SHARE:
-                category = new SharePreferenceCategory(context, screen);
-                break;
-            case REGION:
-                category = new SimSpoofPreferenceCategory(context, screen);
-                break;
-            case DIAGNOSTICS:
-                category = new DebugPreferenceCategory(context, screen);
-                break;
-            case BEHAVIOR:
-            default:
-                category = new ExtensionPreferenceCategory(context, screen);
-                break;
-        }
+        PreferenceCategory category = createCategory(context, screen, section);
         flattenCategory(screen, category);
         if (section == Section.DIAGNOSTICS) SettingsBackupPreference.addTo(this, screen);
     }
@@ -552,7 +733,34 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         }
     }
 
+    private void openSearch() {
+        FragmentManager manager = getFragmentManager();
+        if (manager == null || getId() == 0) {
+            Utils.showToastShort(L10n.t("Could not open settings search"));
+            return;
+        }
+
+        TikTokPreferenceFragment fragment = new TikTokPreferenceFragment();
+        Bundle arguments = new Bundle();
+        arguments.putBoolean(ARG_SEARCH, true);
+        fragment.setArguments(arguments);
+        manager.beginTransaction()
+                .setCustomAnimations(
+                        android.R.animator.fade_in,
+                        android.R.animator.fade_out,
+                        android.R.animator.fade_in,
+                        android.R.animator.fade_out
+                )
+                .replace(getId(), fragment)
+                .addToBackStack("search")
+                .commit();
+    }
+
     private void openSection(Section section) {
+        openSection(section, null);
+    }
+
+    private void openSection(Section section, String targetKey) {
         FragmentManager manager = getFragmentManager();
         if (manager == null || getId() == 0) {
             Utils.showToastShort(L10n.t("Could not open settings section"));
@@ -562,6 +770,9 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         TikTokPreferenceFragment fragment = new TikTokPreferenceFragment();
         Bundle arguments = new Bundle();
         arguments.putString(ARG_SECTION, section.name());
+        if (targetKey != null) {
+            arguments.putString(ARG_TARGET_KEY, targetKey);
+        }
         fragment.setArguments(arguments);
 
         manager.beginTransaction()

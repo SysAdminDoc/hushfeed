@@ -8,6 +8,7 @@ import android.preference.Preference;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.CheckedTextView;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import app.morphe.extension.shared.Utils;
@@ -162,6 +163,127 @@ public class SettingsPagesTest {
         }
     }
 
+    @Test public void settingsSearchFindsTranslatedControlAndOpensOriginal() throws Exception {
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            TikTokPreferenceFragment home = attachHome(activity);
+            Preference search = findPreference(home.getPreferenceScreen(), "Search settings");
+            assertNotNull(search);
+            assertTrue(search.getOnPreferenceClickListener().onPreferenceClick(search));
+            activity.getFragmentManager().executePendingTransactions();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+            TikTokPreferenceFragment page = (TikTokPreferenceFragment) activity.getFragmentManager()
+                    .findFragmentById(android.R.id.content);
+            EditText input = (EditText) page.getView().findViewWithTag("settings_search_input");
+            assertNotNull(input);
+            input.setText("video length");
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            UiCapture.save(page.getView(), "pages/dark/search.png");
+            java.util.List<android.widget.EditText> editors = new java.util.ArrayList<>();
+            collectEditors(page.getView(), editors);
+            assertEquals(1, editors.size());
+            Preference result = findPreference(page.getPreferenceScreen(), "Maximum video length");
+            assertNotNull(result);
+            assertTrue(String.valueOf(result.getSummary()).startsWith("Feed filter"));
+
+            assertTrue(result.getOnPreferenceClickListener().onPreferenceClick(result));
+            activity.getFragmentManager().executePendingTransactions();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            TikTokPreferenceFragment targetPage = (TikTokPreferenceFragment) activity.getFragmentManager()
+                    .findFragmentById(android.R.id.content);
+            assertEquals("FEED_FILTER", targetPage.getArguments().getString("morphe_settings_section"));
+            ListView list = targetPage.getView().findViewById(android.R.id.list);
+            int targetPosition = positionOf(list, "max_video_seconds");
+            assertTrue(targetPosition >= 0);
+            assertTrue(list.getFirstVisiblePosition() <= targetPosition);
+            assertTrue(list.getLastVisiblePosition() >= targetPosition);
+        }
+    }
+
+    @Test @Config(qualifiers = "de-rDE-w480dp-h960dp-night-mdpi")
+    public void settingsSearchUsesGermanTextAndClearState() throws Exception {
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            TikTokPreferenceFragment home = attachHome(activity);
+            Preference search = findPreference(home.getPreferenceScreen(), "Einstellungen durchsuchen");
+            assertNotNull(search);
+            assertTrue(search.getOnPreferenceClickListener().onPreferenceClick(search));
+            activity.getFragmentManager().executePendingTransactions();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            TikTokPreferenceFragment page = (TikTokPreferenceFragment) activity.getFragmentManager()
+                    .findFragmentById(android.R.id.content);
+            EditText input = (EditText) page.getView().findViewWithTag("settings_search_input");
+            assertNotNull(input);
+            input.setText("Videolänge");
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            Preference result = findPreference(page.getPreferenceScreen(), "Maximale Videolänge");
+            assertNotNull(result);
+            assertTrue(String.valueOf(result.getSummary()).startsWith("Feed-Filter"));
+
+            input.setText("kein Treffer");
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertNotNull(findPreference(page.getPreferenceScreen(), "Keine passenden Einstellungen"));
+            TextView clear = page.getView().findViewWithTag("settings_search_clear");
+            assertNotNull(clear);
+            assertTrue(clear.performClick());
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertEquals("", input.getText().toString());
+            assertNotNull(findPreference(page.getPreferenceScreen(), "Tippe, um Einstellungen zu durchsuchen"));
+            View toolbar = page.getView().findViewWithTag("metra_toolbar");
+            assertNotNull(toolbar);
+            assertTrue(((android.view.ViewGroup) toolbar).getChildAt(0).performClick());
+            activity.getFragmentManager().executePendingTransactions();
+            assertSame(home, activity.getFragmentManager().findFragmentById(android.R.id.content));
+        }
+    }
+
+    @Test @Config(qualifiers = "in-rID-w480dp-h960dp-night-mdpi")
+    public void settingsSearchUsesIndonesianTextAndCategoryContext() throws Exception {
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            TikTokPreferenceFragment home = attachHome(activity);
+            Preference search = findPreference(home.getPreferenceScreen(), "Cari setelan");
+            assertNotNull(search);
+            assertTrue(search.getOnPreferenceClickListener().onPreferenceClick(search));
+            activity.getFragmentManager().executePendingTransactions();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            TikTokPreferenceFragment page = (TikTokPreferenceFragment) activity.getFragmentManager()
+                    .findFragmentById(android.R.id.content);
+            EditText input = (EditText) page.getView().findViewWithTag("settings_search_input");
+            assertNotNull(input);
+            input.setText("Durasi video maksimum");
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            Preference result = findPreference(page.getPreferenceScreen(), "Durasi video maksimum");
+            assertNotNull(result);
+            assertTrue(String.valueOf(result.getSummary()).startsWith("Filter feed"));
+        }
+    }
+
+    @Test public void settingsSearchExcludesStatusGatedControls() throws Exception {
+        SettingsStatus.feedFilterEnabled = false;
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            TikTokPreferenceFragment home = attachHome(activity);
+            Preference search = findPreference(home.getPreferenceScreen(), "Search settings");
+            assertNotNull(search);
+            assertTrue(search.getOnPreferenceClickListener().onPreferenceClick(search));
+            activity.getFragmentManager().executePendingTransactions();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            TikTokPreferenceFragment page = (TikTokPreferenceFragment) activity.getFragmentManager()
+                    .findFragmentById(android.R.id.content);
+            EditText input = (EditText) page.getView().findViewWithTag("settings_search_input");
+            input.setText("video length");
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertNull(findPreference(page.getPreferenceScreen(), "Maximum video length"));
+            assertNotNull(findPreference(page.getPreferenceScreen(), "No matching settings"));
+        }
+    }
+
     @Test @Config(qualifiers = "de-rDE-w360dp-h800dp-night-mdpi")
     public void longGermanLabelsWrapAtLargeTextSize() throws Exception {
         try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
@@ -246,6 +368,34 @@ public class SettingsPagesTest {
         activity.getFragmentManager().executePendingTransactions();
         Shadows.shadowOf(Looper.getMainLooper()).idle();
         return fragment;
+    }
+
+    private static TikTokPreferenceFragment attachHome(Activity activity) {
+        TikTokPreferenceFragment fragment = new TikTokPreferenceFragment();
+        activity.getFragmentManager().beginTransaction().replace(android.R.id.content, fragment).commit();
+        activity.getFragmentManager().executePendingTransactions();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        return fragment;
+    }
+
+    private static Preference findPreference(android.preference.PreferenceScreen screen, String title) {
+        for (int index = 0; index < screen.getPreferenceCount(); index++) {
+            Preference preference = screen.getPreference(index);
+            if (title.equals(String.valueOf(preference.getTitle()))) {
+                return preference;
+            }
+        }
+        return null;
+    }
+
+    private static int positionOf(ListView list, String key) {
+        for (int position = 0; position < list.getAdapter().getCount(); position++) {
+            Object item = list.getAdapter().getItem(position);
+            if (item instanceof Preference && key.equals(((Preference) item).getKey())) {
+                return position;
+            }
+        }
+        return -1;
     }
 
     private static void layout(View view, int width, int height) {

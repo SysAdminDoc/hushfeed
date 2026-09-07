@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Settings now have a translated search page. It matches titles, descriptions and category names, hides controls from unselected or unavailable patches, and opens the existing section at the matching preference without creating duplicate editors.
+
 * Settings headers, captions and editor labels now keep Android's font padding, so large text has room for its full glyphs instead of clipping at narrow widths. Preference rows and native editors remain content-sized for 1.3x and 2x text.
 
 * Native settings lists now use one selection indicator. Single-choice rows draw a radio at the leading edge and multi-choice rows draw a checkbox there, while the platform list adapter still owns checked state, selection and dismissal.

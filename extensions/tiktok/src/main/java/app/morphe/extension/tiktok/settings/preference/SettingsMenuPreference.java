@@ -28,6 +28,7 @@ import android.widget.TextView;
 public final class SettingsMenuPreference extends Preference {
     public enum Icon {
         FILTER,
+        SEARCH,
         TABS,
         LAYOUT,
         COMMENTS,
@@ -295,6 +296,12 @@ public final class SettingsMenuPreference extends Preference {
                     path.lineTo(cx - bounds.width() * 0.06f, cy);
                     path.close();
                     canvas.drawPath(path, line);
+                    break;
+                case SEARCH:
+                    canvas.drawCircle(cx - bounds.width() * 0.05f, cy - bounds.height() * 0.05f,
+                            bounds.width() * 0.18f, line);
+                    canvas.drawLine(cx + bounds.width() * 0.08f, cy + bounds.height() * 0.08f,
+                            right, bottom, line);
                     break;
                 case TABS:
                     float gap = bounds.width() * 0.05f;
