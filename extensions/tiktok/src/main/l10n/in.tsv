@@ -100,6 +100,8 @@ Copy a quick report or save the full report as a file.	Salin laporan ringkas ata
 Copy comments without username	Salin komentar tanpa nama pengguna
 Copy only the comment text when using TikTok's copy comment action.	Salin teks komentarnya saja saat memakai aksi salin komentar milik TikTok.
 Copy report	Salin laporan
+Could not save settings backup.	Cadangan pengaturan tidak dapat disimpan.
+Could not restore settings.	Pengaturan tidak dapat dipulihkan.
 Could not tell which folder to update. Choose it again.	Tidak diketahui folder mana yang harus diubah. Pilih lagi.
 Could not block %1$s	%1$s tidak bisa diblokir
 Could not block %1$s: %2$s	%1$s tidak bisa diblokir: %2$s

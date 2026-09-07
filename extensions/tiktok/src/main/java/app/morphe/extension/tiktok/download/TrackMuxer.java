@@ -103,9 +103,17 @@ final class TrackMuxer {
         while (extractor.getSampleTime() >= 0) {
             MediaBudget.check(null);
             if ((extractor.getSampleFlags() & MediaExtractor.SAMPLE_FLAG_ENCRYPTED) != 0) throw new IOException("Encrypted media cannot be saved");
-            // readSampleData rejects a buffer the sample does not fit in, and it does so on every
-            // API. Asking the extractor for the size first only worked from 28, so below that a
-            // large sample threw IllegalArgumentException out of a method declaring IOException.
+            // From API 28 the extractor will say how big the sample is, so the buffer is sized
+            // once. Below that it will not, and readSampleData rejects a buffer the sample does
+            // not fit in, which threw IllegalArgumentException out of a method declaring
+            // IOException. The retry covers those releases and grows one step at a time so a
+            // single oversized sample cannot reserve every size on the way up.
+            if (android.os.Build.VERSION.SDK_INT >= 28) {
+                long size = extractor.getSampleSize();
+                if (size > MAX_SAMPLE_BYTES) throw new IOException("A media sample is too large to copy");
+                if (size > buffer.capacity()) buffer = ByteBuffer.allocateDirect((int) size);
+            }
+
             int count;
             while (true) {
                 buffer.clear();

@@ -164,6 +164,8 @@ final class AnimatedWebpMp4Converter {
                 try {
                     encoder.stop();
                 } catch (Throwable ignored) {
+                    // An encoder that never started, or already failed, refuses to stop. The
+                    // release below is what has to happen either way.
                 }
                 encoder.release();
             }
@@ -252,6 +254,8 @@ final class AnimatedWebpMp4Converter {
         try {
             invoke(target, "dispose");
         } catch (Throwable ignored) {
+            // Best effort on a decoder this build may not have, or may already have closed.
+            // Nothing the caller can do about it, and the conversion is finished either way.
         }
     }
 

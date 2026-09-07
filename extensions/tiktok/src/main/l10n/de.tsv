@@ -100,6 +100,8 @@ Copy a quick report or save the full report as a file.	Einen Kurzbericht kopiere
 Copy comments without username	Kommentare ohne Nutzernamen kopieren
 Copy only the comment text when using TikTok's copy comment action.	Beim Kopieren eines Kommentars über TikTok nur den Kommentartext übernehmen.
 Copy report	Bericht kopieren
+Could not save settings backup.	Sicherung der Einstellungen konnte nicht gespeichert werden.
+Could not restore settings.	Einstellungen konnten nicht wiederhergestellt werden.
 Could not tell which folder to update. Choose it again.	Nicht erkennbar, welcher Ordner geändert werden soll. Bitte erneut auswählen.
 Could not block %1$s	%1$s konnte nicht blockiert werden
 Could not block %1$s: %2$s	%1$s konnte nicht blockiert werden: %2$s

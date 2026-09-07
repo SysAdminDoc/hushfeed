@@ -326,7 +326,9 @@ public final class SeenVideoHistory {
                         }
                         Logger.printException(() -> "Seen video history undo failed", throwable);
                     }
-                    if (current) notifyUndo(callback, result);
+                    // A newer clear can also arrive while the transaction is in flight, and that
+                    // left both paths below reporting nothing at all. Every exit answers now.
+                    notifyUndo(callback, current ? result : UndoResult.SUPERSEDED);
                 });
             }
         }

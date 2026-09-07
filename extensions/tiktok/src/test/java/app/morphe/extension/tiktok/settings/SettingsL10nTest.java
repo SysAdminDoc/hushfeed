@@ -490,14 +490,17 @@ public class SettingsL10nTest {
      */
     private static Set<String> runtimeStringsInSource() throws Exception {
         Set<String> literals = new LinkedHashSet<>();
+        // Gradle runs the tests with the module directory as the working directory, so the paths
+        // are tried from the repository root and from inside extensions/tiktok. Skipping a root
+        // that resolves from neither would quietly shrink what counts as shown.
         for (String relative : new String[]{
                 "extensions/tiktok/src/main/java",
                 "extensions/shared/library/src/main/java"}) {
             java.io.File root = new java.io.File(relative);
-            if (!root.isDirectory()) {
-                root = new java.io.File(relative.replaceFirst("^extensions/tiktok/", ""));
-            }
-            if (!root.isDirectory()) continue;
+            if (!root.isDirectory()) root = new java.io.File("../../" + relative);
+            if (!root.isDirectory()) root = new java.io.File(relative.replaceFirst("^extensions/tiktok/", ""));
+            assertTrue("could not find " + relative + " from "
+                    + new java.io.File(".").getAbsolutePath(), root.isDirectory());
             try (java.util.stream.Stream<java.nio.file.Path> files =
                          java.nio.file.Files.walk(root.toPath())) {
                 for (java.nio.file.Path file : files.filter(p -> p.toString().endsWith(".java"))
