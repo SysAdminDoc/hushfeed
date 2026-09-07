@@ -26,6 +26,12 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowToast;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 /**
  * A follow TikTok turns down comes back looking like a success, so the only thing that tells
  * the user is this notice. It has to fire on a real refusal and stay quiet otherwise.
@@ -162,6 +168,28 @@ public class FollowDiagnosticsTest {
         BaseSettings.DEBUG.save(true);
         for (int index = 0; index < 240; index++) {
             FollowDiagnostics.logSimpleFollowRequest(1, "user-" + index, "sec-" + index);
+        }
+        assertEquals(160, FollowDiagnostics.eventCountForTests());
+    }
+
+    @Test
+    public void concurrentDirectRequestsCannotPassTheSessionLimit() throws Exception {
+        BaseSettings.DEBUG.save(true);
+        ExecutorService executor = Executors.newFixedThreadPool(8);
+        List<java.util.concurrent.Future<?>> tasks = new ArrayList<>();
+        try {
+            for (int worker = 0; worker < 8; worker++) {
+                final int offset = worker * 80;
+                tasks.add(executor.submit(() -> {
+                    for (int index = 0; index < 80; index++) {
+                        FollowDiagnostics.logSimpleFollowRequest(
+                                1, "user-" + (offset + index), "sec-" + (offset + index));
+                    }
+                }));
+            }
+            for (var task : tasks) task.get(5, TimeUnit.SECONDS);
+        } finally {
+            executor.shutdownNow();
         }
         assertEquals(160, FollowDiagnostics.eventCountForTests());
     }

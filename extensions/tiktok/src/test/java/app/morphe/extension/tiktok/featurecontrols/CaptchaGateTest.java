@@ -232,11 +232,25 @@ public class CaptchaGateTest {
         String[][] writes = {
                 {"/aweme/v1/commit/follow/user/", "follow"},
                 {"/aweme/v3/f2f/follow/", "follow"},
+                {"/aweme/v1/remove/follower/", "follow"},
+                {"/aweme/v1/relation/follow/commit/", "follow"},
                 {"/aweme/v1/commit/item/digg/", "like"},
+                {"/aweme/v1/commit/game/item/digg/", "like"},
+                {"/aweme/v1/comment/digg/", "like"},
+                {"/aweme/v1/unlogged/digg/", "like"},
+                {"/aweme/v1/danmaku/digg/", "like"},
+                {"/aweme/v1/upvote/digg/", "like"},
+                {"/aweme/v1/upvote/comment_digg/", "like"},
                 {"/aweme/v1/comment/publish/", "comment"},
+                {"/aweme/v1/comment/delete/", "comment"},
+                {"/aweme/v1/comment/pin/", "comment"},
+                {"/aweme/v1/upvote/publish_comment/", "comment"},
                 {"/webcast/room/chat/", "comment"},
                 {"/tiktok/v1/upvote/publish/", "repost"},
+                {"/tiktok/v1/upvote/batch_publish/", "repost"},
+                {"/tiktok/v1/repost/create/", "repost"},
                 {"/tiktok/story/maf/mute", "story"},
+                {"/tiktok/story/maf/unmute", "story"},
         };
 
         for (String[] write : writes) {

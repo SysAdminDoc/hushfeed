@@ -93,6 +93,7 @@ public final class FollowDiagnostics {
 
         try {
             int id = nextCallId();
+            if (id < 0) return;
             activeCallId.set(id);
             rememberDirectContext(id, "LJ", action, "unknown", uid, secUid, null, null);
             logSettingsSnapshotOnce();
@@ -123,6 +124,7 @@ public final class FollowDiagnostics {
 
         try {
             int id = nextCallId();
+            if (id < 0) return;
             activeCallId.set(id);
             rememberDirectContext(id, "LJFF", action, String.valueOf(followFrom), uid, secUid, source, enterFrom);
             logSettingsSnapshotOnce();
@@ -160,6 +162,7 @@ public final class FollowDiagnostics {
 
         try {
             int id = nextCallId();
+            if (id < 0) return;
             activeCallId.set(id);
             rememberDirectContext(id, "CommonFollowApi", action, String.valueOf(followFrom), uid, secUid, recType, null);
             logSettingsSnapshotOnce();
@@ -198,6 +201,7 @@ public final class FollowDiagnostics {
 
         try {
             int id = nextCallId();
+            if (id < 0) return;
             activeCallId.set(id);
             rememberDirectContext(id, "JediFollowApi", action, String.valueOf(followFrom), uid, secUid, source, enterFrom);
             logSettingsSnapshotOnce();
@@ -348,7 +352,7 @@ public final class FollowDiagnostics {
 
     private static boolean shouldLog() {
         try {
-            return BaseSettings.DEBUG.get() && eventCount.get() < MAX_EVENTS_PER_SESSION;
+            return BaseSettings.DEBUG.get();
         } catch (Exception ignored) {
             return false;
         }
@@ -391,8 +395,13 @@ public final class FollowDiagnostics {
     }
 
     private static int nextCallId() {
-        eventCount.incrementAndGet();
-        return callId.incrementAndGet();
+        while (true) {
+            int current = eventCount.get();
+            if (current >= MAX_EVENTS_PER_SESSION) return -1;
+            if (eventCount.compareAndSet(current, current + 1)) {
+                return callId.incrementAndGet();
+            }
+        }
     }
 
     private static FollowRequestContext rememberNetworkContext(Object request, String path) {

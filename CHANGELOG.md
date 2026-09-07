@@ -1,8 +1,8 @@
 ## Unreleased
 
-* Deep feed and account checks now cover repeated response caching, late and final follow delivery, cached and offline fallback policy, hard-filter preservation, bounded probe rotation and malformed verdicts. Every supported account-write route keeps its challenge visible, and non-finite or malformed status codes remain unconfirmed. Runtime coverage is 445 tests.
+* Deep feed and account checks now cover repeated response caching, late and final follow delivery, cached and offline fallback policy, hard-filter preservation, bounded probe rotation and malformed verdicts. Every supported account-write route keeps its challenge visible, and the 160-event diagnostics cap is reserved atomically when callbacks arrive together. Non-finite or malformed status codes remain unconfirmed. Runtime coverage is 446 tests.
 
-* Worker-backed settings and Feature Gate Lab tests now drain their owned executors before asserting, reset per-sandbox state before each case, and keep the region semantics check separate from the API ICU cross-check. Runtime coverage is 434 tests.
+* Worker-backed settings and Feature Gate Lab tests now drain their owned executors before asserting, reset per-sandbox state before each case, and keep the region semantics check separate from the API ICU cross-check. Runtime coverage is 412 tests.
 
 * Native boundary coverage now exercises structured numeric coercion and overflow, URL scheme refusal, destination roots, media fallback and frame bounds, plus direct navigation, share, LIVE, sound and translation policy shapes. Codec playback and final container behavior remain native-device checks. Runtime coverage is 434 tests.
 
@@ -10,7 +10,7 @@
 
 * Video overlay layout passes now reuse their id, visibility and match buffers instead of allocating traversal containers each time. A synthetic 200-pass trace over 80 cells measured 57.68 ms before the change and 56.09 ms after it.
 
-* Feed, inbox, share and sticker helpers now share resource lookup, global-layout ownership, reflection caching and publication cleanup. Replaced roots detach their listeners, dynamic-module misses keep retrying, and legacy sticker saves keep unique filenames. Runtime coverage is 434 tests.
+* Feed, inbox, share and sticker helpers now share resource lookup, global-layout ownership, reflection caching and publication cleanup. Replaced roots detach their listeners, dynamic-module misses keep retrying, and legacy sticker saves keep unique filenames. Runtime coverage is 409 tests.
 
 * The extension payload no longer carries unreachable APNG conversion, retired language-editor or Lab preference code. Declaration-only fingerprints and unused compatibility metadata are gone, and the keep rule now covers only extension classes while preserving injected and reflective entry points. The shared payload fell from 229,024 to 221,720 bytes and the TikTok payload from 1,377,012 to 1,361,300 bytes.
 
