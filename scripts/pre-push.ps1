@@ -32,11 +32,17 @@ function Write-Step {
 function Get-PushedPaths {
     <#
         Git writes "<local ref> <local sha> <remote ref> <remote sha>" per ref on stdin. A remote
-        sha of all zeroes means the branch is new there, so compare against the upstream default
+        sha of all zeroes means the branch is new there, so compare against its first parent
         instead of diffing against nothing and checking the entire history.
+
+        Read from the console rather than $input: a script started with -File binds stdin to its
+        parameters, so piping into it fails to bind and leaves $input empty, which made the hook
+        report that a push changed nothing.
     #>
+    param([string]$Text)
+
     $paths = New-Object System.Collections.Generic.HashSet[string]
-    foreach ($line in @($input)) {
+    foreach ($line in ($Text -split "`r?`n")) {
         if ([string]::IsNullOrWhiteSpace($line)) { continue }
         $parts = $line.Trim() -split '\s+'
         if ($parts.Count -lt 4) { continue }
@@ -72,7 +78,12 @@ try {
         $paths = New-Object System.Collections.Generic.HashSet[string]
         foreach ($name in @($ChangedPaths)) { [void]$paths.Add($name) }
     } else {
-        $paths = $input | Get-PushedPaths
+        $refs = ''
+        if (-not [Console]::IsInputRedirected) {
+            throw 'No pushed refs on standard input. Run this from the pre-push hook, or pass -ChangedPaths.'
+        }
+        $refs = [Console]::In.ReadToEnd()
+        $paths = Get-PushedPaths -Text $refs
     }
 
     if ($paths.Count -eq 0) {
