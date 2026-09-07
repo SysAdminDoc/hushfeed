@@ -56,6 +56,40 @@ public class SubtitleDownloadsTest {
         assertThrows(IOException.class, () -> SubtitleFormat.toSrt("1\n00:00:05,000 --> 00:00:02,000\nBackwards", "srt"));
         assertThrows(IOException.class, () -> SubtitleFormat.toSrt("<html>Expired URL</html>", "vtt"));
     }
+    /**
+     * The platform JSON parser recurses, so a caption file nested deeply enough raises
+     * StackOverflowError. That is neither a JSONException nor a RuntimeException, so it went past
+     * every catch on the way out and took the download worker with it.
+     */
+    @Test public void aDeeplyNestedCaptionFileIsRefusedRatherThanKillingTheWorker() {
+        StringBuilder nested = new StringBuilder("{\"utterances\":");
+        int depth = 200;
+        for (int level = 0; level < depth; level++) nested.append("[");
+        for (int level = 0; level < depth; level++) nested.append("]");
+        nested.append("}");
+
+        try {
+            SubtitleFormat.toSrt(nested.toString(), "creator_caption");
+            fail("a caption file nested " + depth + " deep was accepted");
+        } catch (IOException expected) {
+            // The depth limit specifically, not the "invalid caption JSON" the old parser would
+            // land on once it happened to survive the nesting.
+            assertTrue(String.valueOf(expected.getMessage()),
+                    String.valueOf(expected.getMessage()).contains("nested too deeply"));
+        } catch (StackOverflowError error) {
+            fail("the parser still recurses into a deeply nested caption file");
+        }
+    }
+
+    /** An ordinary caption file still converts through the bounded parser. */
+    @Test public void anOrdinaryCaptionFileStillConverts() throws Exception {
+        String srt = SubtitleFormat.toSrt(
+                "{\"utterances\":[{\"start_time\":1250,\"end_time\":2500,\"text\":\"Hallo\"}]}",
+                "creator_caption");
+        assertTrue(srt, srt.contains("Hallo"));
+        assertTrue(srt, srt.contains("00:00:01,250 --> 00:00:02,500"));
+    }
+
     @Test public void aCaptionNamingNoLanguageDoesNotSinkTheSave() {
         // The language arrives as free text and is cleaned to letters, digits and dashes, so
         // "_" comes out as a lone dash: not empty, so it used to skip the "und" fallback, and

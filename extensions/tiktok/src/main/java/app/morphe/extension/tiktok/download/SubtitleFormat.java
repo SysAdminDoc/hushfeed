@@ -4,11 +4,18 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import app.morphe.extension.shared.settings.SettingsJson;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 final class SubtitleFormat {
+    /**
+     * A caption file is a flat list of cues, so anything deeper than a handful of levels is not
+     * one. The byte cap matches the 2 MB the transfer already refuses to exceed.
+     */
+    private static final SettingsJson.Limits CAPTION_LIMITS =
+            new SettingsJson.Limits(16, 400_000, 100_000, 20_000, 2 * 1024 * 1024);
     private static final Pattern TIMELINE = Pattern.compile("^((?:\\d{1,3}:)?\\d{2}:\\d{2}[.,]\\d{3})\\s+-->\\s+((?:\\d{1,3}:)?\\d{2}:\\d{2}[.,]\\d{3})(?:\\s+.*)?$");
     private SubtitleFormat() { }
 
@@ -19,7 +26,11 @@ final class SubtitleFormat {
         int count = 0;
         if ("creator_caption".equals(format) || "json".equals(format) || input.startsWith("{")) {
             try {
-                JSONArray cues = new JSONObject(input).getJSONArray("utterances");
+                // The platform parser recurses, so a deeply nested file from a caption host
+                // raises StackOverflowError, which is not a JSONException and not a
+                // RuntimeException either: it went past every catch and killed the worker.
+                JSONArray cues = SettingsJson.parseObject(input, CAPTION_LIMITS)
+                        .getJSONArray("utterances");
                 for (int i = 0; i < cues.length(); i++) {
                     JSONObject cue = cues.getJSONObject(i);
                     append(output, ++count, cue.getLong("start_time"), cue.getLong("end_time"), cue.getString("text"));

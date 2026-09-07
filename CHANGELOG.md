@@ -1,5 +1,7 @@
 ## 0.21.0 (2026-09-07)
 
+* A caption file that is nested unreasonably deeply is now refused with a reason instead of killing the download in progress, and saving a video whose frames are unusually large no longer fails on Android 8 and older. Ordinary captions and downloads are unchanged.
+
 * Settings search no longer treats an accent typed on its own as a match for everything, and it folds each setting's words once when the page opens rather than on every letter you type. Diagnostics also stop filling with a line for every page of search results when logging is off, which was pushing out the events around a crash.
 
 * Choosing a download folder now sticks. The folder picker is its own screen, so Android often rebuilds the settings screen behind it, and the rebuilt one had forgotten which setting was waiting. It took the folder you chose and did nothing, without saying so. The waiting setting is now remembered by name across the rebuild, and a folder that arrives with nothing waiting says so instead of vanishing.
