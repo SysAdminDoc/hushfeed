@@ -59,8 +59,14 @@ public final class Reflect {
 
     private static void noteMissing(String kind, Class<?> type, String name) {
         String member = type.getName() + '#' + name;
+        String entry = kind + ' ' + member;
+        // A filter asks this of every card it looks at, so once the answer is known it must not
+        // cost a trip through the global monitor.
+        if (MISSING_MEMBERS.contains(entry)) {
+            return;
+        }
         synchronized (MISSING_MEMBERS) {
-            if (MISSING_MEMBERS.size() >= MAX_RECORDED_MISSES || !MISSING_MEMBERS.add(kind + ' ' + member)) {
+            if (MISSING_MEMBERS.size() >= MAX_RECORDED_MISSES || !MISSING_MEMBERS.add(entry)) {
                 return;
             }
         }
@@ -131,11 +137,16 @@ public final class Reflect {
         if (target == null) {
             return null;
         }
-        if (method(target.getClass(), methodName) == null) {
+        Method method = method(target.getClass(), methodName);
+        if (method == null) {
             noteMissing("method", target.getClass(), methodName);
             return null;
         }
-        return invoke(target, methodName);
+        try {
+            return method.invoke(target);
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     public static Object invoke(Object target, String methodName) {

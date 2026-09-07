@@ -101,7 +101,16 @@ if ($testFiles.Count -eq 0) {
 
 # Gradle leaves the previous run's XML in place, so results from before the last edit satisfy
 # every check below and a release can be validated against code that was never tested.
-$sourceRoots = @('extensions/tiktok/src', 'extensions/shared/library/src', 'patches/src') |
+#
+# Only the trees the test task actually reads are compared. patches/src is not one of them:
+# :extensions:tiktok:test depends on the shared library and the stub, so editing a patch leaves
+# the task up to date, no XML is rewritten, and comparing against it would refuse every release
+# from then on with no rerun that could clear it.
+#
+# The newest result is the one to compare. Gradle never removes the XML of a test class that was
+# deleted or renamed, and that file keeps its original timestamp through every later run, so
+# taking the oldest would refuse forever after the first class is dropped.
+$sourceRoots = @('extensions/tiktok/src', 'extensions/shared/library/src') |
     ForEach-Object { Join-Path $rootPath $_ } |
     Where-Object { Test-Path -LiteralPath $_ }
 $newestSource = $sourceRoots |
@@ -109,11 +118,12 @@ $newestSource = $sourceRoots |
     Sort-Object LastWriteTimeUtc -Descending |
     Select-Object -First 1
 if ($null -ne $newestSource) {
-    $oldestResult = $testFiles | Sort-Object LastWriteTimeUtc | Select-Object -First 1
-    if ($oldestResult.LastWriteTimeUtc -lt $newestSource.LastWriteTimeUtc) {
-        throw ("Runtime test results are older than the sources. $($oldestResult.Name) was written " +
-            "$($oldestResult.LastWriteTimeUtc.ToString('u')) but $($newestSource.FullName) changed " +
-            "$($newestSource.LastWriteTimeUtc.ToString('u')). Run :extensions:tiktok:test again.")
+    $newestResult = $testFiles | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+    if ($newestResult.LastWriteTimeUtc -lt $newestSource.LastWriteTimeUtc) {
+        throw ("Runtime test results are older than the sources. The newest result " +
+            "$($newestResult.Name) was written $($newestResult.LastWriteTimeUtc.ToString('u')) but " +
+            "$($newestSource.FullName) changed $($newestSource.LastWriteTimeUtc.ToString('u')). " +
+            'Run :extensions:tiktok:test again.')
     }
 }
 $testCount = 0

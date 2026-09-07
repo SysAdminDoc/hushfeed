@@ -166,6 +166,45 @@ public class SubtitleDownloadsTest {
         }
     }
 
+    /** An empty name would publish ".en.srt", hidden by the gallery and shared by every video. */
+    @Test public void anEmptySavedVideoNameDoesNotProduceAHiddenSubtitle() throws Exception {
+        var context = RuntimeEnvironment.getApplication();
+        Utils.setContext(context);
+        String srt = "1\n00:00:00,500 --> 00:00:02,000\nSaved caption\n\n";
+        try (ServerSocket server = new ServerSocket(0, 1, java.net.InetAddress.getByName("127.0.0.1"))) {
+            var response = new java.util.concurrent.FutureTask<Void>(() -> {
+                try (var socket = server.accept()) {
+                    socket.setSoTimeout(5000);
+                    var input = new java.io.BufferedReader(new java.io.InputStreamReader(socket.getInputStream()));
+                    while (true) {
+                        String line = input.readLine();
+                        if (line == null || line.isEmpty()) break;
+                    }
+                    byte[] data = srt.getBytes(StandardCharsets.UTF_8);
+                    socket.getOutputStream().write(("HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Length: "
+                            + data.length + "\r\n\r\n").getBytes(StandardCharsets.US_ASCII));
+                    socket.getOutputStream().write(data);
+                }
+                return null;
+            });
+            Thread thread = new Thread(response);
+            thread.setDaemon(true);
+            thread.start();
+
+            String path = "DCIM/SubtitleEmptyNameTest";
+            var track = new SubtitleDownloads.Track(
+                    "en", "srt", List.of("http://127.0.0.1:" + server.getLocalPort() + "/captions"), true);
+
+            assertEquals(1, SubtitleDownloads.save(context, List.of(track), "", path));
+            response.get(5, java.util.concurrent.TimeUnit.SECONDS);
+
+            File directory = new File(Environment.getExternalStorageDirectory(), path);
+            assertTrue("the subtitle was published as a hidden file",
+                    new File(directory, "video.en.srt").isFile());
+            assertTrue(new File(directory, "video.en.srt").delete());
+        }
+    }
+
     @Test public void languageIdentitySurvivesUnicodeAndFilenameSanitization() {
         Track japanese = new Track(null, "vtt", true);
         japanese.languageName = "日本語";
