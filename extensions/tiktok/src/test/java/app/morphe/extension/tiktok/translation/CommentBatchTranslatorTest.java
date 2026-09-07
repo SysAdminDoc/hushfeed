@@ -65,6 +65,28 @@ public class CommentBatchTranslatorTest {
         assertEquals(0, NativeManager.requests);
     }
 
+    @Test public void commentsAlreadyInTheCurrentLanguageAreNotDispatched() {
+        android.content.res.Configuration configuration =
+                new android.content.res.Configuration(context.getResources().getConfiguration());
+        java.util.Locale previous = configuration.getLocales().isEmpty()
+                ? java.util.Locale.getDefault() : configuration.getLocales().get(0);
+        try {
+            configuration.setLocale(java.util.Locale.forLanguageTag("zh-CN"));
+            context.getResources().updateConfiguration(configuration, context.getResources().getDisplayMetrics());
+            registerCommentCellAndWait(anchor("aid-same-language", "cid-same-language"));
+            assertEquals(0, NativeManager.requests);
+        } finally {
+            configuration.setLocale(previous);
+            context.getResources().updateConfiguration(configuration, context.getResources().getDisplayMetrics());
+        }
+    }
+
+    private static void registerCommentCellAndWait(Anchor anchor) {
+        CommentBatchTranslator.onCommentListLoaded(new CommentItemList(anchor.comment));
+        CommentBatchTranslator.registerCommentCell(new View(RuntimeEnvironment.getApplication()), anchor);
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(351));
+    }
+
     @Test public void concurrentTriggersReserveOnePendingRequest() {
         Anchor anchor = loadedAnchor("aid-pending", "cid-pending");
         CommentBatchTranslator.registerCommentCell(new View(context), anchor);

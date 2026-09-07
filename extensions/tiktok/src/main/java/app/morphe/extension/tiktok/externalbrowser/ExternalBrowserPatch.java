@@ -90,29 +90,46 @@ public final class ExternalBrowserPatch {
         }
     }
 
-    private static Uri resolveTarget(String source) {
+    static Uri resolveTarget(String source) {
         String value = source == null ? null : source.trim();
         for (int i = 0; value != null && i < 4; i++) {
-            Uri uri = Uri.parse(value);
+            Uri uri;
+            try {
+                uri = Uri.parse(value);
+            } catch (RuntimeException ignored) {
+                return null;
+            }
             if (uri.getScheme() == null) {
                 value = "https://" + value;
                 continue;
             }
             if ("aweme".equalsIgnoreCase(uri.getScheme())) {
-                value = uri.getQueryParameter("url");
+                try {
+                    value = uri.getQueryParameter("url");
+                } catch (RuntimeException ignored) {
+                    return null;
+                }
                 continue;
             }
-            String target = uri.getQueryParameter("target");
+            String scheme = uri.getScheme();
+            String host = uri.getHost();
+            if (!("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme))
+                    || host == null || host.trim().isEmpty()) {
+                return null;
+            }
+
+            String target;
+            try {
+                target = uri.getQueryParameter("target");
+            } catch (RuntimeException ignored) {
+                return null;
+            }
             if (target != null) {
                 value = target;
                 continue;
             }
 
-            String scheme = uri.getScheme();
-            return ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme))
-                    && uri.getHost() != null
-                    ? uri
-                    : null;
+            return uri;
         }
         return null;
     }

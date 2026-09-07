@@ -177,7 +177,7 @@ final class AnimatedWebpMp4Converter {
         }
     }
 
-    private static int chooseBitRate(int width, int height) {
+    static int chooseBitRate(int width, int height) {
         long proposed = (long) width * height * 4L;
         return (int) Math.max(500_000L, Math.min(8_000_000L, proposed));
     }
@@ -255,7 +255,7 @@ final class AnimatedWebpMp4Converter {
         }
     }
 
-    private static void validateFrame(
+    static void validateFrame(
             int canvasWidth,
             int canvasHeight,
             int frameWidth,
@@ -264,7 +264,8 @@ final class AnimatedWebpMp4Converter {
             int yOffset
     ) {
         if (frameWidth <= 0 || frameHeight <= 0 || xOffset < 0 || yOffset < 0
-                || xOffset + frameWidth > canvasWidth || yOffset + frameHeight > canvasHeight) {
+                || (long) xOffset + frameWidth > canvasWidth
+                || (long) yOffset + frameHeight > canvasHeight) {
             throw new IllegalStateException("Animated WebP frame is outside its canvas");
         }
     }

@@ -176,7 +176,7 @@ public final class ShareSheetTools {
      * well. Cells are recycled, so the original width is kept and put back when the same
      * view later shows something that is not hidden.
      */
-    private static void setCellHidden(View cell, boolean hidden) {
+    static void setCellHidden(View cell, boolean hidden) {
         if (cell == null) {
             return;
         }
@@ -284,7 +284,7 @@ public final class ShareSheetTools {
         }
     }
 
-    private static void onTap(View touched) {
+    static void onTap(View touched) {
         try {
             View cell = cellOf(touched);
             String name = labelOf(cell);
@@ -347,7 +347,7 @@ public final class ShareSheetTools {
     }
 
     /** The contact cell is the nearest ancestor (or the view itself) that carries a label. */
-    private static View cellOf(View view) {
+    static View cellOf(View view) {
         View current = view;
         for (int depth = 0; current != null && depth < 5; depth++) {
             if (labelOf(current) != null) {
@@ -358,7 +358,7 @@ public final class ShareSheetTools {
         return view;
     }
 
-    private static String labelOf(View view) {
+    static String labelOf(View view) {
         if (view == null) {
             return null;
         }

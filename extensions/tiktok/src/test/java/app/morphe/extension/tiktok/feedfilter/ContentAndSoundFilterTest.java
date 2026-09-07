@@ -149,6 +149,23 @@ public class ContentAndSoundFilterTest {
         assertFalse(filter.getFiltered(getterItem));
     }
 
+    @Test public void soundIdentityUsesGetterThenFieldFallbacksAndExactEntries() {
+        GetterMusic getter = new GetterMusic();
+        assertEquals("789", SoundIdentity.idOf(getter));
+        assertEquals("Song", SoundIdentity.nameOf(getter));
+        assertEquals("Artist", SoundIdentity.authorOf(getter));
+
+        Music fields = new Music();
+        fields.id = 456;
+        fields.title = "Field title";
+        assertEquals("456", SoundIdentity.idOf(fields));
+        assertEquals("Field title", SoundIdentity.nameOf(fields));
+        assertEquals(List.of("one", "two"), SoundIdentity.entries(" one, ,two,, "));
+        assertTrue(SoundIdentity.containsEntry("one,TWO", "two"));
+        assertEquals("one,two", SoundIdentity.withEntry("one", "two"));
+        assertEquals("one", SoundIdentity.withoutEntry("one,TWO", "two"));
+    }
+
     private static final class Item extends Aweme {
         public Object aigcInfo, moderationAigcInfo, brandContentAccounts, commerceVideoAuthInfo;
         public String commercialVideoInfo;
@@ -172,5 +189,10 @@ public class ContentAndSoundFilterTest {
     private static final class Music {
         public String mid, title;
         public long id;
+    }
+    private static final class GetterMusic {
+        public String getMusicId() { return "789"; }
+        public String getMusicName() { return "Song"; }
+        public String getAuthorName() { return "Artist"; }
     }
 }
