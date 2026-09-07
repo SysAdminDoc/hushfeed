@@ -19,12 +19,26 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Which layer owns a name that is already taken.
+ *
+ * <p>Not this one. What is formatted here is a wish: the name the download would like to be
+ * published under. It is worked out beside TikTok's private staging file, which lives in the
+ * app's own cache and has nothing in common with the folder the file ends up in, so asking
+ * whether a name is free at this point is asking about the wrong directory. It could only ever
+ * answer no when it should have said yes.
+ *
+ * <p>The destination settles it, and does so without a race. On Android 10 and later
+ * {@code MediaFileWriter} hands the name to the provider, which appends its own suffix and
+ * reports the name it actually used. Below that, {@code MediaFileWriter.claim} creates the file
+ * in the destination folder and steps to _2, _3 until {@code createNewFile} succeeds, so two
+ * saves running at once cannot land on one name. A probe here would have been a guess in front
+ * of both.
+ */
 public final class DownloadFilenameFormatter {
     private static final int MAX_BASENAME_LENGTH = 160;
     /** What is left of a 255 byte filename once an extension and a collision suffix fit too. */
     private static final int MAX_BASENAME_BYTES = 200;
-    /** A slideshow tops out well below this; the cap only has to stop an unbounded search. */
-    private static final int MAX_COLLISION_ATTEMPTS = 999;
     private static final int MAX_EXTENSION_LENGTH = 12;
     private static final long PENDING_NAME_TTL_MS = 10 * 60 * 1000L;
     private static final Map<String, PendingName> PENDING_NAMES = new LinkedHashMap<String, PendingName>() {
@@ -190,37 +204,26 @@ public final class DownloadFilenameFormatter {
 
         String originalBase = stripExtension(original.getName());
         boolean hasIndexToken = source.contains("{index}");
-        for (int index = 1; index <= MAX_COLLISION_ATTEMPTS; index++) {
-            String counter = String.valueOf(index);
-            String base = source
-                    .replace("{creator}", safeToken(creator))
-                    .replace("{date}", safeToken(date))
-                    .replace("{video_id}", safeToken(videoId))
-                    .replace("{media_id}", safeToken(mediaId))
-                    .replace("{index}", counter)
-                    .replace("{original}", sanitizeToken(originalBase));
-            base = sanitizeBaseName(base);
-            if (base.isEmpty()) {
-                return original;
-            }
-
-            String suffix = !hasIndexToken && index > 1 ? "_" + counter : "";
-            // The collision suffix comes off both budgets. Taking it off the character count
-            // alone let a name reach 200 bytes and then grow by the suffix on top.
-            String boundedBase = hasIndexToken
-                    ? boundTemplatedName(base, MAX_BASENAME_LENGTH, counter)
-                    : trimToLength(base,
-                            Math.max(1, MAX_BASENAME_LENGTH - suffix.length()),
-                            Math.max(1, MAX_BASENAME_BYTES - suffix.length()));
-            File target = new File(original.getParentFile(), boundedBase + suffix + "." + sanitizeExtension(extension));
-            if (target.equals(original) || !target.exists()) {
-                return target;
-            }
+        // A single number, because this is not where a taken name is discovered. The token
+        // numbers the photos of a slideshow, and those arrive already numbered through
+        // formatOriginalPhotoName; a single video has one of itself.
+        String counter = "1";
+        String base = source
+                .replace("{creator}", safeToken(creator))
+                .replace("{date}", safeToken(date))
+                .replace("{video_id}", safeToken(videoId))
+                .replace("{media_id}", safeToken(mediaId))
+                .replace("{index}", counter)
+                .replace("{original}", sanitizeToken(originalBase));
+        base = sanitizeBaseName(base);
+        if (base.isEmpty()) {
+            return original;
         }
 
-        Logger.printInfo(() -> "Kept the original name for " + original.getName()
-                + ": nothing free was found in " + MAX_COLLISION_ATTEMPTS + " tries");
-        return original;
+        String boundedBase = hasIndexToken
+                ? boundTemplatedName(base, MAX_BASENAME_LENGTH, counter)
+                : trimToLength(base, MAX_BASENAME_LENGTH, MAX_BASENAME_BYTES);
+        return new File(original.getParentFile(), boundedBase + "." + sanitizeExtension(extension));
     }
 
     /**

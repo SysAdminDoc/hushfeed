@@ -106,7 +106,8 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
         addPreference(new InputTextPreference(
                 context,
                 "Photo filename",
-                "Tokens: {creator}, {date}, {video_id}, {index}. The file extension is kept automatically.",
+                "Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow "
+                        + "and is 1 for a video. The file extension is kept automatically.",
                 Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE
         ));
         if (!SettingsStatus.downloadEnabled) return;

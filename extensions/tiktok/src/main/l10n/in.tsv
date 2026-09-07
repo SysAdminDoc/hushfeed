@@ -494,7 +494,7 @@ TikTok default	Bawaan TikTok
 TikTok default (2x hold, quick share)	Bawaan TikTok (tahan 2x, bagikan cepat)
 TikTok didn't accept the feedback. Try again later.	TikTok tidak menerima masukannya. Coba lagi nanti.
 TikTok refused the follow: %1$s	TikTok menolak permintaan mengikuti: %1$s
-Tokens: {creator}, {date}, {video_id}, {index}. The file extension is kept automatically.	Token: {creator}, {date}, {video_id}, {index}. Ekstensi berkas dipertahankan otomatis.
+Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow and is 1 for a video. The file extension is kept automatically.	Token: {creator}, {date}, {video_id}, {index}. {index} menomori foto dalam slideshow dan bernilai 1 untuk video. Ekstensi file dipertahankan otomatis.
 Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.	Token: {creator}, {date}, {video_id}. Ekstensi berkas dipertahankan otomatis.
 Tokens: {date}, {media_id}. Works for image and video stickers.	Token: {date}, {media_id}. Berlaku untuk stiker gambar dan video.
 Translate comments as they load, using TikTok's own translator.	Terjemahkan komentar saat dimuat, memakai penerjemah TikTok sendiri.

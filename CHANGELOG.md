@@ -1,5 +1,7 @@
 ## 0.21.0 (2026-09-07)
 
+* A download can no longer come out as name_2 when nothing of that name was in the folder it was saved to. The check that produced the suffix was looking in TikTok's private staging directory, which has nothing to do with where the file ends up, so it could only ever be wrong. The gallery settles a name that is already taken, and it does that without a race.
+
 * Saving a still sticker as a GIF is refused rather than written out as a one-frame animation. The model calls anything whose type merely contains "webp" animated, and the decoder reports a still picture as one frame, so between them a plain picture could reach the animation path. The bytes now decide it, and the converter refuses anything with fewer than two frames.
 
 * The Hook status row names the surfaces that are missing something instead of saying only that something is. It reads correctly when one surface has reported, its report is redacted and cleared along with the rest of the diagnostic data, and it follows the "Included diagnostics" choice like every other section. A surface that has stopped counting says so. None of this costs the feed anything: a lookup whose answer is already known no longer takes a lock while you scroll.

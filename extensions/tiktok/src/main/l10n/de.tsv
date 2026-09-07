@@ -494,7 +494,7 @@ TikTok default	TikTok-Standard
 TikTok default (2x hold, quick share)	TikTok-Standard (2x halten, schnelles Teilen)
 TikTok didn't accept the feedback. Try again later.	TikTok hat die Rückmeldung nicht angenommen. Versuche es später noch einmal.
 TikTok refused the follow: %1$s	TikTok hat das Folgen abgelehnt: %1$s
-Tokens: {creator}, {date}, {video_id}, {index}. The file extension is kept automatically.	Platzhalter: {creator}, {date}, {video_id}, {index}. Die Dateiendung bleibt automatisch erhalten.
+Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow and is 1 for a video. The file extension is kept automatically.	Tokens: {creator}, {date}, {video_id}, {index}. {index} nummeriert die Fotos einer Diashow und ist 1 bei einem Video. Die Dateiendung wird automatisch beibehalten.
 Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.	Platzhalter: {creator}, {date}, {video_id}. Die Dateiendung bleibt automatisch erhalten.
 Tokens: {date}, {media_id}. Works for image and video stickers.	Platzhalter: {date}, {media_id}. Gilt für Bild- und Video-Sticker.
 Translate comments as they load, using TikTok's own translator.	Kommentare beim Laden übersetzen, mit TikToks eigenem Übersetzer.

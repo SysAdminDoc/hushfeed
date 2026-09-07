@@ -233,57 +233,6 @@ public class AdvancedDownloadsTest {
     }
 
     /**
-     * A creator name long enough to reach the length cap used to take the template's index with
-     * it, so every photo of one slideshow resolved to the same taken name and the search for a
-     * free one never advanced. The timeout is the point of the test: without the bound it hangs.
-     */
-    @Test(timeout = 30_000) public void aLongCreatorNameStillNamesEachSlideshowPhotoApart() throws IOException {
-        Utils.setContext(RuntimeEnvironment.getApplication());
-        String photoTemplate = Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.get();
-        try {
-            Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save("{creator}_{index}");
-            String creator = "a".repeat(200);
-            File folder = Files.createTempDirectory("hushfeed-slideshow").toFile();
-            Item post = new Item(creator, "7712345");
-
-            String first = resolveSavedName(folder, "source_1.jpg", post);
-            // The saver writes that file, so the next photo of the same post lands on it.
-            Files.write(new File(folder, first).toPath(), new byte[]{1});
-            String second = resolveSavedName(folder, "source_2.jpg", post);
-
-            assertNotEquals("The second photo would overwrite the first", first, second);
-            // Both keep the creator's name, so neither fell back to the source file's own name.
-            assertTrue(first, first.startsWith("aaaa"));
-            assertTrue(second, second.startsWith("aaaa"));
-            assertTrue(first, first.endsWith(".jpg"));
-            assertTrue(second, second.endsWith(".jpg"));
-            // 160 characters of base name, an underscore, the counter and the extension.
-            assertTrue(first + " is too long", first.length() <= 165);
-            assertTrue(second + " is too long", second.length() <= 165);
-        } finally {
-            Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save(photoTemplate);
-        }
-    }
-
-    /** An ordinary name is short enough to keep the template's own shape. */
-    @Test public void anOrdinaryCreatorNameKeepsTheTemplateShape() throws IOException {
-        Utils.setContext(RuntimeEnvironment.getApplication());
-        String photoTemplate = Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.get();
-        try {
-            Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save("{creator}_{index}");
-            File folder = Files.createTempDirectory("hushfeed-slideshow-short").toFile();
-            Item post = new Item("dancer", "7712345");
-
-            String first = resolveSavedName(folder, "source_1.jpg", post);
-            assertEquals("dancer_1.jpg", first);
-            Files.write(new File(folder, first).toPath(), new byte[]{1});
-            assertEquals("dancer_2.jpg", resolveSavedName(folder, "source_2.jpg", post));
-        } finally {
-            Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save(photoTemplate);
-        }
-    }
-
-    /**
      * The saver names each image of a slideshow in turn, so the number it is given has to survive
      * the length cap. A creator name long enough to reach that cap used to take the number with
      * it and every photo of the post came out with one name.
@@ -310,51 +259,84 @@ public class AdvancedDownloadsTest {
         }
     }
 
+    /** An ordinary name is short enough to keep the template's own shape. */
+    @Test public void anOrdinaryCreatorNameKeepsTheTemplateShape() throws IOException {
+        Utils.setContext(RuntimeEnvironment.getApplication());
+        String photoTemplate = Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.get();
+        try {
+            Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save("{creator}_{index}");
+            File folder = Files.createTempDirectory("hushfeed-slideshow-short").toFile();
+            Item post = new Item("dancer", "7712345");
+
+            assertEquals("dancer_1.jpg", resolveSavedName(folder, "source_1.jpg", post));
+        } finally {
+            Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save(photoTemplate);
+        }
+    }
+
     /** A filename has to fit the filesystem whatever the host called the file it handed over. */
-    @Test public void aLongExtensionAndACollisionSuffixStayInsideTheFilesystemLimit() throws IOException {
+    @Test public void aLongNameAndALongExtensionStayInsideTheFilesystemLimit() throws IOException {
         Utils.setContext(RuntimeEnvironment.getApplication());
         String videoTemplate = Settings.DOWNLOAD_VIDEO_FILENAME_TEMPLATE.get();
         try {
-            // No index token, so a collision appends _2, _3 and so on to a name already at the cap.
             Settings.DOWNLOAD_VIDEO_FILENAME_TEMPLATE.save("{creator}");
             File folder = Files.createTempDirectory("hushfeed-long-extension").toFile();
-            Item post = new Item("é".repeat(200), "7712345");
+            // Multi-byte, so a character count that is inside the limit is not a byte count that
+            // is: 200 of these are 400 bytes.
+            Item post = new Item("\u00e9".repeat(200), "7712345");
 
-            String first = resolveSavedName(folder, "source." + "x".repeat(40), post);
-            Files.write(new File(folder, first).toPath(), new byte[]{1});
-            String second = resolveSavedName(folder, "source2." + "x".repeat(40), post);
+            String name = resolveSavedName(folder, "source." + "x".repeat(40), post);
 
-            for (String name : new String[]{first, second}) {
-                assertTrue(name + " is " + name.getBytes(StandardCharsets.UTF_8).length + " bytes",
-                        name.getBytes(StandardCharsets.UTF_8).length <= 255);
-            }
-            assertNotEquals(first, second);
+            assertTrue(name + " is " + name.getBytes(StandardCharsets.UTF_8).length + " bytes",
+                    name.getBytes(StandardCharsets.UTF_8).length <= 255);
         } finally {
             Settings.DOWNLOAD_VIDEO_FILENAME_TEMPLATE.save(videoTemplate);
         }
     }
 
     /**
-     * Once every name the template can produce is taken the search gives up and keeps the file's
-     * own name, rather than counting upwards for as long as the process lives.
+     * Where a taken name is actually settled, on the versions that write real files.
+     *
+     * <p>The formatter works out its name beside TikTok's private staging file, which is in the
+     * app's own cache and tells it nothing about the folder the download lands in. Two saves
+     * asking for one name is the destination's problem, and it answers by creating the file:
+     * whoever loses the race gets the next number rather than a second chance at the same one.
      */
-    @Test(timeout = 60_000) public void anExhaustedNameSearchKeepsTheOriginalName() throws IOException {
+    @Test public void theDestinationIsWhatKeepsTwoDownloadsApart() throws Exception {
+        File folder = Files.createTempDirectory("hushfeed-claim").toFile();
+
+        File first = MediaFileWriter.claim(folder, "dancer.jpg");
+        File second = MediaFileWriter.claim(folder, "dancer.jpg");
+        File third = MediaFileWriter.claim(folder, "dancer.jpg");
+
+        assertEquals("dancer.jpg", first.getName());
+        assertEquals("dancer_2.jpg", second.getName());
+        assertEquals("dancer_3.jpg", third.getName());
+        assertTrue("the name was handed out without taking it", first.isFile() && second.isFile());
+    }
+
+    /** Two photos of one post reach distinct names without anything probing a folder. */
+    @Test public void twoPhotosOfOnePostStillReachDistinctPublishedNames() throws Exception {
         Utils.setContext(RuntimeEnvironment.getApplication());
         String photoTemplate = Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.get();
         try {
             Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save("{creator}_{index}");
-            File folder = Files.createTempDirectory("hushfeed-slideshow-full").toFile();
-            for (int index = 1; index <= 999; index++) {
-                Files.write(new File(folder, "dancer_" + index + ".jpg").toPath(), new byte[]{1});
-            }
+            File folder = Files.createTempDirectory("hushfeed-two-photos").toFile();
+            Item post = new Item("dancer", "7712345");
 
-            assertEquals("source_1.jpg", resolveSavedName(folder, "source_1.jpg", new Item("dancer", "7712345")));
+            String first = DownloadFilenameFormatter.formatOriginalPhotoName(post, 1, "jpg");
+            String second = DownloadFilenameFormatter.formatOriginalPhotoName(post, 2, "jpg");
+            assertNotEquals("The second photo would overwrite the first", first, second);
+
+            // And a template with no number of its own still comes out as two files, because
+            // the folder is what settles it.
+            assertEquals("dancer_1.jpg", MediaFileWriter.claim(folder, "dancer_1.jpg").getName());
+            assertEquals("dancer_1_2.jpg", MediaFileWriter.claim(folder, "dancer_1.jpg").getName());
         } finally {
             Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save(photoTemplate);
         }
     }
 
-    /** Runs the real registration path and reports the name the saver would publish. */
     private static String resolveSavedName(File folder, String sourceName, Item post) throws IOException {
         File source = new File(folder, sourceName);
         Files.write(source.toPath(), new byte[]{1});
