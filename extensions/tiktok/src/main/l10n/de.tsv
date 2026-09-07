@@ -32,10 +32,13 @@ Always show the publish date in video author information. Requires restart.	Das 
 An app's package name, like com.dv.adm. The save button sends the video's link there instead of saving it here. Leave it empty to save here.	Der Paketname einer App, etwa com.dv.adm. Die Speichern-Schaltfläche schickt den Link des Videos dorthin, statt es hier zu speichern. Leer lassen, um hier zu speichern.
 An operator code is five or six digits, like 310260	Ein Betreibercode hat fünf oder sechs Ziffern, zum Beispiel 310260
 Animated sticker format	Format animierter Sticker
+Automatic advance stopped after %1$d videos	Automatisches Weiterschalten nach %1$d Videos angehalten
 App behavior	App-Verhalten
 Applies to both video and photo downloads.	Gilt für Video- und Foto-Downloads.
 Apply to video downloads and image downloads.	Gilt für Video- und Bild-Downloads.
 Arrange your feed and bottom tabs	Ordne deine Feed-Tabs und unteren Tabs an
+Auto-advance session limit	Limit für automatisches Weiterschalten pro Sitzung
+Zero keeps auto-advance unlimited. Count only videos that finish while Hushfeed started automatic advance; prefetches, manual swipes and native-only advance do not count. The count resets when the feed component is recreated and stays stopped across backgrounding until it is recreated or the limit changes.	Null lässt das automatische Weiterschalten unbegrenzt. Gezählt werden nur Videos, die enden, während Hushfeed das automatische Weiterschalten gestartet hat; Vorabladen, manuelles Wischen und reines natives Weiterschalten zählen nicht. Der Zähler wird beim Erstellen der Feed-Komponente zurückgesetzt und bleibt nach dem Wechsel in den Hintergrund angehalten, bis sie neu erstellt oder das Limit geändert wird.
 Auto translate comments	Kommentare automatisch übersetzen
 Audio	Audio
 Automatic	Automatisch

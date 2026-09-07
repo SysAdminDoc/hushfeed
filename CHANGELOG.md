@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Automatic advance now has an optional per-session video limit. It counts only visible completions from Hushfeed-owned scrolling, keeps manual and native-only advance independent, stops with a brief notice, and resets when the feed component is recreated. Runtime coverage is 460 tests.
+
 * Advanced downloads can hand a sanitized link to YTDLnis with its documented audio or video type and optional background mode. The profile controls activate only for `com.deniscerri.ytdl`; generic package names still receive a plain link, and an unavailable target leaves TikTok's save in place. Runtime coverage is 458 tests.
 
 * Feature Gate Lab boundary tests now cover malformed persisted scalars, disabled profile imports, master and reset cycles, recorder enablement and concurrent observation limits. Translation retry state expires cleanly, and SIM preset matching keeps null current values and unsupported region fallbacks safe. Runtime coverage is 454 tests.

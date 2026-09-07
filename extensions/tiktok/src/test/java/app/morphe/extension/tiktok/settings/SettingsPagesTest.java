@@ -137,9 +137,15 @@ public class SettingsPagesTest {
             TikTokPreferenceFragment page = attachSection(activity, "PLAYBACK");
             UiCapture.save(page.getView(), "pages/dark/playback-controls.png");
             ListView list = page.getView().findViewById(android.R.id.list);
-            assertTrue(list.performItemClick(list.getChildAt(2), 2, list.getAdapter().getItemId(2)));
+            int autoAdvancePosition = positionOf(list, "auto_advance");
+            assertTrue(autoAdvancePosition >= 0);
+            assertTrue(list.performItemClick(list.getChildAt(autoAdvancePosition), autoAdvancePosition,
+                    list.getAdapter().getItemId(autoAdvancePosition)));
             assertTrue(Settings.AUTO_ADVANCE.get());
-            list.performItemClick(list.getChildAt(4), 4, list.getAdapter().getItemId(4));
+            int defaultSpeedPosition = positionOf(list, "default_speed");
+            assertTrue(defaultSpeedPosition >= 0);
+            list.performItemClick(list.getChildAt(defaultSpeedPosition), defaultSpeedPosition,
+                    list.getAdapter().getItemId(defaultSpeedPosition));
             android.app.AlertDialog dialog = (android.app.AlertDialog) org.robolectric.shadows.ShadowDialog.getLatestDialog();
             assertTrue(dialog.isShowing());
             Shadows.shadowOf(Looper.getMainLooper()).idle();

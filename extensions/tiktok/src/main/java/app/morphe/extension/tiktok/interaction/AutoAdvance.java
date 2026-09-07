@@ -5,8 +5,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.Setting;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
+import app.morphe.extension.tiktok.settings.L10n;
 import app.morphe.extension.tiktok.settings.Settings;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -19,7 +21,8 @@ public final class AutoAdvance {
     private static final Map<Object, Control> CONTROLS = new WeakHashMap<>();
     private static boolean observing;
     private static final SharedPreferences.OnSharedPreferenceChangeListener PREFERENCES = (preferences, key) -> {
-        if (key == null || Settings.AUTO_ADVANCE.key.equals(key)) MAIN.post(() -> {
+        if (key == null || Settings.AUTO_ADVANCE.key.equals(key)
+                || Settings.AUTO_ADVANCE_LIMIT.key.equals(key)) MAIN.post(() -> {
             for (Object component : new ArrayList<>(CONTROLS.keySet())) update(component);
         });
     };
@@ -46,8 +49,16 @@ public final class AutoAdvance {
 
     public static void beforeCompletion(Object component, String completedId) {
         if (Looper.myLooper() != Looper.getMainLooper() || completedId == null) return;
+        Control control = CONTROLS.get(component);
+        if (control == null || !control.owned) return;
         String current = Reflect.string(readAweme(component), "getAid", "aid");
-        if (completedId.equals(current)) update(component);
+        if (!completedId.equals(current)) return;
+        if (!control.recordCompletion(completedId)) return;
+        if (control.limitReached() && control.claimLimitNotice()) {
+            Utils.showToastShort(L10n.f("Automatic advance stopped after %1$d videos",
+                    control.completedCount));
+        }
+        update(component);
     }
 
     public static void onDestroy(Object component) { CONTROLS.remove(component); }
@@ -65,10 +76,35 @@ public final class AutoAdvance {
     static final class Control {
         final WeakReference<View> view;
         boolean owned;
+        int completedCount;
+        private String lastCompletedId;
+        private boolean limitNoticeShown;
         Control(View view) { this.view = new WeakReference<>(view); }
+
+        boolean recordCompletion(String completedId) {
+            if (!owned || completedId.equals(lastCompletedId)) return false;
+            lastCompletedId = completedId;
+            completedCount++;
+            return true;
+        }
+
+        boolean limitReached() {
+            int limit = Settings.AUTO_ADVANCE_LIMIT.get();
+            return limit > 0 && completedCount >= limit;
+        }
+
+        boolean claimLimitNotice() {
+            if (!limitReached() || limitNoticeShown) return false;
+            limitNoticeShown = true;
+            return true;
+        }
 
         void update(Supplier<Object> state, Runnable start, Runnable stop) {
             if (!Settings.AUTO_ADVANCE.get()) {
+                if (owned) { stop.run(); owned = false; }
+                return;
+            }
+            if (limitReached()) {
                 if (owned) { stop.run(); owned = false; }
                 return;
             }

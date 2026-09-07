@@ -26,6 +26,7 @@ public class AutoAdvanceTest {
         SettingsStatus.autoAdvanceEnabled = false;
         SettingsStatus.playbackSpeedEnabled = false;
         SettingsStatus.playbackQualityEnabled = false;
+        Settings.AUTO_ADVANCE_LIMIT.save(0);
     }
     enum State { AUTO_SCROLL_STATE_START, AUTO_SCROLL_STATE_STOP, AUTO_SCROLL_STATE_PAUSE }
     static final class FeedView extends View {
@@ -121,5 +122,48 @@ public class AutoAdvanceTest {
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
             app.morphe.extension.tiktok.UiCapture.save(activity.getWindow().getDecorView(), "auto-advance-settings.png");
         }
+    }
+
+    @Test public void ownedSessionStopsAtItsVisibleCompletionLimitAndCanBeReset() {
+        Settings.AUTO_ADVANCE_LIMIT.save(2);
+        FeedView feed = new FeedView();
+        var control = new AutoAdvance.Control(feed);
+        var state = new AtomicReference<>(State.AUTO_SCROLL_STATE_STOP);
+        var starts = new AtomicInteger();
+        var stops = new AtomicInteger();
+        Runnable start = () -> { starts.incrementAndGet(); state.set(State.AUTO_SCROLL_STATE_START); };
+        Runnable stop = () -> { stops.incrementAndGet(); state.set(State.AUTO_SCROLL_STATE_STOP); };
+
+        control.update(state::get, start, stop);
+        assertTrue(control.owned);
+        assertTrue(control.recordCompletion("first"));
+        state.set(State.AUTO_SCROLL_STATE_STOP);
+        control.update(state::get, start, stop);
+        assertEquals(2, starts.get());
+        assertTrue(control.recordCompletion("second"));
+        state.set(State.AUTO_SCROLL_STATE_STOP);
+        control.update(state::get, start, stop);
+        assertEquals(1, stops.get());
+        assertFalse(control.owned);
+        assertFalse(control.recordCompletion("second"));
+
+        // Removing the limit lets this feed session continue. A new component starts at zero.
+        Settings.AUTO_ADVANCE_LIMIT.save(0);
+        control.update(state::get, start, stop);
+        assertEquals(3, starts.get());
+        var fresh = new AutoAdvance.Control(new FeedView());
+        assertEquals(0, fresh.completedCount);
+    }
+
+    @Test public void nativeOnlyCompletionsDoNotConsumeTheHushfeedLimit() {
+        Settings.AUTO_ADVANCE_LIMIT.save(1);
+        FeedView feed = new FeedView();
+        var control = new AutoAdvance.Control(feed);
+        var state = new AtomicReference<>(State.AUTO_SCROLL_STATE_START);
+        control.update(state::get, () -> fail("native scrolling is already running"),
+                () -> fail("native scrolling is not owned"));
+        assertFalse(control.owned);
+        assertFalse(control.recordCompletion("native"));
+        assertEquals(0, control.completedCount);
     }
 }

@@ -8,6 +8,7 @@ import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.ChoicePreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 import app.morphe.extension.tiktok.settings.preference.InputTextPreference;
+import app.morphe.extension.tiktok.settings.preference.NumberInputPreference;
 import app.morphe.extension.tiktok.speed.PlaybackSpeedPatch;
 import app.morphe.extension.shared.Utils;
 
@@ -28,6 +29,12 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
             addPreference(new TogglePreference(context, "Advance when a video ends",
                     "Keep automatic advance enabled. Pauses and open dialogs still stop scrolling. Restart after enabling it; use this switch to turn it off.",
                     Settings.AUTO_ADVANCE));
+            addPreference(new NumberInputPreference(context, "Auto-advance session limit",
+                    "Zero keeps auto-advance unlimited. Count only videos that finish while Hushfeed "
+                            + "started automatic advance; prefetches, manual swipes and native-only "
+                            + "advance do not count. The count resets when the feed component is "
+                            + "recreated and stays stopped across backgrounding until it is recreated "
+                            + "or the limit changes.", Settings.AUTO_ADVANCE_LIMIT, "video", "videos"));
         }
         if (SettingsStatus.playbackSpeedEnabled) {
             addPreference(new TogglePreference(context, "Use a default playback speed",

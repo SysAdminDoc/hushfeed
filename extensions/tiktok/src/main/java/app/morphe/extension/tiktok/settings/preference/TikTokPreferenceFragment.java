@@ -605,6 +605,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                             SettingsStatus.playbackSpeedEnabled && Settings.DEFAULT_SPEED_ENABLED.get(),
                             SettingsStatus.playbackSpeedEnabled && !Settings.CUSTOM_SPEEDS.get().trim().isEmpty(),
                             SettingsStatus.autoAdvanceEnabled && Settings.AUTO_ADVANCE.get(),
+                            SettingsStatus.autoAdvanceEnabled && Settings.AUTO_ADVANCE_LIMIT.get() > 0,
                             SettingsStatus.videoFitEnabled && Settings.FIT_VIDEO_TO_SCREEN.get()));
         }
         if (SettingsStatus.inboxFilterEnabled
