@@ -58,7 +58,13 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
     private static final String ARG_SEARCH = "morphe_settings_search";
     private static final String ARG_TARGET_KEY = "morphe_settings_target_key";
     private static TikTokPreferenceFragment activeFragment;
-    private static DownloadPathPreference pendingDownloadPathPreference;
+    /**
+     * Which folder setting the picker was opened for, by key rather than by the preference
+     * itself. The picker is a separate activity, so this one is routinely destroyed behind it
+     * and the object that was waiting no longer belongs to the screen that comes back.
+     */
+    private static String pendingDownloadPathKey;
+    private static final String PENDING_DOWNLOAD_PATH_STATE = "morphe_pending_download_path";
     private SettingsListAdapter styledAdapter;
     private PreferenceScreen searchScreen;
     private List<SearchResult> searchIndex;
@@ -130,7 +136,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             return;
         }
 
-        pendingDownloadPathPreference = preference;
+        pendingDownloadPathKey = preference.getKey();
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -138,7 +144,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         try {
             activeFragment.startActivityForResult(intent, REQUEST_DOWNLOAD_PATH_FOLDER);
         } catch (ActivityNotFoundException exception) {
-            pendingDownloadPathPreference = null;
+            pendingDownloadPathKey = null;
             app.morphe.extension.shared.Utils.showToastLong(L10n.t("Folder picker is not available on this device"));
         }
     }
@@ -272,8 +278,16 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         decor.setSystemUiVisibility(visibility);
     }
 
+    @Override public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(PENDING_DOWNLOAD_PATH_STATE, pendingDownloadPathKey);
+    }
+
     @Override public void onActivityCreated(Bundle state) {
         super.onActivityCreated(state);
+        if (pendingDownloadPathKey == null && state != null) {
+            pendingDownloadPathKey = state.getString(PENDING_DOWNLOAD_PATH_STATE);
+        }
         ListView list = getView().findViewById(android.R.id.list);
         if (list != null && list.getAdapter() != null) {
             styledAdapter = new SettingsListAdapter(list.getAdapter());
@@ -889,7 +903,8 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
     public void onDestroy() {
         if (activeFragment == this) {
             activeFragment = null;
-            pendingDownloadPathPreference = null;
+            // The pending key deliberately survives: the picker destroys this fragment while it
+            // is open, and clearing it here dropped the folder the reader had just chosen.
         }
         super.onDestroy();
     }
@@ -902,11 +917,19 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             return;
         }
 
-        DownloadPathPreference preference = pendingDownloadPathPreference;
-        pendingDownloadPathPreference = null;
-        if (resultCode != Activity.RESULT_OK || data == null || data.getData() == null || preference == null) {
+        String pendingKey = pendingDownloadPathKey;
+        pendingDownloadPathKey = null;
+        if (resultCode != Activity.RESULT_OK || data == null || data.getData() == null) {
             return;
         }
+
+        Preference found = pendingKey == null ? null : findPreference(pendingKey);
+        if (!(found instanceof DownloadPathPreference)) {
+            app.morphe.extension.shared.Utils.showToastLong(
+                    L10n.t("Could not tell which folder to update. Choose it again."));
+            return;
+        }
+        DownloadPathPreference preference = (DownloadPathPreference) found;
 
         String relativePath = getRelativePrimaryStoragePath(data.getData());
         if (relativePath == null) {
