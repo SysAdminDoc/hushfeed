@@ -109,14 +109,18 @@ public final class CommentTools {
                 return;
             }
 
+            Object previous;
             synchronized (CELL_COMMENTS) {
-                CELL_COMMENTS.put(itemView, comment);
+                previous = CELL_COMMENTS.put(itemView, comment);
             }
+            // A different comment in the same row, rather than the same one bound again for a
+            // changed like count: only the first has to drop a press taken before the swap.
+            boolean holdsAnotherComment = previous != null && previous != comment;
 
             // TikTok wires the thumbs down during this same bind, so the takeover runs once
             // the bind has returned. For a cell that is not attached yet, View.post runs the
             // work on attach, which is still after the bind.
-            itemView.post(() -> takeOverDislike(itemView));
+            itemView.post(() -> takeOverDislike(itemView, holdsAnotherComment));
         } catch (Throwable ex) {
             Logger.printException(() -> "Could not register a comment cell", ex);
         }
@@ -157,7 +161,7 @@ public final class CommentTools {
 
     // ---- thumbs down takeover ----------------------------------------------------------
 
-    private static void takeOverDislike(View cell) {
+    private static void takeOverDislike(View cell, boolean holdsAnotherComment) {
         try {
             View button = cell.findViewById(identifier(cell, DISLIKE_BUTTON_ID));
             if (button == null) {
@@ -171,13 +175,15 @@ public final class CommentTools {
 
             // Replaces TikTok's listener on the control; the icon gets one too so a touch
             // that lands on it never reaches TikTok's handling either.
-            // This cell now holds a different comment, so a press taken before it was rebound
-            // must not be released onto the account that just arrived.
+            // A press taken while this row held a different comment must not be released onto
+            // the account that just arrived in it.
             button.setOnTouchListener(DISLIKE_TOUCH);
-            DISLIKE_TOUCH.forget(button);
             View icon = cell.findViewById(identifier(cell, DISLIKE_ICON_ID));
             if (icon != null) {
                 icon.setOnTouchListener(DISLIKE_TOUCH);
+            }
+            if (holdsAnotherComment) {
+                DISLIKE_TOUCH.forget(button);
                 DISLIKE_TOUCH.forget(icon);
             }
 
@@ -214,39 +220,49 @@ public final class CommentTools {
         private final WeakHashMap<View, Gesture> gestures = new WeakHashMap<>();
 
         void forget(View view) {
-            if (view != null) {
+            if (view == null) return;
+            synchronized (gestures) {
                 gestures.remove(view);
             }
         }
 
+        // Touches arrive on the main thread, but the cell maps in this class are all guarded, and
+        // a WeakHashMap corrupts rather than fails if that ever stops being true.
         @Override
         public boolean onTouch(View view, MotionEvent event) {
-            switch (event.getActionMasked()) {
-                case MotionEvent.ACTION_DOWN:
-                    gestures.put(view, new Gesture(event.getX(), event.getY()));
-                    return true;
-                case MotionEvent.ACTION_MOVE: {
-                    Gesture gesture = gestures.get(view);
-                    if (gesture != null && !gesture.moved) {
-                        int slop = ViewConfiguration.get(view.getContext()).getScaledTouchSlop();
-                        gesture.moved = Math.abs(event.getX() - gesture.downX) > slop
-                                || Math.abs(event.getY() - gesture.downY) > slop;
+            boolean tapped = false;
+            synchronized (gestures) {
+                switch (event.getActionMasked()) {
+                    case MotionEvent.ACTION_DOWN:
+                        gestures.put(view, new Gesture(event.getX(), event.getY()));
+                        break;
+                    case MotionEvent.ACTION_MOVE: {
+                        Gesture gesture = gestures.get(view);
+                        if (gesture != null && !gesture.moved) {
+                            int slop = ViewConfiguration.get(view.getContext()).getScaledTouchSlop();
+                            gesture.moved = Math.abs(event.getX() - gesture.downX) > slop
+                                    || Math.abs(event.getY() - gesture.downY) > slop;
+                        }
+                        break;
                     }
-                    return true;
-                }
-                case MotionEvent.ACTION_CANCEL:
-                    gestures.remove(view);
-                    return true;
-                case MotionEvent.ACTION_UP: {
-                    Gesture gesture = gestures.remove(view);
-                    if (gesture != null && !gesture.moved) {
-                        onDislikeTapped(view);
+                    case MotionEvent.ACTION_CANCEL:
+                        gestures.remove(view);
+                        break;
+                    case MotionEvent.ACTION_UP: {
+                        Gesture gesture = gestures.remove(view);
+                        tapped = gesture != null && !gesture.moved;
+                        break;
                     }
-                    return true;
+                    default:
+                        break;
                 }
-                default:
-                    return true;
             }
+
+            // Outside the lock: blocking an account reaches well beyond this listener.
+            if (tapped) {
+                onDislikeTapped(view);
+            }
+            return true;
         }
     }
 

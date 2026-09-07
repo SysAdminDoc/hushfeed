@@ -4,10 +4,12 @@ import static org.junit.Assert.assertEquals;
 
 import android.app.Activity;
 import android.os.Looper;
+import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 import app.morphe.extension.shared.Utils;
 import java.util.Map;
+import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,6 +43,11 @@ public class CommentDislikeGestureTest {
         // The listener outlives any one comment sheet, so a press left over from an earlier test
         // would decide what this one observes.
         ReflectionHelpers.<Map<View, ?>>getField(touch, "gestures").clear();
+        ReflectionHelpers.<Map<View, ?>>getStaticField(CommentTools.class, "CELL_COMMENTS").clear();
+        // A block that never reports back leaves the busy guard set, and every later tap would
+        // return on it instead of acting.
+        ReflectionHelpers.setStaticField(CommentTools.class, "blockInFlight", false);
+        ReflectionHelpers.<Set<String>>getStaticField(CommentTools.class, "BLOCKED_UIDS").clear();
         ShadowToast.reset();
     }
 
@@ -96,6 +103,91 @@ public class CommentDislikeGestureTest {
         touch.onTouch(comment, event(MotionEvent.ACTION_UP, 5, 5));
 
         assertEquals("A cancelled press still acted on release", 0, toastCount());
+    }
+
+    /**
+     * The toast tests above show whether a tap was acted on, not which comment it reached. These
+     * two register a real comment on each row and read the haptic tick that only the acted-on
+     * cell receives, so an implementation that released onto the last pressed row instead of its
+     * own would be caught.
+     */
+    @Test public void aTapReachesTheCommentItLandedOn() {
+        View first = commentCell("uid-first");
+        View second = commentCell("uid-second");
+
+        touch.onTouch(first, event(MotionEvent.ACTION_DOWN, 5, 5));
+        touch.onTouch(first, event(MotionEvent.ACTION_UP, 5, 5));
+
+        assertEquals("The tap did not reach its own comment",
+                HapticFeedbackConstants.LONG_PRESS, hapticOn(first));
+        assertEquals("The tap reached the other comment", -1, hapticOn(second));
+    }
+
+    /**
+     * Two rows held down at once, released in the order they were pressed. The release belongs to
+     * the row it lands on, not to whichever was pressed most recently.
+     */
+    @Test public void aReleaseReachesItsOwnRowWhileAnotherIsStillHeld() {
+        View first = commentCell("uid-first");
+        View second = commentCell("uid-second");
+
+        touch.onTouch(first, event(MotionEvent.ACTION_DOWN, 5, 5));
+        touch.onTouch(second, event(MotionEvent.ACTION_DOWN, 5, 5));
+        touch.onTouch(first, event(MotionEvent.ACTION_UP, 5, 5));
+
+        assertEquals("The release did not reach the row it landed on",
+                HapticFeedbackConstants.LONG_PRESS, hapticOn(first));
+        assertEquals("The release reached the row that was pressed later", -1, hapticOn(second));
+    }
+
+    @Test public void aReleaseWithNoPressReachesNeitherComment() {
+        View pressed = commentCell("uid-pressed");
+        View released = commentCell("uid-released");
+
+        touch.onTouch(pressed, event(MotionEvent.ACTION_DOWN, 5, 5));
+        touch.onTouch(released, event(MotionEvent.ACTION_UP, 5, 5));
+
+        assertEquals("The release acted on the row that was pressed", -1, hapticOn(pressed));
+        assertEquals("The release acted on the row it landed on", -1, hapticOn(released));
+    }
+
+    /** A row carrying a comment whose author can be read, which is what reaching a block needs. */
+    private View commentCell(String uid) {
+        View cell = new View(activity);
+        Map<View, Object> cells = ReflectionHelpers.getStaticField(CommentTools.class, "CELL_COMMENTS");
+        synchronized (cells) {
+            cells.put(cell, new Comment(uid));
+        }
+        return cell;
+    }
+
+    private static int hapticOn(View view) {
+        return Shadows.shadowOf(view).lastHapticFeedbackPerformed();
+    }
+
+    @SuppressWarnings("unused")
+    public static final class Comment {
+        private final User user;
+        private final String cid;
+
+        Comment(String uid) {
+            this.user = new User(uid);
+            this.cid = "cid-" + uid;
+        }
+
+        public User getUser() { return user; }
+        public String getCid() { return cid; }
+    }
+
+    @SuppressWarnings("unused")
+    public static final class User {
+        private final String uid;
+
+        User(String uid) { this.uid = uid; }
+
+        public String getUid() { return uid; }
+        public String getSecUid() { return "sec-" + uid; }
+        public String getUniqueId() { return "name-" + uid; }
     }
 
     private static MotionEvent event(int action, float x, float y) {

@@ -162,7 +162,13 @@ public final class DownloadFilenameFormatter {
                 .replace("{date}", formatDate(readCreateTime(aweme)))
                 .replace("{video_id}", sanitizeToken(id)).replace("{index}", String.valueOf(index));
         if (photo && !template.contains("{index}")) base += "_" + index;
-        base = trimToLength(sanitizeBaseName(base), MAX_BASENAME_LENGTH);
+        // Every photo of a slideshow comes through here with its own number, so that number has
+        // to survive the length cap or they all end up named the same.
+        boolean carriesOrdinal = photo || template.contains("{index}");
+        String sanitized = sanitizeBaseName(base);
+        base = carriesOrdinal
+                ? boundTemplatedName(sanitized, MAX_BASENAME_LENGTH, String.valueOf(index))
+                : trimToLength(sanitized, MAX_BASENAME_LENGTH);
         if (base.isEmpty()) base = photo ? "original_photo_" + index : "video";
         return base + "." + sanitizeExtension(extension);
     }

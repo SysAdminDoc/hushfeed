@@ -14,7 +14,9 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.util.Base64;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import org.junit.Test;
 import org.junit.After;
 import org.junit.runner.RunWith;
@@ -275,6 +277,33 @@ public class AdvancedDownloadsTest {
             assertEquals("dancer_1.jpg", first);
             Files.write(new File(folder, first).toPath(), new byte[]{1});
             assertEquals("dancer_2.jpg", resolveSavedName(folder, "source_2.jpg", post));
+        } finally {
+            Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save(photoTemplate);
+        }
+    }
+
+    /**
+     * The saver names each image of a slideshow in turn, so the number it is given has to survive
+     * the length cap. A creator name long enough to reach that cap used to take the number with
+     * it and every photo of the post came out with one name.
+     */
+    @Test public void everySlideshowPhotoKeepsItsOwnNumberWhenTheCreatorNameIsLong() {
+        Utils.setContext(RuntimeEnvironment.getApplication());
+        String photoTemplate = Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.get();
+        try {
+            Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save("{creator}_{index}");
+            Item post = new Item("a".repeat(200), "7712345");
+
+            // Past ten, so the number changing width is covered too.
+            Set<String> names = new LinkedHashSet<>();
+            for (int index = 1; index <= 12; index++) {
+                names.add(DownloadFilenameFormatter.formatOriginalPhotoName(post, index, "jpg"));
+            }
+
+            assertEquals("Photos of one slideshow shared a name: " + names, 12, names.size());
+            for (String name : names) {
+                assertTrue(name, name.startsWith("aaaa") && name.endsWith(".jpg"));
+            }
         } finally {
             Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE.save(photoTemplate);
         }
