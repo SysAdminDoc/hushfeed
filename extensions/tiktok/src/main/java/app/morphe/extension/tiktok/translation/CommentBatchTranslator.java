@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.LocaleList;
+import android.os.SystemClock;
 import android.view.View;
 
 import app.morphe.extension.shared.Logger;
@@ -16,6 +17,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -27,6 +29,7 @@ import java.util.Set;
 public final class CommentBatchTranslator {
     private static final long STALE_ENTRY_MS = 15_000L;
     private static final long LOADED_BATCH_STALE_MS = 60_000L;
+    private static final long PENDING_REQUEST_STALE_MS = 15_000L;
     private static final int MAX_LOADED_BATCHES = 4;
     private static final int MAX_REQUESTED_BATCH_KEYS = 12;
 
@@ -34,6 +37,7 @@ public final class CommentBatchTranslator {
     private static final LinkedHashMap<String, VisibleComment> visibleComments = new LinkedHashMap<>();
     private static final LinkedHashMap<String, LoadedBatch> loadedBatches = new LinkedHashMap<>();
     private static final LinkedHashSet<String> requestedLoadedBatchKeys = new LinkedHashSet<>();
+    private static final LinkedHashMap<String, PendingRequest> pendingRequests = new LinkedHashMap<>();
     private static LoadedBatch latestLoadedBatch;
     private static WeakReference<Object> lastManager = new WeakReference<>(null);
     private static volatile Object nativeLanguageService;
@@ -57,7 +61,7 @@ public final class CommentBatchTranslator {
             String cid = invokeString(comment, "getCid");
             if (isBlank(cid)) return;
 
-            long now = System.currentTimeMillis();
+            long now = SystemClock.elapsedRealtime();
             synchronized (LOCK) {
                 pruneLocked(now);
                 visibleComments.put(cid, new VisibleComment(manager, comment, context, now));
@@ -109,7 +113,7 @@ public final class CommentBatchTranslator {
                 return;
             }
 
-            LoadedBatch batch = new LoadedBatch(aid, comments, cids, System.currentTimeMillis());
+            LoadedBatch batch = new LoadedBatch(aid, comments, cids, SystemClock.elapsedRealtime());
             synchronized (LOCK) {
                 pruneLocked(batch.loadedAtMs);
                 latestLoadedBatch = batch;
@@ -148,17 +152,29 @@ public final class CommentBatchTranslator {
     }
 
     public static void onNativeBatchComplete(Object runner) {
-        if (!BaseSettings.DEBUG.get()) return;
-
         Object results = readFieldQuiet(runner, "l0");
         Object task = readFieldQuiet(runner, "l1");
         Object requested = readFieldQuiet(task, "LIZ");
-        Logger.printInfo(() -> "[Morphe CommentBatchTranslator] native.complete"
-                + " requestedSize=" + collectionSize(requested)
-                + " resultSize=" + collectionSize(results));
+        Set<String> requestedCids = commentIds(requested);
+        boolean succeeded = results != null && !hasCompletionFailure(runner, task);
+        synchronized (LOCK) {
+            PendingRequest pending = findPendingRequestLocked(requestedCids);
+            if (pending != null) {
+                pendingRequests.remove(pending.key);
+                if (succeeded) rememberRequestedKeyLocked(pending.key);
+            }
+            pruneLocked(SystemClock.elapsedRealtime());
+        }
+        if (BaseSettings.DEBUG.get()) {
+            Logger.printInfo(() -> "[Morphe CommentBatchTranslator] native.complete"
+                    + " requestedSize=" + collectionSize(requested)
+                    + " resultSize=" + collectionSize(results)
+                    + " succeeded=" + succeeded);
+        }
     }
 
     private static void translateLoadedBatchIfReady(Object anchor, boolean allowVisibleFallback) {
+        if (!Settings.COMMENT_BATCH_TRANSLATION.get()) return;
         Batch batch = buildLoadedBatch(anchor, allowVisibleFallback);
         if (batch.comments.isEmpty()) {
             return;
@@ -166,13 +182,20 @@ public final class CommentBatchTranslator {
 
         String effectiveRequestKey = batch.requestKey + ":language-policy:" + currentLanguagePolicyKey();
 
-        try {
-            synchronized (LOCK) {
-                if (requestedLoadedBatchKeys.contains(effectiveRequestKey)) {
-                    return;
-                }
-            }
+        PendingRequest pending = new PendingRequest(
+                effectiveRequestKey, commentIds(batch.comments), SystemClock.elapsedRealtime());
+        synchronized (LOCK) {
+            pruneLocked(pending.startedAtMs);
+            if (requestedLoadedBatchKeys.contains(effectiveRequestKey)
+                    || pendingRequests.containsKey(effectiveRequestKey)) return;
+            pendingRequests.put(effectiveRequestKey, pending);
+        }
 
+        try {
+            if (!Settings.COMMENT_BATCH_TRANSLATION.get()) {
+                removePendingRequest(effectiveRequestKey);
+                return;
+            }
             Method method = findNativeBatchMethod(batch.nativeManagerClass, batch.context.getClass());
             if (method == null) {
                 throw new NoSuchMethodException(
@@ -181,23 +204,18 @@ public final class CommentBatchTranslator {
                 );
             }
             method.setAccessible(true);
-            method.invoke(null, batch.comments, batch.context, false);
-
-            synchronized (LOCK) {
-                requestedLoadedBatchKeys.add(effectiveRequestKey);
-                while (requestedLoadedBatchKeys.size() > MAX_REQUESTED_BATCH_KEYS) {
-                    Iterator<String> iterator = requestedLoadedBatchKeys.iterator();
-                    if (!iterator.hasNext()) break;
-                    iterator.next();
-                    iterator.remove();
-                }
+            if (!Settings.COMMENT_BATCH_TRANSLATION.get()) {
+                removePendingRequest(effectiveRequestKey);
+                return;
             }
+            method.invoke(null, batch.comments, batch.context, false);
 
             Logger.printInfo(() -> "[Morphe CommentBatchTranslator] requested"
                     + " size=" + batch.comments.size()
                     + " requestKey=" + effectiveRequestKey
                     + " aid=" + value(readFieldQuiet(batch.context, "LIZIZ")));
         } catch (Throwable ex) {
+            removePendingRequest(effectiveRequestKey);
             Logger.printException(() -> "[Morphe CommentBatchTranslator] native request failed", ex);
         }
     }
@@ -222,7 +240,7 @@ public final class CommentBatchTranslator {
     }
 
     private static Batch buildLoadedBatch(Object anchor, boolean allowVisibleFallback) {
-        long now = System.currentTimeMillis();
+        long now = SystemClock.elapsedRealtime();
         AnchorParts parts = resolveAnchorParts(anchor);
         Object anchorContext = parts == null ? null : parts.context;
         Object nativeManager = parts == null ? null : parts.nativeManager;
@@ -324,6 +342,79 @@ public final class CommentBatchTranslator {
         return null;
     }
 
+    private static void removePendingRequest(String key) {
+        synchronized (LOCK) {
+            pendingRequests.remove(key);
+        }
+    }
+
+    private static void rememberRequestedKeyLocked(String key) {
+        requestedLoadedBatchKeys.add(key);
+        while (requestedLoadedBatchKeys.size() > MAX_REQUESTED_BATCH_KEYS) {
+            Iterator<String> iterator = requestedLoadedBatchKeys.iterator();
+            if (!iterator.hasNext()) break;
+            iterator.next();
+            iterator.remove();
+        }
+    }
+
+    private static PendingRequest findPendingRequestLocked(Set<String> requestedCids) {
+        if (requestedCids.isEmpty()) return null;
+        for (PendingRequest pending : pendingRequests.values()) {
+            for (String cid : requestedCids) {
+                if (pending.cids.contains(cid)) return pending;
+            }
+        }
+        return null;
+    }
+
+    private static Set<String> commentIds(Object comments) {
+        if (comments == null) return Collections.emptySet();
+        LinkedHashSet<String> ids = new LinkedHashSet<>();
+        if (comments instanceof Iterable<?>) {
+            for (Object comment : (Iterable<?>) comments) addCommentId(ids, comment);
+        } else if (comments.getClass().isArray()) {
+            int length = java.lang.reflect.Array.getLength(comments);
+            for (int index = 0; index < length; index++) {
+                addCommentId(ids, java.lang.reflect.Array.get(comments, index));
+            }
+        } else {
+            addCommentId(ids, comments);
+        }
+        return ids.isEmpty() ? Collections.emptySet() : Collections.unmodifiableSet(ids);
+    }
+
+    private static void addCommentId(Set<String> ids, Object comment) {
+        String cid = invokeStringQuiet(comment, "getCid");
+        if (!isBlank(cid)) ids.add(cid);
+    }
+
+    private static boolean hasCompletionFailure(Object runner, Object task) {
+        if (runner == null) return true;
+        if (completionFailureField(runner) || completionFailureField(task)) return true;
+        return false;
+    }
+
+    private static boolean completionFailureField(Object instance) {
+        if (instance == null) return false;
+        Class<?> current = instance.getClass();
+        while (current != null) {
+            for (Field field : current.getDeclaredFields()) {
+                String name = field.getName().toLowerCase(Locale.ROOT);
+                if (!name.contains("error") && !name.contains("exception")
+                        && !name.contains("failure")) continue;
+                try {
+                    field.setAccessible(true);
+                    Object value = field.get(instance);
+                    if (value instanceof Throwable) return true;
+                } catch (Throwable ignored) {
+                }
+            }
+            current = current.getSuperclass();
+        }
+        return false;
+    }
+
     private static void pruneLocked(long now) {
         Iterator<Map.Entry<String, VisibleComment>> iterator = visibleComments.entrySet().iterator();
         while (iterator.hasNext()) {
@@ -343,6 +434,12 @@ public final class CommentBatchTranslator {
                 batchIterator.remove();
                 if (entry == latestLoadedBatch) latestLoadedBatch = null;
             }
+        }
+
+        Iterator<Map.Entry<String, PendingRequest>> requestIterator = pendingRequests.entrySet().iterator();
+        while (requestIterator.hasNext()) {
+            PendingRequest entry = requestIterator.next().getValue();
+            if (now - entry.startedAtMs > PENDING_REQUEST_STALE_MS) requestIterator.remove();
         }
     }
 
@@ -663,6 +760,18 @@ public final class CommentBatchTranslator {
             this.context = context;
             this.nativeManagerClass = nativeManagerClass;
             this.requestKey = requestKey;
+        }
+    }
+
+    private static final class PendingRequest {
+        final String key;
+        final Set<String> cids;
+        final long startedAtMs;
+
+        PendingRequest(String key, Set<String> cids, long startedAtMs) {
+            this.key = key;
+            this.cids = cids;
+            this.startedAtMs = startedAtMs;
         }
     }
 

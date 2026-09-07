@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Comment translation checks the switch again before a delayed native call, reserves one request per loaded batch, retries failed completions and remembers only successful ones. Expiration uses elapsed time, so a device clock change cannot keep a stalled request suppressed.
+
 * Diagnostic file exports now build and publish on the shared worker pool. The save reports null streams and failed publication, returns the provider's actual destination, and uses unique app-document files on Android 9 and earlier so repeated reports remain available.
 
 * Interrupted media work now lives in an extension-owned cache namespace. Startup reconciliation removes stale temporary files and only pending MediaStore rows recorded by Hushfeed, while completed media and unrelated TikTok cache stay alone.
