@@ -97,6 +97,15 @@ public final class FeedVisibility {
         return isDetailVisible();
     }
 
+    /**
+     * The Home tab itself, for anything that has to draw around the navigation rather than
+     * over it. Null when this build does not have the id, which is the same case
+     * {@link #isOnFeed} treats as "assume the feed".
+     */
+    public static View homeTabView(Activity activity) {
+        return homeTab(activity);
+    }
+
     private static View homeTab(Activity activity) {
         View cached = homeTabReference.get();
         if (cached != null && cached.isAttachedToWindow()) {

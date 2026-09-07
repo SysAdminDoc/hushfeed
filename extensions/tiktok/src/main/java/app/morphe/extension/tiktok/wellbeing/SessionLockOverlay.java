@@ -181,12 +181,42 @@ public final class SessionLockOverlay {
         });
         panel.addView(release);
 
-        panel.setLayoutParams(new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        // Stops above the navigation. Covering the whole content root would take the tab bar
+        // with it, and then messages, profiles and search are not reachable at all, which is the
+        // one thing the panel says it leaves alone.
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+        params.bottomMargin = navigationHeight(activity, root);
+        panel.setLayoutParams(params);
         root.addView(panel);
         overlayReference = new WeakReference<>(panel);
         Logger.printDebug(() -> "Session lock overlay attached");
         return panel;
+    }
+
+    /**
+     * How much of the bottom belongs to the navigation.
+     *
+     * <p>Measured from the Home tab's own row rather than from a fixed number of pixels: the bar
+     * is a different height on a phone with gesture navigation than on one without, and the row
+     * is the view {@code FeedVisibility} already holds. Zero when this build does not have it,
+     * which leaves the panel covering everything, because a hold that can be walked around is
+     * worse than one that covers a tab bar.
+     */
+    private static int navigationHeight(Activity activity, ViewGroup root) {
+        View homeTab = FeedVisibility.homeTabView(activity);
+        if (homeTab == null) return 0;
+
+        View bar = homeTab;
+        // Up to the row that spans the width, which is the bar rather than the one tab in it.
+        for (int step = 0; step < 4 && bar.getParent() instanceof ViewGroup; step++) {
+            ViewGroup parent = (ViewGroup) bar.getParent();
+            if (parent == root) break;
+            bar = parent;
+            if (bar.getWidth() >= root.getWidth() && bar.getWidth() > 0) break;
+        }
+        int height = bar.getHeight();
+        return height > 0 && height < root.getHeight() / 3 ? height : 0;
     }
 
     private static void detach() {

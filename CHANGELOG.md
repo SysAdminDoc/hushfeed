@@ -1,5 +1,7 @@
 ## 0.21.0 (2026-09-07)
 
+* The hold on the feed stops above the row of tabs. It covered the whole screen, which took the tab bar with it, so messages and search were not reachable after all. It measures the bar rather than guessing at it, and covers everything on a build where it cannot find one.
+
 * A short animated sticker with a single frame saves as a GIF again. Whether a WebP moves is settled by the flag in the file rather than by counting its frames, which cannot tell a still from a one-frame animation.
 
 * Playback has a Start today over row, for a budget you set and immediately regret. It clears what has been counted today and ends any hold, and leaves the budgets themselves alone.
