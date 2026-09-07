@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1242);
+        Map<String, String> table = new HashMap<>(1246);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -953,6 +953,8 @@ public final class L10nTranslations {
                 "Untertitel neben Videos speichern");
         table.put("Save the latest available TikTok crash report for diagnostic export.",
                 "Den neuesten verfügbaren TikTok-Absturzbericht für den Diagnose-Export speichern.");
+        table.put("Save the original sound",
+                "Originalsound speichern");
         table.put("Save the sound as well",
                 "Ton ebenfalls speichern");
         table.put("Save videos without sound",
@@ -1039,11 +1041,11 @@ public final class L10nTranslations {
                 "TikToks eigene Fortschrittsleiste bei Videos zeigen, wo sie sonst versteckt ist.");
         table.put("Show TikTok's search entry in the Live drawer where supported.",
                 "TikToks Sucheingang im Live-Bereich anzeigen, wo das unterstützt wird.");
-        table.put("Show a video preview thumbnail while dragging the seekbar.",
-                "Beim Ziehen der Fortschrittsleiste ein Vorschaubild des Videos anzeigen.");
     }
 
     private static void fillDe8(Map<String, String> table) {
+        table.put("Show a video preview thumbnail while dragging the seekbar.",
+                "Beim Ziehen der Fortschrittsleiste ein Vorschaubild des Videos anzeigen.");
         table.put("Show block button on videos",
                 "Blockieren-Schaltfläche auf Videos anzeigen");
         table.put("Show seekbar",
@@ -1162,11 +1164,11 @@ public final class L10nTranslations {
                 "Mindest- oder Höchstzahl an Kommentaren, damit ein Video gezeigt wird.");
         table.put("The minimum or maximum favourites of a video to show.",
                 "Mindest- oder Höchstzahl an Favoriten, damit ein Video gezeigt wird.");
-        table.put("The minimum or maximum likes of a video to show.",
-                "Die Mindest- oder Höchstzahl an Likes, damit ein Video gezeigt wird.");
     }
 
     private static void fillDe9(Map<String, String> table) {
+        table.put("The minimum or maximum likes of a video to show.",
+                "Die Mindest- oder Höchstzahl an Likes, damit ein Video gezeigt wird.");
         table.put("The minimum or maximum shares of a video to show.",
                 "Die Mindest- oder Höchstzahl, wie oft ein Video geteilt wurde, damit es gezeigt wird.");
         table.put("The minimum or maximum views of a video to show.",
@@ -1203,6 +1205,8 @@ public final class L10nTranslations {
                 "Diese Story lässt sich nicht speichern");
         table.put("This video has no link to send, so TikTok's own save runs instead",
                 "Dieses Video hat keinen Link zum Senden, also speichert TikTok selbst");
+        table.put("This video has no original sound to save",
+                "Dieses Video hat keinen Originalsound zum Speichern");
         table.put("Thumbs down blocks the commenter",
                 "Daumen runter blockiert den Kommentierenden");
         table.put("TikTok default",
@@ -1283,13 +1287,13 @@ public final class L10nTranslations {
                 "Video gespeichert");
         table.put("Video saved in %1$s, but only %2$s of %3$s subtitles came with it",
                 "Video in %1$s gespeichert, aber nur %2$s von %3$s Untertiteln sind mitgekommen");
+    }
+
+    private static void fillDe10(Map<String, String> table) {
         table.put("Video saved with %1$s subtitles in %2$s",
                 "Video mit %1$s Untertiteln in %2$s gespeichert");
         table.put("Wait before hiding the controls.",
                 "Wartezeit, bevor die Bedienelemente ausgeblendet werden.");
-    }
-
-    private static void fillDe10(Map<String, String> table) {
         table.put("WebP, exactly as TikTok sent it",
                 "WebP, genau so wie TikTok es geschickt hat");
         table.put("Window width needed to enable the layout. Restart after changing.",
@@ -1335,7 +1339,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1242);
+        Map<String, String> table = new HashMap<>(1246);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2244,6 +2248,8 @@ public final class L10nTranslations {
                 "Simpan subtitle bersama video");
         table.put("Save the latest available TikTok crash report for diagnostic export.",
                 "Simpan laporan mogok TikTok terbaru yang tersedia untuk diekspor sebagai diagnostik.");
+        table.put("Save the original sound",
+                "Simpan suara asli");
         table.put("Save the sound as well",
                 "Simpan suaranya juga");
         table.put("Save videos without sound",
@@ -2330,11 +2336,11 @@ public final class L10nTranslations {
                 "Tampilkan bilah progres TikTok pada video yang biasanya menyembunyikannya.");
         table.put("Show TikTok's search entry in the Live drawer where supported.",
                 "Tampilkan kolom cari TikTok di laci LIVE bila didukung.");
-        table.put("Show a video preview thumbnail while dragging the seekbar.",
-                "Tampilkan pratinjau video saat bilah progres digeser.");
     }
 
     private static void fillIn8(Map<String, String> table) {
+        table.put("Show a video preview thumbnail while dragging the seekbar.",
+                "Tampilkan pratinjau video saat bilah progres digeser.");
         table.put("Show block button on videos",
                 "Tampilkan tombol blokir di video");
         table.put("Show seekbar",
@@ -2453,11 +2459,11 @@ public final class L10nTranslations {
                 "Jumlah komentar minimum atau maksimum agar video ditampilkan.");
         table.put("The minimum or maximum favourites of a video to show.",
                 "Jumlah favorit minimum atau maksimum agar video ditampilkan.");
-        table.put("The minimum or maximum likes of a video to show.",
-                "Jumlah suka minimum atau maksimum agar video ditampilkan.");
     }
 
     private static void fillIn9(Map<String, String> table) {
+        table.put("The minimum or maximum likes of a video to show.",
+                "Jumlah suka minimum atau maksimum agar video ditampilkan.");
         table.put("The minimum or maximum shares of a video to show.",
                 "Jumlah bagikan minimum atau maksimum agar video ditampilkan.");
         table.put("The minimum or maximum views of a video to show.",
@@ -2494,6 +2500,8 @@ public final class L10nTranslations {
                 "Story ini tidak bisa disimpan");
         table.put("This video has no link to send, so TikTok's own save runs instead",
                 "Video ini tidak punya tautan untuk dikirim, jadi TikTok yang menyimpannya");
+        table.put("This video has no original sound to save",
+                "Video ini tidak punya suara asli untuk disimpan");
         table.put("Thumbs down blocks the commenter",
                 "Jempol ke bawah memblokir pengomentar");
         table.put("TikTok default",
@@ -2574,13 +2582,13 @@ public final class L10nTranslations {
                 "Video disimpan");
         table.put("Video saved in %1$s, but only %2$s of %3$s subtitles came with it",
                 "Video disimpan di %1$s, tapi cuma %2$s dari %3$s subtitel yang ikut");
+    }
+
+    private static void fillIn10(Map<String, String> table) {
         table.put("Video saved with %1$s subtitles in %2$s",
                 "Video disimpan dengan %1$s subtitel di %2$s");
         table.put("Wait before hiding the controls.",
                 "Tunggu sebelum kontrol disembunyikan.");
-    }
-
-    private static void fillIn10(Map<String, String> table) {
         table.put("WebP, exactly as TikTok sent it",
                 "WebP, persis seperti yang dikirim TikTok");
         table.put("Window width needed to enable the layout. Restart after changing.",

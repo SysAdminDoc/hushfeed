@@ -1,5 +1,7 @@
 ## 0.21.0 (2026-09-07)
 
+* Long press can save the original sound. That is a different file from the video's own track, which is the finished mix cut to the length of the post: the sound entry is the whole thing, as it appears on its own page. It is named after the sound rather than the post, so the same song saved from two videos is one file, and it goes to Music beside your other sounds. A video with no sound entry says so instead of doing nothing.
+
 * The hold on the feed stops above the row of tabs. It covered the whole screen, which took the tab bar with it, so messages and search were not reachable after all. It measures the bar rather than guessing at it, and covers everything on a build where it cannot find one.
 
 * A short animated sticker with a single frame saves as a GIF again. Whether a WebP moves is settled by the flag in the file rather than by counting its frames, which cannot tell a still from a one-frame animation.

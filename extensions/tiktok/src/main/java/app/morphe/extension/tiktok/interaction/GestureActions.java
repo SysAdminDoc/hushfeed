@@ -8,6 +8,7 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.blockauthor.CurrentVideoAuthor;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
+import app.morphe.extension.tiktok.download.OriginalSoundDownloads;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.L10n;
 import java.lang.ref.WeakReference;
@@ -100,6 +101,10 @@ public final class GestureActions {
 
         String action = Settings.LONG_PRESS_ACTION.get();
         if ("nothing".equals(action)) return true;
+        if ("original_sound".equals(action)) {
+            OriginalSoundDownloads.start(CurrentVideoAuthor.getAweme(), Utils.getActivity());
+            return true;
+        }
         if (!"comments".equals(action)) return false;
         if (!openComments(Reflect.string(CurrentVideoAuthor.getAweme(), "getAid", "aid"))) {
             Utils.showToastShort(L10n.t("Comments aren't available for this video"));

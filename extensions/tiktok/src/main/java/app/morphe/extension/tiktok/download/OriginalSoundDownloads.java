@@ -1,0 +1,127 @@
+/*
+ * Copyright 2026 Hushfeed contributors
+ * https://github.com/SysAdminDoc/hushfeed
+ */
+package app.morphe.extension.tiktok.download;
+
+import android.content.Context;
+
+import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.Utils;
+import app.morphe.extension.tiktok.blockauthor.Reflect;
+import app.morphe.extension.tiktok.settings.L10n;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * Saves the sound a video was made with, rather than the sound the video ends up making.
+ *
+ * <p>The two are different files. The video's own track is the finished mix: the music with
+ * whatever was said over it, cut to the length of the post. The sound entry is the original,
+ * whole, as it appears on its own page and in everyone else's videos made from it. Someone
+ * saving "that song" wants the second one, and until now only the first was reachable.
+ *
+ * <p>It is published beside the video's own sound, under Music where Android files audio, and
+ * named after the sound rather than the post.
+ */
+public final class OriginalSoundDownloads {
+    /** How long a sound title may be before the filename cap has to deal with it. */
+    private static final int MAX_TITLE_LENGTH = 80;
+
+    private static final Set<String> ACTIVE =
+            Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+
+    private OriginalSoundDownloads() {
+    }
+
+    /**
+     * Where to fetch the original sound from, best mirror first, or empty when this post has no
+     * sound entry. A video with only its own audio is the ordinary case, not a failure.
+     */
+    static List<String> sourceUrls(Object aweme) {
+        Object music = Reflect.property(aweme, "getMusic", "music");
+        if (music == null) return List.of();
+        Object playUrl = Reflect.property(music, "getPlayUrl", "playUrl");
+        if (playUrl == null) return List.of();
+
+        Object urls = Reflect.property(playUrl, "getUrlList", "urlList");
+        List<String> mirrors = new ArrayList<>();
+        if (urls instanceof List<?>) {
+            for (Object url : (List<?>) urls) {
+                if (url == null) continue;
+                String text = url.toString().trim();
+                if (!text.isEmpty()) mirrors.add(text);
+            }
+        }
+        if (mirrors.isEmpty()) {
+            // Some builds carry only the single uri and no list at all.
+            String single = Reflect.string(playUrl, "getUri", "uri");
+            if (single != null && single.startsWith("http")) mirrors.add(single);
+        }
+        return List.copyOf(mirrors);
+    }
+
+    /** What the saved file is called: the sound's own title, falling back to the post's name. */
+    static String fileName(Object aweme) {
+        Object music = Reflect.property(aweme, "getMusic", "music");
+        String title = music == null ? null : Reflect.string(music, "getTitle", "title");
+        if (title == null || title.isEmpty()) {
+            return DownloadFilenameFormatter.formatSelectedAudioName(aweme);
+        }
+        if (title.length() > MAX_TITLE_LENGTH) title = title.substring(0, MAX_TITLE_LENGTH);
+        return DownloadFilenameFormatter.formatSoundName(title);
+    }
+
+    /**
+     * Fetches the sound and publishes it. Says why when it cannot, because a long press that
+     * quietly does nothing reads as a broken button rather than as a video with no sound entry.
+     */
+    public static void start(Object aweme, Context context) {
+        if (context == null) return;
+        List<String> sources = sourceUrls(aweme);
+        if (sources.isEmpty()) {
+            Utils.showToastShort(L10n.t("This video has no original sound to save"));
+            return;
+        }
+
+        String id = Reflect.string(aweme, "getAid", "aid");
+        if (id == null) return;
+        final String name;
+        try {
+            name = fileName(aweme);
+        } catch (RuntimeException exception) {
+            Logger.printException(() -> "Could not work out the sound download name", exception);
+            return;
+        }
+
+        Context app = context.getApplicationContext();
+        if (!ACTIVE.add(id)) return;
+        MediaJobScheduler.JobHandle job = MediaJobScheduler.submit("original-sound", () -> {
+            File fetched = null;
+            try {
+                fetched = MediaCache.createTempFile(app, "original-sound-", ".m4a");
+                RemoteMedia.fetch(sources, fetched, false);
+                String path = AudioDownloads.audioPath(DownloadsPatch.getVideoDownloadPath());
+                MediaFileWriter.publish(app, fetched, name, "audio/mp4", path, true);
+                Utils.showToastShort(L10n.f("Sound saved to %1$s", path));
+            } catch (IOException | RuntimeException exception) {
+                if (!MediaBudget.isCancellation(exception)) {
+                    Logger.printException(() -> "Original sound download failed", exception);
+                    Utils.showToastLong(L10n.t("The sound couldn't be saved."));
+                }
+            } finally {
+                if (fetched != null && !MediaCache.delete(fetched)) {
+                    Logger.printInfo(() -> "Could not remove sound temporary file");
+                }
+                ACTIVE.remove(id);
+            }
+        }, () -> ACTIVE.remove(id));
+        if (job == null) ACTIVE.remove(id);
+    }
+}

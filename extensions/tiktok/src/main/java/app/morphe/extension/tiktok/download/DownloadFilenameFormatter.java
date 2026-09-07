@@ -158,6 +158,16 @@ public final class DownloadFilenameFormatter {
     }
 
     /**
+     * The original sound is named after itself. The video template's tokens are all about the
+     * post, and the same sound saved from two posts should be the same file, not two.
+     */
+    static String formatSoundName(String title) {
+        String base = trimToLength(sanitizeBaseName(sanitizeToken(title)), MAX_BASENAME_LENGTH);
+        if (base.isEmpty()) base = "sound";
+        return base + ".m4a";
+    }
+
+    /**
      * A profile picture is named after the account rather than by the video template, whose
      * tokens have nothing to fill them here.
      */
