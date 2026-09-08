@@ -118,20 +118,20 @@ public class OriginalSoundDownloadsTest {
                 new PlayUrl(List.of("https://one.example/sound.m4a"), null),
                 "Sunset Drive (Sped Up)"));
 
-        String name = OriginalSoundDownloads.fileName(post);
+        String name = OriginalSoundDownloads.fileName(post, "m4a");
         assertTrue(name, name.startsWith("Sunset"));
         assertTrue(name, name.endsWith(".m4a"));
         // The same sound saved from two different posts is one file, not two.
         assertEquals(name, OriginalSoundDownloads.fileName(
                 new Post(new Music(new PlayUrl(List.of("https://other.example/s.m4a"), null),
-                        "Sunset Drive (Sped Up)"))));
+                        "Sunset Drive (Sped Up)")), "m4a"));
     }
 
     @Test public void aSoundWithATitleTooLongToBeAFilenameIsCutDown() {
         Post post = new Post(new Music(
                 new PlayUrl(List.of("https://one.example/sound.m4a"), null), "a".repeat(400)));
 
-        String name = OriginalSoundDownloads.fileName(post);
+        String name = OriginalSoundDownloads.fileName(post, "m4a");
         assertTrue(name + " is " + name.length() + " characters", name.length() <= 165);
         assertTrue(name, name.endsWith(".m4a"));
     }
@@ -140,8 +140,81 @@ public class OriginalSoundDownloadsTest {
         Post post = new Post(new Music(
                 new PlayUrl(List.of("https://one.example/sound.m4a"), null), ""));
 
-        String name = OriginalSoundDownloads.fileName(post);
+        String name = OriginalSoundDownloads.fileName(post, "m4a");
         assertTrue(name, name.endsWith(".m4a"));
         assertTrue("a nameless sound got no name at all: " + name, name.length() > 4);
+    }
+
+    // ------------------------------------------------------------------ what the server sent
+
+    @Test public void anMpegSoundIsRecognisedByItsTagAndByItsFrameSync() throws Exception {
+        // TikTok hands back an MP3 for some sound addresses. Before this was read from the
+        // bytes, every one of them was refused as an unsupported format and the save failed.
+        assertEquals("mp3", fetchServed(padded(new byte[]{'I', 'D', '3', 3, 0, 0, 0, 0}, 32)));
+        assertEquals("mp3", fetchServed(padded(new byte[]{(byte) 0xFF, (byte) 0xFB, (byte) 0x90, 0}, 32)));
+    }
+
+    @Test public void anMp4SoundIsStillRecognised() throws Exception {
+        assertEquals("m4a", fetchServed(padded(
+                new byte[]{0, 0, 0, 0x20, 'f', 't', 'y', 'p', 'M', '4', 'A', ' '}, 32)));
+    }
+
+    @Test public void aBodyThatIsNotASoundIsStillRefused() {
+        // The positive control for the two above: the reader must not have become "accept
+        // anything", or a failed request would be saved as a file that plays nothing.
+        java.io.IOException failure = org.junit.Assert.assertThrows(java.io.IOException.class,
+                () -> fetchServed(padded(new byte[]{(byte) 0x89, 'P', 'N', 'G', 13, 10, 26, 10}, 32)));
+        assertTrue(failure.toString(), failure.getSuppressed().length > 0);
+    }
+
+    @Test public void theNameAndTheTypeFollowTheContainer() {
+        Post post = new Post(new Music(
+                new PlayUrl(List.of("https://one.example/sound"), null), "Sunset Drive"));
+
+        assertTrue(OriginalSoundDownloads.fileName(post, "mp3").endsWith(".mp3"));
+        assertTrue(OriginalSoundDownloads.fileName(post, "m4a").endsWith(".m4a"));
+        assertEquals("audio/mpeg", OriginalSoundDownloads.mimeFor("mp3"));
+        assertEquals("audio/mp4", OriginalSoundDownloads.mimeFor("m4a"));
+        assertEquals("audio/ogg", OriginalSoundDownloads.mimeFor("ogg"));
+    }
+
+    /** A body of {@code length} bytes beginning with {@code head}, so the 16-byte read is fed. */
+    private static byte[] padded(byte[] head, int length) {
+        byte[] bytes = new byte[length];
+        System.arraycopy(head, 0, bytes, 0, head.length);
+        return bytes;
+    }
+
+    /** Serves {@code body} once over loopback and returns what the fetch made of it. */
+    private static String fetchServed(byte[] body) throws Exception {
+        java.net.ServerSocket server = new java.net.ServerSocket(
+                0, 1, java.net.InetAddress.getByName("127.0.0.1"));
+        var response = new java.util.concurrent.FutureTask<Void>(() -> {
+            try (var socket = server.accept()) {
+                socket.setSoTimeout(5000);
+                var input = new java.io.BufferedReader(
+                        new java.io.InputStreamReader(socket.getInputStream()));
+                String line;
+                while ((line = input.readLine()) != null && !line.isEmpty()) { }
+                var output = socket.getOutputStream();
+                output.write(("HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Length: "
+                        + body.length + "\r\n\r\n").getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+                output.write(body);
+            }
+            return null;
+        });
+        Thread responder = new Thread(response);
+        responder.setDaemon(true);
+        responder.start();
+        java.io.File temp = java.io.File.createTempFile("original-sound-test", ".tmp");
+        try {
+            return RemoteMedia.fetch(
+                    List.of("http://127.0.0.1:" + server.getLocalPort() + "/sound"),
+                    temp, RemoteMedia.Kind.AUDIO);
+        } finally {
+            server.close();
+            responder.join(1000);
+            temp.delete();
+        }
     }
 }

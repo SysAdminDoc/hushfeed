@@ -13,7 +13,18 @@ import java.util.List;
 
 final class RemoteMedia {
     private RemoteMedia() {}
-    static String fetch(List<String> urls, File target, boolean image) throws IOException {
+
+    /**
+     * What the caller is expecting back, which decides the signatures a body may carry.
+     *
+     * <p>{@link #VIDEO} is anything that has to arrive in an MP4 container, the separate DASH
+     * audio stream included: {@code TrackMuxer} reads those with a {@code MediaExtractor} and
+     * a bare MP3 would be useless to it. {@link #AUDIO} is a sound saved as its own file, which
+     * TikTok serves in more than one container.
+     */
+    enum Kind { IMAGE, VIDEO, AUDIO }
+
+    static String fetch(List<String> urls, File target, Kind kind) throws IOException {
         IOException failure = new IOException("No media URL succeeded");
         MediaBudget.Deadline deadline = MediaBudget.deadline();
         for (String url : urls == null ? Collections.<String>emptyList() : urls) {
@@ -45,7 +56,7 @@ final class RemoteMedia {
                         while (offset < header.length && (read = input.read(header, offset, header.length - offset)) != -1) offset += read;
                         if (offset != header.length) throw new IOException("Media response is too short");
                         input.reset();
-                        String extension = image ? imageExtension(header) : (new String(header, 4, 4, java.nio.charset.StandardCharsets.US_ASCII).equals("ftyp") ? "mp4" : null);
+                        String extension = extensionFor(kind, header);
                         if (extension == null) throw new IOException("Media server returned an unsupported format");
                         long count;
                         try (FileOutputStream output = new FileOutputStream(target)) {
@@ -102,6 +113,40 @@ final class RemoteMedia {
         } catch (NumberFormatException ignored) {
             return -1L;
         }
+    }
+
+    private static String extensionFor(Kind kind, byte[] header) {
+        switch (kind) {
+            case IMAGE:
+                return imageExtension(header);
+            case AUDIO:
+                return audioExtension(header);
+            default:
+                return header.length >= 8
+                        && new String(header, 4, 4, java.nio.charset.StandardCharsets.US_ASCII).equals("ftyp")
+                        ? "mp4" : null;
+        }
+    }
+
+    /**
+     * What the sound in this body actually is, read from its own header.
+     *
+     * <p>A sound entry is not one container. TikTok hands back an MP3 for some addresses and an
+     * MP4 audio track for others, which is why the extension and the type are settled here
+     * rather than assumed by the caller: a file named .m4a holding MPEG frames is one a gallery
+     * refuses to play.
+     */
+    private static String audioExtension(byte[] header) {
+        if (header.length < 12) return null;
+        if (header[0] == 'I' && header[1] == 'D' && header[2] == '3') return "mp3";
+        // An MPEG frame sync is eleven set bits, so the second byte keeps its top three.
+        if ((header[0] & 255) == 255 && (header[1] & 0xE0) == 0xE0) return "mp3";
+        String signature = new String(header, java.nio.charset.StandardCharsets.ISO_8859_1);
+        if (signature.substring(4, 8).equals("ftyp")) return "m4a";
+        if (signature.startsWith("OggS")) return "ogg";
+        if (signature.startsWith("fLaC")) return "flac";
+        if (signature.startsWith("RIFF") && signature.substring(8, 12).equals("WAVE")) return "wav";
+        return null;
     }
 
     private static String imageExtension(byte[] header) {

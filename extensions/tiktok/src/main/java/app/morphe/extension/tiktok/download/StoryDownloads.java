@@ -199,7 +199,7 @@ public final class StoryDownloads {
         MediaBudget.checkDiskSpace(app.getCacheDir(), -1L);
         File temp = MediaCache.createTempFile(app, "story-", ".mp4");
         try {
-            RemoteMedia.fetch(urls, temp, false);
+            RemoteMedia.fetch(urls, temp, RemoteMedia.Kind.VIDEO);
             String path = DownloadsPatch.getVideoDownloadPath();
             MediaFileWriter.publish(app, temp, DownloadFilenameFormatter.formatSelectedVideoName(aweme),
                     "video/mp4", path, true);
@@ -219,7 +219,7 @@ public final class StoryDownloads {
                 MediaBudget.checkDiskSpace(app.getCacheDir(), -1L);
                 File temp = MediaCache.createTempFile(app, "story-photo-", ".tmp");
                 temporary.add(temp);
-                String extension = RemoteMedia.fetch(photos.get(index), temp, true);
+                String extension = RemoteMedia.fetch(photos.get(index), temp, RemoteMedia.Kind.IMAGE);
                 String mime = "jpg".equals(extension) ? "image/jpeg" : "image/" + extension;
                 String name = DownloadFilenameFormatter.formatOriginalPhotoName(aweme, index + 1, extension);
                 MediaFileWriter.publish(app, temp, name, mime, path, false);

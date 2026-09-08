@@ -49,7 +49,7 @@ public final class OriginalPhotos {
                     MediaBudget.checkDiskSpace(app.getCacheDir(), -1L);
                     File temp = MediaCache.createTempFile(app, "original-photo-", ".tmp");
                     try {
-                        String extension = RemoteMedia.fetch(photoSnapshot.get(i), temp, true);
+                        String extension = RemoteMedia.fetch(photoSnapshot.get(i), temp, RemoteMedia.Kind.IMAGE);
                         String mime = "jpg".equals(extension) ? "image/jpeg" : "image/" + extension;
                         String name = DownloadFilenameFormatter.formatOriginalPhotoName(aweme, i + 1, extension);
                         MediaFileWriter.publish(app, temp, name, mime, DownloadsPatch.getPhotoDownloadPath(), false);

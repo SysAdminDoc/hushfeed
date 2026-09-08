@@ -154,17 +154,28 @@ public final class DownloadFilenameFormatter {
 
     /** The sound takes the video's own name, so the pair sorts together. */
     static String formatSelectedAudioName(Object aweme) {
-        return formatSourceName(aweme, 1, "m4a", false);
+        return formatSelectedAudioName(aweme, "m4a");
+    }
+
+    /**
+     * The same name for a sound whose container is only known once its bytes arrive. The muxed
+     * track beside a video is always m4a; a sound fetched from its own address is not.
+     */
+    static String formatSelectedAudioName(Object aweme, String extension) {
+        return formatSourceName(aweme, 1, extension, false);
     }
 
     /**
      * The original sound is named after itself. The video template's tokens are all about the
      * post, and the same sound saved from two posts should be the same file, not two.
+     *
+     * <p>The extension comes from the fetched bytes rather than from here, because TikTok serves
+     * a sound entry in more than one container.
      */
-    static String formatSoundName(String title) {
+    static String formatSoundName(String title, String extension) {
         String base = trimToLength(sanitizeBaseName(sanitizeToken(title)), MAX_BASENAME_LENGTH);
         if (base.isEmpty()) base = "sound";
-        return base + ".m4a";
+        return base + "." + sanitizeExtension(extension);
     }
 
     /**

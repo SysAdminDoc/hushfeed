@@ -61,7 +61,7 @@ final class AudioDownloads {
             File fetched = null;
             try {
                 fetched = MediaCache.createTempFile(app, "sound-source-", ".mp4");
-                RemoteMedia.fetch(sourceUrls, fetched, false);
+                RemoteMedia.fetch(sourceUrls, fetched, RemoteMedia.Kind.VIDEO);
                 write(app, audioName, fetched);
             } catch (IOException | RuntimeException exception) {
                 if (!MediaBudget.isCancellation(exception)) {

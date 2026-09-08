@@ -90,13 +90,13 @@ final class VideoDownloads {
             List<File> temporary = new ArrayList<>();
             try {
                 File picture = temp(app, temporary);
-                RemoteMedia.fetch(videoUrls, picture, false);
+                RemoteMedia.fetch(videoUrls, picture, RemoteMedia.Kind.VIDEO);
                 File result = picture, sound = null;
                 if (dash && !muted) {
                     // The sound is a separate stream here and the save is not finished without
                     // it, so a failure to fetch it fails the whole thing.
                     sound = temp(app, temporary);
-                    RemoteMedia.fetch(audioUrls, sound, false);
+                    RemoteMedia.fetch(audioUrls, sound, RemoteMedia.Kind.VIDEO);
                     result = temp(app, temporary);
                     TrackMuxer.combine(picture, sound, result);
                 } else if (dash && AudioDownloads.enabled() && !audioUrls.isEmpty()) {
@@ -104,7 +104,7 @@ final class VideoDownloads {
                     // file, so losing it is not a reason to lose the video as well.
                     try {
                         File separate = temp(app, temporary);
-                        RemoteMedia.fetch(audioUrls, separate, false);
+                        RemoteMedia.fetch(audioUrls, separate, RemoteMedia.Kind.VIDEO);
                         sound = separate;
                     } catch (IOException | RuntimeException exception) {
                         Logger.printException(() -> "Could not fetch the sound to save beside a muted video", exception);

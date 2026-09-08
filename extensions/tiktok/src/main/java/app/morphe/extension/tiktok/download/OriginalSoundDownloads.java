@@ -67,15 +67,34 @@ public final class OriginalSoundDownloads {
         return List.copyOf(mirrors);
     }
 
-    /** What the saved file is called: the sound's own title, falling back to the post's name. */
-    static String fileName(Object aweme) {
+    /**
+     * What the saved file is called: the sound's own title, falling back to the post's name.
+     * The extension is the one the fetched bytes turned out to carry.
+     */
+    static String fileName(Object aweme, String extension) {
         Object music = Reflect.property(aweme, "getMusic", "music");
         String title = music == null ? null : Reflect.string(music, "getTitle", "title");
         if (title == null || title.isEmpty()) {
-            return DownloadFilenameFormatter.formatSelectedAudioName(aweme);
+            return DownloadFilenameFormatter.formatSelectedAudioName(aweme, extension);
         }
         if (title.length() > MAX_TITLE_LENGTH) title = title.substring(0, MAX_TITLE_LENGTH);
-        return DownloadFilenameFormatter.formatSoundName(title);
+        return DownloadFilenameFormatter.formatSoundName(title, extension);
+    }
+
+    /** The type that goes with each container {@link RemoteMedia.Kind#AUDIO} will accept. */
+    static String mimeFor(String extension) {
+        switch (extension) {
+            case "mp3":
+                return "audio/mpeg";
+            case "ogg":
+                return "audio/ogg";
+            case "wav":
+                return "audio/wav";
+            case "flac":
+                return "audio/flac";
+            default:
+                return "audio/mp4";
+        }
     }
 
     /**
@@ -92,23 +111,20 @@ public final class OriginalSoundDownloads {
 
         String id = Reflect.string(aweme, "getAid", "aid");
         if (id == null) return;
-        final String name;
-        try {
-            name = fileName(aweme);
-        } catch (RuntimeException exception) {
-            Logger.printException(() -> "Could not work out the sound download name", exception);
-            return;
-        }
 
         Context app = context.getApplicationContext();
         if (!ACTIVE.add(id)) return;
         MediaJobScheduler.JobHandle job = MediaJobScheduler.submit("original-sound", () -> {
             File fetched = null;
             try {
-                fetched = MediaCache.createTempFile(app, "original-sound-", ".m4a");
-                RemoteMedia.fetch(sources, fetched, false);
+                fetched = MediaCache.createTempFile(app, "original-sound-", ".tmp");
+                // A sound entry is not always an MP4 audio track, so the name and the type both
+                // wait for the header instead of assuming one. A file called .m4a that holds
+                // MPEG frames is one the gallery refuses to play.
+                String extension = RemoteMedia.fetch(sources, fetched, RemoteMedia.Kind.AUDIO);
+                String name = fileName(aweme, extension);
                 String path = AudioDownloads.audioPath(DownloadsPatch.getVideoDownloadPath());
-                MediaFileWriter.publish(app, fetched, name, "audio/mp4", path, true);
+                MediaFileWriter.publish(app, fetched, name, mimeFor(extension), path, true);
                 Utils.showToastShort(L10n.f("Sound saved to %1$s", path));
             } catch (IOException | RuntimeException exception) {
                 if (!MediaBudget.isCancellation(exception)) {

@@ -1,3 +1,7 @@
+## Unreleased
+
+* Saving the original sound works at all. The fetch only ever accepted an MP4 container, and TikTok hands back an MP3 for many sound addresses, so every one of those was refused as an unsupported format and the long press said the sound could not be saved. What arrived is now read from its own header, and the file is named and typed to match, so an MP3 lands as .mp3 and plays. Ogg, WAV and FLAC are recognised too.
+
 ## 0.21.0 (2026-09-07)
 
 * Long press can save the original sound. That is a different file from the video's own track, which is the finished mix cut to the length of the post: the sound entry is the whole thing, as it appears on its own page. It is named after the sound rather than the post, so the same song saved from two videos is one file, and it goes to Music beside your other sounds. A video with no sound entry says so instead of doing nothing.

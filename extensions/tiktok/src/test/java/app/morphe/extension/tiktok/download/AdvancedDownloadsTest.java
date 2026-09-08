@@ -418,7 +418,7 @@ public class AdvancedDownloadsTest {
         File temp = File.createTempFile("photo-test", ".tmp");
         try {
             String base = "http://127.0.0.1:" + server.getLocalPort();
-            assertEquals("png", RemoteMedia.fetch(List.of("https://[bad", base + "/bad", base + "/photo"), temp, true));
+            assertEquals("png", RemoteMedia.fetch(List.of("https://[bad", base + "/bad", base + "/photo"), temp, RemoteMedia.Kind.IMAGE));
             response.get(5, java.util.concurrent.TimeUnit.SECONDS);
             assertArrayEquals(png, Files.readAllBytes(temp.toPath()));
             MediaFileWriter.publish(RuntimeEnvironment.getApplication(), temp, "source.png", "image/png", "DCIM/OriginalPhotosTest", false);
@@ -432,7 +432,7 @@ public class AdvancedDownloadsTest {
         File temp = File.createTempFile("media-failure", ".tmp");
         try {
             IOException failure = assertThrows(IOException.class,
-                    () -> RemoteMedia.fetch(List.of("https://[bad?token=secret"), temp, true));
+                    () -> RemoteMedia.fetch(List.of("https://[bad?token=secret"), temp, RemoteMedia.Kind.IMAGE));
             assertFalse(failure.toString().contains("token=secret"));
             assertFalse(failure.toString().contains("https://[bad"));
             assertFalse("an all-invalid fetch must not leave a partial target", temp.exists());

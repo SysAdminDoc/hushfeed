@@ -188,7 +188,7 @@ public final class ProfileAvatarSaver {
             try {
                 MediaBudget.checkDiskSpace(app.getCacheDir(), -1L);
                 temp = MediaCache.createTempFile(app, "profile-picture-", ".tmp");
-                String extension = RemoteMedia.fetch(urlSnapshot, temp, true);
+                String extension = RemoteMedia.fetch(urlSnapshot, temp, RemoteMedia.Kind.IMAGE);
                 String mime = "jpg".equals(extension) ? "image/jpeg" : "image/" + extension;
                 String saved = name.substring(0, name.lastIndexOf('.') + 1) + extension;
                 MediaFileWriter.publish(app, temp, saved, mime, path, false);
