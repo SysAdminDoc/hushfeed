@@ -863,6 +863,59 @@ public class SettingsPagesTest {
         }
     }
 
+    @Config(fontScale = 2.0f, qualifiers = "w320dp-h320dp")
+    @Test public void aDiagnosticsRowReachedByScrollingKeepsItsCheckMark() throws Exception {
+        // Eight rows at about 48dp is taller than the dialog on a small screen, and taller than
+        // any screen at this font scale. The rows past the fold are built after the styling pass
+        // has run, so they used to arrive with the platform's end-side check mark and TikTok's
+        // text colour.
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            TikTokPreferenceFragment page = attachSection(activity, "DIAGNOSTICS");
+            ListView list = page.getView().findViewById(android.R.id.list);
+            int position = positionOf(list, "action_included_diagnostics");
+            assertTrue("the Included diagnostics row is gone", position >= 0);
+            list.performItemClick(list.getChildAt(position), position,
+                    list.getAdapter().getItemId(position));
+
+            android.app.AlertDialog dialog =
+                    (android.app.AlertDialog) org.robolectric.shadows.ShadowDialog.getLatestDialog();
+            assertTrue(dialog.isShowing());
+            ListView choices = dialog.getListView();
+            assertNotNull(choices);
+            int rows = choices.getAdapter().getCount();
+            assertTrue("nothing to scroll through", rows >= 6);
+
+            // Short before anything is idled, so the styling pass sees only the top of the list.
+            // Laying it out at its natural height first would build every row while the styling
+            // is still to come, and then nothing would ever be built unstyled.
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            int styled = choices.getChildCount();
+            assertTrue("the whole list fits, so no row is ever built later",
+                    styled > 0 && styled < rows);
+
+            choices.setSelection(rows - 1);
+            layout(choices, choices.getWidth(), choices.getHeight());
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+            int last = choices.getChildCount() - 1;
+            assertTrue("no rows after scrolling to the end", last >= 0);
+            assertEquals("did not reach the last row", rows - 1,
+                    choices.getFirstVisiblePosition() + last);
+            CheckedTextView row = findCheckedTextView(choices.getChildAt(last));
+            assertNotNull("the last row is not a choice row", row);
+            assertNull("the platform check mark came back on a scrolled row",
+                    row.getCheckMarkDrawable());
+            Drawable indicator = row.getCompoundDrawablesRelative()[0];
+            assertNotNull("a scrolled row has no check mark at all", indicator);
+            assertEquals("DialogCheckMarkDrawable", indicator.getClass().getSimpleName());
+            assertEquals("a scrolled row kept TikTok's text colour",
+                    app.morphe.extension.tiktok.settings.preference.SettingsUi.textPrimary(),
+                    row.getCurrentTextColor());
+        }
+    }
+
     private static void assertChoiceIndicator(ListView list, int position, boolean checked, boolean radio)
             throws Exception {
         CheckedTextView row = findCheckedTextView(list.getChildAt(position));

@@ -25,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CheckedTextView;
@@ -335,6 +336,20 @@ public final class SettingsUi {
                 styleDialogText(list, radio);
                 list.postDelayed(() -> styleDialogText(list, radio), 50);
             });
+            // A row only reachable by scrolling does not exist yet when the pass above runs, so
+            // it arrived with the platform's end-side check mark and TikTok's text colour. Eight
+            // rows at about 48dp is taller than a small screen, and taller than any screen at 2x
+            // font scale. onScroll runs on every layout and every scroll position change, which
+            // is exactly when a row that was not there before appears.
+            list.setOnScrollListener(new AbsListView.OnScrollListener() {
+                @Override public void onScrollStateChanged(AbsListView view, int scrollState) {
+                }
+
+                @Override public void onScroll(
+                        AbsListView view, int first, int visibleCount, int total) {
+                    styleDialogText(view, radio);
+                }
+            });
         }
 
         styleActionButton(dialog.getButton(DialogInterface.BUTTON_POSITIVE), true);
@@ -385,10 +400,16 @@ public final class SettingsUi {
             CheckedTextView checkedTextView = (CheckedTextView) view;
             checkedTextView.setTextColor(textPrimary());
             Drawable[] drawables = checkedTextView.getCompoundDrawablesRelative();
-            checkedTextView.setCheckMarkDrawable(null);
-            checkedTextView.setCompoundDrawablesRelative(
-                    new DialogCheckMarkDrawable(checkedTextView.getContext(), radio),
-                    drawables[1], drawables[2], drawables[3]);
+            // Runs on every scroll callback now, so it does its work once per row rather than
+            // building a drawable per frame. A rebound row brings the platform check mark back,
+            // which is what the first half of this test catches.
+            if (checkedTextView.getCheckMarkDrawable() != null
+                    || !(drawables[0] instanceof DialogCheckMarkDrawable)) {
+                checkedTextView.setCheckMarkDrawable(null);
+                checkedTextView.setCompoundDrawablesRelative(
+                        new DialogCheckMarkDrawable(checkedTextView.getContext(), radio),
+                        drawables[1], drawables[2], drawables[3]);
+            }
         } else if (view instanceof Button) {
             ((Button) view).setTextColor(accent());
         } else if (view instanceof TextView) {
