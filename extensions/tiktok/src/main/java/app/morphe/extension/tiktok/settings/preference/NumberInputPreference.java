@@ -67,9 +67,19 @@ public class NumberInputPreference extends EditTextPreference {
         int clampedValue = parseAndClamp(value);
         String text = String.valueOf(clampedValue);
         setText(text);
-        setSummary(L10n.t(getContext(), baseSummary) + "\n"
-                + L10n.f(getContext(), "Current: %1$s %2$s", text,
-                L10n.t(getContext(), unitForValue(clampedValue))));
+        String shown = displayValue(clampedValue);
+        String unit = L10n.t(getContext(), unitForValue(clampedValue));
+        setSummary(L10n.t(getContext(), baseSummary) + "\n" + (unit.isEmpty()
+                ? L10n.f(getContext(), "Current: %1$s", shown)
+                : L10n.f(getContext(), "Current: %1$s %2$s", shown, unit)));
+    }
+
+    /**
+     * How the number itself reads in the summary. Most rows are a count and read as one; an hour
+     * of the day is not "13 o'clock".
+     */
+    protected String displayValue(int value) {
+        return String.valueOf(value);
     }
 
     private String unitForValue(int value) {

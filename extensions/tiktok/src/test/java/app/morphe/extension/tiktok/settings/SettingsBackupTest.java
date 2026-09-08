@@ -565,4 +565,13 @@ public class SettingsBackupTest {
         SettingsBackup.restore(Utils.getContext(), root.toString(), true);
         assertEquals(12, (int) Settings.EDGE_SEEK_SECONDS.get());
     }
+
+    @Test public void theSuggestedBackupNameIsOneAPersonCanRead() {
+        // It was epoch milliseconds, so two backups a minute apart were indistinguishable in the
+        // picker and neither said when it was made. The other two exports already used this.
+        String name = app.morphe.extension.tiktok.settings.preference.SettingsBackupPreference
+                .suggestedExportName();
+        assertTrue("the picker would show " + name,
+                name.matches("hushfeed-settings-\\d{8}-\\d{6}\\.json"));
+    }
 }

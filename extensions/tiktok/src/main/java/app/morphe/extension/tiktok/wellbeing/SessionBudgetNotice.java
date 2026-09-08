@@ -36,11 +36,20 @@ public final class SessionBudgetNotice {
         // because that is the number a reader recognises.
         int videoBudget = Settings.SESSION_BUDGET_VIDEOS.get();
         if (videoBudget > 0 && SessionBudget.videosSeen() >= videoBudget) {
-            return L10n.f("That is %1$d videos today", SessionBudget.videosSeen());
+            return videosToday(SessionBudget.videosSeen());
         }
         if (minuteBudget > 0 && watchedMinutes >= minuteBudget) {
-            return L10n.f("That is %1$d minutes today", watchedMinutes);
+            return watchedMinutes == 1
+                    ? L10n.t("That is one minute today")
+                    : L10n.f("That is %1$d minutes today", watchedMinutes);
         }
-        return L10n.f("That is %1$d videos today", SessionBudget.videosSeen());
+        return videosToday(SessionBudget.videosSeen());
+    }
+
+    /** A budget of one produced "That is 1 videos today", which no phrasebook forgives. */
+    private static String videosToday(int videos) {
+        return videos == 1
+                ? L10n.t("That is one video today")
+                : L10n.f("That is %1$d videos today", videos);
     }
 }

@@ -9,9 +9,11 @@ A newer change replaced that undo. Tap Undo again.	Perubahan yang lebih baru men
 A hidden puzzle may be the cause.	Teka-teki yang disembunyikan bisa jadi penyebabnya.
 A host to put in place of tiktok.com when you share or copy a link, like vxtiktok.com. Leave it empty to share TikTok's own links. Only TikTok links are changed, and only the host: nothing is sent anywhere new.	Host pengganti tiktok.com saat kamu membagikan atau menyalin tautan, misalnya vxtiktok.com. Kosongkan untuk membagikan tautan TikTok sendiri. Hanya tautan TikTok yang diubah, dan hanya bagian host-nya, tidak ada yang dikirim ke mana pun.
 A settings operation is already running	Sudah ada proses pengaturan yang berjalan
+Automatic advance stopped after one video	Lanjut otomatis dihentikan setelah satu video
 Block this commenter	Blokir pengomentar ini
 Blocked	Diblokir
 Completed an interrupted settings change. Restart TikTok to apply it.	Perubahan pengaturan yang terhenti telah diselesaikan. Mulai ulang TikTok untuk menerapkannya.
+Current: %1$s	Saat ini: %1$s
 Not blocked	Tidak diblokir
 Recovered an interrupted settings change. Restart TikTok to apply it.	Perubahan pengaturan yang terhenti telah dipulihkan. Mulai ulang TikTok untuk menerapkannya.
 Settings recovery needs attention. Use Undo or restore your backup.	Pemulihan pengaturan memerlukan perhatian. Gunakan Urungkan atau pulihkan cadanganmu.
@@ -39,6 +41,10 @@ App behavior	Perilaku aplikasi
 Applies to both video and photo downloads.	Berlaku untuk unduhan video dan foto.
 Arrange your feed and bottom tabs	Atur feed dan tab bawahmu
 Auto-advance session limit	Batas lanjut otomatis per sesi
+Tap again to follow	Ketuk lagi untuk mengikuti
+Tap again to like	Ketuk lagi untuk menyukai
+That is one minute today	Itu satu menit hari ini
+That is one video today	Itu satu video hari ini
 Unblock this commenter	Buka blokir pengomentar ini
 Zero keeps auto-advance unlimited. Count only videos that finish while Hushfeed started automatic advance; prefetches, manual swipes and native-only advance do not count. The count resets when the feed component is recreated and stays stopped across backgrounding until it is recreated or the limit changes.	Nol membuat lanjut otomatis tanpa batas. Hitung hanya video yang selesai saat Hushfeed memulai lanjut otomatis; pramuat, usapan manual, dan lanjut otomatis bawaan saja tidak dihitung. Hitungan diatur ulang saat komponen feed dibuat ulang dan tetap berhenti setelah aplikasi masuk latar belakang sampai komponen dibuat ulang atau batas diubah.
 Auto translate comments	Terjemahkan komentar otomatis
@@ -463,7 +469,6 @@ Story saved to %1$s	Story disimpan ke %1$s
 Subtitle language	Bahasa subtitle
 Take away the streak button in a chat and the reminder message that goes with it.	Hilangkan tombol rentetan di obrolan beserta pesan pengingatnya.
 Tap %1$s again to send	Ketuk %1$s lagi untuk mengirim
-Tap again to %1$s	Ketuk lagi untuk %1$s
 Tap the feed Follow button twice within four seconds.	Ketuk tombol Ikuti di feed dua kali dalam empat detik.
 Tap the like heart twice within four seconds. Removing a like stays immediate.	Ketuk ikon hati dua kali dalam empat detik. Membatalkan suka tetap langsung berlaku.
 That creator pattern is too long to use, so it was skipped: %1$s	Pola kreator itu terlalu panjang, jadi dilewati: %1$s
@@ -601,7 +606,7 @@ Open a share sheet once, then return here to choose its actions.	Buka lembar ber
 No share actions match this search	Tidak ada tindakan berbagi yang cocok dengan pencarian ini
 Hook status	Status hook
 Nothing has been looked up yet. Use the app for a moment, then come back.	Belum ada yang dicari. Gunakan aplikasi sebentar, lalu kembali ke sini.
-Every hook found what it needed across %1$d surfaces.	Setiap hook menemukan yang dibutuhkannya di %d permukaan.
+Every hook found what it needed across %1$d surfaces.	Setiap hook menemukan yang dibutuhkannya di %1$d permukaan.
 No surface has looked anything up yet, so there is nothing to report.	Belum ada permukaan yang mencari apa pun, jadi tidak ada yang bisa dilaporkan.
 Daily video budget	Anggaran video harian
 Daily time budget	Anggaran waktu harian

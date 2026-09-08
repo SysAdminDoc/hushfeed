@@ -80,6 +80,56 @@ public class SettingsL10nTest {
      * English by choice, which the row that opens it says. The shared extension module is not
      * walked either: it is TikTok-independent code, and this table is TikTok's.
      */
+    @Test public void everyTranslationKeepsTheShapeOfItsKey() {
+        // Three defects the tables carried, none of which the key-set checks could see. A bare
+        // "%d" where the key says "%1$d" works only while there is exactly one argument. Five
+        // German summaries on one screen ended without the full stop the rest of the screen has.
+        // One value opened a German quote and closed it with an ASCII one.
+        java.util.List<String> problems = new java.util.ArrayList<>();
+        java.util.Map<String, java.util.Map<String, String>> tables = new java.util.LinkedHashMap<>();
+        tables.put("de", GERMAN);
+        tables.put("in", INDONESIAN);
+
+        java.util.regex.Pattern placeholder = java.util.regex.Pattern.compile("%\\d+\\$[a-z]");
+        for (java.util.Map.Entry<String, java.util.Map<String, String>> table : tables.entrySet()) {
+            for (java.util.Map.Entry<String, String> row : table.getValue().entrySet()) {
+                String key = row.getKey();
+                String value = row.getValue();
+
+                java.util.Set<String> wanted = new java.util.TreeSet<>();
+                var inKey = placeholder.matcher(key);
+                while (inKey.find()) wanted.add(inKey.group());
+                java.util.Set<String> given = new java.util.TreeSet<>();
+                var inValue = placeholder.matcher(value);
+                while (inValue.find()) given.add(inValue.group());
+                if (!wanted.isEmpty() && !wanted.equals(given)) {
+                    problems.add(table.getKey() + " placeholders " + wanted + " became " + given
+                            + " in: " + key);
+                }
+
+                if (key.endsWith(".") && !endsASentence(value)) {
+                    problems.add(table.getKey() + " dropped the full stop from: " + key);
+                }
+
+                long opened = value.chars().filter(c -> c == '\u201e').count();
+                long closed = value.chars().filter(c -> c == '\u201c').count();
+                if (opened != closed) {
+                    problems.add(table.getKey() + " opened " + opened + " quotes and closed "
+                            + closed + " in: " + key);
+                }
+            }
+        }
+        assertEquals("translations that do not keep the shape of their key: " + problems,
+                0, problems.size());
+    }
+
+    private static boolean endsASentence(String value) {
+        String trimmed = value.trim();
+        if (trimmed.isEmpty()) return false;
+        char last = trimmed.charAt(trimmed.length() - 1);
+        return last == '.' || last == '!' || last == '?' || last == '\u2026';
+    }
+
     @Test public void everyRuntimeToastGoesThroughTheTable() throws Exception {
         java.io.File root = new java.io.File("src/main/java/app/morphe/extension/tiktok");
         if (!root.isDirectory()) root = new java.io.File(

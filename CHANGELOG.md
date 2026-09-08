@@ -1,5 +1,9 @@
 ## Unreleased
 
+* Wording fixes across the settings and the messages the app shows you. A budget of one no longer says "That is 1 videos today". The hour the day starts at reads as a clock time rather than "13 o'clock". The confirm-a-tap message is a whole sentence in German and Indonesian instead of a translated phrase with an English verb dropped into it. A settings backup is named with a date and time you can read rather than a run of digits.
+
+* Seven defects in the translation tables, including a placeholder that only worked while there was one value to fill it, five German summaries missing the full stop the rest of their screen has, and a quote that opened in German and closed in English. A new check refuses all three shapes from now on.
+
 * Blocking someone from a comment now updates every comment of theirs on screen, not only the one you pressed. A screen reader was told the others were not blocked, and following that told it to unblock instead.
 
 * A hold really does quiet the feed. It gives the sound back when you leave the feed for messages or search, and if a call takes the sound away it asks for it again rather than giving up for the rest of the hold. A video finishing behind the hold no longer counts against the automatic advance limit or puts a notice over the panel.

@@ -119,4 +119,25 @@ public class TapConfirmationTest {
             assertNotNull(screen.findPreference("confirm_like"));
         }
     }
+
+    @Test @org.robolectric.annotation.Config(qualifiers = "de")
+    public void theConfirmationIsWholeInEveryLanguage() throws Exception {
+        // The verb used to be an English literal spliced into a translated sentence, so a German
+        // phone read "Noch einmal tippen zum follow".
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            Utils.setContext(controller.get());
+            for (String action : new String[]{"follow", "like"}) {
+                org.robolectric.shadows.ShadowToast.reset();
+                View view = new View(controller.get());
+                assertFalse(TapConfirmation.allow(view, action, "video-" + action, true));
+
+                String shown = String.valueOf(
+                        org.robolectric.shadows.ShadowToast.getTextOfLatestToast());
+                assertFalse("the toast still carries the English verb: " + shown,
+                        shown.contains(action));
+                assertTrue("the toast is not the German sentence: " + shown,
+                        shown.startsWith("Noch einmal tippen"));
+            }
+        }
+    }
 }

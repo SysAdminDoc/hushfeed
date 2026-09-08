@@ -69,7 +69,14 @@ public final class TapConfirmation {
         view.setForeground(ring);
         int token = generation;
         MAIN.postDelayed(() -> { if (token == generation) clear(); }, 4000);
-        Utils.showToastShort(L10n.f("Tap again to %1$s", action));
+        // Two whole sentences rather than a verb spliced into one. The verb was an English
+        // literal, so a German phone read "Noch einmal tippen zum follow".
+        // Chosen before the call, because the translation gate reads every literal inside a
+        // toast's brackets and "follow" here is a branch, not something anybody sees.
+        String message = "follow".equals(action)
+                ? L10n.t("Tap again to follow")
+                : L10n.t("Tap again to like");
+        Utils.showToastShort(message);
         return false;
     }
 

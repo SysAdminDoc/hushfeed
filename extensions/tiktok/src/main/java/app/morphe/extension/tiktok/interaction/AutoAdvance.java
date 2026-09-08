@@ -64,8 +64,10 @@ public final class AutoAdvance {
         if (!completedId.equals(current)) return;
         if (!control.recordCompletion(completedId)) return;
         if (control.limitReached() && control.claimLimitNotice()) {
-            Utils.showToastShort(L10n.f("Automatic advance stopped after %1$d videos",
-                    control.completedCount));
+            Utils.showToastShort(control.completedCount == 1
+                    ? L10n.t("Automatic advance stopped after one video")
+                    : L10n.f("Automatic advance stopped after %1$d videos",
+                            control.completedCount));
         }
         update(component);
     }

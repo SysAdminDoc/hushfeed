@@ -480,6 +480,25 @@ public class SessionBudgetTest {
                 during + 1, SessionBudget.videosSeen());
     }
 
+    @Test public void aBudgetOfOneDoesNotSayOneVideos() throws Exception {
+        // "That is 1 videos today" is the shape a format string gives you if nobody looks.
+        Settings.SESSION_BUDGET_VIDEOS.save(1);
+        SessionBudget.noteVideo("a");
+        assertTrue(SessionBudget.claimNotice());
+
+        java.lang.reflect.Method message = SessionBudgetNotice.class
+                .getDeclaredMethod("spentMessage");
+        message.setAccessible(true);
+        assertEquals("That is one video today", message.invoke(null));
+
+        SessionBudget.clear();
+        Settings.SESSION_BUDGET_VIDEOS.save(2);
+        SessionBudget.noteVideo("a");
+        SessionBudget.noteVideo("b");
+        assertTrue(SessionBudget.claimNotice());
+        assertEquals("That is 2 videos today", message.invoke(null));
+    }
+
     private static String read(String relative) throws Exception {
         java.io.File root = new java.io.File("src/main/java/app/morphe/extension/tiktok");
         if (!root.isDirectory()) root = new java.io.File(

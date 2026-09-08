@@ -9,9 +9,11 @@ A newer change replaced that undo. Tap Undo again.	Eine neuere Änderung hat die
 A hidden puzzle may be the cause.	Ein ausgeblendetes Rätsel kann die Ursache sein.
 A host to put in place of tiktok.com when you share or copy a link, like vxtiktok.com. Leave it empty to share TikTok's own links. Only TikTok links are changed, and only the host: nothing is sent anywhere new.	Ein Host, der beim Teilen oder Kopieren an die Stelle von tiktok.com tritt, zum Beispiel vxtiktok.com. Leer lassen, um TikToks eigene Links zu teilen. Geändert werden nur TikTok-Links und nur der Host, es wird nichts irgendwohin geschickt.
 A settings operation is already running	Es läuft bereits eine Einstellungsaktion
+Automatic advance stopped after one video	Automatisches Weiterschalten nach einem Video angehalten
 Block this commenter	Diesen Kommentierenden blockieren
 Blocked	Blockiert
 Completed an interrupted settings change. Restart TikTok to apply it.	Eine unterbrochene Einstellungsänderung wurde abgeschlossen. Starte TikTok neu, um sie anzuwenden.
+Current: %1$s	Aktuell: %1$s
 Not blocked	Nicht blockiert
 Recovered an interrupted settings change. Restart TikTok to apply it.	Eine unterbrochene Einstellungsänderung wurde wiederhergestellt. Starte TikTok neu, um sie anzuwenden.
 Settings recovery needs attention. Use Undo or restore your backup.	Die Einstellungswiederherstellung benötigt Aufmerksamkeit. Nutze Rückgängig oder stelle deine Sicherung wieder her.
@@ -39,6 +41,10 @@ App behavior	App-Verhalten
 Applies to both video and photo downloads.	Gilt für Video- und Foto-Downloads.
 Arrange your feed and bottom tabs	Ordne deine Feed-Tabs und unteren Tabs an
 Auto-advance session limit	Limit für automatisches Weiterschalten pro Sitzung
+Tap again to follow	Noch einmal tippen zum Folgen
+Tap again to like	Noch einmal tippen zum Liken
+That is one minute today	Das ist eine Minute heute
+That is one video today	Das ist ein Video heute
 Unblock this commenter	Blockierung dieses Kommentierenden aufheben
 Zero keeps auto-advance unlimited. Count only videos that finish while Hushfeed started automatic advance; prefetches, manual swipes and native-only advance do not count. The count resets when the feed component is recreated and stays stopped across backgrounding until it is recreated or the limit changes.	Null lässt das automatische Weiterschalten unbegrenzt. Gezählt werden nur Videos, die enden, während Hushfeed das automatische Weiterschalten gestartet hat; Vorabladen, manuelles Wischen und reines natives Weiterschalten zählen nicht. Der Zähler wird beim Erstellen der Feed-Komponente zurückgesetzt und bleibt nach dem Wechsel in den Hintergrund angehalten, bis sie neu erstellt oder das Limit geändert wird.
 Auto translate comments	Kommentare automatisch übersetzen
@@ -220,19 +226,19 @@ Hide the Activity row of likes and comments on your posts.	Die Zeile „Aktivit�
 Hide the activity status control in the Inbox header.	Das Element für den Aktivitätsstatus in der Kopfzeile des Posteingangs ausblenden.
 Hide the add people icon in the Inbox header.	Das Symbol zum Hinzufügen von Personen in der Kopfzeile des Posteingangs ausblenden.
 Hide the Archive row.	Die Zeile „Archiv“ ausblenden.
-Hide the arrow and its count in the right column.	Pfeil und Zähler in der rechten Spalte ausblenden
+Hide the arrow and its count in the right column.	Pfeil und Zähler in der rechten Spalte ausblenden.
 Hide the avatar and follow button	Bild und Folgen-Button ausblenden
 Hide the caption	Beschreibung ausblenden
 Hide the comments button	Kommentar-Button ausblenden
 Hide the counts on the right column	Zahlen in der rechten Spalte ausblenden
-Hide the creator's picture and the plus button at the top of the right column.	Bild und Plus-Button oben in der rechten Spalte ausblenden
+Hide the creator's picture and the plus button at the top of the right column.	Bild und Plus-Button oben in der rechten Spalte ausblenden.
 Hide the description under the creator's name on the feed.	Die Beschreibung unter dem Namen des Creators im Feed ausblenden.
 Hide the event badge	Event-Abzeichen ausblenden
 Hide the favourite button	Favoriten-Button ausblenden
 Hide the favourite button and its count in the right column.	Den Favoriten-Button und seine Zahl in der rechten Spalte ausblenden.
 Hide the floating promotional badge over the feed.	Das schwebende Werbe-Abzeichen über dem Feed ausblenden.
 Hide the friend recommendation card and the other cards TikTok slots between videos.	Die Freundesvorschlagskarte und die anderen Karten ausblenden, die TikTok zwischen Videos einschiebt.
-Hide the heart and its count in the right column.	Herz und Zähler in der rechten Spalte ausblenden
+Hide the heart and its count in the right column.	Herz und Zähler in der rechten Spalte ausblenden.
 Hide the like button	Like-Button ausblenden
 Hide the Live button in the top left corner of the feed.	Die Live-Schaltfläche oben links im Feed ausblenden.
 Hide the Message requests row.	Die Zeile „Nachrichtenanfragen“ ausblenden.
@@ -251,9 +257,9 @@ Hide the search icon in the Inbox header.	Das Suchsymbol in der Kopfzeile des Po
 Hide the searches TikTok offers before you type. Your own search history stays.	Die Suchen ausblenden, die TikTok anbietet, bevor du tippst. Dein eigener Suchverlauf bleibt.
 Hide the Send to row	Zeile „Senden an“ ausblenden
 Hide the share button	Teilen-Button ausblenden
-Hide the speech bubble and its count in the right column.	Sprechblase und Zähler in der rechten Spalte ausblenden
+Hide the speech bubble and its count in the right column.	Sprechblase und Zähler in der rechten Spalte ausblenden.
 Hide the spinning music cover and the track name beside the caption.	Das drehende Musik-Cover und den Titelnamen neben der Beschreibung ausblenden.
-Hide the spinning record at the bottom of the right column.	Drehende Platte unten in der rechten Spalte ausblenden
+Hide the spinning record at the bottom of the right column.	Drehende Platte unten in der rechten Spalte ausblenden.
 Hide the status bar	Statusleiste ausblenden
 Hide the Tako AI feed bubble above the profile button.	Die Tako-AI-Blase im Feed über der Profil-Schaltfläche ausblenden.
 Hide the TikTok Tako assistant conversation.	Die Unterhaltung mit dem TikTok-Tako-Assistenten ausblenden.
@@ -463,7 +469,6 @@ Story saved to %1$s	Story gespeichert unter %1$s
 Subtitle language	Untertitelsprache
 Take away the streak button in a chat and the reminder message that goes with it.	Entfernt die Serien-Schaltfläche in einem Chat und die zugehörige Erinnerung.
 Tap %1$s again to send	Zum Senden noch einmal auf %1$s tippen
-Tap again to %1$s	Noch einmal tippen zum %1$s
 Tap the feed Follow button twice within four seconds.	Tippe die Folgen-Schaltfläche im Feed innerhalb von vier Sekunden zweimal an.
 Tap the like heart twice within four seconds. Removing a like stays immediate.	Tippe das Like-Herz innerhalb von vier Sekunden zweimal an. Das Entfernen eines Likes bleibt sofort.
 That creator pattern is too long to use, so it was skipped: %1$s	Dieses Kreator-Muster ist zu lang und wurde übersprungen: %1$s
@@ -498,7 +503,7 @@ TikTok default	TikTok-Standard
 TikTok default (2x hold, quick share)	TikTok-Standard (2x halten, schnelles Teilen)
 TikTok didn't accept the feedback. Try again later.	TikTok hat die Rückmeldung nicht angenommen. Versuche es später noch einmal.
 TikTok refused the follow: %1$s	TikTok hat das Folgen abgelehnt: %1$s
-Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Save original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.	Tokens: {creator}, {date}, {video_id}, {index}. {index} nummeriert die Fotos einer Diashow, die du mit „Originalfotos speichern" sicherst; alles, was über TikToks eigene Schaltfläche gespeichert wird, nummeriert stattdessen der Ordner. Die Dateiendung wird automatisch beibehalten.
+Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Save original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.	Tokens: {creator}, {date}, {video_id}, {index}. {index} nummeriert die Fotos einer Diashow, die du mit „Originalfotos speichern“ sicherst; alles, was über TikToks eigene Schaltfläche gespeichert wird, nummeriert stattdessen der Ordner. Die Dateiendung wird automatisch beibehalten.
 Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.	Platzhalter: {creator}, {date}, {video_id}. Die Dateiendung bleibt automatisch erhalten.
 Tokens: {date}, {media_id}. Works for image and video stickers.	Platzhalter: {date}, {media_id}. Gilt für Bild- und Video-Sticker.
 Translate comments as they load, using TikTok's own translator.	Kommentare beim Laden übersetzen, mit TikToks eigenem Übersetzer.
@@ -601,7 +606,7 @@ Open a share sheet once, then return here to choose its actions.	Öffne einmal e
 No share actions match this search	Keine Share-Aktionen passen zu dieser Suche
 Hook status	Hook-Status
 Nothing has been looked up yet. Use the app for a moment, then come back.	Bisher wurde nichts nachgeschlagen. Nutze die App einen Moment und komm dann zurück.
-Every hook found what it needed across %1$d surfaces.	Jeder Hook hat auf %d Oberflächen gefunden, was er braucht.
+Every hook found what it needed across %1$d surfaces.	Jeder Hook hat auf %1$d Oberflächen gefunden, was er braucht.
 No surface has looked anything up yet, so there is nothing to report.	Noch hat keine Oberfläche etwas nachgeschlagen, es gibt also nichts zu melden.
 Daily video budget	Tägliches Videobudget
 Daily time budget	Tägliches Zeitbudget

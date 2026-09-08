@@ -836,4 +836,21 @@ public class SettingsPagesTest {
         }
         return null;
     }
+
+    @Test public void theResetHourReadsAsATimeOfDay() throws Exception {
+        // The row used "o'clock" as its unit for both singular and plural, so it said
+        // "Current: 13 o'clock" and, at midnight, "Current: 0 o'clock".
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            Settings.SESSION_BUDGET_RESET_HOUR.save(4);
+            var row = new app.morphe.extension.tiktok.settings.preference.ClockHourPreference(
+                    activity, "Start the day at", "The hour both budgets reset.",
+                    Settings.SESSION_BUDGET_RESET_HOUR);
+
+            String summary = String.valueOf(row.getSummary());
+            assertTrue("the hour does not read as a time: " + summary, summary.contains("04:00"));
+            assertTrue("the unit is still there: " + summary, summary.indexOf("o'clock") < 0);
+        }
+    }
 }

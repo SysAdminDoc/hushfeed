@@ -59,10 +59,20 @@ public final class SettingsBackupPreference extends Preference {
         }
     }
 
+    /**
+     * The same readable stamp the diagnostics export and the Lab export use. Epoch milliseconds
+     * put a name in the picker that nobody could tell two backups apart by.
+     */
+    public static String suggestedExportName() {
+        String stamp = new java.text.SimpleDateFormat("yyyyMMdd-HHmmss", java.util.Locale.US)
+                .format(new java.util.Date());
+        return "hushfeed-settings-" + stamp + ".json";
+    }
+
     private static void pickFile(TikTokPreferenceFragment fragment, int action) {
         Intent intent = new Intent(action == EXPORT ? Intent.ACTION_CREATE_DOCUMENT : Intent.ACTION_OPEN_DOCUMENT)
                 .addCategory(Intent.CATEGORY_OPENABLE).setType("application/json");
-        if (action == EXPORT) intent.putExtra(Intent.EXTRA_TITLE, "hushfeed-settings-" + System.currentTimeMillis() + ".json");
+        if (action == EXPORT) intent.putExtra(Intent.EXTRA_TITLE, suggestedExportName());
         try { fragment.startActivityForResult(intent, action); }
         catch (RuntimeException error) {
             Logger.printException(() -> "Could not open settings file picker", error);

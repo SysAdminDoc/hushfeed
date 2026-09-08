@@ -8,6 +8,7 @@ import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.ChoicePreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 import app.morphe.extension.tiktok.settings.preference.InputTextPreference;
+import app.morphe.extension.tiktok.settings.preference.ClockHourPreference;
 import app.morphe.extension.tiktok.settings.preference.NumberInputPreference;
 import app.morphe.extension.tiktok.speed.PlaybackSpeedPatch;
 import android.preference.Preference;
@@ -64,10 +65,10 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
                         + "for that many minutes once a budget is reached. Messages, profiles and "
                         + "search keep working, and nothing in the feed is thrown away.",
                 Settings.SESSION_BUDGET_LOCK_MINUTES, "minute", "minutes"));
-        addPreference(new NumberInputPreference(context, "Start the day at",
+        addPreference(new ClockHourPreference(context, "Start the day at",
                 "The hour both budgets reset, on a 24 hour clock. Four in the morning by default, "
                         + "because someone still scrolling at one is having last night.",
-                Settings.SESSION_BUDGET_RESET_HOUR, "o'clock", "o'clock"));
+                Settings.SESSION_BUDGET_RESET_HOUR));
 
         Preference clearBudget = new Preference(context);
         clearBudget.setTitle(L10n.t(context, "Start today over"));
