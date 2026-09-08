@@ -205,6 +205,57 @@ public class FeatureGateLabBoundaryTest {
     }
 
     @Test
+    public void aRuleSavedWhileTheSnapshotIsBuildingIsNotLost() {
+        // A gate thread reads the rules to build its snapshot; the UI thread saves a rule and
+        // clears the snapshot; the gate thread then publishes the rules it read before the save,
+        // and the new rule stays invisible until something else happens to reload. The hook
+        // creates that overlap from inside the build.
+        FeatureGateLabStore.setMasterEnabled(true);
+        FeatureGateLabRuntime.reloadRules();
+        FeatureGateLabRuntime.rulesReadHook = () -> {
+            FeatureGateLabRuntime.rulesReadHook = null;
+            FeatureGateLabStore.saveRule("abmock", "saved_mid_build", "BOOLEAN", "true", true);
+        };
+        try {
+            FeatureGateLabRuntime.overrideBoolean("saved_mid_build", false);
+        } finally {
+            FeatureGateLabRuntime.rulesReadHook = null;
+        }
+
+        assertTrue("the rule saved while the snapshot was building never took effect",
+                FeatureGateLabRuntime.overrideBoolean("saved_mid_build", false));
+    }
+
+    @Test
+    public void gateReadsBeforeTikTokHandsOverAContextDoNotKeepTakingTheMonitor() throws Exception {
+        // Before Utils has a context the snapshot could not be built, and a null was rebuilt on
+        // every read, so every gate read on every thread went through the class monitor at the
+        // point in start-up where the host reads gates hardest.
+        java.lang.reflect.Field held = Utils.class.getDeclaredField("context");
+        held.setAccessible(true);
+        Object previous = held.get(null);
+        try {
+            held.set(null, null);
+            FeatureGateLabRuntime.reloadRules();
+            FeatureGateLabRuntime.snapshotMonitorEntries = 0;
+            for (int read = 0; read < 1000; read++) {
+                FeatureGateLabRuntime.overrideBoolean("read_before_context", true);
+            }
+            assertTrue("1,000 gate reads with no context took the monitor more than once",
+                    FeatureGateLabRuntime.snapshotMonitorEntries <= 1);
+        } finally {
+            held.set(null, previous);
+        }
+
+        // And the snapshot built without a context does not outlive it, which would leave every
+        // rule dead for the rest of the process.
+        FeatureGateLabRuntime.snapshotMonitorEntries = 0;
+        FeatureGateLabRuntime.overrideBoolean("read_before_context", true);
+        assertTrue("the snapshot from before the context arrived was never rebuilt",
+                FeatureGateLabRuntime.snapshotMonitorEntries > 0);
+    }
+
+    @Test
     public void aSwitchedOffRecorderTakesNoLockOnTheGateReadPath() throws Exception {
         // The Lab's boundaries run for every AB, live settings and player config read TikTok
         // makes, on whatever thread makes it, and the Recorder patch that gives them something

@@ -20,6 +20,11 @@ import java.lang.reflect.Type;
 public final class FeatureGateLabRuntime {
     private static final String TAG = "MorpheFeatureGateLab";
     private static volatile Snapshot snapshot;
+    /** Bumped by every rule change, so a snapshot built from older rules is not published. */
+    private static final java.util.concurrent.atomic.AtomicInteger generation =
+            new java.util.concurrent.atomic.AtomicInteger();
+    /** Monitor entries, so the boundary test can show a gate read is not taking the lock. */
+    static volatile int snapshotMonitorEntries;
     private static final ThreadLocal<Boolean> buildingSnapshot = new ThreadLocal<>();
     private static final Set<String> triggered = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private static final Map<String, String> firstCallers = new ConcurrentHashMap<>();
@@ -36,7 +41,17 @@ public final class FeatureGateLabRuntime {
         return false;
     }
 
+    /**
+     * Marks the rules changed.
+     *
+     * <p>The generation is what makes this safe against a gate thread that is already inside
+     * {@link #buildSnapshot}. Clearing the field alone was not: the builder had read the old
+     * rules, and it published them over the null a moment later, so the change stayed invisible
+     * until something happened to reload again. A builder now publishes only if the generation
+     * it started from is still current.
+     */
     public static void reloadRules() {
+        generation.incrementAndGet();
         snapshot = null;
     }
 
@@ -663,33 +678,58 @@ public final class FeatureGateLabRuntime {
     }
 
     private static Snapshot currentSnapshot() {
+        int wanted = generation.get();
         Snapshot current = snapshot;
-        if (current != null) {
+        if (current != null && current.generation == wanted && usable(current)) {
             return current;
         }
         if (Boolean.TRUE.equals(buildingSnapshot.get())) {
             return null;
         }
         synchronized (FeatureGateLabRuntime.class) {
+            snapshotMonitorEntries++;
+            wanted = generation.get();
             current = snapshot;
-            if (current == null) {
-                buildingSnapshot.set(Boolean.TRUE);
-                try {
-                    current = buildSnapshot();
-                    if (current != null) {
-                        snapshot = current;
-                    }
-                } finally {
-                    buildingSnapshot.remove();
+            if (current != null && current.generation == wanted && usable(current)) {
+                return current;
+            }
+            buildingSnapshot.set(Boolean.TRUE);
+            try {
+                current = buildSnapshot(wanted);
+                // Only if nothing changed the rules while they were being read. Otherwise this
+                // would put the rules it started from back over a change that has already
+                // happened, and that change would not be seen until the next reload.
+                //
+                // This and the generation comparison on the read path above cover each other:
+                // remove either one alone and the tests still pass, because the other catches
+                // the stale snapshot. The read path is the one that has to be right; this one
+                // saves a rebuild by not caching what is already known to be out of date.
+                if (generation.get() == wanted) {
+                    snapshot = current;
                 }
+            } finally {
+                buildingSnapshot.remove();
             }
         }
         return current;
     }
 
-    private static Snapshot buildSnapshot() {
+    /**
+     * Whether a cached snapshot can still be served without rebuilding.
+     *
+     * <p>A snapshot built before TikTok gave the extension a context carries no rules and is
+     * cached anyway, so process start does not put every gate read on every thread through the
+     * monitor. It stops being usable the moment storage appears, which is one static read.
+     */
+    private static boolean usable(Snapshot current) {
+        return !current.unavailable || !FeatureGateLabStore.runtimeStorageAvailable();
+    }
+
+    private static Snapshot buildSnapshot(int builtAt) {
         if (!FeatureGateLabStore.runtimeStorageAvailable()) {
-            return null;
+            // Not null: a null was rebuilt on every read, and every one of those took the class
+            // monitor, at the point in start-up where the host reads gates hardest.
+            return new Snapshot(builtAt, true, false, Collections.emptyMap());
         }
         Map<String, FeatureGateLabStore.Rule> active = new HashMap<>();
         for (FeatureGateLabStore.Rule rule : FeatureGateLabStore.rules()) {
@@ -701,8 +741,16 @@ public final class FeatureGateLabRuntime {
         Log.i(TAG, "snapshot master=" + masterEnabled
                 + " active_rules=" + active.size()
                 + " identities=" + summarizeRules(active));
-        return new Snapshot(masterEnabled, Collections.unmodifiableMap(active));
+        // Between reading the rules above and returning, a save on another thread may have
+        // already moved the generation on. The publisher checks that; this seam exists so a
+        // test can create that overlap deterministically.
+        Runnable overlap = rulesReadHook;
+        if (overlap != null) overlap.run();
+        return new Snapshot(builtAt, false, masterEnabled, Collections.unmodifiableMap(active));
     }
+
+    /** Runs inside a snapshot build, after the rules are read. Set only by tests. */
+    static volatile Runnable rulesReadHook;
 
     private static String summarizeRules(Map<String, FeatureGateLabStore.Rule> rules) {
         if (rules.isEmpty()) {
@@ -780,10 +828,17 @@ public final class FeatureGateLabRuntime {
     }
 
     private static final class Snapshot {
+        /** The rule generation this was built from. */
+        final int generation;
+        /** True when it was built with no context, so it holds no rules and stands in for null. */
+        final boolean unavailable;
         final boolean masterEnabled;
         final Map<String, FeatureGateLabStore.Rule> rules;
 
-        Snapshot(boolean masterEnabled, Map<String, FeatureGateLabStore.Rule> rules) {
+        Snapshot(int generation, boolean unavailable, boolean masterEnabled,
+                Map<String, FeatureGateLabStore.Rule> rules) {
+            this.generation = generation;
+            this.unavailable = unavailable;
             this.masterEnabled = masterEnabled;
             this.rules = rules;
         }

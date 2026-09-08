@@ -1,5 +1,7 @@
 ## Unreleased
 
+* A Feature Gate Lab rule saved at the wrong moment could do nothing at all. If TikTok happened to be reading its configuration on another thread while you saved, the rules it had already read were written back over your change, and the change stayed invisible until the next one. Reads made before TikTok has finished starting no longer queue up behind each other either.
+
 * The Feature Gate Lab was making the whole app slower even with nothing switched on. TikTok asks itself hundreds of configuration questions a second, from every thread, and the Lab sits on the answer to each one. It was taking a single lock on every one of those before checking whether it had anything to record, which it does not unless you selected the Feature Gate Recorder, so every thread in the app queued behind every other. It checks first now and takes the lock only when there is something to write down.
 
 * With either feed button on, the app was laying its whole screen out again on every frame, on the feed and everywhere else, for as long as it was open. Putting the buttons in place asked for a fresh layout even when nothing had moved, and the thing that puts them in place runs on every layout, so each one asked for the next. They are placed only when a position actually changes now, and not at all while the feed is off screen.
