@@ -68,6 +68,23 @@ internal fun MutableMethod.callThroughLocals(
     invoke: String,
     target: String,
     vararg arguments: Argument,
+): String = callThroughLocals(patch, invoke, target, true, *arguments)
+
+/**
+ * As above, where {@code mayStage} says whether a local may be written to bring an argument into
+ * range.
+ *
+ * <p>Staging is only safe where no local is live: at index 0, or immediately before the return
+ * that ends the method. The free local it picks is one no other argument is using, which is not
+ * the same as one nothing else is holding. A caller injecting anywhere else passes false and gets
+ * a build failure rather than an instruction written over a value the host still needs.
+ */
+internal fun MutableMethod.callThroughLocals(
+    patch: String,
+    invoke: String,
+    target: String,
+    mayStage: Boolean,
+    vararg arguments: Argument,
 ): String {
     val body = implementation ?: throw PatchException("$patch: $name has no implementation")
     val locals = body.registerCount - numberOfParameterRegisters
@@ -78,6 +95,13 @@ internal fun MutableMethod.callThroughLocals(
     }
     if (fits) {
         return "$invoke {${arguments.flatMap { it.names() }.joinToString(", ")}}, $target"
+    }
+
+    if (!mayStage) {
+        throw PatchException(
+            "$patch: $name holds an argument above v15 and this call site cannot stage it, " +
+                "because it injects where the host's own locals are live.",
+        )
     }
 
     // Free means a local this call is not already reading from. Writing one is safe here

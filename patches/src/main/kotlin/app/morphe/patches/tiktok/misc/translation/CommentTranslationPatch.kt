@@ -13,6 +13,7 @@ import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.patches.tiktok.shared.callThroughLocals
 import app.morphe.patches.tiktok.shared.objectIn
+import app.morphe.util.getFreeRegisterProvider
 import app.morphe.util.getReference
 import app.morphe.util.findMutableMethodOf
 import app.morphe.util.findInstructionIndicesReversedOrThrow
@@ -130,12 +131,21 @@ val commentTranslationPatch = bytecodePatch(
             )
             val (managerReadyIndex, managerRegister) = managerMatch
 
+            // A register nothing is holding here. This injects into the middle of the bind,
+            // where v0 belongs to the host, and it was written over on the strength of being
+            // dead on this one build.
+            val cellRegister = getFreeRegisterProvider(
+                managerReadyIndex + 1,
+                1,
+                listOf(managerRegister),
+            ).getFreeRegister4Bit()
+
             addInstructions(
                 managerReadyIndex + 1,
                 """
-                    move-object/from16 v0, p0
-                    iget-object v0, v0, Landroidx/recyclerview/widget/RecyclerView${'$'}ViewHolder;->itemView:Landroid/view/View;
-                    invoke-static {v0, v$managerRegister}, $EXTENSION_CLASS_DESCRIPTOR->registerCommentCell(Landroid/view/View;Ljava/lang/Object;)V
+                    move-object/from16 v$cellRegister, p0
+                    iget-object v$cellRegister, v$cellRegister, Landroidx/recyclerview/widget/RecyclerView${'$'}ViewHolder;->itemView:Landroid/view/View;
+                    invoke-static {v$cellRegister, v$managerRegister}, $EXTENSION_CLASS_DESCRIPTOR->registerCommentCell(Landroid/view/View;Ljava/lang/Object;)V
                 """,
             )
         }
@@ -162,6 +172,7 @@ val commentTranslationPatch = bytecodePatch(
                     "Translate comments",
                     "invoke-static",
                     "$EXTENSION_CLASS_DESCRIPTOR->onCommentListLoaded(Ljava/lang/Object;)V",
+                    false,
                     objectIn("v$responseRegister"),
                 ),
             )

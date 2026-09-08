@@ -11,8 +11,13 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.util.numberOfParameterRegisters
+import com.android.tools.smali.dexlib2.AccessFlags
 
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/share/ShareUrlSanitizer;"
+
+/** A long or a double takes two registers of the frame; everything else takes one. */
+private fun widthOf(type: String) = if (type == "J" || type == "D") 2 else 1
 
 @Suppress("unused")
 val sanitizeShareUrlsPatch = bytecodePatch(
@@ -32,8 +37,12 @@ val sanitizeShareUrlsPatch = bytecodePatch(
         )
 
         ShareUrlTrackerFingerprint.method.apply {
-            val urlRegister = implementation!!.registerCount - parameterTypes.size +
-                if (parameterTypes[0] in arrayOf("J", "D")) 2 else 1
+            // p1, worked out from the registers the frame actually holds. Counting parameters
+            // and adding one for a wide first parameter is right only when nothing else is wide,
+            // and lands off the end of the frame when the first one is.
+            val urlRegister = implementation!!.registerCount - numberOfParameterRegisters +
+                (if (AccessFlags.STATIC.isSet(accessFlags)) 0 else 1) +
+                widthOf(parameterTypes[0].toString())
 
             addInstructions(
                 0,

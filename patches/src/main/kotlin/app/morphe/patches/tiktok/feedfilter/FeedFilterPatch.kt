@@ -548,6 +548,7 @@ private fun MutableMethod.filterLateInsertedAds(payloadType: String) {
         "Feed filter",
         "invoke-static",
         "$EXTENSION_CLASS_DESCRIPTOR->filterLateInsertedAds(Ljava/lang/String;Ljava/util/List;)Ljava/util/List;",
+        false,
         objectIn("p2"),
         objectIn("v$listRegister"),
     )

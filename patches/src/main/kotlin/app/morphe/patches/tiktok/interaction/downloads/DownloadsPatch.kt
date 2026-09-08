@@ -247,12 +247,15 @@ val downloadsPatch = bytecodePatch(
                     "video, so which one holds the downloaded path is no longer obvious.",
             )
 
-            // iget-object is format 22c, whose register fields are four bits wide, so p0 has to
-            // be a register this can name.
-            val thisRegister = implementation!!.registerCount - numberOfParameterRegisters
-            if (thisRegister > 15) {
+            // The injected block writes v0 and v1 and reads p0. iget-object is format 22c,
+            // whose register fields are four bits wide, so both locals and p0 have to be
+            // registers it can name. Checking only that the local count fits in four bits was
+            // the wrong question: a body with one local passes that and then writes over p0.
+            val locals = implementation!!.registerCount - numberOfParameterRegisters
+            if (locals < 2 || locals > 15) {
                 throw PatchException(
-                    "Downloads: $name holds p0 in v$thisRegister, which an iget cannot name.",
+                    "Downloads: $name has $locals local registers, and the download name hook " +
+                        "needs two of them below v16.",
                 )
             }
 
@@ -280,11 +283,13 @@ val downloadsPatch = bytecodePatch(
                     ref?.definingClass == "Landroid/os/Environment;" && ref.name.startsWith("DIRECTORY_")
                 }
             }.forEach { fieldIndex ->
+                // Before the casts below, or a range form of the append fails as a
+                // ClassCastException rather than with the message this exists to give.
+                checkCameraPathRun(fieldIndex)
                 val pathRegister = getInstruction<OneRegisterInstruction>(fieldIndex).registerA
                 val builderRegister = getInstruction<FiveRegisterInstruction>(fieldIndex + 1).registerC
 
                 // Remove 'field load, append, "/Camera/", append' block.
-                checkCameraPathRun(fieldIndex)
                 removeInstructions(fieldIndex, 4)
 
                 addInstructions(
@@ -311,9 +316,9 @@ val downloadsPatch = bytecodePatch(
                     ref?.definingClass == "Landroid/os/Environment;" && ref.name.startsWith("DIRECTORY_")
                 }
             }.forEach { fieldIndex ->
+                checkCameraPathRun(fieldIndex)
                 val pathRegister = getInstruction<OneRegisterInstruction>(fieldIndex).registerA
                 val builderRegister = getInstruction<FiveRegisterInstruction>(fieldIndex + 1).registerC
-                checkCameraPathRun(fieldIndex)
                 removeInstructions(fieldIndex, 4)
                 addInstructions(
                     fieldIndex,
@@ -339,9 +344,9 @@ val downloadsPatch = bytecodePatch(
                     ref?.definingClass == "Landroid/os/Environment;" && ref.name.startsWith("DIRECTORY_")
                 }
             }.forEach { fieldIndex ->
+                checkCameraPathRun(fieldIndex)
                 val pathRegister = getInstruction<OneRegisterInstruction>(fieldIndex).registerA
                 val builderRegister = getInstruction<FiveRegisterInstruction>(fieldIndex + 1).registerC
-                checkCameraPathRun(fieldIndex)
                 removeInstructions(fieldIndex, 4)
                 addInstructions(
                     fieldIndex,
@@ -373,9 +378,9 @@ val downloadsPatch = bytecodePatch(
                     ref?.definingClass == "Landroid/os/Environment;" && ref.name.startsWith("DIRECTORY_")
                 }
             }.forEach { fieldIndex ->
+                checkCameraPathRun(fieldIndex)
                 val pathRegister = getInstruction<OneRegisterInstruction>(fieldIndex).registerA
                 val builderRegister = getInstruction<FiveRegisterInstruction>(fieldIndex + 1).registerC
-                checkCameraPathRun(fieldIndex)
                 removeInstructions(fieldIndex, 4)
                 addInstructions(
                     fieldIndex,
@@ -426,9 +431,9 @@ val downloadsPatch = bytecodePatch(
                     reference.definingClass == "Landroid/os/Environment;" && reference.name == "DIRECTORY_DCIM"
                 } == true
             }.forEach { fieldIndex ->
+                checkCameraPathRun(fieldIndex)
                 val pathRegister = getInstruction<OneRegisterInstruction>(fieldIndex).registerA
                 val builderRegister = getInstruction<FiveRegisterInstruction>(fieldIndex + 1).registerC
-                checkCameraPathRun(fieldIndex)
                 removeInstructions(fieldIndex, 4)
                 addInstructions(
                     fieldIndex,
