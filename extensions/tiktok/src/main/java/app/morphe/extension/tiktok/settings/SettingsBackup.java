@@ -196,8 +196,7 @@ public final class SettingsBackup {
                 try { Setting.saveAll(previous.values); } catch (Exception rollback) { error.addSuppressed(rollback); }
                 // Only put the Lab back when the apply above reached it. Writing the same
                 // rules again is not free: it raises a restart notice for a store the failed
-                // restore never touched. It goes in as a rollback, so the record of which
-                // overrides fired survives: these are the rules it was made against.
+                // restore never touched.
                 if (touchedLab[0]) {
                     try {
                         FeatureGateLabStore.replaceSettings(
@@ -297,8 +296,14 @@ public final class SettingsBackup {
         }
     }
 
+    /**
+     * Puts back the settings a change was interrupted before it could commit. Its only caller
+     * recovers the prior state, unlike the two argument form the restore itself uses to go
+     * forward, so the Lab's record of which overrides fired is kept: the recovery reaches the
+     * Lab whenever the file carries rules, including when only an ordinary setting had moved.
+     */
     static void applyForJournal(Snapshot snapshot) throws IOException {
-        applyForJournal(snapshot, new boolean[1]);
+        applyForJournal(snapshot, new boolean[1], true);
     }
 
     /**
@@ -308,12 +313,18 @@ public final class SettingsBackup {
      *                   way through is exactly the one that needs undoing.
      */
     static void applyForJournal(Snapshot snapshot, boolean[] touchedLab) throws IOException {
+        applyForJournal(snapshot, touchedLab, false);
+    }
+
+    static void applyForJournal(Snapshot snapshot, boolean[] touchedLab, boolean puttingBack)
+            throws IOException {
         Setting.saveAll(snapshot.values);
         // A backup from another TikTok build carries no rules that mean anything here, so the
         // Lab is left as it was rather than emptied.
         if (snapshot.labIncluded) {
             touchedLab[0] = true;
-            FeatureGateLabStore.replaceSettings(snapshot.rules, snapshot.master, snapshot.acknowledged);
+            FeatureGateLabStore.replaceSettings(
+                    snapshot.rules, snapshot.master, snapshot.acknowledged, puttingBack);
         }
     }
 

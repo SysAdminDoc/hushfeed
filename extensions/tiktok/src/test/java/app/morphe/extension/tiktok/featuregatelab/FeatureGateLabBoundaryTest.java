@@ -179,9 +179,11 @@ public class FeatureGateLabBoundaryTest {
     }
 
     @Test
-    public void aKeyTheCatalogueHasNeverHeardOfIsLeftAlone() throws Exception {
+    public void aKeyTheCatalogueHasNeverHeardOfKeepsTikTokValue() throws Exception {
         // With a loaded catalogue that does not carry the key there is nothing to check the type
-        // against, so the host keeps what it had.
+        // against, so the rule is refused and the host keeps the value it had. Until the Lab's
+        // screen loads a catalogue there is nothing to consult and the rule applies, which is
+        // what withNoCatalogueLoadedTheRuleStillApplies pins.
         publishCatalog(abEntry("known_gate", "INT"));
         FeatureGateLabStore.saveRule(FeatureGateLabStore.MANAGER_ABMOCK, "stranger_gate",
                 "INT", "3", true);

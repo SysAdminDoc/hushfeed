@@ -263,10 +263,17 @@ public final class SettingsOperationJournal {
         return FeatureGateLabStore.settingsMatch(expected);
     }
 
+    /**
+     * Puts back the rules a change was interrupted before it could commit. Its only caller
+     * recovers the prior state, so the record of which overrides fired is kept: it was made
+     * against rules that either are these or are the half written state this is undoing, and a
+     * marker left over for a rule that no longer exists shows nowhere, because the detail screen
+     * needs the rule before it reads the marker.
+     */
     private static void applyLab(JSONObject saved) throws Exception {
         List<FeatureGateLabStore.Rule> rules = FeatureGateLabStore.parseSettings(saved);
         FeatureGateLabStore.replaceSettings(rules, saved.getBoolean("master"),
-                saved.getBoolean("acknowledged"));
+                saved.getBoolean("acknowledged"), true);
     }
 
     private static void validateLab(JSONObject value) throws JSONException {

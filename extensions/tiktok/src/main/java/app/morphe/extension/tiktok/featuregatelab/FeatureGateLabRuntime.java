@@ -659,17 +659,29 @@ public final class FeatureGateLabRuntime {
         FeatureGateCatalog.Entry entry =
                 catalog.byIdentity.get(FeatureGateLabStore.MANAGER_ABMOCK + "\n" + key);
         if (entry == null) {
-            structuredFailures.put(rule.id, "Not in the catalogue, so the type cannot be checked");
-            return null;
+            return refuse(rule, "Not in the catalogue, so the type cannot be checked");
         }
         if (!FeatureGateLabStore.normalizeType(entry.type)
                 .equals(FeatureGateLabStore.normalizeType(rule.type))) {
-            structuredFailures.put(rule.id,
-                    "Catalogue says " + entry.type + ", this rule is " + rule.type);
-            return null;
+            return refuse(rule, "Catalogue says " + entry.type + ", this rule is " + rule.type);
         }
         structuredFailures.remove(rule.id);
         return rule;
+    }
+
+    /**
+     * Records why a rule was not used, and says so in the log.
+     *
+     * <p>The record is filed under the rule's own identity, which includes the type the rule
+     * carries. The detail screen looks a rule up by the catalogue's type, so for the one refusal
+     * that is about a type disagreeing it finds no rule at all and says the gate is using
+     * TikTok's value. The log line is the only place this is visible, which is why it is here.
+     */
+    private static FeatureGateLabStore.Rule refuse(FeatureGateLabStore.Rule rule, String reason) {
+        structuredFailures.put(rule.id, reason);
+        Log.i(TAG, "refused manager=" + rule.manager + " key=" + rule.key
+                + " type=" + rule.type + " reason=" + reason);
+        return null;
     }
 
     private static FeatureGateLabStore.Rule uniqueActiveAbRule(String key) {

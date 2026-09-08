@@ -177,9 +177,9 @@ final class FeatureGateLabUndo {
         return FeatureGateLabStore.settingsMatch(expected);
     }
 
-    private static void apply(JSONObject saved, boolean rollingBack) throws Exception {
+    private static void apply(JSONObject saved, boolean puttingBack) throws Exception {
         FeatureGateLabStore.replaceSettings(FeatureGateLabStore.parseSettings(saved),
-                saved.getBoolean("master"), saved.getBoolean("acknowledged"), rollingBack);
+                saved.getBoolean("master"), saved.getBoolean("acknowledged"), puttingBack);
     }
 
     private static AtomicFile file() throws IOException {

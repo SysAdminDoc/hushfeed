@@ -496,6 +496,59 @@ public class SettingsBackupTest {
         assertFalse(new File(app.getFilesDir(), SettingsOperationJournal.FILE_NAME).isFile());
     }
 
+    @Test public void recoveringOrdinarySettingsKeepsALabRecordItDidNotChange() throws Exception {
+        // The journal recovers ordinary settings and the Lab together, so it writes the Lab back
+        // even when only an ordinary setting moved. Writing the same rules again used to throw
+        // away the record of which overrides had fired, for a store the recovery did not change.
+        var app = Utils.getContext();
+        FeatureGateLabStore.saveRule("abmock", "recovery_gate", "BOOLEAN", "true", true);
+        FeatureGateLabStore.setMasterEnabled(true);
+        FeatureGateLabRuntime.reloadRules();
+        assertTrue(FeatureGateLabRuntime.overrideBoolean("recovery_gate", false));
+        assertTrue(FeatureGateLabRuntime.isTriggered("abmock", "recovery_gate", "BOOLEAN"));
+
+        String before = SettingsBackup.create(false);
+        JSONObject after = new JSONObject(before);
+        after.getJSONObject("settings").put(Settings.REGION_SPOOF.key, true);
+        // Neither state may match, or the journal reads the change as already committed and
+        // applies nothing. The lab master is the half that did not land.
+        after.getJSONObject("lab").put("master", false);
+        Settings.REGION_SPOOF.save(true);
+        writeJournal("settings", before, after.toString());
+
+        assertEquals(SettingsOperationJournal.Recovery.RECOVERED_PRIOR,
+                SettingsOperationJournal.initialize(app));
+        assertFalse(Settings.REGION_SPOOF.get());
+        assertTrue("recovering an ordinary setting cleared the Lab's record",
+                FeatureGateLabRuntime.isTriggered("abmock", "recovery_gate", "BOOLEAN"));
+    }
+
+    @Test public void aLabRecoveryKeepsTheRecordEvenWhereTheRulesMoved() throws Exception {
+        // A recovery puts the prior rules back, so it keeps the record, and that holds even when
+        // the half written state it is undoing had different rules. A marker left over for a rule
+        // that no longer exists shows nowhere: the detail screen looks the rule up first and says
+        // "Using TikTok's value" when there is none.
+        var app = Utils.getContext();
+        String before = FeatureGateLabStore.exportSettings().toString();
+        FeatureGateLabStore.saveRule("abmock", "changed_gate", "BOOLEAN", "true", true);
+        FeatureGateLabStore.setMasterEnabled(true);
+        String after = FeatureGateLabStore.exportSettings().toString();
+
+        // saveRule clears the marker for the rule it writes, so the gate has to fire after the
+        // write this recovery is undoing, not before it.
+        FeatureGateLabStore.saveRule("abmock", "changed_gate", "BOOLEAN", "false", true);
+        FeatureGateLabRuntime.reloadRules();
+        assertFalse(FeatureGateLabRuntime.overrideBoolean("changed_gate", true));
+        assertTrue(FeatureGateLabRuntime.isTriggered("abmock", "changed_gate", "BOOLEAN"));
+        writeJournal("lab", before, after);
+
+        assertEquals(SettingsOperationJournal.Recovery.RECOVERED_PRIOR,
+                SettingsOperationJournal.initialize(app));
+        assertTrue(FeatureGateLabStore.rules().isEmpty());
+        assertTrue("a recovery threw away a record it had no reason to",
+                FeatureGateLabRuntime.isTriggered("abmock", "changed_gate", "BOOLEAN"));
+    }
+
     @Test public void committedSettingsJournalIsClearedWithoutRevertingTheCommit() throws Exception {
         var app = Utils.getContext();
         String before = SettingsBackup.create(false);
