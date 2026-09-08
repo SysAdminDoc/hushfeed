@@ -21,6 +21,7 @@ import java.util.Map;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.shared.settings.SettingsJson;
 
 public final class FeatureGateLabStore {
     public static final String TARGET_VERSION = "46.2.3";
@@ -343,7 +344,12 @@ public final class FeatureGateLabStore {
                     if (value.length() > 64 * 1024) {
                         return "structured value exceeds 64 KB";
                     }
-                    JSONObject object = new JSONObject(value);
+                    // Through the bounded reader, not the platform one. This string arrives
+                    // inside a backup file, and the document around it being depth-checked says
+                    // nothing about the string's own contents: the platform parser recurses per
+                    // level, and a deeply nested value here raised StackOverflowError, which is
+                    // an Error and walked past every catch on the restore path.
+                    JSONObject object = SettingsJson.parseObject(value, STRUCTURED_VALUE_LIMITS);
                     if (object.length() == 0) {
                         return "select at least one field";
                     }
@@ -354,10 +360,19 @@ public final class FeatureGateLabStore {
             }
         } catch (NumberFormatException exception) {
             return "invalid " + normalized.toLowerCase() + " value";
-        } catch (JSONException exception) {
+        } catch (JSONException | java.io.IOException exception) {
             return "invalid structured value";
         }
     }
+
+    /**
+     * What a stored structured value may be. The depth is the one that matters: it is the only
+     * bound between a backup file and a stack overflow, and 32 is far past anything a real gate
+     * config uses while staying nowhere near the worker thread's limit. The rest are subsumed by
+     * the 64 KB length check above and exist so no single bound carries the whole job.
+     */
+    private static final SettingsJson.Limits STRUCTURED_VALUE_LIMITS =
+            new SettingsJson.Limits(32, 16384, 64 * 1024, 4096, 64 * 1024);
 
     public static boolean supportsOverride(String manager, String type) {
         if (MANAGER_SETTINGS_MANAGER.equals(manager)) {

@@ -182,4 +182,25 @@ public class FeatureGateLabBoundaryTest {
         }
         assertEquals(2048, SettingsManagerObservationRecorder.size());
     }
+
+    @Test public void aDeeplyNestedStructuredValueIsRefusedRatherThanKillingTheWorker() {
+        // A rule's value is a string inside the backup, so the depth check on the document
+        // around it says nothing about what the string holds. The platform parser recurses once
+        // per level and raises StackOverflowError, which is an Error: it walked past the catch
+        // in the restore and the catch in the preference, and took the process with it.
+        int depth = 30_000;
+        StringBuilder nested = new StringBuilder(2 * depth + 8).append("{\"a\":");
+        for (int level = 0; level < depth; level++) nested.append('[');
+        for (int level = 0; level < depth; level++) nested.append(']');
+        String value = nested.append('}').toString();
+        assertTrue("the probe must stay under the length check it is not testing",
+                value.length() < 64 * 1024);
+
+        assertEquals("invalid structured value",
+                FeatureGateLabStore.validateValue("OBJECT", value));
+        // The positive control: an ordinary structured value still goes through.
+        assertNull(FeatureGateLabStore.validateValue("OBJECT", "{\"enable\":true}"));
+        assertEquals("select at least one field",
+                FeatureGateLabStore.validateValue("OBJECT", "{}"));
+    }
 }
