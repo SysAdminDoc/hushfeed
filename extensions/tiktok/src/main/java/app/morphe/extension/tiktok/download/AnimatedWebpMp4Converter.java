@@ -137,6 +137,9 @@ final class AnimatedWebpMp4Converter {
                         int yOffset = invokeInt(frame, "getYOffset");
                         validateFrame(sourceWidth, sourceHeight, frameWidth, frameHeight, xOffset, yOffset);
 
+                        // The same two Fresco names the GIF converter reads, and the same
+                        // finding: LIZ()Z is nativeIsBlendWithPreviousFrame and LIZIZ()Z is
+                        // nativeShouldDisposeToBackgroundColor in the 46.2.3 host.
                         boolean blend = invokeBoolean(frame, "LIZ");
                         clearPrevious = invokeBoolean(frame, "LIZIZ");
                         frameBitmap = Bitmap.createBitmap(frameWidth, frameHeight, Bitmap.Config.ARGB_8888);

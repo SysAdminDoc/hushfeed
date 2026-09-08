@@ -21,6 +21,14 @@ import java.util.List;
  * frame, is still driven by the file.
  */
 @SuppressWarnings("unused")
+/*
+ * The LIZ and LIZIZ names below are not a guess. In the 46.2.3 host,
+ * Lcom/facebook/animated/webp/WebPFrame;->LIZ()Z is a single invoke-direct of
+ * nativeIsBlendWithPreviousFrame()Z and ->LIZIZ()Z is a single invoke-direct of
+ * nativeShouldDisposeToBackgroundColor()Z, read out of classes35.dex on 2026-09-08. Because this
+ * file defines the same mapping the converters read, a swap here would pass every test, so the
+ * host is the authority and this comment is the record of it.
+ */
 public final class WebPImage {
     private final int width;
     private final int height;

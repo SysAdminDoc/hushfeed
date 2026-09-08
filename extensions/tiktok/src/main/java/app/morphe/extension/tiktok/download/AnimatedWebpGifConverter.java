@@ -77,6 +77,15 @@ final class AnimatedWebpGifConverter {
                     int xOffset = invokeInt(frame, "getXOffset");
                     int yOffset = invokeInt(frame, "getYOffset");
                     validateFrame(width, height, frameWidth, frameHeight, xOffset, yOffset);
+                    // LIZ and LIZIZ read out of Fresco's WebPFrame, checked against the
+                    // 46.2.3 host on 2026-09-08 rather than assumed: in
+                    // Lcom/facebook/animated/webp/WebPFrame; the body of LIZ()Z is a single
+                    // invoke-direct of nativeIsBlendWithPreviousFrame()Z, and LIZIZ()Z is a
+                    // single invoke-direct of nativeShouldDisposeToBackgroundColor()Z. The
+                    // native names survive obfuscation because JNI binds by name, so they are
+                    // the thing to read the mapping off. Swapping these two composites every
+                    // non-blending frame wrongly and no test could tell, because the stand-in
+                    // decoder in the test tree defines the same mapping.
                     boolean blend = invokeBoolean(frame, "LIZ");
                     boolean disposeToBackground = invokeBoolean(frame, "LIZIZ");
 
