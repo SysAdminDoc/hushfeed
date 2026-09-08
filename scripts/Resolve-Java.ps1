@@ -35,7 +35,19 @@ function Resolve-Java {
 
     $candidates = [System.Collections.Generic.List[string]]::new()
     foreach ($candidate in @($Explicit, $env:HUSHFEED_JAVA)) {
-        if ($candidate) { $candidates.Add($candidate) }
+        if (-not $candidate) { continue }
+        # A JDK directory is what the error message asks for, so take it as one when it is one.
+        if (Test-Path -LiteralPath $candidate -PathType Container) {
+            foreach ($leaf in @('bin/java.exe', 'bin/java')) {
+                $inside = Join-Path $candidate $leaf
+                if (Test-Path -LiteralPath $inside -PathType Leaf) {
+                    $candidates.Add($inside)
+                    break
+                }
+            }
+            continue
+        }
+        $candidates.Add($candidate)
     }
     # Ahead of JAVA_HOME on purpose: a JAVA_HOME held at an old JDK for another build must not
     # turn a machine whose PATH java is new enough into a failing one.

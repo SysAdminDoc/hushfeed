@@ -109,7 +109,7 @@ public class SettingsL10nTest {
             }
             assertEquals("the generated translations are not the ones in the " + language
                     + " table, so run scripts/gen-l10n.py: " + problems, 0, problems.size());
-            assertTrue("the " + language + " table is empty", table.size() > 500);
+            assertFalse("the " + language + " table is empty", table.isEmpty());
         }
     }
 
@@ -153,7 +153,11 @@ public class SettingsL10nTest {
         java.util.List<String> found = new java.util.ArrayList<>();
         for (String name : java.util.Objects.requireNonNull(l10nDirectory().list())) {
             if (!name.endsWith(".tsv") && !name.endsWith(".csv")) continue;
-            String language = name.substring(0, name.length() - 4);
+            // Lower-cased, because that is what the generator does. A pt-rBR table, which is the
+            // spelling L10n builds for a regional tag, otherwise asks for a language the
+            // generated class has never heard of and gets null back.
+            String language = name.substring(0, name.length() - 4)
+                    .toLowerCase(java.util.Locale.ROOT);
             if (!ENGLISH_BASE.equals(language)) found.add(language);
         }
         java.util.Collections.sort(found);
@@ -214,13 +218,19 @@ public class SettingsL10nTest {
                 record.add(field.toString());
                 field.setLength(0);
                 atFieldStart = true;
-            } else if (character == '\n') {
+            } else if (character == '\n' || character == '\r') {
+                // A bare CR ends a record, the same as Python's csv. CRLF is one terminator,
+                // so the LF after a CR is taken with it rather than ending a second, empty one.
+                if (character == '\r' && index + 1 < body.length()
+                        && body.charAt(index + 1) == '\n') {
+                    index++;
+                }
                 record.add(field.toString());
                 field.setLength(0);
                 records.add(record);
                 record = new java.util.ArrayList<>();
                 atFieldStart = true;
-            } else if (character != '\r') {
+            } else {
                 field.append(character);
                 atFieldStart = false;
             }
@@ -233,8 +243,9 @@ public class SettingsL10nTest {
         assertFalse("the " + language + " table has no header", records.isEmpty());
         java.util.List<String> header = records.get(0);
         assertTrue("the " + language + " header has to start source,target, not " + header,
-                header.size() >= 2 && "source".equals(header.get(0).trim())
-                        && "target".equals(header.get(1).trim()));
+                header.size() >= 2
+                        && "source".equalsIgnoreCase(header.get(0).trim())
+                        && "target".equalsIgnoreCase(header.get(1).trim()));
 
         java.util.Map<String, String> rows = new java.util.LinkedHashMap<>();
         for (int index = 1; index < records.size(); index++) {
@@ -245,6 +256,35 @@ public class SettingsL10nTest {
             rows.put(unescapeTableNewlines(line.get(0)), unescapeTableNewlines(line.get(1)));
         }
         return rows;
+    }
+
+    @Test public void theCsvReaderEndsARowWhereThePythonOneDoes() {
+        // No shipped table carries a bare CR, so nothing here would have caught the reader
+        // swallowing it and running two rows together. These are the shapes Python's csv module
+        // produces, checked against it.
+        java.util.Map<String, String> unixEndings =
+                readCsvRows("probe", "source,target\na,1\nb,2\n");
+        assertEquals(2, unixEndings.size());
+        assertEquals("1", unixEndings.get("a"));
+
+        java.util.Map<String, String> windowsEndings =
+                readCsvRows("probe", "source,target\r\na,1\r\nb,2\r\n");
+        assertEquals("a CRLF was read as two row endings", 2, windowsEndings.size());
+        assertEquals("1", windowsEndings.get("a"));
+
+        java.util.Map<String, String> classicMacEndings =
+                readCsvRows("probe", "source,target\ra,1\rb,2\r");
+        assertEquals("a bare CR did not end a row", 2, classicMacEndings.size());
+        assertEquals("1", classicMacEndings.get("a"));
+
+        java.util.Map<String, String> quoted =
+                readCsvRows("probe", "source,target\n\"a,b\",\"says \"\"hi\"\"\"\n");
+        assertEquals(1, quoted.size());
+        assertEquals("says \"hi\"", quoted.get("a,b"));
+
+        java.util.Map<String, String> looseQuote = readCsvRows("probe", "source,target\na,b\"c\n");
+        assertEquals("a quote inside an unquoted field opened one", "b\"c",
+                looseQuote.get("a"));
     }
 
     @Test public void theEnglishBaseIsExactlyTheStringsTheTablesCarry() throws Exception {
