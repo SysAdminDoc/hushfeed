@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The Save button on a sticker is in your language. It was the one piece of text this project adds to TikTok that never went through the translations, and it could not simply be translated: the button's own English label was also how the code recognised its own button, so a German one would have been added a second time on every sheet. It carries a marker now, and reads "Medien speichern" or "Simpan media" where it should.
+
 * The daily hold works with a screen reader. It stopped touches and nothing else: it went up without being announced, "Open the feed anyway" was read as ordinary text rather than as a button, and the feed's like, comment and share controls behind it could still be swiped to, which is the one thing the hold is there to stop. The hold announces itself now, its way out is offered as a button, and what it covers is out of the way until it lifts.
 
 * The Feature Gate Lab no longer freezes while it saves. Turning overrides on, and saving or resetting one gate, wrote to storage on the thread that draws the screen, so the tap sat there until the write finished. If a settings restore was running at the same time it sat there until the restore finished. All three now work the way the Lab's other changes already did: the write happens in the background and the screen catches up.

@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1318);
+        Map<String, String> table = new HashMap<>(1320);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -973,6 +973,8 @@ public final class L10nTranslations {
                 "Story per langem Druck speichern");
         table.put("Save every photo in the post directly from its source URL, without rendering it again.",
                 "Jedes Foto des Beitrags direkt von seiner Quell-URL speichern, ohne es neu zu rendern.");
+        table.put("Save media",
+                "Medien speichern");
         table.put("Save patch settings and Feature Gate Lab rules to a JSON file.",
                 "Patch-Einstellungen und Feature-Gate-Lab-Regeln in einer JSON-Datei speichern.");
         table.put("Save subtitles beside videos",
@@ -1039,11 +1041,11 @@ public final class L10nTranslations {
                 "Links an eine andere App senden");
         table.put("Sending feedback",
                 "Rückmeldung wird gesendet");
-        table.put("Series posts",
-                "Serienbeiträge");
     }
 
     private static void fillDe8(Map<String, String> table) {
+        table.put("Series posts",
+                "Serienbeiträge");
         table.put("Settings",
                 "Einstellungen");
         table.put("Settings backup saved",
@@ -1162,11 +1164,11 @@ public final class L10nTranslations {
                 "Story gespeichert unter %1$s");
         table.put("Subtitle language",
                 "Untertitelsprache");
-        table.put("Take away the streak button in a chat and the reminder message that goes with it.",
-                "Entfernt die Serien-Schaltfläche in einem Chat und die zugehörige Erinnerung.");
     }
 
     private static void fillDe9(Map<String, String> table) {
+        table.put("Take away the streak button in a chat and the reminder message that goes with it.",
+                "Entfernt die Serien-Schaltfläche in einem Chat und die zugehörige Erinnerung.");
         table.put("Tap %1$s again to send",
                 "Zum Senden noch einmal auf %1$s tippen");
         table.put("Tap again to follow",
@@ -1285,11 +1287,11 @@ public final class L10nTranslations {
                 "Heute beginnt neu");
         table.put("Today's budget is locked. The day starts over at %1$s.",
                 "Das heutige Budget ist gesperrt. Der Tag beginnt um %1$s von vorn.");
-        table.put("Today's budget is locked. The feed opens again at %1$s. Messages, profiles and search still work.",
-                "Das heutige Budget ist gesperrt. Der Feed öffnet wieder um %1$s. Nachrichten, Profile und Suche funktionieren weiterhin.");
     }
 
     private static void fillDe10(Map<String, String> table) {
+        table.put("Today's budget is locked. The feed opens again at %1$s. Messages, profiles and search still work.",
+                "Das heutige Budget ist gesperrt. Der Feed öffnet wieder um %1$s. Nachrichten, Profile und Suche funktionieren weiterhin.");
         table.put("Today's budget is locked. This can be changed again at %1$s.",
                 "Das heutige Budget ist gesperrt. Änderungen sind wieder ab %1$s möglich.");
         table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Save original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",
@@ -1411,7 +1413,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1318);
+        Map<String, String> table = new HashMap<>(1320);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2340,6 +2342,8 @@ public final class L10nTranslations {
                 "Simpan Story dengan tekan lama");
         table.put("Save every photo in the post directly from its source URL, without rendering it again.",
                 "Simpan setiap foto dalam unggahan langsung dari URL sumbernya, tanpa dirender ulang.");
+        table.put("Save media",
+                "Simpan media");
         table.put("Save patch settings and Feature Gate Lab rules to a JSON file.",
                 "Simpan pengaturan patch dan aturan Feature Gate Lab ke berkas JSON.");
         table.put("Save subtitles beside videos",
@@ -2406,11 +2410,11 @@ public final class L10nTranslations {
                 "Kirim tautan ke aplikasi lain");
         table.put("Sending feedback",
                 "Mengirim masukan");
-        table.put("Series posts",
-                "Kiriman serial");
     }
 
     private static void fillIn8(Map<String, String> table) {
+        table.put("Series posts",
+                "Kiriman serial");
         table.put("Settings",
                 "Pengaturan");
         table.put("Settings backup saved",
@@ -2529,11 +2533,11 @@ public final class L10nTranslations {
                 "Story disimpan ke %1$s");
         table.put("Subtitle language",
                 "Bahasa subtitle");
-        table.put("Take away the streak button in a chat and the reminder message that goes with it.",
-                "Hilangkan tombol rentetan di obrolan beserta pesan pengingatnya.");
     }
 
     private static void fillIn9(Map<String, String> table) {
+        table.put("Take away the streak button in a chat and the reminder message that goes with it.",
+                "Hilangkan tombol rentetan di obrolan beserta pesan pengingatnya.");
         table.put("Tap %1$s again to send",
                 "Ketuk %1$s lagi untuk mengirim");
         table.put("Tap again to follow",
@@ -2652,11 +2656,11 @@ public final class L10nTranslations {
                 "Hari ini dimulai lagi");
         table.put("Today's budget is locked. The day starts over at %1$s.",
                 "Anggaran hari ini terkunci. Hari dimulai ulang pada %1$s.");
-        table.put("Today's budget is locked. The feed opens again at %1$s. Messages, profiles and search still work.",
-                "Anggaran hari ini terkunci. Feed terbuka lagi pada %1$s. Pesan, profil dan pencarian tetap berfungsi.");
     }
 
     private static void fillIn10(Map<String, String> table) {
+        table.put("Today's budget is locked. The feed opens again at %1$s. Messages, profiles and search still work.",
+                "Anggaran hari ini terkunci. Feed terbuka lagi pada %1$s. Pesan, profil dan pencarian tetap berfungsi.");
         table.put("Today's budget is locked. This can be changed again at %1$s.",
                 "Anggaran hari ini terkunci. Ini bisa diubah lagi pada %1$s.");
         table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Save original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",

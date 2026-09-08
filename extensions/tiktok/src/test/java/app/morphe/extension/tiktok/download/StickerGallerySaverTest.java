@@ -257,6 +257,35 @@ public class StickerGallerySaverTest {
         return false;
     }
 
+    @Config(qualifiers = "de")
+    @Test public void theSaveButtonIsTranslatedAndStillOnlyAddedOnce() throws Exception {
+        // The button's own label was the check for "this sheet already has one", so translating
+        // it would have put a second button on every German sheet.
+        android.content.Context context = RuntimeEnvironment.getApplication();
+        android.widget.TextView template = new android.widget.TextView(context);
+        android.view.ViewGroup parent = new android.widget.LinearLayout(context);
+        parent.addView(template);
+
+        Method create = StickerGallerySaver.class.getDeclaredMethod(
+                "createActionButton", View.class, View.class);
+        create.setAccessible(true);
+        android.widget.TextView button =
+                (android.widget.TextView) create.invoke(null, template, new View(context));
+
+        assertEquals("the Save button ships in English on a German phone",
+                "Medien speichern", button.getText().toString());
+
+        Method has = StickerGallerySaver.class.getDeclaredMethod(
+                "hasSaveImageButton", android.view.ViewGroup.class);
+        has.setAccessible(true);
+        assertFalse("a sheet carrying none of our buttons looks like it has one",
+                (Boolean) has.invoke(null, parent));
+
+        parent.addView(button);
+        assertTrue("a translated button is not recognised, so a second one gets added",
+                (Boolean) has.invoke(null, parent));
+    }
+
     @Test public void aCleartextStickerMirrorIsNotFetchedFrom() {
         // The bytes behind these addresses reach a native WebP decoder, so an unauthenticated
         // mirror is a body anyone on the network can choose, handed to a parser written in C.

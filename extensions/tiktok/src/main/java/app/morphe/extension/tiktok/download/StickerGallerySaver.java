@@ -63,6 +63,14 @@ import java.util.WeakHashMap;
 @SuppressWarnings("unused")
 public final class StickerGallerySaver {
     private static final String ACTION_LABEL = "Save media";
+    /**
+     * Marks the button this file added, so finding it again does not depend on its wording.
+     *
+     * <p>The label was the check: a sheet already carrying a child reading "Save media" was
+     * taken as done. Translating the label alone would have given every German sheet a second
+     * button, because the first one no longer said what the check was looking for.
+     */
+    private static final String SAVE_BUTTON_TAG = "morphe_save_media";
     /** A sticker is a few hundred KB. Anything past this is not one. */
     private static final long MAX_STICKER_BYTES = 24L * 1024 * 1024;
     private static final long MAX_STICKER_PIXELS = 16L * 1024 * 1024;
@@ -140,7 +148,8 @@ public final class StickerGallerySaver {
     private static TextView createActionButton(View template, View sheetView) {
         Context context = template.getContext();
         TextView button = new TextView(context);
-        button.setText(ACTION_LABEL);
+        button.setText(L10n.t(button.getContext(), ACTION_LABEL));
+        button.setTag(SAVE_BUTTON_TAG);
         button.setGravity(Gravity.CENTER);
         button.setSingleLine(true);
         button.setEllipsize(TextUtils.TruncateAt.END);
@@ -1081,10 +1090,7 @@ public final class StickerGallerySaver {
 
     private static boolean hasSaveImageButton(ViewGroup parent) {
         for (int i = 0; i < parent.getChildCount(); i++) {
-            View child = parent.getChildAt(i);
-            if (child instanceof TextView && ACTION_LABEL.contentEquals(((TextView) child).getText())) {
-                return true;
-            }
+            if (SAVE_BUTTON_TAG.equals(parent.getChildAt(i).getTag())) return true;
         }
         return false;
     }
