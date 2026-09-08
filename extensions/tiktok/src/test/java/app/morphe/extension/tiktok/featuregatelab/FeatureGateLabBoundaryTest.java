@@ -12,6 +12,7 @@ import app.morphe.extension.tiktok.settings.SettingsStatus;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -132,6 +133,44 @@ public class FeatureGateLabBoundaryTest {
                 FeatureGateLabStore.MANAGER_ABMOCK, "import_gate", "BOOLEAN").enabled);
         FeatureGateLabStore.setMasterEnabled(true);
         assertFalse(FeatureGateLabRuntime.overrideBoolean("import_gate", false));
+    }
+
+    @Test
+    public void aLowercaseTypeStillMatchesOnATurkishPhone() throws Exception {
+        // The Lab's own exports write the type in capitals, so this needs a profile from
+        // somewhere else. Turkish capitalises a dotless i to a dotted one, so "int" folded under
+        // the phone's locale is a different string from the "INT" the catalog folds to, and the
+        // rule is dropped as a type mismatch on that phone alone.
+        Locale previous = Locale.getDefault();
+        Locale.setDefault(new Locale("tr", "TR"));
+        try {
+            FeatureGateCatalog.Entry entry = new FeatureGateCatalog.Entry(
+                    "turkish_gate", "Turkish gate", FeatureGateLabStore.MANAGER_ABMOCK, "INT",
+                    true, true, List.of(), List.of(), List.of(), "", "", false, null, null);
+            JSONObject root = new JSONObject()
+                    .put("schema", 1)
+                    .put("target", "TikTok global")
+                    .put("tiktok_version", FeatureGateLabStore.TARGET_VERSION)
+                    .put("rules", new org.json.JSONArray().put(new JSONObject()
+                            .put("manager", FeatureGateLabStore.MANAGER_ABMOCK)
+                            .put("key", "turkish_gate")
+                            .put("type", "int")
+                            .put("value", "7")));
+
+            FeatureGateLabStore.ImportReview review = FeatureGateLabStore.reviewProfile(
+                    root.toString(), Map.of(entry.identity(), entry));
+            assertEquals("a lowercase type was rejected: " + review.rejected,
+                    1, review.accepted.size());
+
+            FeatureGateLabUndo.importRules(review);
+            FeatureGateLabStore.saveRule(FeatureGateLabStore.MANAGER_ABMOCK, "turkish_gate",
+                    "int", "7", true);
+            FeatureGateLabStore.setMasterEnabled(true);
+            assertEquals("the imported rule never reached the boundary",
+                    7, FeatureGateLabRuntime.overrideInt("turkish_gate", 1));
+        } finally {
+            Locale.setDefault(previous);
+        }
     }
 
     @Test

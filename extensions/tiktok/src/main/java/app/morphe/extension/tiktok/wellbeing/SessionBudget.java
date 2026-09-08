@@ -101,8 +101,8 @@ public final class SessionBudget {
     private static long cachedWindowStart;
     private static long cachedWindowEnd;
     private static int cachedResetHour = -1;
-    private static String cachedZoneId = "";
     private static int dayComputations;
+    private static int zoneReads;
     private static int lockChecksUnderTheMonitor;
 
     /** So a test can move time without waiting for it. */
@@ -418,13 +418,17 @@ public final class SessionBudget {
      */
     static long dayOf(long now) {
         int resetHour = Settings.SESSION_BUDGET_RESET_HOUR.get();
-        TimeZone zone = TimeZone.getDefault();
         synchronized (LOCK) {
-            if (resetHour == cachedResetHour && zone.getID().equals(cachedZoneId)
-                    && now >= cachedWindowStart && now < cachedWindowEnd) {
+            // Nothing here may allocate: the memo exists because this runs on the player's
+            // progress callback. The zone is deliberately not part of this check, because asking
+            // for it is itself the allocation the memo was added to remove. A device that changes
+            // zone inside a live window keeps the day it was already counting until that window
+            // ends, which is at most one day, and the recomputation then uses the new zone.
+            if (resetHour == cachedResetHour && now >= cachedWindowStart && now < cachedWindowEnd) {
                 return cachedDay;
             }
             dayComputations++;
+            TimeZone zone = defaultZone();
             Calendar calendar = Calendar.getInstance(zone);
             calendar.setTimeInMillis(now);
             if (calendar.get(Calendar.HOUR_OF_DAY) < resetHour) {
@@ -447,7 +451,6 @@ public final class SessionBudget {
                 cachedWindowStart = start;
                 cachedWindowEnd = end;
                 cachedResetHour = resetHour;
-                cachedZoneId = zone.getID();
             } else {
                 // An hour that does not exist on the day the clocks go forward lands outside its
                 // own window. Better to work it out again than to answer from a window that does
@@ -465,7 +468,7 @@ public final class SessionBudget {
      */
     static long dayEndAfter(long now) {
         int resetHour = Settings.SESSION_BUDGET_RESET_HOUR.get();
-        Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
+        Calendar calendar = Calendar.getInstance(defaultZone());
         calendar.setTimeInMillis(now);
         calendar.set(Calendar.HOUR_OF_DAY, resetHour);
         calendar.set(Calendar.MINUTE, 0);
@@ -565,6 +568,22 @@ public final class SessionBudget {
         WRITER.submit(() -> null).get();
     }
 
+    /**
+     * The device's own zone, which is what the reader lives in. Every read goes through here
+     * because {@link TimeZone#getDefault()} hands back a clone, so a test can count them.
+     */
+    private static TimeZone defaultZone() {
+        zoneReads++;
+        return TimeZone.getDefault();
+    }
+
+    /** How many zone clones were taken, so a test can prove the memo does not take one. */
+    static int zoneReadsForTests() {
+        synchronized (LOCK) {
+            return zoneReads;
+        }
+    }
+
     /** How many times a Calendar was actually built, so a test can prove the memo holds. */
     static int dayComputationsForTests() {
         synchronized (LOCK) {
@@ -582,11 +601,11 @@ public final class SessionBudget {
     static void resetForTests() {
         synchronized (LOCK) {
             cachedResetHour = -1;
-            cachedZoneId = "";
             cachedWindowStart = 0;
             cachedWindowEnd = 0;
             cachedDay = 0;
             dayComputations = 0;
+            zoneReads = 0;
             lockChecksUnderTheMonitor = 0;
             loaded = false;
             day = 0;

@@ -140,6 +140,12 @@ public class FeatureGateLabActionsTest {
         save("gate", "true", true);
         FeatureGateLabStore.setMasterEnabled(true);
         SettingsManagerObservationRecorder.observeWithDefault("object", String.class, "", "before");
+        // A gate that actually fired. The detail screen reads this to say whether an override has
+        // been reached, and a commit that did not land must not be able to erase it.
+        FeatureGateLabRuntime.reloadRules();
+        assertTrue(FeatureGateLabRuntime.overrideBoolean("gate", false));
+        assertTrue("the rule never fired, so the test cannot see it being lost",
+                FeatureGateLabRuntime.isTriggered("abmock", "gate", "BOOLEAN"));
         String before = FeatureGateLabStore.exportSettings().toString();
         var delegate = app.getSharedPreferences("morphe_feature_gate_lab", 0);
         var commits = new java.util.concurrent.atomic.AtomicInteger();
@@ -164,6 +170,8 @@ public class FeatureGateLabActionsTest {
             assertEquals(before, FeatureGateLabStore.exportSettings().toString());
             assertEquals(1, SettingsManagerObservationRecorder.size());
             assertTrue(commits.get() >= 2);
+            assertTrue("a failed commit cleared the record of which overrides fired",
+                    FeatureGateLabRuntime.isTriggered("abmock", "gate", "BOOLEAN"));
         } finally { Utils.setContext(app); }
     }
 

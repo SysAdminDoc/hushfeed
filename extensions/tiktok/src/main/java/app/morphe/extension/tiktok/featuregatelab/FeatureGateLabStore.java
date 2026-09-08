@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import app.morphe.extension.shared.Logger;
@@ -247,10 +248,10 @@ public final class FeatureGateLabStore {
         boolean saved = editor.putString(RULE_IDS_KEY, join(ids)).putBoolean(MASTER_KEY, master)
                 .putBoolean(WARNING_ACK_KEY, acknowledged).putBoolean(MIGRATION_NOTICE_KEY, false)
                 .putString(STORED_TARGET_VERSION_KEY, TARGET_VERSION).commit();
+        if (!saved) throw new java.io.IOException("Could not save Lab settings");
         FeatureGateLabRuntime.clearTriggered();
         FeatureGateLabRuntime.reloadRules();
         FeatureGateLabSession.markRestartNeeded();
-        if (!saved) throw new java.io.IOException("Could not save Lab settings");
     }
 
     public static ImportReview reviewProfile(String text, Map<String, FeatureGateCatalog.Entry> catalog) throws JSONException {
@@ -359,7 +360,7 @@ public final class FeatureGateLabStore {
                     return "unsupported type";
             }
         } catch (NumberFormatException exception) {
-            return "invalid " + normalized.toLowerCase() + " value";
+            return "invalid " + normalized.toLowerCase(Locale.ROOT) + " value";
         } catch (JSONException | java.io.IOException exception) {
             return "invalid structured value";
         }
@@ -407,7 +408,10 @@ public final class FeatureGateLabStore {
     }
 
     public static String normalizeType(String type) {
-        return safe(type).trim().toUpperCase();
+        // ROOT, like every other fold in this package: the result is an identity that goes into
+        // idFor and into supportsOverride, and a Turkish phone folds a lowercase `int` to
+        // "İNT" under the default locale, so an imported rule stops matching itself.
+        return safe(type).trim().toUpperCase(Locale.ROOT);
     }
 
     private static void deleteRuleById(String id) {
