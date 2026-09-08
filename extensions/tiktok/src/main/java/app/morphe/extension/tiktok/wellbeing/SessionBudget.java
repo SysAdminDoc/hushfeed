@@ -263,7 +263,10 @@ public final class SessionBudget {
         synchronized (LOCK) {
             load();
             rollOver(clock.now());
-            return lockedToday;
+            // The switch turned on after the budget has already run out locks the rest of that
+            // day too. Without this it did nothing at all until tomorrow, while still reading
+            // as on, and the day it was turned on for stayed open.
+            return lockedToday || (Settings.SESSION_BUDGET_LOCK.get() && spent());
         }
     }
 
@@ -272,7 +275,12 @@ public final class SessionBudget {
         synchronized (LOCK) {
             load();
             rollOver(clock.now());
-            return lockedToday ? dayEndAfter(clock.now()) : 0L;
+            if (!lockedToday) {
+                return Settings.SESSION_BUDGET_LOCK.get() && spent() ? dayEndAfter(clock.now()) : 0L;
+            }
+            // The instant the lock committed to, not one worked out again now: the reset hour
+            // and the timezone can both have moved since, and neither may bring the day forward.
+            return lockUntilMs > 0 ? lockUntilMs : dayEndAfter(clock.now());
         }
     }
 
@@ -314,7 +322,7 @@ public final class SessionBudget {
             load();
             rollOver(clock.now());
             // The one exit the hold has, and the whole point of the lock is that today has none.
-            if (lockedToday) return;
+            if (lockedToday || (Settings.SESSION_BUDGET_LOCK.get() && spent())) return;
             if (lockUntilMs == 0) return;
             lockUntilMs = 0;
             save();
@@ -334,7 +342,7 @@ public final class SessionBudget {
         synchronized (LOCK) {
             load();
             rollOver(clock.now());
-            if (lockedToday) return false;
+            if (lockedToday || (Settings.SESSION_BUDGET_LOCK.get() && spent())) return false;
             undoDay = day;
             undoVideos = videos;
             undoWatchedMs = watchedMs;
@@ -462,6 +470,12 @@ public final class SessionBudget {
     private static void rollOver(long now) {
         long today = dayOf(now);
         if (today <= day) return;
+        // The day only ever moving forward is not enough on its own for a locked day. Moving
+        // the device's timezone forward makes the day counter jump, which cleared the lock,
+        // the hold and the counts together: two taps in the device settings and sixteen hours
+        // of hold were gone. A locked day ends at the moment it committed to, which is an
+        // instant rather than a day number and so is the same in every timezone.
+        if (lockedToday && lockUntilMs > now) return;
         day = today;
         videos = 0;
         watchedMs = 0;

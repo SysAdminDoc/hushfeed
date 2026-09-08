@@ -202,14 +202,17 @@ public final class CommentBatchTranslator {
                     requestedLoadedBatchKeys.add(pending.key);
                     trimRequestedKeysLocked();
                     retryStates.remove(pending.key);
-                } else if (succeeded && !Collections.disjoint(translatedCids, pending.cids)) {
-                    // Some of what was asked for came back. The key is built from the whole
-                    // loaded list, so a batch answered a few comments at a time keeps the same
-                    // key round after round, and counting those rounds as failures abandoned a
-                    // thirty comment list after three of them. A translated comment is filtered
-                    // out of the next batch, so each round is strictly smaller than the last and
-                    // starting the count again cannot go on for ever.
-                    retryStates.remove(pending.key);
+                } else if (succeeded && shrankLocked(pending, translatedCids)) {
+                    // Some of what was asked for came back and the next round will be smaller
+                    // for it. The key is built from the whole loaded list, so a batch answered a
+                    // few comments at a time keeps the same key round after round, and counting
+                    // those rounds as failures abandoned a thirty comment list after three of
+                    // them. Starting the count again cannot go on for ever, because a round only
+                    // counts as progress when it asked for less than the one before.
+                    //
+                    // Nothing is removed here on purpose: shrankLocked records how many this
+                    // round asked for, and clearing that afterwards left the next round with
+                    // nothing to compare against, so every round read as progress again.
                 } else {
                     noteAttemptLocked(pending.key, SystemClock.elapsedRealtime());
                 }
@@ -430,14 +433,41 @@ public final class CommentBatchTranslator {
         return false;
     }
 
+    /**
+     * Whether this answer actually moved the batch along.
+     *
+     * <p>Returning a comment without marking it translated leaves it in the next batch, and the
+     * key does not change, so clearing the attempt state on any answer at all let a host that
+     * does that spin: forty binds, forty requests, no backoff and the same three comments every
+     * time. Progress is the batch getting smaller, which can only happen so many times.
+     */
+    private static boolean shrankLocked(PendingRequest pending, Set<String> translatedCids) {
+        if (Collections.disjoint(translatedCids, pending.cids)) return false;
+        RetryState retry = retryStates.get(pending.key);
+        int asked = pending.cids.size();
+        if (retry != null && retry.lastAsked > 0 && asked >= retry.lastAsked) return false;
+        RetryState progress = retry == null ? new RetryState() : retry;
+        progress.attempts = 0;
+        progress.retryAfterMs = 0;
+        progress.lastAsked = asked;
+        retryStates.put(pending.key, progress);
+        return true;
+    }
+
     /** Lets go of everything remembered about one comment list, so a reload starts clean. */
     private static void forgetRequestsForLocked(String batchKey) {
+        // Both shapes of key for this list. A request built from what was on screen rather than
+        // from the loaded list is prefixed, and forgetting only the plain one left that half
+        // suppressed across a reload.
         String prefix = batchKey + ":";
+        String visiblePrefix = "visible:" + batchKey + ":";
         for (Iterator<String> keys = requestedLoadedBatchKeys.iterator(); keys.hasNext(); ) {
-            if (keys.next().startsWith(prefix)) keys.remove();
+            String key = keys.next();
+            if (key.startsWith(prefix) || key.startsWith(visiblePrefix)) keys.remove();
         }
         for (Iterator<String> keys = retryStates.keySet().iterator(); keys.hasNext(); ) {
-            if (keys.next().startsWith(prefix)) keys.remove();
+            String key = keys.next();
+            if (key.startsWith(prefix) || key.startsWith(visiblePrefix)) keys.remove();
         }
     }
 
@@ -461,6 +491,8 @@ public final class CommentBatchTranslator {
             retryStates.put(key, retry);
         }
         retry.attempts++;
+        // Whatever the last round asked for stays recorded, so a round that neither shrank the
+        // batch nor succeeded cannot be read as progress by the one after it.
         if (retry.attempts >= MAX_ATTEMPTS) {
             // Out of tries. Remembering the key is what keeps the next bind from asking again.
             retryStates.remove(key);
@@ -929,6 +961,8 @@ public final class CommentBatchTranslator {
     private static final class RetryState {
         int attempts;
         long retryAfterMs;
+        /** How many comments the last round asked for, so a round that shrinks is recognisable. */
+        int lastAsked;
     }
 
     private static final class PendingRequest {

@@ -81,6 +81,18 @@ final class SettingsListAdapter extends BaseAdapter implements WrapperListAdapte
                 params.setMarginStart(SettingsUi.dp(row.getContext(), 12));
                 widget.addView(arrow, params);
             }
+        } else if (widget != null) {
+            // Rows are recycled, and one class can make both kinds: Back up and Restore open a
+            // file picker and keep the chevron, Reset and Undo act and do not. Adding one and
+            // never taking it away meant "Reset settings" wore a chevron as soon as "Back up
+            // settings" had scrolled past it, which is the promise this exists to stop making.
+            View stale = widget.findViewWithTag("metra_chevron");
+            if (stale != null) {
+                widget.removeView(stale);
+                // The frame is here for the chevron on these rows, and an empty one still takes
+                // width. Preference hides it when the view is built, which reuse skips.
+                if (widget.getChildCount() == 0) widget.setVisibility(View.GONE);
+            }
         }
         return row;
     }

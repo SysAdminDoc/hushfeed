@@ -239,10 +239,15 @@ public class CommentBatchTranslatorTest {
         assertEquals("the third try never went out at all", 3, NativeManager.requests);
     }
 
-    @Test public void theLastFailureGivesUpOnTheBatchRatherThanWaitingLonger() {
+    @Test public void theLastFailureGivesUpOnTheBatchRatherThanWaitingLonger() throws Exception {
         // Three waits sit between four tries, and the last of them is the thirty second one. It
         // used to be unreachable: the give-up test fired one try early, so the delay the class
         // and the changelog both advertised was never used.
+        // The waits are the real windows and nothing is idled after the last failure. Reaching
+        // the cap remembers the key rather than starting another window, so a bind straight
+        // after proves the give-up rather than a backoff. Waiting instead used to idle past the
+        // sixty seconds a loaded batch lives for, and a batch that had aged out would not have
+        // been dispatched whatever the attempt count said.
         Anchor anchor = loadedAnchor("aid-give-up", "cid-give-up");
         long[] waits = {2_100L, 8_500L, 30_500L};
         for (int attempt = 1; attempt <= 4; attempt++) {
@@ -251,7 +256,7 @@ public class CommentBatchTranslatorTest {
             CommentBatchTranslator.onNativeBatchComplete(new Runner(null, anchor.comment));
             if (attempt < 4) idleFor(waits[attempt - 1]);
         }
-        idleFor(60_000L);
+        assertEquals("the batch aged out before the give-up could be seen", 1, loadedBatchCount());
         CommentBatchTranslator.registerCommentCell(new View(context), anchor);
         assertEquals("a batch that failed four times is still being asked for",
                 4, NativeManager.requests);
@@ -274,6 +279,24 @@ public class CommentBatchTranslatorTest {
         idleFor(11_000L);
         CommentBatchTranslator.registerCommentCell(new View(context), anchor);
         assertEquals("the fourth try never went out at all", 4, NativeManager.requests);
+    }
+
+    @Test public void aHostThatAnswersWithoutTranslatingAnythingIsNotTakenForProgress() {
+        // Returned but never marked translated: the comment stays in the next batch, the key is
+        // unchanged, and treating any answer at all as progress cleared the attempt count every
+        // round. Forty binds, forty requests, no backoff, the same three comments each time.
+        Comment[] all = {new Comment("aid-loop", "cid-loop-0"), new Comment("aid-loop", "cid-loop-1"),
+                new Comment("aid-loop", "cid-loop-2")};
+        CommentBatchTranslator.onCommentListLoaded(new CommentItemList(all));
+        Anchor anchor = new Anchor(all[0], new TranslationContext("aid-loop"));
+
+        for (int bind = 0; bind < 12; bind++) {
+            CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+            CommentBatchTranslator.onNativeBatchComplete(
+                    new Runner(Arrays.asList(all[0]), Arrays.asList(all)));
+        }
+        assertTrue("a host that translates nothing was asked over and over: "
+                + NativeManager.requests + " requests", NativeManager.requests <= 4);
     }
 
     @Test public void aBatchAnsweredAFewCommentsAtATimeIsSeenThroughToTheEnd() {

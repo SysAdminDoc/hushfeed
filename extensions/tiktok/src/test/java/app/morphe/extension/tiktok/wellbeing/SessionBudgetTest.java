@@ -560,6 +560,46 @@ public class SessionBudgetTest {
         assertTrue("raising the budget unlocked the day", SessionBudget.lockedToday());
     }
 
+    @Test public void movingTheDeviceTimezoneForwardDoesNotEndALockedDay() {
+        // The day only ever moving forward is not enough on its own. A forward zone change makes
+        // the day counter jump, which used to clear the lock, the hold and the counts together:
+        // two taps in the device settings and the rest of the day was handed back.
+        java.util.TimeZone original = java.util.TimeZone.getDefault();
+        try {
+            java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("America/Los_Angeles"));
+            SessionBudget.resetForTests();
+            now.set(at(2026, Calendar.SEPTEMBER, 7, 12, 0));
+            Settings.SESSION_BUDGET_LOCK.save(true);
+            spendTheBudget();
+            assertTrue("the day did not lock", SessionBudget.lockedToday());
+            long until = SessionBudget.lockedUntilMs();
+
+            java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Pacific/Kiritimati"));
+            assertTrue("a timezone change ended the locked day", SessionBudget.lockedToday());
+            assertTrue("a timezone change lifted the hold", SessionBudget.isLocked());
+            assertEquals("a timezone change cleared the counts", 1, SessionBudget.videosSeen());
+            assertEquals("the locked day moved when the zone did", until, SessionBudget.lockedUntilMs());
+        } finally {
+            java.util.TimeZone.setDefault(original);
+            SessionBudget.resetForTests();
+        }
+    }
+
+    @Test public void theSwitchTurnedOnAfterTheBudgetRanOutLocksTheRestOfTheDay() {
+        // It read as on and did nothing at all until tomorrow, and the day it was turned on for
+        // stayed open, which is not what a switch called "lock today's budget" says.
+        Settings.SESSION_BUDGET_VIDEOS.save(1);
+        SessionBudget.noteVideo("only-one");
+        assertTrue(SessionBudget.claimNotice());
+        assertFalse("the day was locked before the switch was touched", SessionBudget.lockedToday());
+
+        Settings.SESSION_BUDGET_LOCK.save(true);
+        assertTrue("turning the switch on did nothing for the day it was turned on for",
+                SessionBudget.lockedToday());
+        assertFalse("Start today over still cleared the day", SessionBudget.clear());
+        assertEquals(1, SessionBudget.videosSeen());
+    }
+
     @Test public void theLockLetsGoWhenTheDayTurnsOver() {
         Settings.SESSION_BUDGET_LOCK.save(true);
         spendTheBudget();

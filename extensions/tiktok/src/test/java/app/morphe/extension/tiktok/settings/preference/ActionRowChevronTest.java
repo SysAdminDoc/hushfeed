@@ -53,13 +53,41 @@ public class ActionRowChevronTest {
                 chevronOf(screen, 2));
     }
 
+    @Test public void aRowThatActsDoesNotInheritAChevronFromTheRowItWasRecycledFrom() {
+        // One class makes both kinds of row, and a ListView recycles freely between views of
+        // the same type. The chevron was only ever added, never taken away, so "Reset settings"
+        // wore one as soon as a row that opens a picker had scrolled past it.
+        Preference opensAPage = new Preference(activity);
+        opensAPage.setKey("opens_a_page");
+        opensAPage.setTitle("Diagnostics");
+        PreferenceScreen screen = screenWith(opensAPage, new StartTodayOverPreference(activity));
+
+        ListAdapter delegate = screen.getRootAdapter();
+        SettingsListAdapter adapter = new SettingsListAdapter(delegate);
+        try {
+            ListView parent = new ListView(activity);
+            View pageRow = adapter.getView(0, null, parent);
+            assertNotNull("the control row lost its chevron, so this proves nothing",
+                    chevron(pageRow));
+
+            // The same view handed back for the acting row, which is what scrolling does.
+            View actingRow = adapter.getView(1, pageRow, parent);
+            assertNull("a recycled row kept the chevron of the row before it", chevron(actingRow));
+        } finally {
+            adapter.dispose();
+        }
+    }
+
+    private static View chevron(View row) {
+        ViewGroup widget = row.findViewById(android.R.id.widget_frame);
+        return widget == null ? null : widget.findViewWithTag("metra_chevron");
+    }
+
     private View chevronOf(PreferenceScreen screen, int position) {
         ListAdapter delegate = screen.getRootAdapter();
         SettingsListAdapter adapter = new SettingsListAdapter(delegate);
         try {
-            View row = adapter.getView(position, null, new ListView(activity));
-            ViewGroup widget = row.findViewById(android.R.id.widget_frame);
-            return widget == null ? null : widget.findViewWithTag("metra_chevron");
+            return chevron(adapter.getView(position, null, new ListView(activity)));
         } finally {
             adapter.dispose();
         }
