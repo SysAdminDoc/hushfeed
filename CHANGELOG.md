@@ -1,4 +1,4 @@
-## Unreleased
+## 0.22.0 (2026-09-07)
 
 * The block button, the sound and Not interested buttons, the undo banner and the daily budget hold come back after TikTok rebuilds its main screen. The extension kept the first activity it was handed for the life of the process, so anything drawn over the feed went to a window that was no longer on screen, and nothing noticed because a rebuilt screen is destroyed rather than finishing.
 
