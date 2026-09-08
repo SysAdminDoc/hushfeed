@@ -49,8 +49,3 @@ internal object CommentListLoadedFingerprint : Fingerprint(
     },
 )
 
-internal object MultiCommentTranslationCompleteFingerprint : Fingerprint(
-    returnType = "V",
-    parameters = listOf("L"),
-    strings = listOf("MultiCommentTranslationTask startTranslate onComplete "),
-)
