@@ -10,6 +10,7 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.util.numberOfParameterRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 
 private const val VIDEO = "Lcom/ss/android/ugc/aweme/feed/model/Video;"
@@ -85,7 +86,9 @@ val advancedDownloadsPatch = bytecodePatch(
     execute {
         listOf(DownloadAddressFingerprint, CleanDownloadAddressFingerprint).forEach { fingerprint ->
             fingerprint.method.apply {
-                check(implementation!!.registerCount > 1)
+                check(implementation!!.registerCount - numberOfParameterRegisters >= 1) {
+                    "Advanced downloads: ${fingerprint.method.name} has no free local register."
+                }
                 addInstructionsWithLabels(0, """
                     invoke-static/range { p0 .. p0 }, ${EXTENSION}QualitySelector;->download(Ljava/lang/Object;)$URL
                     move-result-object v0
@@ -95,7 +98,9 @@ val advancedDownloadsPatch = bytecodePatch(
             }
         }
         StartDownloadFingerprint.method.apply {
-            check(implementation!!.registerCount > parameterTypes.size + 1)
+            check(implementation!!.registerCount - numberOfParameterRegisters >= 1) {
+                "Advanced downloads: the photo download start has no free local register."
+            }
             addInstructionsWithLabels(0, """
                 invoke-static/range { p1 .. p2 }, ${EXTENSION}OriginalPhotos;->start(Ljava/lang/Object;Landroid/content/Context;)Z
                 move-result v0

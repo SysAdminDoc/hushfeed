@@ -14,6 +14,7 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.util.numberOfParameterRegisters
 
 private const val EXTENSION = "Lapp/morphe/extension/tiktok/interaction/VideoFit;"
 
@@ -48,7 +49,7 @@ val videoFitPatch = bytecodePatch(
     execute {
         SaveAdaptionResultFingerprint.method.apply {
             // p0 is the result, p1 the video view. Two locals, so v0 is free.
-            check(implementation!!.registerCount > parameterTypes.size + 1) {
+            check(implementation!!.registerCount - numberOfParameterRegisters >= 1) {
                 "Fit video to the screen: saveResultInner has no free local register."
             }
             addInstructions(

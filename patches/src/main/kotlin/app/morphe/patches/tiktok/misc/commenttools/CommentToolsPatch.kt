@@ -17,6 +17,8 @@ import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.patches.tiktok.misc.translation.BaseCommentCellBindFingerprint
 import app.morphe.patches.tiktok.misc.translation.CommentListLoadedFingerprint
+import app.morphe.patches.tiktok.shared.callThroughLocals
+import app.morphe.patches.tiktok.shared.objectIn
 import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
@@ -122,9 +124,19 @@ val commentToolsPatch = bytecodePatch(
                 "Comment tools: could not locate the loaded comment list response.",
             )
 
-            addInstruction(
+            val responseRegister = (implementation!!.instructions.elementAt(responseReadyIndex)
+                as? TwoRegisterInstruction)?.registerB ?: throw PatchException(
+                "Comment tools: the loaded comment list is not read from a register.",
+            )
+
+            addInstructions(
                 responseReadyIndex,
-                "invoke-static {v0}, $EXTENSION_CLASS_DESCRIPTOR->onCommentListLoaded(Ljava/lang/Object;)V",
+                callThroughLocals(
+                    "Comment tools",
+                    "invoke-static",
+                    "$EXTENSION_CLASS_DESCRIPTOR->onCommentListLoaded(Ljava/lang/Object;)V",
+                    objectIn("v$responseRegister"),
+                ),
             )
         }
     }

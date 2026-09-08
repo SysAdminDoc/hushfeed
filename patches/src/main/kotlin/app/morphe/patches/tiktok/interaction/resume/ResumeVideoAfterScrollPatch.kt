@@ -7,6 +7,7 @@ package app.morphe.patches.tiktok.interaction.resume
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
@@ -15,6 +16,7 @@ import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionReversedOrThrow
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val EXTENSION_DESCRIPTOR =
@@ -83,16 +85,32 @@ val resumeVideoAfterScrollPatch = bytecodePatch(
             }
             val continueInstruction = getInstruction(cachePutIndex + 1)
 
+            // The cache, the key and a register to work in all come out of the put itself: it
+            // holds the cache and the key this has to remove, and the value it was given is
+            // spent the moment it returns. Naming them by number was right on 46.2.3 and says
+            // nothing about the next build.
+            val put = getInstruction(cachePutIndex) as? FiveRegisterInstruction
+                ?: throw PatchException(
+                    "Resume video after scroll: the progress cache put is not a plain invoke.",
+                )
+            val cacheRegister = put.registerC
+            val keyRegister = put.registerD
+            val scratchRegister = put.registerE
+            check(maxOf(cacheRegister, keyRegister, scratchRegister) <= 15) {
+                "Resume video after scroll: the progress cache put reaches above v15, which the " +
+                    "removal cannot name."
+            }
+
             addInstructionsWithLabels(
                 cachePutIndex + 1,
                 """
                     invoke-static/range {p2 .. p5}, $EXTENSION_DESCRIPTOR->shouldClearCompletedProgress(JJ)Z
-                    move-result v5
-                    if-eqz v5, :continue_progress
-                    invoke-virtual {v14, v6}, Landroid/util/LruCache;->remove(Ljava/lang/Object;)Ljava/lang/Object;
-                    const/4 v5, 0x0
-                    sput-object v5, LX/0Lze;->LJ:LX/0LxV;
-                    sput-object v5, LX/0Lze;->LJFF:Ljava/lang/String;
+                    move-result v$scratchRegister
+                    if-eqz v$scratchRegister, :continue_progress
+                    invoke-virtual {v$cacheRegister, v$keyRegister}, Landroid/util/LruCache;->remove(Ljava/lang/Object;)Ljava/lang/Object;
+                    const/4 v$scratchRegister, 0x0
+                    sput-object v$scratchRegister, LX/0Lze;->LJ:LX/0LxV;
+                    sput-object v$scratchRegister, LX/0Lze;->LJFF:Ljava/lang/String;
                 """,
                 ExternalLabel("continue_progress", continueInstruction),
             )

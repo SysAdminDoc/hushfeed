@@ -11,6 +11,8 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.patches.tiktok.shared.callThroughLocals
+import app.morphe.patches.tiktok.shared.objectIn
 import app.morphe.util.getReference
 import app.morphe.util.findMutableMethodOf
 import app.morphe.util.findInstructionIndicesReversedOrThrow
@@ -149,18 +151,35 @@ val commentTranslationPatch = bytecodePatch(
                 "Translate comments: could not locate loaded comment list response.",
             )
 
-            addInstruction(
+            val responseRegister = (implementation!!.instructions.elementAt(responseReadyIndex)
+                as? TwoRegisterInstruction)?.registerB ?: throw PatchException(
+                "Translate comments: the loaded comment list is not read from a register.",
+            )
+
+            addInstructions(
                 responseReadyIndex,
-                "invoke-static {v0}, $EXTENSION_CLASS_DESCRIPTOR->onCommentListLoaded(Ljava/lang/Object;)V",
+                callThroughLocals(
+                    "Translate comments",
+                    "invoke-static",
+                    "$EXTENSION_CLASS_DESCRIPTOR->onCommentListLoaded(Ljava/lang/Object;)V",
+                    objectIn("v$responseRegister"),
+                ),
             )
         }
 
-        MultiCommentTranslationStartFingerprint.method.addInstructions(
-            0,
-            """
-                invoke-static/range {v16 .. v18}, $EXTENSION_CLASS_DESCRIPTOR->onNativeBatchStart(Ljava/lang/Object;Ljava/lang/Object;Z)V
-            """,
-        )
+        MultiCommentTranslationStartFingerprint.method.apply {
+            check(AccessFlags.STATIC.isSet(accessFlags) && parameterTypes.size == 3 &&
+                parameterTypes[2] == "Z"
+            ) {
+                "Translate comments: the batch start is not the three argument static this reads."
+            }
+            addInstructions(
+                0,
+                """
+                    invoke-static/range {p0 .. p2}, $EXTENSION_CLASS_DESCRIPTOR->onNativeBatchStart(Ljava/lang/Object;Ljava/lang/Object;Z)V
+                """,
+            )
+        }
 
         // Every method carrying the anchor, not the first one a fingerprint happened to
         // match. On 46.2.3 the string sits in two bodies of the same class, both static and

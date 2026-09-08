@@ -350,11 +350,19 @@ val feedFilterPatch = bytecodePatch(
             """,
         )
 
-        TakoAiFeedButtonBindFingerprint.method.addInstructions(
-            2,
-            "invoke-static/range {p1 .. p1}, " +
-                "$TAKO_AI_FILTER_CLASS_DESCRIPTOR->hideBoundFeedButtonView(Landroid/view/View;)V",
-        )
+        TakoAiFeedButtonBindFingerprint.method.apply {
+            // After the base class has laid the view out, which is what index 2 meant on 46.2.3
+            // and what it stops meaning the moment anything is added above it.
+            val superIndex = indexOfFirstInstructionOrThrow {
+                opcode == Opcode.INVOKE_SUPER &&
+                    getReference<MethodReference>()?.name == "onViewCreated"
+            }
+            addInstructions(
+                superIndex + 1,
+                "invoke-static/range {p1 .. p1}, " +
+                    "$TAKO_AI_FILTER_CLASS_DESCRIPTOR->hideBoundFeedButtonView(Landroid/view/View;)V",
+            )
+        }
 
         // Things TikTok slots into the feed that never arrive as ordinary items, so they
         // are stopped where they are built. Each is optional: a build without the surface

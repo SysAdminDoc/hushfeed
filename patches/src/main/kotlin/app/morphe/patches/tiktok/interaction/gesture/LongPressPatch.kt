@@ -17,6 +17,7 @@ import app.morphe.patches.tiktok.interaction.blockauthor.blockAuthorPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.getReference
+import app.morphe.util.numberOfParameterRegisters
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val EXTENSION = "Lapp/morphe/extension/tiktok/interaction/GestureActions;"
@@ -90,7 +91,7 @@ val longPressPatch = bytecodePatch(
     execute {
         FeedLongPressFingerprint.method.apply {
             // v0 is scratch; the check keeps it a local rather than a parameter register.
-            check(implementation!!.registerCount > parameterTypes.size + 1) {
+            check(implementation!!.registerCount - numberOfParameterRegisters >= 1) {
                 "Long-press controls: onLongPress has no free local register."
             }
             addInstructionsWithLabels(

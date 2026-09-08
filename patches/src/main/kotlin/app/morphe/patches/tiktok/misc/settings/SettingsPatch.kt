@@ -16,8 +16,10 @@ import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.util.findMutableMethodOf
 import app.morphe.util.findFreeRegister
+import app.morphe.util.getFreeRegisterProvider
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionOrThrow
+import app.morphe.util.numberOfParameterRegisters
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method as SmaliMethod
 import com.android.tools.smali.dexlib2.Opcode
@@ -274,16 +276,29 @@ val settingsPatch = bytecodePatch(
             val listRegister = (composeRowsMethod.getInstruction(sortedListIndex + 1) as? OneRegisterInstruction)
                 ?.registerA ?: return false
 
+            // v0, v1 and v2 were free here on 46.2.3 and nothing said so. The list this
+            // rebuilds is 41 registers deep, and all three are read by the injected code, so
+            // they have to be found rather than assumed. All three are named by plain invokes,
+            // which reach v15 and no further.
+            val registers = composeRowsMethod.getFreeRegisterProvider(
+                sortedListIndex + 2,
+                3,
+                listOf(listRegister),
+            )
+            val copyRegister = registers.getFreeRegister4Bit()
+            val valueRegister = registers.getFreeRegister4Bit()
+            val indexRegister = registers.getFreeRegister4Bit()
+
             composeRowsMethod.addInstructions(
                 sortedListIndex + 2,
                 """
-                    new-instance v0, Ljava/util/ArrayList;
-                    move-object v1, v$listRegister
-                    invoke-direct {v0, v1}, Ljava/util/ArrayList;-><init>(Ljava/util/Collection;)V
-                    sget-object v1, ${openDebugField.definingClass}->OPEN_DEBUG:${openDebugField.type}
-                    const/4 v2, 0x0
-                    invoke-virtual {v0, v2, v1}, Ljava/util/ArrayList;->add(ILjava/lang/Object;)V
-                    move-object v$listRegister, v0
+                    new-instance v$copyRegister, Ljava/util/ArrayList;
+                    move-object v$valueRegister, v$listRegister
+                    invoke-direct {v$copyRegister, v$valueRegister}, Ljava/util/ArrayList;-><init>(Ljava/util/Collection;)V
+                    sget-object v$valueRegister, ${openDebugField.definingClass}->OPEN_DEBUG:${openDebugField.type}
+                    const/4 v$indexRegister, 0x0
+                    invoke-virtual {v$copyRegister, v$indexRegister, v$valueRegister}, Ljava/util/ArrayList;->add(ILjava/lang/Object;)V
+                    move-object v$listRegister, v$copyRegister
                 """,
             )
 
@@ -315,7 +330,13 @@ val settingsPatch = bytecodePatch(
         AdPersonalizationActivityOnCreateFingerprint.method.apply {
             val initializeSettingsIndex = implementation!!.instructions.indexOfFirst { it.opcode == Opcode.INVOKE_SUPER } + 1
             val thisRegister = getInstruction<Instruction35c>(initializeSettingsIndex - 1).registerC
-            val usableRegister = implementation!!.registerCount - parameters.size - 2
+            // The highest local. Counting parameters rather than the registers they occupy
+            // put this on top of a wide parameter's upper half on any method holding one.
+            val locals = implementation!!.registerCount - numberOfParameterRegisters
+            check(locals >= 1) {
+                "Settings: the ad personalisation activity has no free local register."
+            }
+            val usableRegister = locals - 1
 
             addInstructionsWithLabels(
                 initializeSettingsIndex,

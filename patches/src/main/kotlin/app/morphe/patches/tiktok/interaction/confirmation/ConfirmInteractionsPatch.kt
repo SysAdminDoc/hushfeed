@@ -11,6 +11,7 @@ import app.morphe.patches.tiktok.interaction.blockauthor.blockAuthorPatch
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.util.numberOfParameterRegisters
 
 private object FollowClickFingerprint : Fingerprint(
     strings = listOf("VIDEO_CANCEL_REPORT_SKIP_BEHAVIOR", "click_add", "guide_dm"),
@@ -37,7 +38,9 @@ val confirmInteractionsPatch = bytecodePatch(
     execute {
         listOf(FollowClickFingerprint to "follow", LikeClickFingerprint to "like").forEach { (fingerprint, callback) ->
             val method = fingerprint.method
-            check(method.implementation!!.registerCount > method.parameterTypes.size + 1)
+            check(method.implementation!!.registerCount - method.numberOfParameterRegisters >= 1) {
+                "Confirm interactions: ${method.name} has no free local register for the answer."
+            }
             method.addInstructionsWithLabels(0, """
                 invoke-static/range { p1 .. p1 }, Lapp/morphe/extension/tiktok/interaction/TapConfirmation;->$callback(Landroid/view/View;)Z
                 move-result v0

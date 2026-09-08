@@ -15,6 +15,7 @@ import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.getReference
+import app.morphe.util.numberOfParameterRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
@@ -84,7 +85,7 @@ val notificationControlsPatch = bytecodePatch(
             ) {
                 "Notification controls: the push handler no longer takes the message in p1."
             }
-            check(implementation!!.registerCount > parameterTypes.size) {
+            check(implementation!!.registerCount - numberOfParameterRegisters >= 1) {
                 "Notification controls: the push handler has no free local register."
             }
             addInstructions(

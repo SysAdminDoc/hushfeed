@@ -11,6 +11,7 @@ import app.morphe.patches.tiktok.interaction.blockauthor.blockAuthorPatch
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.util.numberOfParameterRegisters
 
 private const val EXTENSION = "Lapp/morphe/extension/tiktok/interaction/GestureActions;"
 private const val COMMENT_CLASS = "Lcom/ss/android/ugc/aweme/feed/assem/videocomment/VideoCommentAssem;"
@@ -39,7 +40,9 @@ val doubleTapPatch = bytecodePatch(
     dependsOn(settingsPatch, sharedExtensionPatch, blockAuthorPatch)
     execute {
         DoubleTapFingerprint.method.apply {
-            check(implementation!!.registerCount > parameterTypes.size + 1)
+            check(implementation!!.registerCount - numberOfParameterRegisters >= 1) {
+                "Double tap: the tap handler has no free local register."
+            }
             addInstructionsWithLabels(0, """
                 invoke-static {}, $EXTENSION->onDoubleTap()Z
                 move-result v0
