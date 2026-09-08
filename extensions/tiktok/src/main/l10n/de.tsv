@@ -651,3 +651,8 @@ That is not a Hushfeed settings backup. Nothing was altered.	Das ist keine Hushf
 That backup was written by a newer Hushfeed than this one. Nothing was altered.	Diese Sicherung stammt aus einem neueren Hushfeed als diesem. Es wurde nichts geändert.
 That settings backup is incomplete, so it may have been cut short. Nothing was altered.	Diese Einstellungssicherung ist unvollständig und wurde womöglich abgeschnitten. Es wurde nichts geändert.
 That settings backup holds a value Hushfeed cannot read. Nothing was altered.	Diese Einstellungssicherung enthält einen Wert, den Hushfeed nicht lesen kann. Es wurde nichts geändert.
+Lock today's budget	Heutiges Budget sperren
+Off by default. Switched on, the hold that starts when today's budget runs out has no way out, and the budgets, the reset hour and this switch cannot be changed again until the day starts over. Switch it off any time before the budget runs out.	Standardmäßig aus. Eingeschaltet hat die Sperre, die beim Aufbrauchen des heutigen Budgets beginnt, keinen Ausweg, und die Budgets, die Rücksetzstunde und dieser Schalter lassen sich bis zum Tagesbeginn nicht mehr ändern. Vor dem Aufbrauchen des Budgets kann er jederzeit ausgeschaltet werden.
+Today's budget is locked. This can be changed again at %1$s.	Das heutige Budget ist gesperrt. Änderungen sind wieder ab %1$s möglich.
+Today's budget is locked. The day starts over at %1$s.	Das heutige Budget ist gesperrt. Der Tag beginnt um %1$s von vorn.
+Today's budget is locked. The feed opens again at %1$s. Messages, profiles and search still work.	Das heutige Budget ist gesperrt. Der Feed öffnet wieder um %1$s. Nachrichten, Profile und Suche funktionieren weiterhin.

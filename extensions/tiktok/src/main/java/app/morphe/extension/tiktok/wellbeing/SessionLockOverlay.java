@@ -47,6 +47,8 @@ public final class SessionLockOverlay {
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
     private static WeakReference<View> overlayReference = new WeakReference<>(null);
     private static WeakReference<TextView> remainingReference = new WeakReference<>(null);
+    private static WeakReference<TextView> releaseReference = new WeakReference<>(null);
+    private static WeakReference<TextView> hintReference = new WeakReference<>(null);
     private static volatile boolean ticking;
 
     /**
@@ -135,9 +137,42 @@ public final class SessionLockOverlay {
             if (goingUp) requestQuiet();
             TextView remaining = remainingReference.get();
             if (remaining != null) remaining.setText(remainingLabel());
+            applyLockedState();
         } catch (Throwable error) {
             Logger.printException(() -> "Could not update the session lock overlay", error);
         }
+    }
+
+    /**
+     * Takes the way out away on a day the reader locked, and says when it comes back.
+     *
+     * <p>Run on every sync rather than only when the panel is built, because the panel can
+     * outlive the day: it is left attached while the reader is on messages or a profile.
+     */
+    private static void applyLockedState() {
+        boolean locked = SessionBudget.lockedToday();
+        TextView release = releaseReference.get();
+        if (release != null) release.setVisibility(locked ? View.GONE : View.VISIBLE);
+        TextView hint = hintReference.get();
+        if (hint == null) return;
+        // One literal, because the translation gate reads the literal handed to L10n and a
+        // string built from two of them is two entries it cannot find.
+        hint.setText(locked
+                ? L10n.f("Today's budget is locked. The feed opens again at %1$s. Messages, profiles and search still work.", resetTimeLabel())
+                : L10n.t("Messages, profiles and search still work."));
+    }
+
+    /** The hour the locked day ends, on the reader's own clock. */
+    public static String resetTimeLabel() {
+        long until = SessionBudget.lockedUntilMs();
+        if (until <= 0) return "";
+        Context context = Utils.getContext();
+        if (context == null) {
+            return java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT)
+                    .format(new java.util.Date(until));
+        }
+        return android.text.format.DateFormat.getTimeFormat(context)
+                .format(new java.util.Date(until));
     }
 
     static String remainingLabel() {
@@ -197,6 +232,7 @@ public final class SessionLockOverlay {
         hint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         hint.setGravity(Gravity.CENTER);
         panel.addView(hint);
+        hintReference = new WeakReference<>(hint);
 
         // The way out. A budget nobody can overrule is a budget people switch off instead, and
         // this has to be here rather than on a banner, which the panel would cover.
@@ -217,11 +253,16 @@ public final class SessionLockOverlay {
         releaseParams.topMargin = SettingsUi.dp(activity, 28);
         release.setLayoutParams(releaseParams);
         release.setOnClickListener(view -> {
+            // The model refuses this on a locked day. Checked here too, so the tap is answered
+            // rather than doing nothing at all.
+            if (SessionBudget.lockedToday()) return;
             SessionBudget.releaseLock();
             sync();
             Utils.showToastShort(L10n.t("The feed is open again"));
         });
         panel.addView(release);
+        releaseReference = new WeakReference<>(release);
+        applyLockedState();
 
         // Stops above the navigation. Covering the whole content root would take the tab bar
         // with it, and then messages, profiles and search are not reachable at all, which is the
@@ -307,6 +348,8 @@ public final class SessionLockOverlay {
         View overlay = overlayReference.get();
         overlayReference = new WeakReference<>(null);
         remainingReference = new WeakReference<>(null);
+        releaseReference = new WeakReference<>(null);
+        hintReference = new WeakReference<>(null);
         if (overlay == null) return;
         ViewGroup parent = overlay.getParent() instanceof ViewGroup
                 ? (ViewGroup) overlay.getParent() : null;

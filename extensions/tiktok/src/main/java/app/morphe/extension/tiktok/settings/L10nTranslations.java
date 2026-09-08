@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1300);
+        Map<String, String> table = new HashMap<>(1310);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -735,6 +735,8 @@ public final class L10nTranslations {
                 "Links, Datenschutz und Wiedergabewerkzeuge");
         table.put("Locally hidden creators",
                 "Lokal ausgeblendete Creator");
+        table.put("Lock today's budget",
+                "Heutiges Budget sperren");
         table.put("Long press",
                 "Langes Drücken");
         table.put("Lowest",
@@ -793,11 +795,11 @@ public final class L10nTranslations {
                 "Keine Share-Aktionen passen zu dieser Suche");
         table.put("No sound to block on this video",
                 "Bei diesem Video gibt es keinen Sound zum Blockieren");
-        table.put("No suggested accounts to clear",
-                "Es gibt keine Kontovorschläge zum Entfernen");
     }
 
     private static void fillDe6(Map<String, String> table) {
+        table.put("No suggested accounts to clear",
+                "Es gibt keine Kontovorschläge zum Entfernen");
         table.put("No surface has looked anything up yet, so there is nothing to report.",
                 "Noch hat keine Oberfläche etwas nachgeschlagen, es gibt also nichts zu melden.");
         table.put("No video selected",
@@ -816,6 +818,8 @@ public final class L10nTranslations {
                 "Bisher wurde nichts nachgeschlagen. Nutze die App einen Moment und komm dann zurück.");
         table.put("Nothing is playing to seek",
                 "Es läuft gerade nichts zum Springen");
+        table.put("Off by default. Switched on, the hold that starts when today's budget runs out has no way out, and the budgets, the reset hour and this switch cannot be changed again until the day starts over. Switch it off any time before the budget runs out.",
+                "Standardmäßig aus. Eingeschaltet hat die Sperre, die beim Aufbrauchen des heutigen Budgets beginnt, keinen Ausweg, und die Budgets, die Rücksetzstunde und dieser Schalter lassen sich bis zum Tagesbeginn nicht mehr ändern. Vor dem Aufbrauchen des Budgets kann er jederzeit ausgeschaltet werden.");
         table.put("Offline videos limit",
                 "Limit für Offline-Videos");
         table.put("On mobile data",
@@ -914,13 +918,13 @@ public final class L10nTranslations {
                 "Entfernen");
         table.put("Remove %1$s",
                 "%1$s entfernen");
+    }
+
+    private static void fillDe7(Map<String, String> table) {
         table.put("Remove feed ads",
                 "Werbung im Feed entfernen");
         table.put("Remove the Share via row.",
                 "Die Zeile „Teilen über“ entfernen.");
-    }
-
-    private static void fillDe7(Map<String, String> table) {
         table.put("Remove the actions row from the share sheet.",
                 "Die Aktionszeile aus dem Teilen-Menü entfernen.");
         table.put("Remove the ads TikTok puts between videos.",
@@ -1037,13 +1041,13 @@ public final class L10nTranslations {
                 "Serienbeiträge");
         table.put("Settings",
                 "Einstellungen");
+    }
+
+    private static void fillDe8(Map<String, String> table) {
         table.put("Settings backup saved",
                 "Einstellungssicherung gespeichert");
         table.put("Settings recovery could not finish. Use Undo or restore your backup.",
                 "Die Einstellungswiederherstellung konnte nicht abgeschlossen werden. Nutze Rückgängig oder stelle deine Sicherung wieder her.");
-    }
-
-    private static void fillDe8(Map<String, String> table) {
         table.put("Settings recovery needs attention. Use Undo or restore your backup.",
                 "Die Einstellungswiederherstellung benötigt Aufmerksamkeit. Nutze Rückgängig oder stelle deine Sicherung wieder her.");
         table.put("Settings saved. Restart TikTok to apply all changes.",
@@ -1160,13 +1164,13 @@ public final class L10nTranslations {
                 "Entfernt die Serien-Schaltfläche in einem Chat und die zugehörige Erinnerung.");
         table.put("Tap %1$s again to send",
                 "Zum Senden noch einmal auf %1$s tippen");
+    }
+
+    private static void fillDe9(Map<String, String> table) {
         table.put("Tap again to follow",
                 "Noch einmal tippen zum Folgen");
         table.put("Tap again to like",
                 "Noch einmal tippen zum Liken");
-    }
-
-    private static void fillDe9(Map<String, String> table) {
         table.put("Tap the feed Follow button twice within four seconds.",
                 "Tippe die Folgen-Schaltfläche im Feed innerhalb von vier Sekunden zweimal an.");
         table.put("Tap the like heart twice within four seconds. Removing a like stays immediate.",
@@ -1271,12 +1275,21 @@ public final class L10nTranslations {
                 "TikTok hat das Folgen abgelehnt: %1$s");
         table.put("Today starts again",
                 "Heute beginnt neu");
+        table.put("Today's budget is locked. The day starts over at %1$s.",
+                "Das heutige Budget ist gesperrt. Der Tag beginnt um %1$s von vorn.");
+        table.put("Today's budget is locked. The feed opens again at %1$s. Messages, profiles and search still work.",
+                "Das heutige Budget ist gesperrt. Der Feed öffnet wieder um %1$s. Nachrichten, Profile und Suche funktionieren weiterhin.");
+        table.put("Today's budget is locked. This can be changed again at %1$s.",
+                "Das heutige Budget ist gesperrt. Änderungen sind wieder ab %1$s möglich.");
         table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Save original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",
                 "Tokens: {creator}, {date}, {video_id}, {index}. {index} nummeriert die Fotos einer Diashow, die du mit „Originalfotos speichern“ sicherst; alles, was über TikToks eigene Schaltfläche gespeichert wird, nummeriert stattdessen der Ordner. Die Dateiendung wird automatisch beibehalten.");
         table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
                 "Platzhalter: {creator}, {date}, {video_id}. Die Dateiendung bleibt automatisch erhalten.");
         table.put("Tokens: {date}, {media_id}. Works for image and video stickers.",
                 "Platzhalter: {date}, {media_id}. Gilt für Bild- und Video-Sticker.");
+    }
+
+    private static void fillDe10(Map<String, String> table) {
         table.put("Too many media saves are already running. Try again shortly.",
                 "Es laufen bereits zu viele Medienspeicherungen. Versuche es gleich noch einmal.");
         table.put("Translate comments as they load, using TikTok's own translator.",
@@ -1287,9 +1300,6 @@ public final class L10nTranslations {
                 "Versuche einen Ländernamen oder ein Kürzel aus zwei Buchstaben");
         table.put("Try a different word or clear the search.",
                 "Versuche ein anderes Wort oder lösche die Suche.");
-    }
-
-    private static void fillDe10(Map<String, String> table) {
         table.put("Two letters, like us, gb or jp.",
                 "Zwei Buchstaben, etwa us, gb oder jp.");
         table.put("Type to search settings",
@@ -1393,7 +1403,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1300);
+        Map<String, String> table = new HashMap<>(1310);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2084,6 +2094,8 @@ public final class L10nTranslations {
                 "Tautan, privasi, dan perkakas pemutar");
         table.put("Locally hidden creators",
                 "Kreator yang disembunyikan secara lokal");
+        table.put("Lock today's budget",
+                "Kunci anggaran hari ini");
         table.put("Long press",
                 "Tekan lama");
         table.put("Lowest",
@@ -2142,11 +2154,11 @@ public final class L10nTranslations {
                 "Tidak ada tindakan berbagi yang cocok dengan pencarian ini");
         table.put("No sound to block on this video",
                 "Tidak ada suara untuk diblokir di video ini");
-        table.put("No suggested accounts to clear",
-                "Tidak ada akun saran yang bisa dihapus");
     }
 
     private static void fillIn6(Map<String, String> table) {
+        table.put("No suggested accounts to clear",
+                "Tidak ada akun saran yang bisa dihapus");
         table.put("No surface has looked anything up yet, so there is nothing to report.",
                 "Belum ada permukaan yang mencari apa pun, jadi tidak ada yang bisa dilaporkan.");
         table.put("No video selected",
@@ -2165,6 +2177,8 @@ public final class L10nTranslations {
                 "Belum ada yang dicari. Gunakan aplikasi sebentar, lalu kembali ke sini.");
         table.put("Nothing is playing to seek",
                 "Tidak ada yang diputar untuk dilompati");
+        table.put("Off by default. Switched on, the hold that starts when today's budget runs out has no way out, and the budgets, the reset hour and this switch cannot be changed again until the day starts over. Switch it off any time before the budget runs out.",
+                "Mati secara bawaan. Bila dinyalakan, penahanan yang dimulai saat anggaran hari ini habis tidak punya jalan keluar, dan anggaran, jam mulai hari serta sakelar ini tidak bisa diubah lagi sampai hari berganti. Matikan kapan saja sebelum anggaran habis.");
         table.put("Offline videos limit",
                 "Batas video offline");
         table.put("On mobile data",
@@ -2263,13 +2277,13 @@ public final class L10nTranslations {
                 "Hapus");
         table.put("Remove %1$s",
                 "Hapus %1$s");
+    }
+
+    private static void fillIn7(Map<String, String> table) {
         table.put("Remove feed ads",
                 "Hapus iklan di feed");
         table.put("Remove the Share via row.",
                 "Hapus baris Bagikan lewat.");
-    }
-
-    private static void fillIn7(Map<String, String> table) {
         table.put("Remove the actions row from the share sheet.",
                 "Hapus baris aksi dari menu bagikan.");
         table.put("Remove the ads TikTok puts between videos.",
@@ -2386,13 +2400,13 @@ public final class L10nTranslations {
                 "Kiriman serial");
         table.put("Settings",
                 "Pengaturan");
+    }
+
+    private static void fillIn8(Map<String, String> table) {
         table.put("Settings backup saved",
                 "Cadangan pengaturan disimpan");
         table.put("Settings recovery could not finish. Use Undo or restore your backup.",
                 "Pemulihan pengaturan tidak dapat diselesaikan. Gunakan Urungkan atau pulihkan cadanganmu.");
-    }
-
-    private static void fillIn8(Map<String, String> table) {
         table.put("Settings recovery needs attention. Use Undo or restore your backup.",
                 "Pemulihan pengaturan memerlukan perhatian. Gunakan Urungkan atau pulihkan cadanganmu.");
         table.put("Settings saved. Restart TikTok to apply all changes.",
@@ -2509,13 +2523,13 @@ public final class L10nTranslations {
                 "Hilangkan tombol rentetan di obrolan beserta pesan pengingatnya.");
         table.put("Tap %1$s again to send",
                 "Ketuk %1$s lagi untuk mengirim");
+    }
+
+    private static void fillIn9(Map<String, String> table) {
         table.put("Tap again to follow",
                 "Ketuk lagi untuk mengikuti");
         table.put("Tap again to like",
                 "Ketuk lagi untuk menyukai");
-    }
-
-    private static void fillIn9(Map<String, String> table) {
         table.put("Tap the feed Follow button twice within four seconds.",
                 "Ketuk tombol Ikuti di feed dua kali dalam empat detik.");
         table.put("Tap the like heart twice within four seconds. Removing a like stays immediate.",
@@ -2620,12 +2634,21 @@ public final class L10nTranslations {
                 "TikTok menolak permintaan mengikuti: %1$s");
         table.put("Today starts again",
                 "Hari ini dimulai lagi");
+        table.put("Today's budget is locked. The day starts over at %1$s.",
+                "Anggaran hari ini terkunci. Hari dimulai ulang pada %1$s.");
+        table.put("Today's budget is locked. The feed opens again at %1$s. Messages, profiles and search still work.",
+                "Anggaran hari ini terkunci. Feed terbuka lagi pada %1$s. Pesan, profil dan pencarian tetap berfungsi.");
+        table.put("Today's budget is locked. This can be changed again at %1$s.",
+                "Anggaran hari ini terkunci. Ini bisa diubah lagi pada %1$s.");
         table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Save original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",
                 "Token: {creator}, {date}, {video_id}, {index}. {index} menomori foto slideshow yang kamu simpan dengan Simpan foto asli; apa pun yang disimpan lewat tombol TikTok sendiri dinomori oleh folder. Ekstensi file dipertahankan otomatis.");
         table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
                 "Token: {creator}, {date}, {video_id}. Ekstensi berkas dipertahankan otomatis.");
         table.put("Tokens: {date}, {media_id}. Works for image and video stickers.",
                 "Token: {date}, {media_id}. Berlaku untuk stiker gambar dan video.");
+    }
+
+    private static void fillIn10(Map<String, String> table) {
         table.put("Too many media saves are already running. Try again shortly.",
                 "Terlalu banyak penyimpanan media yang sedang berjalan. Coba lagi sebentar.");
         table.put("Translate comments as they load, using TikTok's own translator.",
@@ -2636,9 +2659,6 @@ public final class L10nTranslations {
                 "Coba nama negara, atau kode dua huruf");
         table.put("Try a different word or clear the search.",
                 "Coba kata lain atau hapus pencarian.");
-    }
-
-    private static void fillIn10(Map<String, String> table) {
         table.put("Two letters, like us, gb or jp.",
                 "Dua huruf, misalnya us, gb atau jp.");
         table.put("Type to search settings",

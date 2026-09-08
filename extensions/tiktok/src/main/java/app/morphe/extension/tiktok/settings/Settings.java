@@ -222,6 +222,15 @@ public class Settings extends BaseSettings {
     public static final IntegerSetting SESSION_BUDGET_RESET_HOUR = new IntegerSetting(
             "session_budget_reset_hour", 4).withRange(0, 23);
     /**
+     * Turns the budget from advice into a commitment. Off by default, and while it is off
+     * nothing about the budget changes. Switched on, the hold that starts when today's budget
+     * runs out lasts until the reset hour, the way out of it is gone, and the budget, the reset
+     * hour and this switch itself cannot be changed again until the day turns over. It can be
+     * switched off freely at any time before the budget is spent.
+     */
+    public static final BooleanSetting SESSION_BUDGET_LOCK = new BooleanSetting(
+            "session_budget_lock", FALSE, true);
+    /**
      * Today's counts and any running hold, so both survive the process being killed. Kept out
      * of backups: it is a record of one day, and restoring last week's would either hand back a
      * day or take one away, neither of which anyone asked for.

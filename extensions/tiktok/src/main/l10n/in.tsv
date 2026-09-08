@@ -651,3 +651,8 @@ That is not a Hushfeed settings backup. Nothing was altered.	Itu bukan cadangan 
 That backup was written by a newer Hushfeed than this one. Nothing was altered.	Cadangan itu dibuat oleh Hushfeed yang lebih baru dari ini. Tidak ada yang diubah.
 That settings backup is incomplete, so it may have been cut short. Nothing was altered.	Cadangan pengaturan itu tidak lengkap, jadi mungkin terpotong. Tidak ada yang diubah.
 That settings backup holds a value Hushfeed cannot read. Nothing was altered.	Cadangan pengaturan itu memuat nilai yang tidak dapat dibaca Hushfeed. Tidak ada yang diubah.
+Lock today's budget	Kunci anggaran hari ini
+Off by default. Switched on, the hold that starts when today's budget runs out has no way out, and the budgets, the reset hour and this switch cannot be changed again until the day starts over. Switch it off any time before the budget runs out.	Mati secara bawaan. Bila dinyalakan, penahanan yang dimulai saat anggaran hari ini habis tidak punya jalan keluar, dan anggaran, jam mulai hari serta sakelar ini tidak bisa diubah lagi sampai hari berganti. Matikan kapan saja sebelum anggaran habis.
+Today's budget is locked. This can be changed again at %1$s.	Anggaran hari ini terkunci. Ini bisa diubah lagi pada %1$s.
+Today's budget is locked. The day starts over at %1$s.	Anggaran hari ini terkunci. Hari dimulai ulang pada %1$s.
+Today's budget is locked. The feed opens again at %1$s. Messages, profiles and search still work.	Anggaran hari ini terkunci. Feed terbuka lagi pada %1$s. Pesan, profil dan pencarian tetap berfungsi.

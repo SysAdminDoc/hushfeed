@@ -39,6 +39,7 @@ public class SessionBudgetTest {
         Settings.SESSION_BUDGET_MINUTES.resetToDefault();
         Settings.SESSION_BUDGET_LOCK_MINUTES.resetToDefault();
         Settings.SESSION_BUDGET_RESET_HOUR.resetToDefault();
+        Settings.SESSION_BUDGET_LOCK.resetToDefault();
         Settings.SESSION_BUDGET_STATE.resetToDefault();
         Settings.AUTO_ADVANCE_LIMIT.resetToDefault();
         now.set(at(2026, Calendar.SEPTEMBER, 7, 12, 0));
@@ -47,6 +48,7 @@ public class SessionBudgetTest {
     }
 
     @After public void tearDown() throws Exception {
+        Settings.SESSION_BUDGET_LOCK.resetToDefault();
         SessionBudget.setClockForTests(null);
         SessionBudget.awaitWritesForTests();
         SessionBudget.resetForTests();
@@ -497,6 +499,107 @@ public class SessionBudgetTest {
         SessionBudget.noteVideo("b");
         assertTrue(SessionBudget.claimNotice());
         assertEquals("That is 2 videos today", message.invoke(null));
+    }
+
+    // ----------------------------------------------------------------- locking today's budget
+
+    /** Spends a one video budget, which starts the hold and, with the lock on, commits it. */
+    private void spendTheBudget() {
+        Settings.SESSION_BUDGET_VIDEOS.save(1);
+        SessionBudget.noteVideo("only-one");
+        assertTrue("the budget was not reached", SessionBudget.claimNotice());
+    }
+
+    @Test public void theLockIsOffUntilItIsAskedFor() {
+        assertFalse("the lock is on out of the box", Settings.SESSION_BUDGET_LOCK.get());
+        spendTheBudget();
+        assertFalse("an unlocked day came back locked", SessionBudget.lockedToday());
+        assertTrue("Start today over was refused with no lock set", SessionBudget.clear());
+    }
+
+    @Test public void aLockedDayHasNoWayOutOfTheHold() {
+        Settings.SESSION_BUDGET_LOCK.save(true);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(10);
+        spendTheBudget();
+
+        assertTrue("the day did not lock", SessionBudget.lockedToday());
+        assertTrue("no hold was placed at all", SessionBudget.isLocked());
+
+        SessionBudget.releaseLock();
+        assertTrue("Open the feed anyway lifted a locked hold", SessionBudget.isLocked());
+        assertFalse("Start today over cleared a locked day", SessionBudget.clear());
+        assertTrue("the counts were cleared anyway", SessionBudget.reachedLimit());
+        assertEquals("the video count was cleared anyway", 1, SessionBudget.videosSeen());
+    }
+
+    @Test public void aLockedHoldRunsToTheResetHourRatherThanForTheHoldMinutes() {
+        Settings.SESSION_BUDGET_LOCK.save(true);
+        // Ten minutes is what an unlocked day would have given. The locked day owes the reader
+        // the rest of the day, which from noon with a four in the morning reset is sixteen hours.
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(10);
+        spendTheBudget();
+
+        now.addAndGet(11 * 60_000L);
+        assertTrue("the hold ran out after the hold minutes", SessionBudget.isLocked());
+
+        long resetAt = at(2026, Calendar.SEPTEMBER, 8, 4, 0);
+        assertEquals("the locked day does not end at the reset hour",
+                resetAt, SessionBudget.lockedUntilMs());
+    }
+
+    @Test public void raisingTheBudgetDoesNotHandBackALockedDay() {
+        Settings.SESSION_BUDGET_LOCK.save(true);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(10);
+        spendTheBudget();
+
+        // The settings screen refuses this edit while the lock holds. Refused here too, because
+        // a budget that a saved value can undo is not a commitment.
+        Settings.SESSION_BUDGET_VIDEOS.save(500);
+        assertFalse("the notice was armed again by raising the budget", SessionBudget.claimNotice());
+        assertTrue("raising the budget lifted a locked hold", SessionBudget.isLocked());
+        assertTrue("raising the budget unlocked the day", SessionBudget.lockedToday());
+    }
+
+    @Test public void theLockLetsGoWhenTheDayTurnsOver() {
+        Settings.SESSION_BUDGET_LOCK.save(true);
+        spendTheBudget();
+        assertTrue(SessionBudget.lockedToday());
+
+        // One minute before the reset hour, and then one minute after it.
+        now.set(at(2026, Calendar.SEPTEMBER, 8, 3, 59));
+        assertTrue("the lock let go before the day was over", SessionBudget.lockedToday());
+        now.set(at(2026, Calendar.SEPTEMBER, 8, 4, 1));
+
+        assertFalse("the lock outlived the day it was for", SessionBudget.lockedToday());
+        assertFalse("the hold outlived the day it was for", SessionBudget.isLocked());
+        assertTrue("Start today over is still refused on a new day", SessionBudget.clear());
+        assertEquals("the new day did not start empty", 0, SessionBudget.videosSeen());
+    }
+
+    @Test public void aLockedDaySurvivesTheProcessBeingKilled() throws Exception {
+        Settings.SESSION_BUDGET_LOCK.save(true);
+        spendTheBudget();
+        SessionBudget.awaitWritesForTests();
+
+        SessionBudget.resetForTests();
+        SessionBudget.setClockForTests(now::get);
+
+        assertTrue("the lock was forgotten when the process went away", SessionBudget.lockedToday());
+        SessionBudget.releaseLock();
+        assertTrue("the hold was lifted after a restart", SessionBudget.isLocked());
+    }
+
+    @Test public void aRecordWrittenBeforeTheLockExistedStillLoads() throws Exception {
+        // Five fields, which is what every record written before this feature has. A day it
+        // describes was never locked, so its absence has to read as not locked rather than
+        // as an unreadable record that throws the whole day away.
+        long today = SessionBudget.dayOf(now.get());
+        Settings.SESSION_BUDGET_STATE.save(today + "|7|60000|0|1");
+        SessionBudget.resetForTests();
+        SessionBudget.setClockForTests(now::get);
+
+        assertEquals("an older record was thrown away", 7, SessionBudget.videosSeen());
+        assertFalse("an older record came back locked", SessionBudget.lockedToday());
     }
 
     private static String read(String relative) throws Exception {

@@ -46,6 +46,7 @@ public class SessionLockOverlayTest {
         SessionBudget.awaitWritesForTests();
         Settings.SESSION_BUDGET_VIDEOS.resetToDefault();
         Settings.SESSION_BUDGET_LOCK_MINUTES.resetToDefault();
+        Settings.SESSION_BUDGET_LOCK.resetToDefault();
         Settings.SESSION_BUDGET_STATE.resetToDefault();
         now.set(at(2026, Calendar.SEPTEMBER, 7, 12, 0));
         SessionBudget.setClockForTests(now::get);
@@ -127,6 +128,55 @@ public class SessionLockOverlayTest {
 
     @Test public void nothingIsDrawnWithoutAHold() {
         assertNull("a hold nobody set", holdOrNull());
+    }
+
+    @Test public void aLockedDayLeavesThePanelWithNoWayOut() throws Exception {
+        Settings.SESSION_BUDGET_VIDEOS.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(5);
+        Settings.SESSION_BUDGET_LOCK.save(true);
+        SessionBudget.noteVideo("a");
+        assertTrue(SessionBudget.claimNotice());
+
+        try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setActivity(activity);
+            SessionLockOverlay.sync();
+
+            ViewGroup root = activity.findViewById(android.R.id.content);
+            ViewGroup panel = (ViewGroup) root.getChildAt(root.getChildCount() - 1);
+            View release = panel.getChildAt(3);
+            assertEquals("Open the feed anyway is still on a locked panel",
+                    View.GONE, release.getVisibility());
+
+            // And tapping where it used to be does nothing, so a stale panel cannot be used
+            // as a way out either.
+            release.performClick();
+            assertTrue("a tap lifted a locked hold", SessionBudget.isLocked());
+
+            android.widget.TextView hint = (android.widget.TextView) panel.getChildAt(2);
+            assertTrue("the panel does not say when the feed comes back: " + hint.getText(),
+                    hint.getText().toString().contains(SessionLockOverlay.resetTimeLabel()));
+        }
+    }
+
+    @Test public void anUnlockedDayKeepsItsWayOut() throws Exception {
+        Settings.SESSION_BUDGET_VIDEOS.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(5);
+        SessionBudget.noteVideo("a");
+        assertTrue(SessionBudget.claimNotice());
+
+        try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setActivity(activity);
+            SessionLockOverlay.sync();
+
+            ViewGroup root = activity.findViewById(android.R.id.content);
+            ViewGroup panel = (ViewGroup) root.getChildAt(root.getChildCount() - 1);
+            assertEquals("the way out went missing on a day nobody locked",
+                    View.VISIBLE, panel.getChildAt(3).getVisibility());
+            panel.getChildAt(3).performClick();
+            assertTrue("Open the feed anyway did not open the feed", !SessionBudget.isLocked());
+        }
     }
 
     private static Object holdOrNull() {

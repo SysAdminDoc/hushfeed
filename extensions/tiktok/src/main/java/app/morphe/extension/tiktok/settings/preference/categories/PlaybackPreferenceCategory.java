@@ -72,6 +72,28 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
                 "The hour both budgets reset, on a 24 hour clock. Four in the morning by default, "
                         + "because someone still scrolling at one is having last night.",
                 Settings.SESSION_BUDGET_RESET_HOUR));
+        addPreference(new TogglePreference(context, "Lock today's budget",
+                "Off by default. Switched on, the hold that starts when today's budget runs out "
+                        + "has no way out, and the budgets, the reset hour and this switch cannot "
+                        + "be changed again until the day starts over. Switch it off any time "
+                        + "before the budget runs out.",
+                Settings.SESSION_BUDGET_LOCK));
+
+        // Everything the budget is made of, refused for the rest of a locked day. A commitment
+        // anyone can edit their way out of in two taps is a suggestion.
+        Preference.OnPreferenceChangeListener refuseWhileLocked = (preference, value) -> {
+            if (!SessionBudget.lockedToday()) return true;
+            Utils.showToastShort(L10n.f(context,
+                    "Today's budget is locked. This can be changed again at %1$s.",
+                    SessionLockOverlay.resetTimeLabel()));
+            return false;
+        };
+        for (String key : new String[]{Settings.SESSION_BUDGET_VIDEOS.key,
+                Settings.SESSION_BUDGET_MINUTES.key, Settings.SESSION_BUDGET_LOCK_MINUTES.key,
+                Settings.SESSION_BUDGET_RESET_HOUR.key, Settings.SESSION_BUDGET_LOCK.key}) {
+            Preference row = findPreference(key);
+            if (row != null) row.setOnPreferenceChangeListener(refuseWhileLocked);
+        }
 
         Preference clearBudget = new Preference(context);
         // A key so the settings search can index this row.
@@ -81,7 +103,12 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
                 "Forget what has been counted today and end any hold. The budgets themselves "
                         + "are left alone."));
         clearBudget.setOnPreferenceClickListener(preference -> {
-            SessionBudget.clear();
+            if (!SessionBudget.clear()) {
+                Utils.showToastShort(L10n.f(context,
+                        "Today's budget is locked. The day starts over at %1$s.",
+                        SessionLockOverlay.resetTimeLabel()));
+                return true;
+            }
             SessionLockOverlay.sync();
             Utils.showToastShort(L10n.t(context, "Today starts again"));
             return true;
