@@ -142,7 +142,12 @@ public final class SessionLockOverlay {
 
         TextView remaining = new TextView(activity);
         remaining.setText(remainingLabel());
-        remaining.setTextColor(SettingsUi.accent());
+        // The panel is always this near-black scrim, so the countdown takes the colour meant
+        // for what this project draws over the app rather than the settings accent, which is a
+        // dark crimson in the light theme and 3:1 on black. SettingsUi.isDarkMode is a cached
+        // flag the settings screen sets, so off the settings screen it answers for the system
+        // theme rather than for this panel.
+        remaining.setTextColor(SettingsUi.overlayAccentOn(true));
         remaining.setTextSize(TypedValue.COMPLEX_UNIT_SP, 34);
         remaining.setGravity(Gravity.CENTER);
         remaining.setPadding(0, SettingsUi.dp(activity, 12), 0, SettingsUi.dp(activity, 12));

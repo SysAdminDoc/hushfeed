@@ -5,7 +5,9 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.view.Gravity;
 import android.view.View;
+import android.widget.FrameLayout;
 import app.morphe.extension.shared.Utils;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -51,6 +53,45 @@ public class OverlayControlsTest {
             }
         }
         activity.finish();
+    }
+
+    @Test public void theFeedButtonsAreLaidOutFromTheLeftInEitherDirection() throws Exception {
+        // Every position on these buttons is a pixel worked out from a raw touch and written to
+        // leftMargin. A mirrored layout resolves START to RIGHT and then reads rightMargin, which
+        // nothing sets, so the saved position was thrown away, a drag moved nothing sideways, and
+        // the Not interested button, which differs from the block button only by leftMargin,
+        // landed on top of it.
+        Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
+        Utils.setContext(activity);
+        Utils.setActivity(activity);
+        android.view.ViewGroup root = activity.findViewById(android.R.id.content);
+
+        // The real attach path, so the params under test are the ones production writes.
+        assertEquals("the overlay looks the activity up for itself", activity, Utils.getActivity());
+        Method attach = BlockAuthorOverlay.class.getDeclaredMethod("attach", VideoAuthor.class);
+        attach.setAccessible(true);
+        int before = root.getChildCount();
+        attach.invoke(null, new VideoAuthor("1", "sec", "someone", "7712345"));
+        assertNotEquals("attach added nothing to the content root", before, root.getChildCount());
+
+        String[] buttons = {"buttonReference", "localHideReference", "soundButtonReference",
+                "notInterestedReference"};
+        for (String name : buttons) {
+            java.lang.reflect.Field held = BlockAuthorOverlay.class.getDeclaredField(name);
+            held.setAccessible(true);
+            View view = ((java.lang.ref.WeakReference<View>) held.get(null)).get();
+            assertNotNull(name + " was never attached", view);
+
+            // Asking the platform what a mirrored layout does with these exact params, rather
+            // than laying the root out right-to-left, because a FrameLayout only resolves a
+            // direction once it is attached to a real window and off a test that would pass
+            // whichever gravity it was given.
+            int gravity = ((FrameLayout.LayoutParams) view.getLayoutParams()).gravity;
+            int mirrored = Gravity.getAbsoluteGravity(gravity, View.LAYOUT_DIRECTION_RTL)
+                    & Gravity.HORIZONTAL_GRAVITY_MASK;
+            assertEquals(name + " is mirrored away from the margin that positions it",
+                    Gravity.LEFT, mirrored);
+        }
     }
 
     @Test public void theOverlaysFollowTheActivityTheHostRecreated() {

@@ -144,6 +144,34 @@ public class SessionLockOverlayTest {
         view.layout(0, 0, width, height);
     }
 
+    @Test public void theCountdownIsReadableOnTheScrimInEitherTheme() throws Exception {
+        // The panel is always the same near-black scrim, so its colours cannot follow the
+        // settings theme. The settings accent is a dark crimson in the light theme, which is
+        // about 3:1 on black, and the flag it reads is a cached one the settings screen sets,
+        // so away from that screen it answers for the system theme instead of for this panel.
+        Settings.SESSION_BUDGET_VIDEOS.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(5);
+        SessionBudget.noteVideo("a");
+        assertTrue(SessionBudget.claimNotice());
+
+        for (boolean darkSettings : new boolean[]{true, false}) {
+            Utils.setIsDarkModeEnabled(darkSettings);
+            try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+                Activity activity = owner.get();
+                Utils.setActivity(activity);
+                SessionLockOverlay.sync();
+
+                ViewGroup root = activity.findViewById(android.R.id.content);
+                View panel = root.getChildAt(root.getChildCount() - 1);
+                android.widget.TextView countdown =
+                        (android.widget.TextView) ((ViewGroup) panel).getChildAt(1);
+                assertEquals("the countdown followed the settings theme onto a black panel",
+                        app.morphe.extension.tiktok.settings.preference.SettingsUi.OVERLAY_ACCENT,
+                        countdown.getCurrentTextColor());
+            }
+        }
+    }
+
     private static long at(int year, int month, int day, int hour, int minute) {
         Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
         calendar.clear();

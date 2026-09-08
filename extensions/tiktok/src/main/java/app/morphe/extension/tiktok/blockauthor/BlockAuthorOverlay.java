@@ -162,24 +162,29 @@ public final class BlockAuthorOverlay {
 
             final View button = createButton(activity);
             final int size = SettingsUi.dp(activity, BUTTON_SIZE_DP);
+            // Absolute LEFT, not START. Every position here is a pixel worked out from a raw
+            // touch and written to leftMargin, and a mirrored layout resolves START to RIGHT and
+            // then reads rightMargin, which nothing sets: the saved position was discarded, a
+            // drag moved nothing sideways, and the Not interested button landed on top of the
+            // block button because the two differ only in leftMargin.
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                    size, size, Gravity.TOP | Gravity.START);
+                    size, size, Gravity.TOP | Gravity.LEFT);
             button.setLayoutParams(params);
 
             root.addView(button);
             buttonReference = new WeakReference<>(button);
 
             final View localHide = createLocalHideButton(activity);
-            localHide.setLayoutParams(new FrameLayout.LayoutParams(size, size, Gravity.TOP | Gravity.START));
+            localHide.setLayoutParams(new FrameLayout.LayoutParams(size, size, Gravity.TOP | Gravity.LEFT));
             root.addView(localHide);
             localHideReference = new WeakReference<>(localHide);
 
             final View soundButton = createSoundButton(activity);
-            soundButton.setLayoutParams(new FrameLayout.LayoutParams(size, size, Gravity.TOP | Gravity.START));
+            soundButton.setLayoutParams(new FrameLayout.LayoutParams(size, size, Gravity.TOP | Gravity.LEFT));
             root.addView(soundButton);
             soundButtonReference = new WeakReference<>(soundButton);
             View feedback = createNotInterestedButton(activity);
-            feedback.setLayoutParams(new FrameLayout.LayoutParams(size, size, Gravity.TOP | Gravity.START));
+            feedback.setLayoutParams(new FrameLayout.LayoutParams(size, size, Gravity.TOP | Gravity.LEFT));
             root.addView(feedback);
             notInterestedReference = new WeakReference<>(feedback);
 
