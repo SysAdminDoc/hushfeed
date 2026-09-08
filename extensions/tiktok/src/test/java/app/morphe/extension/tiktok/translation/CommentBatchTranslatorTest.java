@@ -45,6 +45,7 @@ public class CommentBatchTranslatorTest {
         Utils.setContext(context);
         clearTranslatorState();
         NativeManager.reset();
+        com.ss.android.ugc.aweme.translation.service.TranslationLangKevaServiceImpl.reset();
         Settings.COMMENT_BATCH_TRANSLATION.save(true);
     }
 
@@ -455,6 +456,75 @@ public class CommentBatchTranslatorTest {
     }
 
     @SuppressWarnings("unchecked")
+    /**
+     * The language service is looked up once per process, so a test that wants to watch the
+     * lookup has to put the translator back to never having tried.
+     */
+    private static void forgetLanguageServiceLookup() throws Exception {
+        for (String name : new String[]{"nativeLanguageService", "nativeTargetLanguageGetter",
+                "nativeLanguageSettings", "nativeDoNotTranslateGetter"}) {
+            Field field = CommentBatchTranslator.class.getDeclaredField(name);
+            field.setAccessible(true);
+            field.set(null, null);
+        }
+        for (String name : new String[]{"nativeTargetLanguageLookedUp",
+                "nativeDoNotTranslateLookedUp"}) {
+            Field field = CommentBatchTranslator.class.getDeclaredField(name);
+            field.setAccessible(true);
+            field.setBoolean(null, false);
+        }
+    }
+
+    private static Object callPrivate(String name) throws Exception {
+        java.lang.reflect.Method method =
+                CommentBatchTranslator.class.getDeclaredMethod(name);
+        method.setAccessible(true);
+        return method.invoke(null);
+    }
+
+    @Test public void theLanguageServiceIsBuiltOnceEvenWhenItCarriesNothingUseful()
+            throws Exception {
+        // The lookup used to be remembered only when it found something, so a build whose
+        // service has no target language getter built the Keva-backed service again for every
+        // comment, and did it holding the lock TikTok needs to hand a finished batch back.
+        forgetLanguageServiceLookup();
+
+        for (int call = 0; call < 100; call++) {
+            callPrivate("getNativeTranslationTargetLanguage");
+            callPrivate("getNativeDoNotTranslateLanguages");
+        }
+
+        assertEquals("the language service was built again after coming up empty", 2,
+                com.ss.android.ugc.aweme.translation.service.TranslationLangKevaServiceImpl
+                        .constructions);
+    }
+
+    @Test public void aMethodThatCannotHoldTheLanguageListIsNeverCalled() throws Exception {
+        // Finding the do-not-translate list means calling a method on the host to get at it.
+        // Only a method whose declared return type has the list is worth calling; anything else
+        // is reaching into TikTok to see what happens.
+        forgetLanguageServiceLookup();
+
+        for (int call = 0; call < 100; call++) {
+            callPrivate("getNativeDoNotTranslateLanguages");
+        }
+
+        assertEquals("the translator called a host method that cannot hold the list", 0,
+                com.ss.android.ugc.aweme.translation.service.TranslationLangKevaServiceImpl
+                        .strayCalls);
+    }
+
+    @Test public void anEmptyLanguageServiceStillLeavesTheDeviceLanguageInCharge()
+            throws Exception {
+        // The positive control for the two above: coming up empty has to mean falling back, not
+        // failing. Without this they would both pass against a translator that gave up entirely.
+        forgetLanguageServiceLookup();
+
+        Object target = callPrivate("getNativeTranslationTargetLanguage");
+        assertEquals(java.util.Locale.getDefault().toLanguageTag(), target);
+        assertEquals(0, ((String[]) callPrivate("getNativeDoNotTranslateLanguages")).length);
+    }
+
     private static void clearTranslatorState() throws Exception {
         Field lockField = CommentBatchTranslator.class.getDeclaredField("LOCK");
         lockField.setAccessible(true);

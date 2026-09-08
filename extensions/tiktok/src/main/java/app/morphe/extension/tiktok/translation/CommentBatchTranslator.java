@@ -64,6 +64,25 @@ public final class CommentBatchTranslator {
     private static volatile Method nativeTargetLanguageGetter;
     private static volatile Object nativeLanguageSettings;
     private static volatile Method nativeDoNotTranslateGetter;
+    /**
+     * Guards the one attempt made to find TikTok's language service.
+     *
+     * <p>Deliberately not {@code LOCK}. These lookups run once per comment from
+     * {@code shouldSkipTranslation}, and {@code LOCK} is the one TikTok's own thread needs to
+     * hand a finished batch back. Building a Keva-backed service while holding it made a thirty
+     * comment bind wait on work that has nothing to do with the batch.
+     */
+    private static final String LANGUAGE_SERVICE_CLASS =
+            "com.ss.android.ugc.aweme.translation.service.TranslationLangKevaServiceImpl";
+    private static final Object LANGUAGE_LOOKUP_LOCK = new Object();
+    /**
+     * Whether the lookup has been tried, as opposed to whether it worked.
+     *
+     * <p>The result used to be remembered only when a member was found, so a build whose service
+     * does not have one constructed it again for every comment, forever.
+     */
+    private static volatile boolean nativeTargetLanguageLookedUp;
+    private static volatile boolean nativeDoNotTranslateLookedUp;
 
     private CommentBatchTranslator() {
     }
@@ -677,31 +696,10 @@ public final class CommentBatchTranslator {
 
     private static String getNativeTranslationTargetLanguage() {
         try {
+            if (!nativeTargetLanguageLookedUp) lookUpTargetLanguageGetter();
+
             Object service = nativeLanguageService;
             Method getter = nativeTargetLanguageGetter;
-            if (service == null || getter == null) {
-                synchronized (LOCK) {
-                    service = nativeLanguageService;
-                    getter = nativeTargetLanguageGetter;
-                    if (service == null || getter == null) {
-                        Class<?> serviceClass = Class.forName(
-                                "com.ss.android.ugc.aweme.translation.service.TranslationLangKevaServiceImpl"
-                        );
-                        service = serviceClass.getDeclaredConstructor().newInstance();
-                        for (Method candidate : serviceClass.getDeclaredMethods()) {
-                            if (candidate.getParameterTypes().length == 0 &&
-                                    candidate.getReturnType() == String.class) {
-                                candidate.setAccessible(true);
-                                getter = candidate;
-                                nativeLanguageService = service;
-                                nativeTargetLanguageGetter = getter;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
             if (service != null && getter != null) {
                 Object selected = getter.invoke(service);
                 if (selected instanceof String && !isBlank((String) selected)) {
@@ -727,40 +725,10 @@ public final class CommentBatchTranslator {
 
     private static String[] getNativeDoNotTranslateLanguages() {
         try {
+            if (!nativeDoNotTranslateLookedUp) lookUpDoNotTranslateGetter();
+
             Object settings = nativeLanguageSettings;
             Method getter = nativeDoNotTranslateGetter;
-            if (settings == null || getter == null) {
-                synchronized (LOCK) {
-                    settings = nativeLanguageSettings;
-                    getter = nativeDoNotTranslateGetter;
-                    if (settings == null || getter == null) {
-                        Class<?> serviceClass = Class.forName(
-                                "com.ss.android.ugc.aweme.translation.service.TranslationLangKevaServiceImpl"
-                        );
-                        Object service = serviceClass.getDeclaredConstructor().newInstance();
-                        for (Method provider : serviceClass.getDeclaredMethods()) {
-                            if (provider.getParameterTypes().length != 0 ||
-                                    provider.getReturnType() == void.class) continue;
-                            try {
-                                Method candidate = provider.getReturnType().getMethod(
-                                        "getSelectedDoNotTranslateLanguageCodes"
-                                );
-                                provider.setAccessible(true);
-                                Object resolvedSettings = provider.invoke(service);
-                                if (resolvedSettings == null) continue;
-                                candidate.setAccessible(true);
-                                settings = resolvedSettings;
-                                getter = candidate;
-                                nativeLanguageSettings = settings;
-                                nativeDoNotTranslateGetter = getter;
-                                break;
-                            } catch (NoSuchMethodException ignored) {
-                            }
-                        }
-                    }
-                }
-            }
-
             if (settings != null && getter != null) {
                 Object value = getter.invoke(settings);
                 if (value instanceof String[]) return (String[]) value;
@@ -769,6 +737,77 @@ public final class CommentBatchTranslator {
             Logger.printDebug(() -> "[Morphe CommentBatchTranslator] native language policy unavailable", asException(ex));
         }
         return new String[0];
+    }
+
+    /** Builds the language service once and keeps the no-argument String getter it carries. */
+    private static void lookUpTargetLanguageGetter() {
+        synchronized (LANGUAGE_LOOKUP_LOCK) {
+            if (nativeTargetLanguageLookedUp) return;
+            // Set before the attempt, not after it. A build with no such member has to be asked
+            // once, not once per comment.
+            nativeTargetLanguageLookedUp = true;
+            try {
+                Class<?> serviceClass = Class.forName(LANGUAGE_SERVICE_CLASS);
+                Object service = serviceClass.getDeclaredConstructor().newInstance();
+                for (Method candidate : serviceClass.getDeclaredMethods()) {
+                    if (candidate.getParameterTypes().length == 0
+                            && candidate.getReturnType() == String.class) {
+                        candidate.setAccessible(true);
+                        nativeLanguageService = service;
+                        nativeTargetLanguageGetter = candidate;
+                        return;
+                    }
+                }
+                Logger.printDebug(() -> "[Morphe CommentBatchTranslator] "
+                        + LANGUAGE_SERVICE_CLASS + " has no target language getter; using the"
+                        + " phone's language instead");
+            } catch (Throwable ex) {
+                Logger.printDebug(() -> "[Morphe CommentBatchTranslator] native target language"
+                        + " unavailable", asException(ex));
+            }
+        }
+    }
+
+    /**
+     * Builds the language service once and keeps the do-not-translate list it can reach.
+     *
+     * <p>Only a method whose declared return type has {@code getSelectedDoNotTranslateLanguageCodes}
+     * is called, so this asks the host for a settings object rather than calling whatever it
+     * finds and seeing what comes back.
+     */
+    private static void lookUpDoNotTranslateGetter() {
+        synchronized (LANGUAGE_LOOKUP_LOCK) {
+            if (nativeDoNotTranslateLookedUp) return;
+            nativeDoNotTranslateLookedUp = true;
+            try {
+                Class<?> serviceClass = Class.forName(LANGUAGE_SERVICE_CLASS);
+                Object service = serviceClass.getDeclaredConstructor().newInstance();
+                for (Method provider : serviceClass.getDeclaredMethods()) {
+                    if (provider.getParameterTypes().length != 0
+                            || provider.getReturnType() == void.class) continue;
+                    Method candidate;
+                    try {
+                        candidate = provider.getReturnType().getMethod(
+                                "getSelectedDoNotTranslateLanguageCodes");
+                    } catch (NoSuchMethodException notThisOne) {
+                        continue;
+                    }
+                    provider.setAccessible(true);
+                    Object resolvedSettings = provider.invoke(service);
+                    if (resolvedSettings == null) continue;
+                    candidate.setAccessible(true);
+                    nativeLanguageSettings = resolvedSettings;
+                    nativeDoNotTranslateGetter = candidate;
+                    return;
+                }
+                Logger.printDebug(() -> "[Morphe CommentBatchTranslator] "
+                        + LANGUAGE_SERVICE_CLASS + " carries no do-not-translate list; every"
+                        + " language stays translatable");
+            } catch (Throwable ex) {
+                Logger.printDebug(() -> "[Morphe CommentBatchTranslator] native language policy"
+                        + " unavailable", asException(ex));
+            }
+        }
     }
 
     private static String primaryLanguageTag(String language) {
