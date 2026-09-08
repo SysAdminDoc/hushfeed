@@ -1,5 +1,11 @@
 ## Unreleased
 
+* Two patches that could be selected on their own put their switches somewhere nobody could reach them. Hide comment popup ads built a switch on a page that never appeared, and the offline videos limit sat below an early return belonging to the Downloads patch, so selecting it alone gave a page without it. Every settings page now keeps each patch's rows behind that patch's own flag.
+
+* Clear all in the inbox is readable in both themes. It was picking its colour from a flag the settings screen sets, which away from that screen answers for the system theme rather than TikTok's own, so it could draw dark red on a dark sheet.
+
+* The feature gate report says more precisely what it replaces, instead of implying every value is redacted.
+
 * A hold now actually holds. The panel covered the feed and swallowed touches, but the video underneath kept playing with sound, the feed kept advancing if automatic advance was on, and every video that went by behind the panel was counted against the day. The hold asks for the audio focus so the player stops, automatic advance stands down until the hold ends, and nothing is counted while the feed is out of sight.
 
 * The daily budget really is free when it is switched off. The hold check ran from the player's progress callback several times a second and took a lock and built a calendar every time, whether or not a budget was set. Now the off case is two field reads, and with a budget set the day is worked out once a day instead of once per callback.

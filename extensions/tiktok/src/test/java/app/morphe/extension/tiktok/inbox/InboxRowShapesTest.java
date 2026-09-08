@@ -1,6 +1,7 @@
 package app.morphe.extension.tiktok.inbox;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
@@ -86,5 +87,39 @@ public class InboxRowShapesTest {
 
         assertEquals("a shape a row was never going to have was reported: "
                 + Reflect.missingMembers(), 0, Reflect.missingMembers().size());
+    }
+
+    @Test public void theClearAllRowFollowsTheHostHeaderRatherThanTheThemeFlag() throws Exception {
+        // This row is drawn on TikTok's own sheet. The theme flag is a cached value the Hushfeed
+        // settings screen sets, so away from that screen it answers for the system theme rather
+        // than for TikTok's, which put a dark crimson on a dark sheet at about 3.3:1.
+        android.content.Context context = RuntimeEnvironment.getApplication();
+        android.widget.FrameLayout header = new android.widget.FrameLayout(context);
+        android.widget.TextView title = new android.widget.TextView(context);
+        title.setTextColor(android.graphics.Color.rgb(245, 245, 247));
+        header.addView(title);
+
+        java.lang.reflect.Method colour = InboxFilter.class.getDeclaredMethod(
+                "headerTextColour", android.view.ViewGroup.class);
+        colour.setAccessible(true);
+        assertEquals("the row ignored the colour TikTok's own header is using",
+                android.graphics.Color.rgb(245, 245, 247), (int) colour.invoke(null, header));
+
+        // Nothing there to copy, so the brand accent rather than a guess at the theme.
+        assertEquals(app.morphe.extension.tiktok.settings.preference.SettingsUi.OVERLAY_ACCENT,
+                (int) colour.invoke(null, new android.widget.FrameLayout(context)));
+    }
+
+    @Test public void nothingInTheInboxReadsTheCachedThemeFlag() throws Exception {
+        // The countdown on the hold panel had the same bug and the sweep stopped at one file.
+        java.io.File file = new java.io.File(
+                "src/main/java/app/morphe/extension/tiktok/inbox/InboxFilter.java");
+        if (!file.isFile()) file = new java.io.File(
+                "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/inbox/InboxFilter.java");
+        assertTrue("could not find " + file.getAbsolutePath(), file.isFile());
+        String source = new String(java.nio.file.Files.readAllBytes(file.toPath()),
+                java.nio.charset.StandardCharsets.UTF_8);
+        assertEquals("colours drawn on TikTok's own surfaces cannot follow the settings theme",
+                -1, source.indexOf("isDarkMode()"));
     }
 }

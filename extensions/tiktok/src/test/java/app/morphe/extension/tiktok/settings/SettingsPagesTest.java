@@ -105,6 +105,28 @@ public class SettingsPagesTest {
         String[] titles = {"Feed filter", "Feed navigation", "Interface", "Comments and translation",
             "Downloads", "Playback", "Inbox", "Share sheet", "Region settings"};
 
+        // What each page builds with nothing in the bundle at all. Those rows are unconditional
+        // and show whenever something else opens the page, so they are the floor to compare
+        // against rather than a finding.
+        int[] baseline = new int[pages.length];
+        for (Field field : SettingsStatus.class.getDeclaredFields()) {
+            if (field.getType() == boolean.class && Modifier.isStatic(field.getModifiers())) {
+                field.setAccessible(true);
+                field.setBoolean(null, false);
+            }
+        }
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            TikTokPreferenceFragment home = new TikTokPreferenceFragment();
+            activity.getFragmentManager().beginTransaction()
+                    .replace(android.R.id.content, home).commit();
+            activity.getFragmentManager().executePendingTransactions();
+            for (int page = 0; page < pages.length; page++) {
+                baseline[page] = rowsBuiltBy(pages[page], activity, home);
+            }
+        }
+
         // One patch at a time, which is the shape that finds a drifted gate.
         for (Field flag : SettingsStatus.class.getDeclaredFields()) {
             if (flag.getType() != boolean.class || !Modifier.isStatic(flag.getModifiers())) continue;
@@ -133,12 +155,72 @@ public class SettingsPagesTest {
                 }
                 for (int page = 0; page < pages.length; page++) {
                     boolean available = (Boolean) pages[page].getMethod("isAvailable").invoke(null);
-                    if (!available) continue;
-                    assertTrue(titles[page] + " has rows to show with only " + flag.getName()
-                            + " set, but the home screen offers no way in", rows.contains(titles[page]));
+                    if (available) {
+                        assertTrue(titles[page] + " has rows to show with only " + flag.getName()
+                                + " set, but the home screen offers no way in",
+                                rows.contains(titles[page]));
+                        continue;
+                    }
+
+                    // The other direction, which is where the drift actually hides. Asking only
+                    // "available means a row" is a page answering its own question. What matters
+                    // is whether this flag makes the page build anything it would not have built
+                    // without it, because a switch behind a flag the page does not know about
+                    // appears nowhere at all: no row, no page, and not in search either, since
+                    // search builds the same category. Rows the page builds whatever is in the
+                    // bundle are not this: they only ever show when something else opens it.
+                    assertEquals(titles[page] + " builds settings behind " + flag.getName()
+                            + " but does not count it as making the page available, so they are"
+                            + " unreachable", baseline[page], rowsBuiltBy(pages[page], activity, home));
                 }
             }
         }
+    }
+
+    @Test public void noPageGatesItsRowsOnAnEarlyReturn() throws Exception {
+        // The other half of the same bug, and one a rendering test cannot see. An early return
+        // on one patch's flag takes every later patch's rows with it: the offline videos limit
+        // set its own flag, gated its own rows on it, and still put nothing on the page because
+        // an "if (!downloadEnabled) return;" sat above them. Blocks, not returns.
+        java.io.File directory = new java.io.File(
+                "src/main/java/app/morphe/extension/tiktok/settings/preference/categories");
+        if (!directory.isDirectory()) directory = new java.io.File(
+                "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories");
+        assertTrue("could not find " + directory.getAbsolutePath(), directory.isDirectory());
+
+        java.util.List<String> offenders = new java.util.ArrayList<>();
+        for (java.io.File file : java.util.Objects.requireNonNull(directory.listFiles())) {
+            if (!file.getName().endsWith("PreferenceCategory.java")) continue;
+            String source = new String(java.nio.file.Files.readAllBytes(file.toPath()),
+                    java.nio.charset.StandardCharsets.UTF_8);
+            int start = source.indexOf("public void addPreferences");
+            if (start < 0) continue;
+            for (String line : source.substring(start).split("\n")) {
+                String text = line.trim();
+                if (text.startsWith("if (!SettingsStatus.") && text.endsWith(") return;")) {
+                    offenders.add(file.getName() + ": " + text);
+                }
+            }
+        }
+        assertEquals("a flag returning early from addPreferences hides every flag below it: "
+                + offenders, 0, offenders.size());
+    }
+
+    /** How many rows a page's own addPreferences puts on it under the flags set right now. */
+    private static int rowsBuiltBy(Class<?> page, Activity activity, TikTokPreferenceFragment home)
+            throws Exception {
+        android.preference.PreferenceScreen scratch =
+                home.getPreferenceManager().createPreferenceScreen(activity);
+        var built = (app.morphe.extension.tiktok.settings.preference.categories
+                .ConditionalPreferenceCategory) page.getConstructor(android.content.Context.class,
+                        android.preference.PreferenceScreen.class).newInstance(activity, scratch);
+        if (!built.getSettingsStatus()) {
+            // The gate kept it off the screen, so it has no preference manager yet and nothing
+            // could be added to it. Attaching it is what makes addPreferences work.
+            scratch.addPreference(built);
+            built.addPreferences(activity);
+        }
+        return built.getPreferenceCount();
     }
 
     @Test public void darkPagesNavigateAndRender() throws Exception { capturePages("dark"); }

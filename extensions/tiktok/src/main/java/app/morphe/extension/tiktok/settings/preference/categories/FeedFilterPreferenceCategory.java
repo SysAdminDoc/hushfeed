@@ -27,7 +27,8 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
 
     /** Whether this page has anything on it. The row into it asks the same question. */
     public static boolean isAvailable() {
-        return SettingsStatus.feedFilterEnabled;
+        return SettingsStatus.feedFilterEnabled
+                || SettingsStatus.seenVideoFilterEnabled;
     }
 
     @Override
@@ -37,6 +38,14 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
 
     @Override
     public void addPreferences(Context context) {
+        // Each patch's rows go behind its own flag. The page is reachable when either patch
+        // is in the bundle, and a page reachable because of one of them must not offer the
+        // other's settings, which would sit there doing nothing.
+        if (SettingsStatus.feedFilterEnabled) addFeedFilterRules(context);
+        if (SettingsStatus.seenVideoFilterEnabled) addSeenVideoRules(context);
+    }
+
+    private void addFeedFilterRules(Context context) {
         addPreference(new InputTextPreference(context, "Blocked caption words", "Comma separated words or phrases. Matching captions are skipped. Case doesn't matter.", Settings.BLOCKED_CAPTION_WORDS));
         addPreference(new InputTextPreference(context, "Only from these countries",
                 "Comma separated country codes, like GB, IE. Videos posted from anywhere else are hidden. Leave empty for all countries.",
@@ -154,22 +163,6 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
                 "Comma separated sound ids recorded by the player's sound button. Remove one to unblock it.",
                 Settings.BLOCKED_SOUND_IDS
         ));
-        if (SettingsStatus.seenVideoFilterEnabled) {
-            addPreference(new TogglePreference(
-                    context,
-                    "Hide videos you have already seen",
-                    "Keep a local record of what you have watched and drop those videos from "
-                            + "later feed pages.",
-                    Settings.HIDE_SEEN_VIDEOS
-            ));
-            addPreference(new NumberInputPreference(
-                    context,
-                    "Forget seen videos after",
-                    "Days to remember a video. Zero removes the age limit. History keeps at most 10,000 videos.",
-                    Settings.SEEN_VIDEO_RETENTION_DAYS, "day", "days"
-            ));
-            addPreference(new ClearSeenVideoHistoryPreference(context));
-        }
         addPreference(new TogglePreference(
                 context,
                 "Hide the playlist bar",
@@ -194,5 +187,22 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
                 "Also apply these filters to downloaded videos TikTok uses when the feed cannot load enough new items.",
                 Settings.FILTER_OFFLINE_FALLBACK_VIDEOS
         ));
+    }
+
+    private void addSeenVideoRules(Context context) {
+        addPreference(new TogglePreference(
+                context,
+                "Hide videos you have already seen",
+                "Keep a local record of what you have watched and drop those videos from "
+                        + "later feed pages.",
+                Settings.HIDE_SEEN_VIDEOS
+        ));
+        addPreference(new NumberInputPreference(
+                context,
+                "Forget seen videos after",
+                "Days to remember a video. Zero removes the age limit. History keeps at most 10,000 videos.",
+                Settings.SEEN_VIDEO_RETENTION_DAYS, "day", "days"
+        ));
+        addPreference(new ClearSeenVideoHistoryPreference(context));
     }
 }

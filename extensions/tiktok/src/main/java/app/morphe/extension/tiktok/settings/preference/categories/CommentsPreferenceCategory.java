@@ -20,7 +20,8 @@ public class CommentsPreferenceCategory extends ConditionalPreferenceCategory {
         return SettingsStatus.commentToolsEnabled
                 || SettingsStatus.commentTranslationEnabled
                 || SettingsStatus.hideCommentQuickReactionsEnabled
-                || SettingsStatus.copyCommentsWithoutUsernameEnabled;
+                || SettingsStatus.copyCommentsWithoutUsernameEnabled
+                || SettingsStatus.hideCommentEggsEnabled;
     }
 
     @Override

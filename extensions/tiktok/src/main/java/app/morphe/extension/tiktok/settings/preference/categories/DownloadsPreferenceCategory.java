@@ -28,7 +28,8 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
     /** Whether this page has anything on it. The row into it asks the same question. */
     public static boolean isAvailable() {
         return SettingsStatus.downloadEnabled || SettingsStatus.advancedDownloadsEnabled
-                || SettingsStatus.customOfflineVideosEnabled;
+                || SettingsStatus.customOfflineVideosEnabled
+                || SettingsStatus.subtitleToolsEnabled;
     }
 
     @Override
@@ -118,32 +119,37 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
                         + "extension is kept automatically.",
                 Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE
         ));
-        if (!SettingsStatus.downloadEnabled) return;
-        addPreference(new InputTextPreference(
-                context,
-                "Comment media filename",
-                "Tokens: {date}, {media_id}. Works for image and video stickers.",
-                Settings.DOWNLOAD_COMMENT_MEDIA_FILENAME_TEMPLATE
-        ));
-        addPreference(new TogglePreference(
-                context,
-                "Remove watermark",
-                "Applies to both video and photo downloads.",
-                Settings.DOWNLOAD_WATERMARK
-        ));
-        if (!SettingsStatus.customOfflineVideosEnabled) return;
-        addPreference(new TogglePreference(
-                context,
-                "Custom offline videos",
-                "Let the Offline videos menu use your own limit instead of TikTok's fixed one. Restart TikTok after turning this on.",
-                Settings.CUSTOM_OFFLINE_VIDEOS
-        ));
-        addPreference(new NumberInputPreference(
-                context,
-                "Offline videos limit",
-                "Choose 1-1000 videos. Values outside this range use the nearest valid limit. Restart TikTok after saving.",
-                Settings.CUSTOM_OFFLINE_VIDEO_LIMIT
-        ));
-
+        // Blocks, not early returns. Each flag here belongs to a different patch and any of them
+        // can be selected on its own, so a return for one of them took every later flag's rows
+        // with it: the offline videos limit set its own flag and still put nothing on the page
+        // unless the Downloads patch happened to be in the bundle too.
+        if (SettingsStatus.downloadEnabled) {
+            addPreference(new InputTextPreference(
+                    context,
+                    "Comment media filename",
+                    "Tokens: {date}, {media_id}. Works for image and video stickers.",
+                    Settings.DOWNLOAD_COMMENT_MEDIA_FILENAME_TEMPLATE
+            ));
+            addPreference(new TogglePreference(
+                    context,
+                    "Remove watermark",
+                    "Applies to both video and photo downloads.",
+                    Settings.DOWNLOAD_WATERMARK
+            ));
+        }
+        if (SettingsStatus.customOfflineVideosEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Custom offline videos",
+                    "Let the Offline videos menu use your own limit instead of TikTok's fixed one. Restart TikTok after turning this on.",
+                    Settings.CUSTOM_OFFLINE_VIDEOS
+            ));
+            addPreference(new NumberInputPreference(
+                    context,
+                    "Offline videos limit",
+                    "Choose 1-1000 videos. Values outside this range use the nearest valid limit. Restart TikTok after saving.",
+                    Settings.CUSTOM_OFFLINE_VIDEO_LIMIT
+            ));
+        }
     }
 }

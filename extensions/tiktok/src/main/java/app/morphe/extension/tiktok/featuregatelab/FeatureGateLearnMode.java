@@ -105,8 +105,10 @@ public final class FeatureGateLearnMode {
             }
             lastCount = gates.length();
             lastReport = new JSONObject().put("target", "TikTok 46.2.3")
-                    .put("note", "Values are redacted. Addresses and identifiers are "
-                            + "replaced, so a gate marked changed can show the same text twice.")
+                    .put("note", "Addresses, hostnames, credential values and id-shaped "
+                            + "tokens are replaced, so a gate marked changed can show the same "
+                            + "text twice. Everything else is the value as it was read, so read "
+                            + "this through before attaching it to anything.")
                     .put("started_at_ms", startedAt).put("stopped_at_ms", System.currentTimeMillis())
                     .put("gate_count", gates.length()).put("new_count", added).put("changed_count", changed)
                     .put("dropped_reads", dropped).put("gates", gates).toString(2);

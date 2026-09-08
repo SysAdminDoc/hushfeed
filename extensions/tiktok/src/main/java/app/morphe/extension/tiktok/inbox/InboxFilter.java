@@ -267,6 +267,23 @@ public final class InboxFilter {
     }
 
     /**
+     * The colour TikTok's own header text is using, so this row is readable whatever theme the
+     * app is in. The theme flag is not usable here: it is a cached value the Hushfeed settings
+     * screen sets, and away from that screen it answers for the system rather than for TikTok's
+     * own in-app theme, which would put a dark crimson on a dark sheet. Falls back to the brand
+     * accent when the header holds no text of its own to copy.
+     */
+    private static int headerTextColour(ViewGroup header) {
+        for (int index = 0; index < header.getChildCount(); index++) {
+            View child = header.getChildAt(index);
+            if (child instanceof TextView && child.getId() != CLEAR_ALL_VIEW_ID) {
+                return ((TextView) child).getCurrentTextColor();
+            }
+        }
+        return SettingsUi.OVERLAY_ACCENT;
+    }
+
+    /**
      * Puts a Clear all control at the right end of the Suggested accounts heading.
      *
      * Pressing it works through the remove buttons one at a time, which is the same
@@ -290,7 +307,7 @@ public final class InboxFilter {
         TextView clearAll = new TextView(activity);
         clearAll.setId(CLEAR_ALL_VIEW_ID);
         clearAll.setText(L10n.t(activity, "Clear all"));
-        clearAll.setTextColor(SettingsUi.overlayAccentOn(SettingsUi.isDarkMode()));
+        clearAll.setTextColor(headerTextColour(headerGroup));
         clearAll.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         clearAll.setGravity(Gravity.CENTER_VERTICAL | Gravity.END);
         clearAll.setContentDescription(L10n.t(activity, "Clear all suggested accounts"));
