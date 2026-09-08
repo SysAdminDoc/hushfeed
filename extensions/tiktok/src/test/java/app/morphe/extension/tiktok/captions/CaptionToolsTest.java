@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.shared.diagnostics.HookStatus;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.categories.InterfacePreferenceCategory;
@@ -56,13 +57,19 @@ public class CaptionToolsTest {
         assertTrue(styled.getHeight() > original.getHeight());
         assertEquals(16, original.getPaint().getTextSize(), 0);
         assertEquals(original.getText(), styled.getText());
+        // The two ids are obfuscated names in the real APK and only it can resolve them, so
+        // the fixture says what they stand for here rather than repeating this build's numbers.
+        int textId = View.generateViewId();
+        int backgroundId = View.generateViewId();
+        CaptionStyle.resolveForTests("dfu", textId);
+        CaptionStyle.resolveForTests("dfn", backgroundId);
         FrameLayout root = new FrameLayout(Utils.getContext());
         TextView text = new TextView(Utils.getContext());
-        text.setId(2131366636);
+        text.setId(textId);
         text.setTextSize(16);
         float originalSize = text.getTextSize();
         FrameLayout background = new FrameLayout(Utils.getContext());
-        background.setId(2131366629);
+        background.setId(backgroundId);
         background.setBackgroundColor(Color.BLUE);
         root.addView(background);
         background.addView(text);
@@ -77,6 +84,23 @@ public class CaptionToolsTest {
         assertEquals(Color.BLUE, ((ColorDrawable) background.getBackground()).getColor());
         assertSame(original, CaptionStyle.layout(original));
     }
+    @Test public void aBuildWithoutTheCaptionIdsSaysSoOnTheHookStatusRow() {
+        HookStatus.clear();
+        // What a reshuffled resource table looks like from here: the names resolve to nothing.
+        CaptionStyle.resolveForTests("dfu", 0);
+        CaptionStyle.resolveForTests("dfn", 0);
+        Settings.CAPTION_TEXT_SIZE.save(32);
+        Settings.CAPTION_BACKGROUND.save("black");
+
+        CaptionStyle.apply(new FrameLayout(Utils.getContext()));
+
+        assertTrue(HookStatus.anyMissing());
+        assertEquals(java.util.Arrays.asList("view id 'dfu'", "view id 'dfn'"),
+                HookStatus.missing("captions"));
+        assertTrue(String.join(" ", HookStatus.report()).contains("captions"));
+        HookStatus.clear();
+    }
+
     @Test public void clearDisplayKeepsOnlyTheCurrentCueAndHidesOnFocusLossOrVideoChange() throws Exception {
         try (var owner = Robolectric.buildActivity(CaptionActivity.class).setup().visible()) {
             var activity = owner.get();
