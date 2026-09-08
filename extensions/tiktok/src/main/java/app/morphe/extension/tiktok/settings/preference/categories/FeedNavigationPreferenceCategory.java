@@ -15,9 +15,14 @@ public class FeedNavigationPreferenceCategory extends ConditionalPreferenceCateg
         setTitle("Feed navigation");
     }
 
+    /** Whether this page has anything on it. The row into it asks the same question. */
+    public static boolean isAvailable() {
+        return SettingsStatus.feedNavigationEnabled;
+    }
+
     @Override
     public boolean getSettingsStatus() {
-        return SettingsStatus.feedNavigationEnabled;
+        return isAvailable();
     }
 
     @Override

@@ -21,13 +21,18 @@ public final class InboxPreferenceCategory extends ConditionalPreferenceCategory
         setTitle("Inbox");
     }
 
-    @Override
-    public boolean getSettingsStatus() {
+    /** Whether this page has anything on it. The row into it asks the same question. */
+    public static boolean isAvailable() {
         return SettingsStatus.inboxFilterEnabled
                 || SettingsStatus.hideSuggestedAccountsEnabled
                 || SettingsStatus.hideInboxStoriesEnabled
                 || SettingsStatus.expandActivityListEnabled
                 || SettingsStatus.notificationControlsEnabled;
+    }
+
+    @Override
+    public boolean getSettingsStatus() {
+        return isAvailable();
     }
 
     @Override

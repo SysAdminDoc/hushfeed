@@ -25,9 +25,14 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
         setTitle("Downloads");
     }
 
+    /** Whether this page has anything on it. The row into it asks the same question. */
+    public static boolean isAvailable() {
+        return SettingsStatus.downloadEnabled || SettingsStatus.advancedDownloadsEnabled;
+    }
+
     @Override
     public boolean getSettingsStatus() {
-        return SettingsStatus.downloadEnabled || SettingsStatus.advancedDownloadsEnabled;
+        return isAvailable();
     }
 
     @Override

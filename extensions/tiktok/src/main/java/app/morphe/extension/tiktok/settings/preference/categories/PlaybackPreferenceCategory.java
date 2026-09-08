@@ -23,10 +23,16 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
         setTitle("Playback");
     }
 
-    @Override public boolean getSettingsStatus() {
+    /** Whether this page has anything on it. The row into it asks the same question. */
+    public static boolean isAvailable() {
         return SettingsStatus.playbackQualityEnabled || SettingsStatus.playbackSpeedEnabled
                 || SettingsStatus.autoAdvanceEnabled || SettingsStatus.videoFitEnabled
                 || SettingsStatus.blockAuthorEnabled;
+    }
+
+    @Override
+    public boolean getSettingsStatus() {
+        return isAvailable();
     }
 
     @Override public void addPreferences(Context context) {

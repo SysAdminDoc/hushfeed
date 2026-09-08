@@ -20,8 +20,8 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
         setTitle("Interface");
     }
 
-    @Override
-    public boolean getSettingsStatus() {
+    /** Whether this page has anything on it. The row into it asks the same question. */
+    public static boolean isAvailable() {
         return SettingsStatus.subtitleToolsEnabled || SettingsStatus.screenCaptureEnabled || SettingsStatus.automaticClearDisplayEnabled || SettingsStatus.doubleTapEnabled || SettingsStatus.longPressEnabled || SettingsStatus.confirmInteractionsEnabled || SettingsStatus.captchaPopupSuppressionEnabled
                 || SettingsStatus.promotionalBannersEnabled
                 || SettingsStatus.alwaysShowPublishDateEnabled
@@ -33,6 +33,11 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
                 || SettingsStatus.hideFeedFollowButtonEnabled
                 || SettingsStatus.hideFeedSaveButtonEnabled
                 || SettingsStatus.hideSearchSuggestionsEnabled;
+    }
+
+    @Override
+    public boolean getSettingsStatus() {
+        return isAvailable();
     }
 
     @Override

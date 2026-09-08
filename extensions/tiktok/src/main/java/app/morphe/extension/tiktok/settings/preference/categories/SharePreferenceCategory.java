@@ -22,9 +22,14 @@ public final class SharePreferenceCategory extends ConditionalPreferenceCategory
         setTitle("Share sheet");
     }
 
+    /** Whether this page has anything on it. The row into it asks the same question. */
+    public static boolean isAvailable() {
+        return SettingsStatus.shareSheetEnabled;
+    }
+
     @Override
     public boolean getSettingsStatus() {
-        return SettingsStatus.shareSheetEnabled;
+        return isAvailable();
     }
 
     @Override

@@ -501,7 +501,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                 }
         ));
 
-        if (SettingsStatus.feedFilterEnabled) {
+        if (FeedFilterPreferenceCategory.isAvailable()) {
             addMenu(screen, Section.FEED_FILTER, SettingsMenuPreference.Icon.FILTER, countEnabled(
                     !Settings.BLOCKED_CAPTION_WORDS.get().trim().isEmpty(),
                     !Settings.BLOCKED_CREATORS.get().trim().isEmpty(),
@@ -522,7 +522,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     SettingsStatus.seenVideoFilterEnabled && Settings.HIDE_SEEN_VIDEOS.get()
             ));
         }
-        if (SettingsStatus.feedNavigationEnabled) {
+        if (FeedNavigationPreferenceCategory.isAvailable()) {
             addMenu(screen, Section.FEED_NAVIGATION, SettingsMenuPreference.Icon.TABS, countEnabled(
                     Settings.FEED_NAVIGATION.get(),
                     Settings.FEED_NAVIGATION_BLOCK_NEW_TABS.get(),
@@ -531,17 +531,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     Settings.HIDE_TAKO_AI.get()
             ));
         }
-        if (SettingsStatus.subtitleToolsEnabled || SettingsStatus.screenCaptureEnabled || SettingsStatus.automaticClearDisplayEnabled || SettingsStatus.doubleTapEnabled || SettingsStatus.longPressEnabled || SettingsStatus.confirmInteractionsEnabled || SettingsStatus.captchaPopupSuppressionEnabled
-                || SettingsStatus.promotionalBannersEnabled
-                || SettingsStatus.alwaysShowPublishDateEnabled
-                || SettingsStatus.videoOverlaysEnabled
-                || SettingsStatus.authorRegionEnabled
-                || SettingsStatus.sensitiveWarningsEnabled
-                || SettingsStatus.hideFeedLiveButtonEnabled
-                || SettingsStatus.hideFeedSearchButtonEnabled
-                || SettingsStatus.hideFeedFollowButtonEnabled
-                || SettingsStatus.hideFeedSaveButtonEnabled
-                || SettingsStatus.hideSearchSuggestionsEnabled) {
+        if (InterfacePreferenceCategory.isAvailable()) {
             addMenu(screen, Section.INTERFACE, SettingsMenuPreference.Icon.LAYOUT, countEnabled(
                     SettingsStatus.subtitleToolsEnabled && Settings.CAPTION_TEXT_SIZE.get() > 0,
                     SettingsStatus.subtitleToolsEnabled && !"default".equals(Settings.CAPTION_BACKGROUND.get()),
@@ -580,10 +570,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     SettingsStatus.alwaysShowPublishDateEnabled && Settings.ALWAYS_SHOW_PUBLISH_DATE.get()
             ));
         }
-        if (SettingsStatus.commentToolsEnabled
-                || SettingsStatus.commentTranslationEnabled
-                || SettingsStatus.hideCommentQuickReactionsEnabled
-                || SettingsStatus.copyCommentsWithoutUsernameEnabled) {
+        if (CommentsPreferenceCategory.isAvailable()) {
             addMenu(screen, Section.COMMENTS, SettingsMenuPreference.Icon.COMMENTS, countEnabled(
                     SettingsStatus.commentToolsEnabled && Settings.COMMENT_KEYWORD_FILTER.get(),
                     SettingsStatus.commentToolsEnabled && Settings.COMMENT_SEARCH.get(),
@@ -595,7 +582,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     SettingsStatus.copyCommentsWithoutUsernameEnabled && Settings.COPY_COMMENTS_WITHOUT_USERNAME.get()
             ));
         }
-        if (SettingsStatus.downloadEnabled || SettingsStatus.advancedDownloadsEnabled) {
+        if (DownloadsPreferenceCategory.isAvailable()) {
             addMenu(screen, Section.DOWNLOADS, SettingsMenuPreference.Icon.DOWNLOADS, countEnabled(
                     SettingsStatus.subtitleToolsEnabled && Settings.DOWNLOAD_SUBTITLES.get(),
                     SettingsStatus.advancedDownloadsEnabled && !"auto".equals(Settings.DOWNLOAD_VIDEO_QUALITY.get()),
@@ -611,8 +598,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     SettingsStatus.downloadEnabled && !"mp4".equals(Settings.DOWNLOAD_STICKER_FORMAT.get())
             ));
         }
-        if (SettingsStatus.playbackQualityEnabled || SettingsStatus.playbackSpeedEnabled
-                || SettingsStatus.autoAdvanceEnabled || SettingsStatus.videoFitEnabled) {
+        if (PlaybackPreferenceCategory.isAvailable()) {
             addMenu(screen, Section.PLAYBACK, SettingsMenuPreference.Icon.PLAYBACK,
                     countEnabled(SettingsStatus.playbackQualityEnabled && !"auto".equals(Settings.PLAYBACK_QUALITY.get()),
                             SettingsStatus.playbackQualityEnabled
@@ -621,13 +607,12 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                             SettingsStatus.playbackSpeedEnabled && !Settings.CUSTOM_SPEEDS.get().trim().isEmpty(),
                             SettingsStatus.autoAdvanceEnabled && Settings.AUTO_ADVANCE.get(),
                             SettingsStatus.autoAdvanceEnabled && Settings.AUTO_ADVANCE_LIMIT.get() > 0,
-                            SettingsStatus.videoFitEnabled && Settings.FIT_VIDEO_TO_SCREEN.get()));
+                            SettingsStatus.videoFitEnabled && Settings.FIT_VIDEO_TO_SCREEN.get(),
+                            SettingsStatus.blockAuthorEnabled && Settings.SESSION_BUDGET_VIDEOS.get() > 0,
+                            SettingsStatus.blockAuthorEnabled && Settings.SESSION_BUDGET_MINUTES.get() > 0,
+                            SettingsStatus.blockAuthorEnabled && Settings.SESSION_BUDGET_LOCK_MINUTES.get() > 0));
         }
-        if (SettingsStatus.inboxFilterEnabled
-                || SettingsStatus.hideSuggestedAccountsEnabled
-                || SettingsStatus.hideInboxStoriesEnabled
-                || SettingsStatus.expandActivityListEnabled
-                || SettingsStatus.notificationControlsEnabled) {
+        if (InboxPreferenceCategory.isAvailable()) {
             addMenu(screen, Section.INBOX, SettingsMenuPreference.Icon.INBOX, countEnabled(
                     (SettingsStatus.inboxFilterEnabled || SettingsStatus.hideInboxStoriesEnabled)
                             && Settings.HIDE_INBOX_STORIES.get(),
@@ -648,7 +633,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     SettingsStatus.expandActivityListEnabled && Settings.EXPAND_ACTIVITY_LIST.get()
             ));
         }
-        if (SettingsStatus.shareSheetEnabled) {
+        if (SharePreferenceCategory.isAvailable()) {
             addMenu(screen, Section.SHARE, SettingsMenuPreference.Icon.SHARE, countEnabled(
                     Settings.SHARE_CONFIRM_SEND.get(),
                     Settings.HIDE_SHARE_CONTACTS.get(),
@@ -657,7 +642,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     !Settings.SHARE_HIDDEN_ITEMS.get().trim().isEmpty()
             ));
         }
-        if (SettingsStatus.simSpoofEnabled) {
+        if (SimSpoofPreferenceCategory.isAvailable()) {
             addMenu(screen, Section.REGION, SettingsMenuPreference.Icon.REGION, countEnabled(
                     Settings.SIM_SPOOF.get(),
                     SettingsStatus.regionSpoofEnabled && Settings.SIM_SPOOF.get() && Settings.REGION_SPOOF.get(),
@@ -665,6 +650,11 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             ));
         }
 
+        // App behavior and Diagnostics keep their own conditions on purpose. The App
+        // behavior page is the fallback every unmatched section falls to, so it is always
+        // buildable and only the row is conditional; the Diagnostics row always shows,
+        // because settings backup and restore live on that page whether or not the
+        // diagnostics patch is in the bundle.
         if (hasBehaviorSettings()) {
             addMenu(screen, Section.BEHAVIOR, SettingsMenuPreference.Icon.BEHAVIOR,
                     countBehaviorSettings());

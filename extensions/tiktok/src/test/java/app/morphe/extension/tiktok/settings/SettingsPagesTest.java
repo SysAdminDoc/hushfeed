@@ -86,6 +86,61 @@ public class SettingsPagesTest {
         }
     }
 
+    @Test public void everyPageWithSomethingOnItHasARowIntoIt() throws Exception {
+        // The page and the row into it used to keep separate copies of the same condition, and
+        // two of them drifted: the Playback page grew the daily budget behind the block author
+        // patch while its row stayed on the four playback patches, so a bundle with only that
+        // patch could reach the budget through search and nowhere else.
+        Class<?>[] pages = {
+            app.morphe.extension.tiktok.settings.preference.categories.FeedFilterPreferenceCategory.class,
+            app.morphe.extension.tiktok.settings.preference.categories.FeedNavigationPreferenceCategory.class,
+            app.morphe.extension.tiktok.settings.preference.categories.InterfacePreferenceCategory.class,
+            app.morphe.extension.tiktok.settings.preference.categories.CommentsPreferenceCategory.class,
+            app.morphe.extension.tiktok.settings.preference.categories.DownloadsPreferenceCategory.class,
+            app.morphe.extension.tiktok.settings.preference.categories.PlaybackPreferenceCategory.class,
+            app.morphe.extension.tiktok.settings.preference.categories.InboxPreferenceCategory.class,
+            app.morphe.extension.tiktok.settings.preference.categories.SharePreferenceCategory.class,
+            app.morphe.extension.tiktok.settings.preference.categories.SimSpoofPreferenceCategory.class,
+        };
+        String[] titles = {"Feed filter", "Feed navigation", "Interface", "Comments and translation",
+            "Downloads", "Playback", "Inbox", "Share sheet", "Region settings"};
+
+        // One patch at a time, which is the shape that finds a drifted gate.
+        for (Field flag : SettingsStatus.class.getDeclaredFields()) {
+            if (flag.getType() != boolean.class || !Modifier.isStatic(flag.getModifiers())) continue;
+            for (Field other : SettingsStatus.class.getDeclaredFields()) {
+                if (other.getType() == boolean.class && Modifier.isStatic(other.getModifiers())) {
+                    other.setAccessible(true);
+                    other.setBoolean(null, false);
+                }
+            }
+            flag.setAccessible(true);
+            flag.setBoolean(null, true);
+
+            try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+                Activity activity = owner.get();
+                Utils.setContext(activity);
+                TikTokPreferenceFragment home = new TikTokPreferenceFragment();
+                activity.getFragmentManager().beginTransaction()
+                        .replace(android.R.id.content, home).commit();
+                activity.getFragmentManager().executePendingTransactions();
+
+                java.util.Set<String> rows = new java.util.HashSet<>();
+                android.preference.PreferenceScreen screen = home.getPreferenceScreen();
+                for (int index = 0; index < screen.getPreferenceCount(); index++) {
+                    CharSequence title = screen.getPreference(index).getTitle();
+                    if (title != null) rows.add(title.toString());
+                }
+                for (int page = 0; page < pages.length; page++) {
+                    boolean available = (Boolean) pages[page].getMethod("isAvailable").invoke(null);
+                    if (!available) continue;
+                    assertTrue(titles[page] + " has rows to show with only " + flag.getName()
+                            + " set, but the home screen offers no way in", rows.contains(titles[page]));
+                }
+            }
+        }
+    }
+
     @Test public void darkPagesNavigateAndRender() throws Exception { capturePages("dark"); }
     @Test @Config(qualifiers = "w480dp-h960dp-notnight-mdpi")
     public void lightPagesNavigateAndRender() throws Exception { capturePages("light"); }

@@ -20,9 +20,14 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
         setTitle("App behavior");
     }
 
+    /** Whether this page has anything on it. The row into it asks the same question. */
+    public static boolean isAvailable() {
+        return true;
+    }
+
     @Override
     public boolean getSettingsStatus() {
-        return true;
+        return isAvailable();
     }
 
     @Override

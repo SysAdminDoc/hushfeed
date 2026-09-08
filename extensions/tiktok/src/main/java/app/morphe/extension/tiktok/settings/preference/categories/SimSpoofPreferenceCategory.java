@@ -24,9 +24,14 @@ public class SimSpoofPreferenceCategory extends ConditionalPreferenceCategory {
         setTitle("Region settings");
     }
 
+    /** Whether this page has anything on it. The row into it asks the same question. */
+    public static boolean isAvailable() {
+        return SettingsStatus.simSpoofEnabled;
+    }
+
     @Override
     public boolean getSettingsStatus() {
-        return SettingsStatus.simSpoofEnabled;
+        return isAvailable();
     }
 
     @Override

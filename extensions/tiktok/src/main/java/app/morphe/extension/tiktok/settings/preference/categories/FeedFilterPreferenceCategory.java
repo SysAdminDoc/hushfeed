@@ -25,9 +25,14 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
         setTitle("Feed filter");
     }
 
+    /** Whether this page has anything on it. The row into it asks the same question. */
+    public static boolean isAvailable() {
+        return SettingsStatus.feedFilterEnabled;
+    }
+
     @Override
     public boolean getSettingsStatus() {
-        return SettingsStatus.feedFilterEnabled;
+        return isAvailable();
     }
 
     @Override

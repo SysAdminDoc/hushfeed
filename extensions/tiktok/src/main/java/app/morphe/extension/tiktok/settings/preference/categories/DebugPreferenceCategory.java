@@ -23,9 +23,14 @@ public class DebugPreferenceCategory extends ConditionalPreferenceCategory {
         setTitle("Diagnostics");
     }
 
+    /** Whether this page has anything on it. The row into it asks the same question. */
+    public static boolean isAvailable() {
+        return SettingsStatus.diagnosticsEnabled;
+    }
+
     @Override
     public boolean getSettingsStatus() {
-        return SettingsStatus.diagnosticsEnabled;
+        return isAvailable();
     }
 
     @Override

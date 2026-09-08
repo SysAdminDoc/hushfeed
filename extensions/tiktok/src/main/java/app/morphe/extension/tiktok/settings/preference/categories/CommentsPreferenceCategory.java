@@ -15,12 +15,17 @@ public class CommentsPreferenceCategory extends ConditionalPreferenceCategory {
         setTitle("Comments and translation");
     }
 
-    @Override
-    public boolean getSettingsStatus() {
+    /** Whether this page has anything on it. The row into it asks the same question. */
+    public static boolean isAvailable() {
         return SettingsStatus.commentToolsEnabled
                 || SettingsStatus.commentTranslationEnabled
                 || SettingsStatus.hideCommentQuickReactionsEnabled
                 || SettingsStatus.copyCommentsWithoutUsernameEnabled;
+    }
+
+    @Override
+    public boolean getSettingsStatus() {
+        return isAvailable();
     }
 
     @Override
