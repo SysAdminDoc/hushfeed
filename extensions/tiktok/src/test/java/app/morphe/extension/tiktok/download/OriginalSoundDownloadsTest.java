@@ -105,6 +105,25 @@ public class OriginalSoundDownloadsTest {
                 OriginalSoundDownloads.sourceUrls(single));
     }
 
+    @Test public void aCleartextMirrorIsNotFetchedFrom() {
+        // The address comes out of a server response and the bytes are saved to the gallery, so
+        // a mirror anyone on the network can rewrite is not one to use. Every other saver here
+        // already reads its addresses this way.
+        Post mixed = new Post(new Music(new PlayUrl(List.of(
+                "http://one.example/sound.m4a", "https://two.example/sound.m4a"), null), "A song"));
+        assertEquals(List.of("https://two.example/sound.m4a"),
+                OriginalSoundDownloads.sourceUrls(mixed));
+
+        Post cleartextOnly = new Post(new Music(
+                new PlayUrl(List.of("http://one.example/sound.m4a"), null), "A song"));
+        assertEquals(List.of(), OriginalSoundDownloads.sourceUrls(cleartextOnly));
+
+        // The single-uri fallback answers to the same rule.
+        Post single = new Post(new Music(
+                new PlayUrl(List.of(), "http://one.example/sound.m4a"), "A song"));
+        assertEquals(List.of(), OriginalSoundDownloads.sourceUrls(single));
+    }
+
     @Test public void aUriThatIsNotAnAddressIsNotOffered() {
         // Some builds put an opaque id in that field rather than a URL, and fetching it would
         // be a request to nowhere.

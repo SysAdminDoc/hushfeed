@@ -55,14 +55,17 @@ public final class OriginalSoundDownloads {
         if (urls instanceof List<?>) {
             for (Object url : (List<?>) urls) {
                 if (url == null) continue;
+                // Over TLS only, the way every other saver here reads its addresses. These come
+                // out of a server response, and a cleartext one hands the fetch to whoever is
+                // on the network between the phone and the host.
                 String text = url.toString().trim();
-                if (!text.isEmpty()) mirrors.add(text);
+                if (text.startsWith("https://")) mirrors.add(text);
             }
         }
         if (mirrors.isEmpty()) {
             // Some builds carry only the single uri and no list at all.
             String single = Reflect.string(playUrl, "getUri", "uri");
-            if (single != null && single.startsWith("http")) mirrors.add(single);
+            if (single != null && single.startsWith("https://")) mirrors.add(single);
         }
         return List.copyOf(mirrors);
     }

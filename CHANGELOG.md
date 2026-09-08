@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The original sound and animated stickers are fetched over TLS only. Both read their addresses straight out of a server response and took whatever scheme was in them, while every other saver here already required https. A cleartext mirror is a body anyone on the network can choose, and the sticker one is handed to a decoder written in C.
+
 * Leaving the Feature Gate Lab while a reset, an undo or an import is still running no longer breaks it. The change finishes on the main thread and put the switch back without checking the screen was still there, so it crashed, and because that happened before the busy flag was released, every later Lab change was refused with a message about one already running until TikTok was restarted.
 
 * A settings backup can no longer take the app down when it is restored. A Lab rule holds its structured value as a string, and the depth check on the file around it said nothing about what that string contained, so a deeply nested one overflowed the stack. That is an Error rather than an exception, so it walked past every catch on the restore path and killed the process. The value now goes through the same bounded reader the rest of the file does and is refused as invalid instead.

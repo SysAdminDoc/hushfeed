@@ -878,13 +878,15 @@ public final class StickerGallerySaver {
                 || name.endsWith(".IMGiphyInfo");
     }
 
-    private static List<String> usableUrlList(Object value) {
+    static List<String> usableUrlList(Object value) {
         if (!(value instanceof List<?>)) return Collections.emptyList();
         List<String> result = new ArrayList<>();
         for (Object item : (List<?>) value) {
             if (item == null) continue;
+            // Over TLS only. These bytes are fetched and handed to a native WebP decoder, so a
+            // cleartext mirror is an unauthenticated body reaching a parser written in C.
             String url = item.toString().trim();
-            if (!url.isEmpty() && !"null".equalsIgnoreCase(url)) result.add(url);
+            if (url.startsWith("https://")) result.add(url);
         }
         return result.isEmpty() ? Collections.emptyList() : List.copyOf(result);
     }

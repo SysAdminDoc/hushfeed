@@ -175,4 +175,17 @@ public class StickerGallerySaverTest {
         f.setAccessible(true);
         return (String) f.get(asset);
     }
+
+    @Test public void aCleartextStickerMirrorIsNotFetchedFrom() {
+        // The bytes behind these addresses reach a native WebP decoder, so an unauthenticated
+        // mirror is a body anyone on the network can choose, handed to a parser written in C.
+        assertEquals(java.util.List.of("https://cdn.example/sticker.webp"),
+                StickerGallerySaver.usableUrlList(java.util.Arrays.asList(
+                        "http://cdn.example/sticker.webp",
+                        "https://cdn.example/sticker.webp",
+                        null,
+                        "")));
+        assertEquals(java.util.List.of(), StickerGallerySaver.usableUrlList(
+                java.util.List.of("http://cdn.example/sticker.webp")));
+    }
 }
