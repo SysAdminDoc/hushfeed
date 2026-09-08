@@ -49,9 +49,17 @@ public class SessionLockOverlayTest {
         now.set(at(2026, Calendar.SEPTEMBER, 7, 12, 0));
         SessionBudget.setClockForTests(now::get);
         SessionBudget.resetForTests();
+        // With no hold this detaches and hands back the audio focus, which is what clears the
+        // overlay's own static state between cases.
+        SessionLockOverlay.sync();
     }
 
     @After public void tearDown() throws Exception {
+        // The override is a static Boolean on the shared library and Robolectric reuses its
+        // sandbox classloader across test classes, so leaving it set answers for every later
+        // test that expects the system configuration.
+        org.robolectric.util.ReflectionHelpers.setStaticField(
+                Utils.class, "isDarkModeEnabled", null);
         SessionBudget.setClockForTests(null);
         SessionBudget.awaitWritesForTests();
         SessionBudget.resetForTests();
@@ -169,6 +177,38 @@ public class SessionLockOverlayTest {
                         app.morphe.extension.tiktok.settings.preference.SettingsUi.OVERLAY_ACCENT,
                         countdown.getCurrentTextColor());
             }
+        }
+    }
+
+    @Test public void theHoldAsksTheFeedToStopPlaying() throws Exception {
+        // The panel covers the feed and swallows touches, but the video underneath kept playing
+        // with sound, which reads as the app having broken. Taking the audio focus is how one
+        // app tells another to stop, and it is the only lever this extension has.
+        Settings.SESSION_BUDGET_VIDEOS.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(5);
+        SessionBudget.noteVideo("a");
+        assertTrue(SessionBudget.claimNotice());
+
+        android.media.AudioManager audio = (android.media.AudioManager)
+                RuntimeEnvironment.getApplication().getSystemService(
+                        android.content.Context.AUDIO_SERVICE);
+        var shadow = org.robolectric.Shadows.shadowOf(audio);
+        assertNull("something already held the focus", shadow.getLastAudioFocusRequest());
+
+        try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Utils.setActivity(owner.get());
+            SessionLockOverlay.sync();
+
+            var request = shadow.getLastAudioFocusRequest();
+            assertNotNull("the feed kept playing behind the hold", request);
+            assertEquals("a permanent grab would leave the feed silent afterwards",
+                    android.media.AudioManager.AUDIOFOCUS_GAIN_TRANSIENT, request.durationHint);
+
+            // Handing it back is what lets the feed play again, so a hold that ends must not
+            // leave the app quiet.
+            SessionBudget.releaseLock();
+            SessionLockOverlay.sync();
+            assertNotNull("the focus was never handed back", shadow.getLastAbandonedAudioFocusListener());
         }
     }
 

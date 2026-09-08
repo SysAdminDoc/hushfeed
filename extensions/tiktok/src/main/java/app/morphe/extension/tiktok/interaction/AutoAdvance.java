@@ -10,6 +10,7 @@ import app.morphe.extension.shared.settings.Setting;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.settings.L10n;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.wellbeing.SessionBudget;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Map;
@@ -105,6 +106,14 @@ public final class AutoAdvance {
                 return;
             }
             if (limitReached()) {
+                if (owned) { stop.run(); owned = false; }
+                return;
+            }
+            // A hold covers the feed. Advancing behind it walks through videos nobody can see,
+            // and each one used to spend a place in this session's own limit as well. Ownership
+            // is released rather than only stopped, so the next call after the hold ends starts
+            // it again from the video that is actually on screen.
+            if (SessionBudget.isLocked()) {
                 if (owned) { stop.run(); owned = false; }
                 return;
             }

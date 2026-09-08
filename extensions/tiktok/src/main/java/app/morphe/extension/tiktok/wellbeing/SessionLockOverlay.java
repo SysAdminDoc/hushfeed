@@ -5,6 +5,8 @@
 package app.morphe.extension.tiktok.wellbeing;
 
 import android.app.Activity;
+import android.content.Context;
+import android.media.AudioManager;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
@@ -63,6 +65,13 @@ public final class SessionLockOverlay {
         }
     };
 
+    /**
+     * Held for the life of the hold. Nothing is done with the callbacks: this is here to stop the
+     * feed playing, not to play anything.
+     */
+    private static final AudioManager.OnAudioFocusChangeListener QUIET = change -> { };
+    private static boolean quietened;
+
     private SessionLockOverlay() {
     }
 
@@ -86,6 +95,7 @@ public final class SessionLockOverlay {
                 detach();
                 return;
             }
+            requestQuiet();
             Activity activity = Utils.getActivity();
             if (activity == null || activity.isFinishing() || activity.isDestroyed()) return;
             if (!FeedVisibility.isOnFeed(activity)) {
@@ -224,7 +234,49 @@ public final class SessionLockOverlay {
         return height > 0 && height < root.getHeight() / 3 ? height : 0;
     }
 
+    /**
+     * The panel covers the feed and swallows every touch, but the video underneath kept playing,
+     * with sound, which reads as the app having broken rather than as a hold. There is no pause
+     * hook in this extension, so the hold asks for the audio focus instead, which is how one app
+     * tells another to stop. A player that ignores it is no worse off than before.
+     */
+    @SuppressWarnings("deprecation")
+    private static void requestQuiet() {
+        if (quietened) return;
+        AudioManager audio = audioManager();
+        if (audio == null) return;
+        try {
+            // The request-object form arrived in API 26 and this runs from 23. The older call is
+            // deprecated rather than gone, and it is the one both understand.
+            audio.requestAudioFocus(QUIET, AudioManager.STREAM_MUSIC,
+                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+            quietened = true;
+        } catch (Exception refused) {
+            Logger.printDebug(() -> "The hold could not take the audio focus");
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private static void releaseQuiet() {
+        if (!quietened) return;
+        quietened = false;
+        AudioManager audio = audioManager();
+        if (audio == null) return;
+        try {
+            audio.abandonAudioFocus(QUIET);
+        } catch (Exception ignored) {
+            Logger.printDebug(() -> "The hold could not hand the audio focus back");
+        }
+    }
+
+    private static AudioManager audioManager() {
+        Context context = Utils.getContext();
+        return context == null ? null
+                : (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+    }
+
     private static void detach() {
+        releaseQuiet();
         View overlay = overlayReference.get();
         overlayReference = new WeakReference<>(null);
         remainingReference = new WeakReference<>(null);

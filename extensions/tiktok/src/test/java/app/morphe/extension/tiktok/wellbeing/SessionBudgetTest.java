@@ -458,6 +458,28 @@ public class SessionBudgetTest {
         Settings.SESSION_BUDGET_RESET_HOUR.resetToDefault();
     }
 
+    @Test public void videosAreNotCountedWhileTheFeedIsHeld() {
+        // The feed is behind the panel. Counting what goes by underneath it spends tomorrow's
+        // budget as well as today's, and the notice keeps climbing during a hold nobody can see.
+        Settings.SESSION_BUDGET_VIDEOS.save(2);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(10);
+        SessionBudget.noteVideo("a");
+        SessionBudget.noteVideo("b");
+        assertTrue(SessionBudget.claimNotice());
+        assertTrue("no hold started", SessionBudget.isLocked());
+        int during = SessionBudget.videosSeen();
+
+        for (int video = 0; video < 20; video++) SessionBudget.noteVideo("held" + video);
+        assertEquals("videos behind the panel were counted", during, SessionBudget.videosSeen());
+
+        // Once the hold ends the feed is visible again, so counting starts again.
+        now.addAndGet(11L * 60_000L);
+        assertFalse(SessionBudget.isLocked());
+        SessionBudget.noteVideo("after");
+        assertEquals("counting did not start again when the hold ended",
+                during + 1, SessionBudget.videosSeen());
+    }
+
     private static String read(String relative) throws Exception {
         java.io.File root = new java.io.File("src/main/java/app/morphe/extension/tiktok");
         if (!root.isDirectory()) root = new java.io.File(

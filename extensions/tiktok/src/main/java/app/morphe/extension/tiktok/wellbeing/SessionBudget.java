@@ -111,12 +111,20 @@ public final class SessionBudget {
      * A different video is on screen. Called from the point that decides which of the bound
      * items is the current one, so a prefetched neighbour does not count and a video revisited
      * without anything in between does not count twice.
+     *
+     * <p>Nothing is counted while a hold is running, for the same reason {@link #noteWatching()}
+     * adds no time: the feed is behind the panel.
      */
     public static void noteVideo(String awemeId) {
         if (awemeId == null || awemeId.isEmpty() || !counting()) return;
         synchronized (LOCK) {
             load();
-            rollOver(clock.now());
+            long now = clock.now();
+            rollOver(now);
+            // Nothing counts while a hold is running, for the same reason noteWatching does not:
+            // the feed is behind the panel. Videos that go by underneath it were spending
+            // tomorrow's budget as well as today's.
+            if (lockUntilMs > now) return;
             if (awemeId.equals(lastCountedId)) return;
             lastCountedId = awemeId;
             videos++;
