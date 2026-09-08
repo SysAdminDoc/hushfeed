@@ -26,6 +26,8 @@ bundle and `SHA256SUMS.txt`, run it again with `-VerifyPublishedAsset` to check 
 the local artifact hash and the hosted checksum entry. The local release helpers are
 `scripts/gen-l10n.py`, `scripts/verify-all-patches.ps1` and
 `scripts/measure-patch-heap.ps1`; the latter two need a Morphe desktop jar and a fixture APK.
+The jar runs on JDK 21 or newer, so set `HUSHFEED_JAVA` or `JAVA_HOME` if that is not the `java`
+first on your PATH.
 
 Translations live in `extensions/tiktok/src/main/l10n/`, either as a tab separated `<code>.tsv`
 or as the `source,target` CSV a Weblate export gives you. `scripts/gen-l10n.py` reads both and
