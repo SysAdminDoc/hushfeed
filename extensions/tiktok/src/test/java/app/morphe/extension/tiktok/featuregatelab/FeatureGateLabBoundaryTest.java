@@ -203,4 +203,42 @@ public class FeatureGateLabBoundaryTest {
         assertEquals("select at least one field",
                 FeatureGateLabStore.validateValue("OBJECT", "{}"));
     }
+
+    @Test
+    public void aSwitchedOffRecorderTakesNoLockOnTheGateReadPath() throws Exception {
+        // The Lab's boundaries run for every AB, live settings and player config read TikTok
+        // makes, on whatever thread makes it, and the Recorder patch that gives them something
+        // to do ships off. Taking the class monitor before checking that put all of it behind
+        // one lock.
+        SettingsStatus.featureGateRecorderEnabled = false;
+        FeatureGateLearnMode.cancel();
+        FeatureGateLearnMode.monitorEntries = 0;
+
+        int threads = 8;
+        int callsPerThread = 1250;
+        ExecutorService pool = Executors.newFixedThreadPool(threads);
+        try {
+            List<java.util.concurrent.Future<?>> running = new ArrayList<>();
+            for (int thread = 0; thread < threads; thread++) {
+                running.add(pool.submit(() -> {
+                    for (int call = 0; call < callsPerThread; call++) {
+                        FeatureGateLabRuntime.overrideBoolean("gate_read_under_load", true);
+                    }
+                }));
+            }
+            for (java.util.concurrent.Future<?> task : running) {
+                task.get(60, TimeUnit.SECONDS);
+            }
+        } finally {
+            pool.shutdownNow();
+        }
+        assertEquals("10,000 gate reads with the Recorder off still serialised on the monitor",
+                0, FeatureGateLearnMode.monitorEntries);
+
+        // The counter is live, so the zero above is a measurement rather than a dead field.
+        SettingsStatus.featureGateRecorderEnabled = true;
+        FeatureGateLabRuntime.overrideBoolean("gate_read_under_load", true);
+        assertTrue("the counter never moves, so it cannot show the monitor being taken",
+                FeatureGateLearnMode.monitorEntries > 0);
+    }
 }

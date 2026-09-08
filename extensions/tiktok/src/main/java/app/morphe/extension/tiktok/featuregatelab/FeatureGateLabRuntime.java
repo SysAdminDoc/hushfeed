@@ -119,7 +119,7 @@ public final class FeatureGateLabRuntime {
         if (forced == null) {
             return original;
         }
-        markTriggered(rule, String.valueOf(original), String.valueOf(forced));
+        markTriggered(rule, original, forced);
         return forced.booleanValue();
     }
 
@@ -143,7 +143,7 @@ public final class FeatureGateLabRuntime {
         }
         try {
             int forced = Integer.parseInt(rule.value);
-            markTriggered(rule, String.valueOf(original), String.valueOf(forced));
+            markTriggered(rule, original, forced);
             return forced;
         } catch (NumberFormatException ignored) {
             return original;
@@ -170,7 +170,7 @@ public final class FeatureGateLabRuntime {
         }
         try {
             long forced = Long.parseLong(rule.value);
-            markTriggered(rule, String.valueOf(original), String.valueOf(forced));
+            markTriggered(rule, original, forced);
             return forced;
         } catch (NumberFormatException ignored) {
             return original;
@@ -200,7 +200,7 @@ public final class FeatureGateLabRuntime {
             if (!Float.isFinite(forced)) {
                 return original;
             }
-            markTriggered(rule, String.valueOf(original), String.valueOf(forced));
+            markTriggered(rule, original, forced);
             return forced;
         } catch (NumberFormatException ignored) {
             return original;
@@ -226,7 +226,7 @@ public final class FeatureGateLabRuntime {
             if (!Double.isFinite(forced)) {
                 return original;
             }
-            markTriggered(rule, String.valueOf(original), String.valueOf(forced));
+            markTriggered(rule, original, forced);
             return forced;
         } catch (NumberFormatException ignored) {
             return original;
@@ -267,7 +267,7 @@ public final class FeatureGateLabRuntime {
         if (forced == null) {
             return original;
         }
-        markTriggered(rule, original == null ? "null" : String.valueOf(original), String.valueOf(forced));
+        markTriggered(rule, original, forced);
         return forced;
     }
 
@@ -292,7 +292,7 @@ public final class FeatureGateLabRuntime {
         if (forced == null) {
             return original;
         }
-        markTriggered(rule, original == null ? "null" : String.valueOf(original), String.valueOf(forced));
+        markTriggered(rule, original, forced);
         return forced;
     }
 
@@ -722,8 +722,20 @@ public final class FeatureGateLabRuntime {
         return manager + "\n" + key + "\n" + FeatureGateLabStore.normalizeType(type);
     }
 
-    private static void markTriggered(FeatureGateLabStore.Rule rule, String original, String forced) {
-        originalValues.put(rule.id, original == null ? "null" : original);
+    /**
+     * Records that a rule replaced a value, on every read the rule answers.
+     *
+     * <p>Takes the values rather than their text: this runs on the host's gate threads, and the
+     * forced value is only ever read by the line logged once per rule below. The original is
+     * still written every time, because the detail screen calls it the <em>last</em> original
+     * value, but only when it differs from what is already there, which for a gate read over and
+     * over with the same original is never after the first.
+     */
+    private static void markTriggered(FeatureGateLabStore.Rule rule, Object original, Object forced) {
+        String originalText = original == null ? "null" : String.valueOf(original);
+        if (!originalText.equals(originalValues.get(rule.id))) {
+            originalValues.put(rule.id, originalText);
+        }
         if (!triggered.add(rule.id)) {
             return;
         }
@@ -732,8 +744,8 @@ public final class FeatureGateLabRuntime {
         Log.i(TAG, "manager=" + rule.manager
                 + " key=" + rule.key
                 + " type=" + rule.type
-                + " original=" + safeLog(original)
-                + " forced=" + safeLog(forced)
+                + " original=" + safeLog(originalText)
+                + " forced=" + safeLog(String.valueOf(forced))
                 + " caller=" + caller);
     }
 

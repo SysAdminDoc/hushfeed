@@ -22,14 +22,46 @@ public final class FeatureGateLearnMode {
     private static String lastReport = "";
     private static int lastCount;
 
+    /**
+     * Whether a session has left anything for {@link #discardActiveSession} to clean up. Only
+     * {@link #begin} creates that state, so with the Recorder off this is false and the monitor
+     * below is never taken.
+     */
+    private static volatile boolean sessionState;
+
+    /** Monitor entries, so the boundary test can assert a disabled Recorder takes no lock. */
+    static volatile int monitorEntries;
+
     private FeatureGateLearnMode() {}
 
-    static synchronized void observe(String manager, String key, String type, Object value) {
+    /**
+     * The Lab's boundaries call this on every gate read TikTok makes, on whatever thread makes
+     * it, and the Recorder patch that gives it something to do ships off. Entering the class
+     * monitor first put every AB, live settings and player config lookup in the app behind one
+     * lock. The flag is read before the monitor now, and the monitor is taken only when there is
+     * something to record, or once when a session is left over from the Recorder being switched
+     * off. It is re-checked inside, because the switch can move between the two.
+     */
+    static void observe(String manager, String key, String type, Object value) {
+        if (!SettingsStatus.featureGateRecorderEnabled) {
+            if (sessionState) discardSession();
+            return;
+        }
+        if (key == null || key.isEmpty()) return;
+        record(manager, key, type, value);
+    }
+
+    private static synchronized void discardSession() {
+        monitorEntries++;
+        discardActiveSession();
+    }
+
+    private static synchronized void record(String manager, String key, String type, Object value) {
+        monitorEntries++;
         if (!SettingsStatus.featureGateRecorderEnabled) {
             discardActiveSession();
             return;
         }
-        if (key == null || key.isEmpty()) return;
         String identity = manager + "\n" + key + "\n" + type;
         if (!latest.containsKey(identity) && latest.size() >= LIMIT) {
             // A full baseline must not prevent a new gate appearing in the current recording.
@@ -63,6 +95,7 @@ public final class FeatureGateLearnMode {
         dropped = 0;
         startedAt = System.currentTimeMillis();
         recording = true;
+        sessionState = true;
     }
 
     public static boolean isRecording() { return recording; }
@@ -82,6 +115,7 @@ public final class FeatureGateLearnMode {
         baseline.clear();
         reads.clear();
         dropped = 0;
+        sessionState = false;
     }
 
     public static synchronized String stopAndBuildReport() {
@@ -118,6 +152,7 @@ public final class FeatureGateLearnMode {
         } finally {
             baseline.clear();
             reads.clear();
+            sessionState = false;
         }
         return lastReport;
     }
