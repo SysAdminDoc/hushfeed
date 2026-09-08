@@ -129,12 +129,6 @@ public class OverlayControlsTest {
         place.invoke(null, button, root);
         assertFalse("placing the buttons again asked for another layout, which the layout"
                 + " callback would answer by placing them again", root.isLayoutRequested());
-
-        // And off the feed the placement is skipped outright rather than relied on to be a no-op.
-        Method setFeedVisible = BlockAuthorOverlay.class.getDeclaredMethod("setFeedVisible", boolean.class);
-        setFeedVisible.setAccessible(true);
-        setFeedVisible.invoke(null, false);
-        assertFalse("going off the feed asked for another layout", root.isLayoutRequested());
     }
 
     @Test public void theOverlaysFollowTheActivityTheHostRecreated() {

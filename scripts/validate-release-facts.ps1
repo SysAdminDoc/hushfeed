@@ -131,9 +131,9 @@ if ($SkipUrlCheck) {
 }
 Require-Match -Text $readme -Pattern "\b$patchCount patches\b" -Description 'README patch count'
 Require-Match -Text $readme -Pattern ([regex]::Escape($targetPackage)) -Description 'README package name'
-Require-Match -Text $readme -Pattern "TikTok\s+$([regex]::Escape($targetVersion))" -Description 'README target version'
+Require-Match -Text $readme -Pattern "TikTok\s+$([regex]::Escape($targetVersion))(?!\d)" -Description 'README target version'
 Require-Match -Text ([string]$bundle.description) -Pattern "\b$patchCount patches\b" -Description 'bundle description patch count'
-Require-Match -Text ([string]$bundle.description) -Pattern ([regex]::Escape($targetVersion)) -Description 'bundle description target version'
+Require-Match -Text ([string]$bundle.description) -Pattern "$([regex]::Escape($targetVersion))(?!\d)" -Description 'bundle description target version'
 
 # The one line GitHub shows above the README, which is also what search results, the awesome
 # lists and the Manager's community button repeat. Nothing here read it until now, and it had
@@ -165,7 +165,7 @@ if ($SkipUrlCheck) {
     $wanted = @(
         @{ Pattern = "\b$([regex]::Escape($sourceVersion))\b";  Wanted = $sourceVersion }
         @{ Pattern = "\b$patchCount patches\b";                 Wanted = "$patchCount patches" }
-        @{ Pattern = "TikTok\s+$([regex]::Escape($targetVersion))"; Wanted = "TikTok $targetVersion" }
+        @{ Pattern = "TikTok\s+$([regex]::Escape($targetVersion))(?!\d)"; Wanted = "TikTok $targetVersion" }
     )
     $missing = @($wanted | Where-Object { $description -notmatch $_.Pattern } | ForEach-Object { $_.Wanted })
     if ($missing.Count -gt 0) {

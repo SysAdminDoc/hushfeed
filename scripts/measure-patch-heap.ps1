@@ -59,11 +59,12 @@ New-Item -ItemType Directory -Force -Path $work | Out-Null
 $workRoot = (Resolve-Path -LiteralPath $work).Path
 $java = if ($env:HUSHFEED_JAVA) { $env:HUSHFEED_JAVA } else { 'java' }
 
-# The CLI ships under its version, morphe-desktop-1.15.0-all.jar and so on, so the newest jar
-# matching the name is taken rather than one exact filename that goes stale on every release.
+# The CLI ships under its version, morphe-desktop-1.15.0-all.jar and so on, so the most recently
+# written jar matching the name is taken rather than one exact filename that goes stale on every
+# release. Not the name: sorting those as text puts 1.9.0 above 1.15.0.
 $jar = if ($env:HUSHFEED_DESKTOP_JAR) { $env:HUSHFEED_DESKTOP_JAR } else {
     $found = @(Get-ChildItem -LiteralPath $workRoot -Filter 'morphe-desktop*.jar' -File -ErrorAction SilentlyContinue |
-        Sort-Object Name -Descending)
+        Sort-Object LastWriteTime -Descending)
     if ($found.Count -eq 0) {
         throw ("No morphe-desktop*.jar in $workRoot. Put the desktop CLI there, or set " +
             'HUSHFEED_DESKTOP_JAR to it.')
