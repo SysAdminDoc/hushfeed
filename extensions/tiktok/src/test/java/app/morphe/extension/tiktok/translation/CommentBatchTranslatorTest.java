@@ -133,6 +133,9 @@ public class CommentBatchTranslatorTest {
         assertEquals(1, NativeManager.requests);
 
         NativeManager.fail = false;
+        // Past the first backoff window. A throw used to be retried on the very next bind, which
+        // is milliseconds later and hundreds of times over while a comment list scrolls.
+        idleFor(2_100L);
         CommentBatchTranslator.registerCommentCell(new View(context), anchor);
         assertEquals(2, NativeManager.requests);
     }
@@ -141,6 +144,7 @@ public class CommentBatchTranslatorTest {
         Anchor failed = loadedAnchor("aid-failed-completion", "cid-failed-completion");
         CommentBatchTranslator.registerCommentCell(new View(context), failed);
         CommentBatchTranslator.onNativeBatchComplete(new Runner(null, failed.comment));
+        idleFor(2_100L); // The first backoff window, which this test predates.
         CommentBatchTranslator.registerCommentCell(new View(context), failed);
         assertEquals(2, NativeManager.requests);
 
@@ -210,6 +214,107 @@ public class CommentBatchTranslatorTest {
         assertEquals(2, NativeManager.requests);
     }
 
+    @Test public void twoFailuresInARowStopTheThirdRequestUntilTheBackoffIsOver() {
+        Anchor anchor = loadedAnchor("aid-backoff", "cid-backoff");
+
+        CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+        assertEquals(1, NativeManager.requests);
+        CommentBatchTranslator.onNativeBatchComplete(new Runner(null, anchor.comment));
+
+        idleFor(2_100L);
+        CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+        assertEquals(2, NativeManager.requests);
+        CommentBatchTranslator.onNativeBatchComplete(new Runner(null, anchor.comment));
+
+        // A comment list binds cells many times a second. None of these may reach the host.
+        for (int bind = 0; bind < 20; bind++) {
+            idleFor(100L);
+            CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+        }
+        assertEquals("the third try went out inside the eight second window",
+                2, NativeManager.requests);
+
+        idleFor(6_500L);
+        CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+        assertEquals("the third try never went out at all", 3, NativeManager.requests);
+    }
+
+    @Test public void aThirdFailureGivesUpOnTheBatchRatherThanWaitingLonger() {
+        // The waits are the real windows, two then eight seconds. Idling a full thirty between
+        // tries would age the loaded batch out at sixty and prove nothing about the attempt count.
+        Anchor anchor = loadedAnchor("aid-give-up", "cid-give-up");
+        long[] waits = {2_100L, 8_500L, 30_500L};
+        for (int attempt = 1; attempt <= 3; attempt++) {
+            CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+            assertEquals("try " + attempt + " never reached the host", attempt, NativeManager.requests);
+            CommentBatchTranslator.onNativeBatchComplete(new Runner(null, anchor.comment));
+            idleFor(waits[attempt - 1]);
+        }
+        CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+        assertEquals("a batch that failed three times is still being asked for",
+                3, NativeManager.requests);
+    }
+
+    @Test public void aBatchThatComesBackWithOneOfThreeTranslatedIsAskedForAgain() {
+        Comment first = new Comment("aid-partial", "cid-partial-1");
+        Comment second = new Comment("aid-partial", "cid-partial-2");
+        Comment third = new Comment("aid-partial", "cid-partial-3");
+        CommentBatchTranslator.onCommentListLoaded(new CommentItemList(first, second, third));
+        Anchor anchor = new Anchor(first, new TranslationContext("aid-partial"));
+
+        CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+        assertEquals(1, NativeManager.requests);
+
+        // One of the three came back translated. The batch used to be marked done on any answer
+        // at all, so the other two were never asked for again.
+        CommentBatchTranslator.onNativeBatchComplete(
+                new Runner(Arrays.asList(first), Arrays.asList(first, second, third)));
+
+        CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+        assertEquals("the two comments that came back untranslated were never asked for again",
+                2, NativeManager.requests);
+        assertTrue("the second request did not carry the untranslated comments",
+                NativeManager.lastRequestedCids.containsAll(
+                        Arrays.asList("cid-partial-2", "cid-partial-3")));
+    }
+
+    @Test public void aWholeBatchComingBackTranslatedIsNotAskedForAgain() {
+        Comment first = new Comment("aid-whole", "cid-whole-1");
+        Comment second = new Comment("aid-whole", "cid-whole-2");
+        CommentBatchTranslator.onCommentListLoaded(new CommentItemList(first, second));
+        Anchor anchor = new Anchor(first, new TranslationContext("aid-whole"));
+
+        CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+        assertEquals(1, NativeManager.requests);
+        CommentBatchTranslator.onNativeBatchComplete(
+                new Runner(Arrays.asList(first, second), Arrays.asList(first, second)));
+
+        idleFor(31_000L);
+        CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+        assertEquals("a batch that came back complete was asked for a second time",
+                1, NativeManager.requests);
+    }
+
+    @Test public void aHostWithNoResultsFieldStandsTheFeatureDownInsteadOfRetrying() {
+        Anchor anchor = loadedAnchor("aid-no-field", "cid-no-field");
+        CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+        assertEquals(1, NativeManager.requests);
+
+        CommentBatchTranslator.onNativeBatchComplete(new RunnerWithoutResults(anchor.comment));
+
+        for (int bind = 0; bind < 5; bind++) {
+            idleFor(31_000L);
+            CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+        }
+        assertEquals("a host with no results field was asked again anyway",
+                1, NativeManager.requests);
+    }
+
+    /** Robolectric advances SystemClock.elapsedRealtime as the paused looper is idled. */
+    private static void idleFor(long millis) {
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(millis));
+    }
+
     private static Anchor loadedAnchor(String aid, String cid) {
         Anchor anchor = anchor(aid, cid);
         CommentBatchTranslator.onCommentListLoaded(new CommentItemList(anchor.comment));
@@ -264,7 +369,8 @@ public class CommentBatchTranslatorTest {
         Object lock = lockField.get(null);
         synchronized (lock) {
             for (String name : new String[]{"visibleComments", "loadedBatches",
-                    "requestedLoadedBatchKeys", "pendingRequests", "retiredRequests"}) {
+                    "requestedLoadedBatchKeys", "pendingRequests", "retiredRequests",
+                    "retryStates"}) {
                 Field field = CommentBatchTranslator.class.getDeclaredField(name);
                 field.setAccessible(true);
                 Object value = field.get(null);
@@ -280,6 +386,9 @@ public class CommentBatchTranslatorTest {
             Field generation = CommentBatchTranslator.class.getDeclaredField("nextRequestGeneration");
             generation.setAccessible(true);
             generation.setLong(null, 0L);
+            Field disabled = CommentBatchTranslator.class.getDeclaredField("disabledForSession");
+            disabled.setAccessible(true);
+            disabled.setBoolean(null, false);
         }
     }
 
@@ -334,7 +443,12 @@ public class CommentBatchTranslatorTest {
         static CountDownLatch firstStarted = new CountDownLatch(1);
         static CountDownLatch releaseFirst = new CountDownLatch(1);
 
+        static List<String> lastRequestedCids = new ArrayList<>();
+
         public static void LJFF(List<Object> comments, TranslationContext context, boolean force) {
+            List<String> cids = new ArrayList<>();
+            for (Object comment : comments) cids.add(((Comment) comment).getCid());
+            lastRequestedCids = cids;
             int requestNumber = ++requests;
             if (requestNumber == 1 && blockFirst) {
                 firstStarted.countDown();
@@ -350,6 +464,7 @@ public class CommentBatchTranslatorTest {
 
         static void reset() {
             requests = 0;
+            lastRequestedCids = new ArrayList<>();
             fail = false;
             blockFirst = false;
             failFirst = false;
@@ -361,9 +476,8 @@ public class CommentBatchTranslatorTest {
     public static final class Task {
         public final List<Comment> LIZ;
 
-        Task(Comment comment) {
-            LIZ = new ArrayList<>();
-            LIZ.add(comment);
+        Task(List<Comment> comments) {
+            LIZ = new ArrayList<>(comments);
         }
     }
 
@@ -372,8 +486,21 @@ public class CommentBatchTranslatorTest {
         public final Task l1;
 
         Runner(Object results, Comment comment) {
+            this(results, Arrays.asList(comment));
+        }
+
+        Runner(Object results, List<Comment> requested) {
             l0 = results;
-            l1 = new Task(comment);
+            l1 = new Task(requested);
+        }
+    }
+
+    /** A host build that renamed the field the results arrive in. */
+    public static final class RunnerWithoutResults {
+        public final Task l1;
+
+        RunnerWithoutResults(Comment comment) {
+            l1 = new Task(Arrays.asList(comment));
         }
     }
 }

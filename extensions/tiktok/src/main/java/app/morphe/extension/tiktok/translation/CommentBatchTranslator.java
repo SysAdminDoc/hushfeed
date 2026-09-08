@@ -33,6 +33,15 @@ public final class CommentBatchTranslator {
     private static final int MAX_LOADED_BATCHES = 4;
     private static final int MAX_REQUESTED_BATCH_KEYS = 12;
     private static final int MAX_RETIRED_REQUESTS = MAX_REQUESTED_BATCH_KEYS * 2;
+    /**
+     * A batch that fails is asked for again on the next cell bind, and cells bind many times a
+     * second while a comment list scrolls, so a host that is refusing the call was asked over and
+     * over for as long as the list was open. Three tries, spaced, and then the batch is left
+     * alone until the list reloads.
+     */
+    private static final long[] RETRY_DELAYS_MS = {2_000L, 8_000L, 30_000L};
+    private static final int MAX_ATTEMPTS = RETRY_DELAYS_MS.length;
+    private static final int MAX_RETRY_STATES = MAX_REQUESTED_BATCH_KEYS * 2;
 
     private static final Object LOCK = new Object();
     private static final LinkedHashMap<String, VisibleComment> visibleComments = new LinkedHashMap<>();
@@ -40,6 +49,9 @@ public final class CommentBatchTranslator {
     private static final LinkedHashSet<String> requestedLoadedBatchKeys = new LinkedHashSet<>();
     private static final LinkedHashMap<String, PendingRequest> pendingRequests = new LinkedHashMap<>();
     private static final LinkedHashMap<Long, PendingRequest> retiredRequests = new LinkedHashMap<>();
+    private static final LinkedHashMap<String, RetryState> retryStates = new LinkedHashMap<>();
+    /** Set when the host stops carrying a results field, which no amount of retrying will fix. */
+    private static volatile boolean disabledForSession;
     private static long nextRequestGeneration;
     private static LoadedBatch latestLoadedBatch;
     private static WeakReference<Object> lastManager = new WeakReference<>(null);
@@ -52,6 +64,7 @@ public final class CommentBatchTranslator {
     }
 
     public static void registerCommentCell(View itemView, Object manager) {
+        if (disabledForSession) return;
         if (!Settings.COMMENT_BATCH_TRANSLATION.get()) return;
         if (itemView == null || manager == null) return;
 
@@ -155,15 +168,33 @@ public final class CommentBatchTranslator {
     }
 
     public static void onNativeBatchComplete(Object runner) {
+        if (runner != null && findField(runner.getClass(), "l0") == null) {
+            // The field holding the results is gone, which is what a host update looks like.
+            // Every batch would read as a failure from here on, so the feature stands down for
+            // the session instead of asking again three times for every batch on every list.
+            disableForSession(runner);
+            return;
+        }
         Object results = readFieldQuiet(runner, "l0");
         Object task = readFieldQuiet(runner, "l1");
         Object requested = readFieldQuiet(task, "LIZ");
         Set<String> requestedCids = commentIds(requested);
         boolean succeeded = results != null && !hasCompletionFailure(runner, task);
+        Set<String> translatedCids = commentIds(results);
         synchronized (LOCK) {
             PendingRequest pending = findPendingRequestLocked(requestedCids, requested);
             if (removePendingRequestLocked(pending)) {
-                if (succeeded) rememberRequestedKeyLocked(pending.key);
+                // Nothing readable in the results means the shape is not one this knows how to
+                // walk, so the batch is taken at its word rather than retried for comments that
+                // may well have come back translated.
+                boolean whole = translatedCids.isEmpty() || translatedCids.containsAll(pending.cids);
+                if (succeeded && whole) {
+                    requestedLoadedBatchKeys.add(pending.key);
+                    trimRequestedKeysLocked();
+                    retryStates.remove(pending.key);
+                } else {
+                    noteAttemptLocked(pending.key, SystemClock.elapsedRealtime(), succeeded);
+                }
             }
             pruneLocked(SystemClock.elapsedRealtime());
         }
@@ -176,6 +207,7 @@ public final class CommentBatchTranslator {
     }
 
     private static void translateLoadedBatchIfReady(Object anchor, boolean allowVisibleFallback) {
+        if (disabledForSession) return;
         if (!Settings.COMMENT_BATCH_TRANSLATION.get()) return;
         Batch batch = buildLoadedBatch(anchor, allowVisibleFallback);
         if (batch.comments.isEmpty()) {
@@ -190,6 +222,8 @@ public final class CommentBatchTranslator {
             pruneLocked(startedAtMs);
             if (requestedLoadedBatchKeys.contains(effectiveRequestKey)
                     || pendingRequests.containsKey(effectiveRequestKey)) return;
+            RetryState retry = retryStates.get(effectiveRequestKey);
+            if (retry != null && startedAtMs < retry.retryAfterMs) return;
             pending = new PendingRequest(
                     effectiveRequestKey,
                     commentIds(batch.comments),
@@ -223,7 +257,12 @@ public final class CommentBatchTranslator {
                     + " requestKey=" + effectiveRequestKey
                     + " aid=" + value(readFieldQuiet(batch.context, "LIZIZ")));
         } catch (Throwable ex) {
+            // Same storm as a failed completion, and the usual cause is worse: the host method
+            // this looks up is gone, so it will fail on every bind for as long as the list is up.
             removePendingRequest(effectiveRequestKey, pending);
+            synchronized (LOCK) {
+                noteAttemptLocked(effectiveRequestKey, SystemClock.elapsedRealtime(), false);
+            }
             Logger.printException(() -> "[Morphe CommentBatchTranslator] native request failed", ex);
         }
     }
@@ -373,13 +412,57 @@ public final class CommentBatchTranslator {
         return false;
     }
 
-    private static void rememberRequestedKeyLocked(String key) {
-        requestedLoadedBatchKeys.add(key);
+    private static void trimRequestedKeysLocked() {
         while (requestedLoadedBatchKeys.size() > MAX_REQUESTED_BATCH_KEYS) {
             Iterator<String> iterator = requestedLoadedBatchKeys.iterator();
             if (!iterator.hasNext()) break;
             iterator.next();
             iterator.remove();
+        }
+    }
+
+    /**
+     * Records one unsuccessful attempt at a batch and decides when it may be asked for again.
+     *
+     * @param madeProgress true when the host answered with some of the comments translated. That
+     *                     is worth asking again for straight away; an outright failure is not,
+     *                     because the next cell bind is milliseconds away.
+     */
+    private static void noteAttemptLocked(String key, long now, boolean madeProgress) {
+        RetryState retry = retryStates.get(key);
+        if (retry == null) {
+            retry = new RetryState();
+            retryStates.put(key, retry);
+        }
+        retry.attempts++;
+        if (retry.attempts >= MAX_ATTEMPTS) {
+            // Out of tries. Remembering the key is what keeps the next bind from asking again.
+            retryStates.remove(key);
+            requestedLoadedBatchKeys.add(key);
+            trimRequestedKeysLocked();
+            return;
+        }
+        retry.retryAfterMs = madeProgress ? now : now + RETRY_DELAYS_MS[retry.attempts - 1];
+        while (retryStates.size() > MAX_RETRY_STATES) {
+            Iterator<String> iterator = retryStates.keySet().iterator();
+            if (!iterator.hasNext()) break;
+            iterator.next();
+            iterator.remove();
+        }
+    }
+
+    private static void disableForSession(Object runner) {
+        boolean announce = !disabledForSession;
+        disabledForSession = true;
+        synchronized (LOCK) {
+            pendingRequests.clear();
+            retiredRequests.clear();
+            retryStates.clear();
+        }
+        if (announce) {
+            Logger.printException(() -> "[Morphe CommentBatchTranslator] "
+                    + runner.getClass().getName() + " carries no results field, so comment batch"
+                    + " translation is off until TikTok is restarted");
         }
     }
 
@@ -814,6 +897,12 @@ public final class CommentBatchTranslator {
             this.nativeManagerClass = nativeManagerClass;
             this.requestKey = requestKey;
         }
+    }
+
+    /** How many times a batch has come back unfinished, and when it may be asked for again. */
+    private static final class RetryState {
+        int attempts;
+        long retryAfterMs;
     }
 
     private static final class PendingRequest {
