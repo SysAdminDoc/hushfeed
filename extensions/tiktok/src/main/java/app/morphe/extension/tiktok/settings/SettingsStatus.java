@@ -38,6 +38,7 @@ public class SettingsStatus {
     public static boolean hideCommentQuickReactionsEnabled = false;
     public static boolean copyCommentsWithoutUsernameEnabled = false;
     public static boolean downloadEnabled = false;
+    public static boolean customOfflineVideosEnabled = false;
     public static boolean simSpoofEnabled = false;
     public static boolean captchaPopupSuppressionEnabled = false;
     public static boolean promotionalBannersEnabled = false;
@@ -105,6 +106,10 @@ public class SettingsStatus {
 
     public static void enableDownload() {
         downloadEnabled = true;
+    }
+
+    public static void enableCustomOfflineVideos() {
+        customOfflineVideosEnabled = true;
     }
 
     public static void enableSimSpoof() {

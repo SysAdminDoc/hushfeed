@@ -1,5 +1,9 @@
 ## Unreleased
 
+* Two patches no longer depend on another patch being selected to be usable. Custom offline videos limit sets its own flag, so its two switches appear when it is selected and stay away when it is not, instead of following the Downloads patch. Hide BdTuring CAPTCHA popups now brings Hide CAPTCHA popups with it, because that is the patch that owns the switch it reads.
+
+* The feature gate report says in the file that its values are redacted, so a gate marked changed showing the same text twice reads as the redaction rather than a mistake. The bundle description no longer claims more redaction than ships: the Lab own value export is a file you import back, so it keeps what it read.
+
 * Every settings page with something on it has a row into it. The page and the row used to keep separate copies of the same condition and two of them had drifted, so a bundle with the block author patch but none of the four playback patches could reach the daily budget only through search, and Hide comment popup ads on its own had a switch no page would show. Each row now asks the page itself. The Playback row also counts a set budget as an active setting.
 
 * The feature gate recording is redacted before it leaves the app. It is the one file the issue templates ask people to attach, and gate values are server configuration, so addresses and per-install identifiers were going out in it while every other export here was already cleaned. The values are redacted and the structure is not, so it is still a readable report, and the Lab itself still shows what it actually read.

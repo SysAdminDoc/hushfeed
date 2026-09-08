@@ -27,7 +27,8 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
 
     /** Whether this page has anything on it. The row into it asks the same question. */
     public static boolean isAvailable() {
-        return SettingsStatus.downloadEnabled || SettingsStatus.advancedDownloadsEnabled;
+        return SettingsStatus.downloadEnabled || SettingsStatus.advancedDownloadsEnabled
+                || SettingsStatus.customOfflineVideosEnabled;
     }
 
     @Override
@@ -130,6 +131,7 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
                 "Applies to both video and photo downloads.",
                 Settings.DOWNLOAD_WATERMARK
         ));
+        if (!SettingsStatus.customOfflineVideosEnabled) return;
         addPreference(new TogglePreference(
                 context,
                 "Custom offline videos",

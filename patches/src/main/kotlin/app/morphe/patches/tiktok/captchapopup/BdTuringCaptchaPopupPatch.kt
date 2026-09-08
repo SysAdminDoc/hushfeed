@@ -41,7 +41,10 @@ val bdTuringCaptchaPopupPatch = bytecodePatch(
 ) {
     // The recorder is what lets the gate tell a browsing puzzle from one raised over a write.
     // Selecting this patch without it would hide both.
-    dependsOn(sharedExtensionPatch, captchaRequestRecorderPatch)
+    // It answers the Hide CAPTCHA popups setting, whose switch only exists when that
+    // patch is selected. Selected on its own it would install a hook reading a setting
+    // with nowhere to turn it on, so it brings the switch with it.
+    dependsOn(sharedExtensionPatch, captchaRequestRecorderPatch, hideCaptchaPopupsPatch)
     compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
