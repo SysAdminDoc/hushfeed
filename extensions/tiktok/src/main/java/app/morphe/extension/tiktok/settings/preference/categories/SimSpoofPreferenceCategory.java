@@ -98,9 +98,14 @@ public class SimSpoofPreferenceCategory extends ConditionalPreferenceCategory {
             return true;
         });
 
-        addPreference(simPresetPreference);
+        // The region patch reads the country override and the country code, so those belong to
+        // either patch. The operator code and name are read only by the SIM spoof patch, and on
+        // a bundle without it they were rows that changed nothing.
         addPreference(countryIsoPreference);
-        addPreference(mccMncPreference);
-        addPreference(operatorNamePreference);
+        if (SettingsStatus.simSpoofEnabled) {
+            addPreference(simPresetPreference);
+            addPreference(mccMncPreference);
+            addPreference(operatorNamePreference);
+        }
     }
 }

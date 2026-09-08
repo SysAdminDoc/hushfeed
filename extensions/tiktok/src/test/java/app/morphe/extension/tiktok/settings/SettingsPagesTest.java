@@ -178,10 +178,15 @@ public class SettingsPagesTest {
     }
 
     @Test public void noPageGatesItsRowsOnAnEarlyReturn() throws Exception {
-        // The other half of the same bug, and one a rendering test cannot see. An early return
-        // on one patch's flag takes every later patch's rows with it: the offline videos limit
-        // set its own flag, gated its own rows on it, and still put nothing on the page because
-        // an "if (!downloadEnabled) return;" sat above them. Blocks, not returns.
+        // The other half of the same bug, and one a rendering test cannot see. An early return on
+        // one patch's flag takes every later patch's rows with it: the offline videos limit set
+        // its own flag, gated its own rows on it, and still put nothing on the page because an
+        // "if (!downloadEnabled) return;" sat above them. Blocks, not returns.
+        //
+        // Comments go first and then all whitespace, so the shape is caught however it is
+        // written: on one line or two, braced or bare, with a comment after it. The whole file is
+        // read rather than the part after addPreferences, because a helper it calls can sit
+        // anywhere in the class.
         java.io.File directory = new java.io.File(
                 "src/main/java/app/morphe/extension/tiktok/settings/preference/categories");
         if (!directory.isDirectory()) directory = new java.io.File(
@@ -189,21 +194,65 @@ public class SettingsPagesTest {
         assertTrue("could not find " + directory.getAbsolutePath(), directory.isDirectory());
 
         java.util.List<String> offenders = new java.util.ArrayList<>();
-        for (java.io.File file : java.util.Objects.requireNonNull(directory.listFiles())) {
-            if (!file.getName().endsWith("PreferenceCategory.java")) continue;
+        java.io.File[] files = java.util.Objects.requireNonNull(directory.listFiles());
+        assertTrue("no categories were read at all", files.length > 5);
+        for (java.io.File file : files) {
+            if (!file.getName().endsWith(".java")) continue;
             String source = new String(java.nio.file.Files.readAllBytes(file.toPath()),
                     java.nio.charset.StandardCharsets.UTF_8);
-            int start = source.indexOf("public void addPreferences");
-            if (start < 0) continue;
-            for (String line : source.substring(start).split("\n")) {
-                String text = line.trim();
-                if (text.startsWith("if (!SettingsStatus.") && text.endsWith(") return;")) {
-                    offenders.add(file.getName() + ": " + text);
+            String packed = withoutComments(source).replaceAll("\\s+", "");
+            int at = 0;
+            while ((at = packed.indexOf("if(", at)) >= 0) {
+                int close = matchingBracket(packed, at + 2);
+                if (close < 0) break;
+                String condition = packed.substring(at + 3, close);
+                String rest = packed.substring(close + 1);
+                boolean returnsNow = rest.startsWith("return;") || rest.startsWith("{return;}");
+                boolean aboutAPatch = condition.contains("SettingsStatus.")
+                        || condition.contains("isAvailable()");
+                if (returnsNow && aboutAPatch) {
+                    offenders.add(file.getName() + ": if (" + condition + ") return;");
                 }
+                at = close + 1;
             }
         }
-        assertEquals("a flag returning early from addPreferences hides every flag below it: "
+        assertEquals("a flag returning early from a settings page hides every flag below it: "
                 + offenders, 0, offenders.size());
+    }
+
+    /** Index of the ')' matching the '(' at {@code open}, or -1. */
+    private static int matchingBracket(String text, int open) {
+        int depth = 0;
+        for (int at = open; at < text.length(); at++) {
+            char c = text.charAt(at);
+            if (c == '(') depth++;
+            if (c == ')' && --depth == 0) return at;
+        }
+        return -1;
+    }
+
+    /** Source with line and block comments blanked out, so their text cannot look like code. */
+    private static String withoutComments(String source) {
+        StringBuilder out = new StringBuilder(source.length());
+        for (int at = 0; at < source.length(); ) {
+            if (source.startsWith("//", at)) {
+                while (at < source.length() && source.charAt(at) != '\n') at++;
+            } else if (source.startsWith("/*", at)) {
+                int end = source.indexOf("*/", at + 2);
+                at = end < 0 ? source.length() : end + 2;
+            } else if (source.charAt(at) == '"') {
+                // A literal can hold anything, including the shape being looked for.
+                at++;
+                while (at < source.length() && source.charAt(at) != '"') {
+                    if (source.charAt(at) == '\\') at++;
+                    at++;
+                }
+                at++;
+            } else {
+                out.append(source.charAt(at++));
+            }
+        }
+        return out.toString();
     }
 
     /** How many rows a page's own addPreferences puts on it under the flags set right now. */

@@ -69,7 +69,12 @@ public final class SessionLockOverlay {
      * Held for the life of the hold. Nothing is done with the callbacks: this is here to stop the
      * feed playing, not to play anything.
      */
-    private static final AudioManager.OnAudioFocusChangeListener QUIET = change -> { };
+    private static final AudioManager.OnAudioFocusChangeListener QUIET = change -> {
+        // Losing it for good, to a call or to another app, drops us off the focus stack and
+        // nothing else would notice: the tick would keep seeing the flag set and never ask
+        // again, so the feed would play behind the panel for the rest of the hold.
+        if (change == AudioManager.AUDIOFOCUS_LOSS) quietened = false;
+    };
     private static boolean quietened;
 
     private SessionLockOverlay() {
@@ -95,10 +100,12 @@ public final class SessionLockOverlay {
                 detach();
                 return;
             }
-            requestQuiet();
             Activity activity = Utils.getActivity();
             if (activity == null || activity.isFinishing() || activity.isDestroyed()) return;
             if (!FeedVisibility.isOnFeed(activity)) {
+                // Messages, profiles and search still work, which the panel says in as many
+                // words, so the hold has no business silencing anything played there.
+                releaseQuiet();
                 View existing = overlayReference.get();
                 if (existing != null) existing.setVisibility(View.GONE);
                 return;
@@ -106,6 +113,7 @@ public final class SessionLockOverlay {
             View overlay = attach(activity);
             if (overlay == null) return;
             overlay.setVisibility(View.VISIBLE);
+            requestQuiet();
             TextView remaining = remainingReference.get();
             if (remaining != null) remaining.setText(remainingLabel());
         } catch (Throwable error) {

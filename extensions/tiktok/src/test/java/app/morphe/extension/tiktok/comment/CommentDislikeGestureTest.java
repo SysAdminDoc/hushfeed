@@ -191,6 +191,35 @@ public class CommentDislikeGestureTest {
         assertEquals("Blocked", String.valueOf(button.getStateDescription()));
     }
 
+    @Test public void blockingOneCommentUpdatesEveryRowByThatAccount() throws Exception {
+        // A thread usually holds several comments by the same account. Refreshing only the row
+        // that was tapped left the others reading "Block this commenter, not blocked" for an
+        // account that is already blocked, and the toggle reads the blocked set rather than the
+        // label, so following that label unblocked instead of blocking.
+        View tapped = commentCell("uid-same");
+        View sibling = commentCell("uid-same");
+        View unrelated = commentCell("uid-other");
+
+        java.util.Set<String> blocked =
+                ReflectionHelpers.getStaticField(CommentTools.class, "BLOCKED_UIDS");
+        blocked.add("uid-same");
+        try {
+            java.lang.reflect.Method refresh =
+                    CommentTools.class.getDeclaredMethod("applyBlockedEverywhere");
+            refresh.setAccessible(true);
+            refresh.invoke(null);
+
+            assertEquals("the row that was tapped does not read as blocked", 0.55f,
+                    tapped.getAlpha(), 0.001f);
+            assertEquals("another row by the same account was left saying the opposite", 0.55f,
+                    sibling.getAlpha(), 0.001f);
+            assertEquals("a row by a different account was faded too", 1f,
+                    unrelated.getAlpha(), 0.001f);
+        } finally {
+            blocked.remove("uid-same");
+        }
+    }
+
     private View commentCell(String uid) {
         View cell = new View(activity);
         Map<View, Object> cells = ReflectionHelpers.getStaticField(CommentTools.class, "CELL_COMMENTS");

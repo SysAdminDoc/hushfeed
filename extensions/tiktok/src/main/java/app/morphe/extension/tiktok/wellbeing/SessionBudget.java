@@ -355,7 +355,6 @@ public final class SessionBudget {
 
     private static void load() {
         if (loaded) return;
-        loaded = true;
         String stored = Settings.SESSION_BUDGET_STATE.get();
         day = dayOf(clock.now());
         try {
@@ -376,6 +375,10 @@ public final class SessionBudget {
         } catch (RuntimeException malformed) {
             Logger.printDebug(() -> "Discarded an unreadable session budget record");
         }
+        // Published last, on purpose. isLocked() reads this without the monitor, so setting it
+        // first left a window where another thread saw "loaded, no hold" while the hold it was
+        // about to read was still in the record, and auto advance started during a hold.
+        loaded = true;
     }
 
     /** Hands the record to the writer thread, because the settings store commits synchronously. */

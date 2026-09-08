@@ -81,18 +81,22 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
                     "For com.deniscerri.ytdl only. Hide its download card and start the handoff in "
                             + "the background.", Settings.YTDLNIS_BACKGROUND));
         }
-        addPreference(new DownloadPathPreference(
-                context,
-                "Video destination",
-                Settings.DOWNLOAD_VIDEO_PATH,
-                DownloadDestination.Kind.VIDEO
-        ));
-        addPreference(new DownloadPathPreference(
-                context,
-                "Photo destination",
-                Settings.DOWNLOAD_PHOTO_PATH,
-                DownloadDestination.Kind.PHOTO
-        ));
+        // The downloader is what reads these. With only the offline videos limit selected they
+        // were four rows on a reachable page that changed nothing.
+        if (SettingsStatus.downloadEnabled || SettingsStatus.advancedDownloadsEnabled) {
+            addPreference(new DownloadPathPreference(
+                    context,
+                    "Video destination",
+                    Settings.DOWNLOAD_VIDEO_PATH,
+                    DownloadDestination.Kind.VIDEO
+            ));
+            addPreference(new DownloadPathPreference(
+                    context,
+                    "Photo destination",
+                    Settings.DOWNLOAD_PHOTO_PATH,
+                    DownloadDestination.Kind.PHOTO
+            ));
+        }
         if (SettingsStatus.downloadEnabled) {
             addPreference(new ChoicePreference(context, "Animated sticker format", Settings.DOWNLOAD_STICKER_FORMAT,
                     new String[]{"Video (MP4)", "GIF", "WebP, exactly as TikTok sent it"},
@@ -104,25 +108,27 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
                     DownloadDestination.Kind.STICKER
             ));
         }
-        addPreference(new InputTextPreference(
-                context,
-                "Video filename",
-                "Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
-                Settings.DOWNLOAD_VIDEO_FILENAME_TEMPLATE
-        ));
-        addPreference(new InputTextPreference(
-                context,
-                "Photo filename",
-                "Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a "
-                        + "slideshow you save with Save original photos; anything saved through "
-                        + "TikTok's own button is numbered by the folder instead. The file "
-                        + "extension is kept automatically.",
-                Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE
-        ));
-        // Blocks, not early returns. Each flag here belongs to a different patch and any of them
-        // can be selected on its own, so a return for one of them took every later flag's rows
-        // with it: the offline videos limit set its own flag and still put nothing on the page
-        // unless the Downloads patch happened to be in the bundle too.
+        if (SettingsStatus.downloadEnabled || SettingsStatus.advancedDownloadsEnabled) {
+            addPreference(new InputTextPreference(
+                    context,
+                    "Video filename",
+                    "Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
+                    Settings.DOWNLOAD_VIDEO_FILENAME_TEMPLATE
+            ));
+            addPreference(new InputTextPreference(
+                    context,
+                    "Photo filename",
+                    "Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a "
+                            + "slideshow you save with Save original photos; anything saved through "
+                            + "TikTok's own button is numbered by the folder instead. The file "
+                            + "extension is kept automatically.",
+                    Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE
+            ));
+            // Blocks, not early returns. Each flag here belongs to a different patch and any of them
+            // can be selected on its own, so a return for one of them took every later flag's rows
+            // with it: the offline videos limit set its own flag and still put nothing on the page
+            // unless the Downloads patch happened to be in the bundle too.
+        }
         if (SettingsStatus.downloadEnabled) {
             addPreference(new InputTextPreference(
                     context,

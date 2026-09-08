@@ -111,6 +111,30 @@ public class AutoAdvanceTest {
         assertTrue(control.owned);
     }
 
+    @Test public void aVideoFinishingBehindTheHoldIsNotCountedAgainstTheSessionLimit() throws Exception {
+        // The hold check used to be reached only through update(), which runs after the
+        // completion is recorded, so the video that finished behind the panel still spent a
+        // place in this session's limit and could put its notice on top of the hold.
+        FeedView feed = new FeedView();
+        var control = new AutoAdvance.Control(feed);
+        control.owned = true;
+        Object component = new Object();
+        java.util.Map<Object, AutoAdvance.Control> controls =
+                org.robolectric.util.ReflectionHelpers.getStaticField(AutoAdvance.class, "CONTROLS");
+        controls.put(component, control);
+
+        Settings.SESSION_BUDGET_VIDEOS.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(5);
+        SessionBudget.noteVideo("a");
+        assertTrue(SessionBudget.claimNotice());
+        assertTrue("no hold started", SessionBudget.isLocked());
+
+        AutoAdvance.beforeCompletion(component, "finished-behind-the-panel");
+
+        assertEquals("a video nobody could see was counted", 0, control.completedCount);
+        assertFalse("the feed kept advancing behind the hold", control.owned);
+    }
+
     @Test public void disabledSettingLeavesPreexistingNativeAutoScrollAlone() {
         FeedView feed = new FeedView();
         var control = new AutoAdvance.Control(feed);

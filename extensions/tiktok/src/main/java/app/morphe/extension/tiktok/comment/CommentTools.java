@@ -6,7 +6,6 @@
  */
 package app.morphe.extension.tiktok.comment;
 
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
@@ -334,6 +333,21 @@ public final class CommentTools {
         return null;
     }
 
+    /**
+     * Every comment on screen, not only the one that was tapped. A thread usually holds several
+     * comments by the same account, and refreshing one left the others reading "Block this
+     * commenter, not blocked" for an account that is already blocked. Acting on that label did
+     * the opposite of what it said, because the toggle reads the blocked set rather than the
+     * label, so a screen reader user was told to block and unblocked instead.
+     */
+    private static void applyBlockedEverywhere() {
+        java.util.List<View> cells;
+        synchronized (CELL_COMMENTS) {
+            cells = new java.util.ArrayList<>(CELL_COMMENTS.keySet());
+        }
+        for (View cell : cells) applyBlockedState(cell);
+    }
+
     private static void applyBlockedState(View cell) {
         Object comment;
         synchronized (CELL_COMMENTS) {
@@ -427,7 +441,7 @@ public final class CommentTools {
                 BLOCKED_UIDS.add(author.uid);
             }
             // The cell reads its current comment, so a recycled row is never mis-styled.
-            applyBlockedState(cell);
+            applyBlockedEverywhere();
 
             View root = cell.getRootView();
             BlockAuthorOverlay.showUndoBanner(root instanceof ViewGroup ? (ViewGroup) root : null,
@@ -437,7 +451,7 @@ public final class CommentTools {
                                 if (author.uid != null) {
                                     BLOCKED_UIDS.remove(author.uid);
                                 }
-                                applyBlockedState(cell);
+                                applyBlockedEverywhere();
                             }
                             Utils.showToastShort(undoResult == BlockAuthorService.Result.CONFIRMED
                                         ? L10n.f("Unblocked %1$s", author.label())
@@ -466,7 +480,7 @@ public final class CommentTools {
             if (author.uid != null) {
                 BLOCKED_UIDS.remove(author.uid);
             }
-            applyBlockedState(cell);
+            applyBlockedEverywhere();
             Utils.showToastShort(L10n.f("Unblocked %1$s", author.label()));
         });
     }

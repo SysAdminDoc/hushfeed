@@ -125,7 +125,7 @@ public class SettingsL10nTest {
      * messages.
      */
     private static final String SHOWS_TEXT = "(?:\\b\\w*[Tt]oast\\w*|Toast\\s*\\.\\s*makeText|showUndoBanner"
-            + "|setContentDescription)\\s*\\(";
+            + "|setContentDescription|setStateDescription)\\s*\\(";
 
     /** Marks every character of a source file as code, inside a literal, or inside a comment. */
     private static final byte CODE = 0, LITERAL = 1, COMMENT = 2;

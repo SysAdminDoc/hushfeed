@@ -274,10 +274,15 @@ public final class InboxFilter {
      * accent when the header holds no text of its own to copy.
      */
     private static int headerTextColour(ViewGroup header) {
+        // Descends, because the heading is often wrapped in a layout of its own rather than
+        // sitting directly in the header.
         for (int index = 0; index < header.getChildCount(); index++) {
             View child = header.getChildAt(index);
-            if (child instanceof TextView && child.getId() != CLEAR_ALL_VIEW_ID) {
-                return ((TextView) child).getCurrentTextColor();
+            if (child.getId() == CLEAR_ALL_VIEW_ID) continue;
+            if (child instanceof TextView) return ((TextView) child).getCurrentTextColor();
+            if (child instanceof ViewGroup) {
+                int nested = headerTextColour((ViewGroup) child);
+                if (nested != SettingsUi.OVERLAY_ACCENT) return nested;
             }
         }
         return SettingsUi.OVERLAY_ACCENT;
@@ -308,6 +313,11 @@ public final class InboxFilter {
         clearAll.setId(CLEAR_ALL_VIEW_ID);
         clearAll.setText(L10n.t(activity, "Clear all"));
         clearAll.setTextColor(headerTextColour(headerGroup));
+        // Taking the heading's colour makes it readable in either theme, but it also makes it
+        // look like a heading. This is a bulk action that dismisses every suggestion, so it has
+        // to read as something you can press.
+        clearAll.setTypeface(clearAll.getTypeface(), android.graphics.Typeface.BOLD);
+        clearAll.setPaintFlags(clearAll.getPaintFlags() | android.graphics.Paint.UNDERLINE_TEXT_FLAG);
         clearAll.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         clearAll.setGravity(Gravity.CENTER_VERTICAL | Gravity.END);
         clearAll.setContentDescription(L10n.t(activity, "Clear all suggested accounts"));

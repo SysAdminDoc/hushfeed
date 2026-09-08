@@ -212,6 +212,36 @@ public class SessionLockOverlayTest {
         }
     }
 
+    @Test public void losingTheAudioFocusDoesNotEndTheHoldsOnlyLever() throws Exception {
+        // A call, or another app taking the focus, drops us off the stack. Nothing else would
+        // notice: the tick kept seeing the flag set and never asked again, so the feed played
+        // behind the panel for the rest of the hold.
+        Settings.SESSION_BUDGET_VIDEOS.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(5);
+        SessionBudget.noteVideo("a");
+        assertTrue(SessionBudget.claimNotice());
+
+        try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Utils.setActivity(owner.get());
+            SessionLockOverlay.sync();
+            assertTrue("the hold never took the focus", quietened());
+
+            android.media.AudioManager.OnAudioFocusChangeListener listener =
+                    org.robolectric.util.ReflectionHelpers.getStaticField(
+                            SessionLockOverlay.class, "QUIET");
+            listener.onAudioFocusChange(android.media.AudioManager.AUDIOFOCUS_LOSS);
+            assertTrue("losing the focus left the hold thinking it still had it", !quietened());
+
+            SessionLockOverlay.sync();
+            assertTrue("the hold never asked for the focus again", quietened());
+        }
+    }
+
+    private static boolean quietened() {
+        return org.robolectric.util.ReflectionHelpers.getStaticField(
+                SessionLockOverlay.class, "quietened");
+    }
+
     private static long at(int year, int month, int day, int hour, int minute) {
         Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
         calendar.clear();

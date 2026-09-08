@@ -52,6 +52,14 @@ public final class AutoAdvance {
         if (Looper.myLooper() != Looper.getMainLooper() || completedId == null) return;
         Control control = CONTROLS.get(component);
         if (control == null || !control.owned) return;
+        // Before the completion is recorded, not after. Reaching the hold check further down
+        // through update() stood down one video late: the video that finished behind the panel
+        // still spent a place in this session's limit, and could put its "stopped after N
+        // videos" toast on top of the hold.
+        if (SessionBudget.isLocked()) {
+            update(component);
+            return;
+        }
         String current = Reflect.string(readAweme(component), "getAid", "aid");
         if (!completedId.equals(current)) return;
         if (!control.recordCompletion(completedId)) return;

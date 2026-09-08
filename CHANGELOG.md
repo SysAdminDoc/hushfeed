@@ -1,5 +1,13 @@
 ## Unreleased
 
+* Blocking someone from a comment now updates every comment of theirs on screen, not only the one you pressed. A screen reader was told the others were not blocked, and following that told it to unblock instead.
+
+* A hold really does quiet the feed. It gives the sound back when you leave the feed for messages or search, and if a call takes the sound away it asks for it again rather than giving up for the rest of the hold. A video finishing behind the hold no longer counts against the automatic advance limit or puts a notice over the panel.
+
+* Two settings pages stop offering rows for patches that are not in the bundle. The download destinations and filename templates need the downloader, and the operator code and name need the SIM patch.
+
+* Clear all in the inbox reads as something you can press rather than as another heading.
+
 * Two patches that could be selected on their own put their switches somewhere nobody could reach them. Hide comment popup ads built a switch on a page that never appeared, and the offline videos limit sat below an early return belonging to the Downloads patch, so selecting it alone gave a page without it. Every settings page now keeps each patch's rows behind that patch's own flag.
 
 * Clear all in the inbox is readable in both themes. It was picking its colour from a flag the settings screen sets, which away from that screen answers for the system theme rather than TikTok's own, so it could draw dark red on a dark sheet.
