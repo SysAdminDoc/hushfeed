@@ -164,6 +164,9 @@ public class FeatureGatePagesTest {
             Switch control = find(detail.getView(), Switch.class);
             assertTrue(control.isEnabled());
             control.performClick();
+            // Saving an override goes through the journal now, off this thread and back.
+            Utils.awaitBackgroundTasksForTests();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
             assertTrue(FeatureGateLabStore.rule("abmock", entry.key, "INT").enabled);
             UiCapture.save(detail.getView(), "pages/" + theme + "/gate-details-enabled.png");
             attach(activity, FeatureGateDetailFragment.forEntry("abmock", "missing", "INT"));

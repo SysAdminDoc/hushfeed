@@ -9,6 +9,8 @@ import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Looper;
+import android.os.Handler;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -371,36 +373,72 @@ public final class FeatureGateDetailFragment extends Fragment {
             Utils.showToastLong(error);
             return;
         }
-        try {
-            FeatureGateLabUndo.saveRule(entry.manager, entry.key, entry.type, value, enabled);
-        } catch (Exception failure) {
-            Utils.showToastLong("Could not save this override. " + failure.getMessage());
-            return;
-        }
-        rule = FeatureGateLabStore.rule(entry.manager, entry.key, entry.type);
-        reset.setVisibility(View.VISIBLE);
-        updateStatus();
+        // Saving takes the journal lock and two write-and-verify cycles, the same as the Lab
+        // screen's own changes, which have run off the main thread since they were written.
+        Object[] saved = new Object[1];
+        runDetailChange(
+                () -> {
+                    FeatureGateLabUndo.saveRule(entry.manager, entry.key, entry.type, value, enabled);
+                    saved[0] = FeatureGateLabStore.rule(entry.manager, entry.key, entry.type);
+                },
+                () -> {
+                    rule = (FeatureGateLabStore.Rule) saved[0];
+                    reset.setVisibility(View.VISIBLE);
+                    updateStatus();
+                },
+                "Could not save this override.");
     }
 
     private void resetRule() {
-        try {
-            FeatureGateLabUndo.deleteRule(entry.manager, entry.key, entry.type);
-        } catch (Exception error) {
-            Utils.showToastLong("Could not reset this override. " + error.getMessage());
-            return;
-        }
-        rule = null;
-        suppress = true;
-        if (force != null) force.setChecked(false);
-        if (booleanValue != null) {
-            booleanValue.setChecked(Boolean.parseBoolean(bestInitialValue(entry)));
-        } else if (values != null) {
-            values.setSelection(selectedIndex(options, bestInitialValue(entry)));
-        }
-        suppress = false;
-        reset.setVisibility(View.GONE);
-        updateStatus();
-        Utils.showToastShort("Feature gate override reset");
+        runDetailChange(
+                () -> FeatureGateLabUndo.deleteRule(entry.manager, entry.key, entry.type),
+                () -> {
+                    rule = null;
+                    suppress = true;
+                    if (force != null) force.setChecked(false);
+                    if (booleanValue != null) {
+                        booleanValue.setChecked(Boolean.parseBoolean(bestInitialValue(entry)));
+                    } else if (values != null) {
+                        values.setSelection(selectedIndex(options, bestInitialValue(entry)));
+                    }
+                    suppress = false;
+                    reset.setVisibility(View.GONE);
+                    updateStatus();
+                    Utils.showToastShort("Feature gate override reset");
+                },
+                "Could not reset this override.");
+    }
+
+    /** A change that touches storage, so it does not belong on the thread drawing the screen. */
+    private interface DetailChange {
+        void run() throws Exception;
+    }
+
+    /**
+     * Runs {@code change} off the main thread, then {@code onDone} back on it.
+     *
+     * <p>{@code onDone} touches the views, so it is skipped when the screen has gone in the
+     * meantime. A failure is reported either way: the user pressed a button and is owed an
+     * answer even if they have already left.
+     */
+    private void runDetailChange(DetailChange change, Runnable onDone, String failurePrefix) {
+        Utils.runOnBackgroundThread(() -> {
+            String failure = null;
+            try {
+                change.run();
+            } catch (Exception error) {
+                failure = failurePrefix + " " + error.getMessage();
+            }
+            String notice = failure;
+            new Handler(Looper.getMainLooper()).post(() -> {
+                if (notice != null) {
+                    Utils.showToastLong(notice);
+                    return;
+                }
+                if (getActivity() == null || reset == null) return;
+                onDone.run();
+            });
+        });
     }
 
     private void showCustomValue() {

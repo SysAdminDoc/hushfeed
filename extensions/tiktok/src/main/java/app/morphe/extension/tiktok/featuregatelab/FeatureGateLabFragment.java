@@ -698,15 +698,13 @@ public final class FeatureGateLabFragment extends Fragment {
             Utils.showToastLong("A Lab change is already running");
             return;
         }
-        try {
-            FeatureGateLabUndo.setMasterEnabled(checked);
-            rebuild();
-            Utils.showToastLong(checked ? "Overrides enabled. Restart TikTok to apply saved values."
-                    : "Overrides disabled. Restart TikTok to restore native values.");
-        } catch (Exception error) {
-            syncMasterSwitch();
-            Utils.showToastLong("Could not change Lab overrides. " + error.getMessage());
-        }
+        // This is storage, not a flag: the journal lock, two write-and-verify cycles and a
+        // blocking commit. The Lab's other three mutations already go this way; this one held
+        // the main thread, and a settings restore holding the journal lock froze the screen
+        // until it finished. runLabChange puts the switch back for us either way.
+        runLabChange(() -> FeatureGateLabUndo.setMasterEnabled(checked),
+                checked ? "Overrides enabled. Restart TikTok to apply saved values."
+                        : "Overrides disabled. Restart TikTok to restore native values.");
     }
 
     private void openDetail(FeatureGateCatalog.Entry entry) {
@@ -1008,12 +1006,25 @@ public final class FeatureGateLabFragment extends Fragment {
 
     private interface LabChange { void run() throws Exception; }
 
+    /**
+     * The thread the last Lab change ran on.
+     *
+     * <p>Every one of them touches storage, so a test needs to be able to say which thread that
+     * happened on rather than only that it happened.
+     */
+    private static volatile String lastChangeThreadForTests;
+
+    static String lastChangeThreadForTests() {
+        return lastChangeThreadForTests;
+    }
+
     private void runLabChange(LabChange change, String message) {
         if (!CHANGING.compareAndSet(false, true)) {
             postToast("A Lab change is already running");
             return;
         }
         Utils.runOnBackgroundThread(() -> {
+            lastChangeThreadForTests = Thread.currentThread().getName();
             String result = message;
             try {
                 change.run();
