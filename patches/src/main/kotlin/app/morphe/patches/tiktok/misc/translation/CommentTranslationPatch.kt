@@ -8,6 +8,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.getReference
 import app.morphe.util.findInstructionIndicesReversedOrThrow
 import com.android.tools.smali.dexlib2.Opcode
@@ -22,7 +23,7 @@ val commentTranslationPatch = bytecodePatch(
     description = "Adds comment translation controls using TikTok's translation system, with selectable language exclusions.",
     default = true,
 ) {
-    dependsOn(sharedExtensionPatch)
+    dependsOn(settingsPatch, sharedExtensionPatch)
 
     compatibleWith(*AppCompatibilities.tiktok4623())
 

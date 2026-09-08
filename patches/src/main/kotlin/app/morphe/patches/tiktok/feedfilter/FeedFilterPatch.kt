@@ -16,6 +16,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint.method
+import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionOrThrow
@@ -44,7 +45,7 @@ val feedFilterPatch = bytecodePatch(
         "and the Friends tab as well as the feed. Supports TikTok 46.2.3.",
     default = true,
 ) {
-    dependsOn(
+    dependsOn(settingsPatch, 
         sharedExtensionPatch,
     )
 

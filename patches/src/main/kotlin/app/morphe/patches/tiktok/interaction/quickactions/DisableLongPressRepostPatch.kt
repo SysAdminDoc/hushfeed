@@ -12,6 +12,7 @@ import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import app.morphe.patches.tiktok.misc.settings.settingsPatch
 
 private const val FEATURE_CONTROLS_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/featurecontrols/FeatureControls;"
@@ -22,7 +23,7 @@ val disableLongPressRepostPatch = bytecodePatch(
     description = "Keeps holding Like from opening TikTok's repost action.",
     default = true,
 ) {
-    dependsOn(sharedExtensionPatch)
+    dependsOn(settingsPatch, sharedExtensionPatch)
     compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {

@@ -6,6 +6,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.patches.tiktok.misc.spoof.sim.simSpoofPatch
 import app.morphe.util.findMutableMethodOf
 import app.morphe.util.getReference
@@ -28,7 +29,7 @@ val regionSpoofPatch = bytecodePatch(
     default = false,
 ) {
     compatibleWith(*AppCompatibilities.tiktok4623())
-    dependsOn(simSpoofPatch)
+    dependsOn(settingsPatch, simSpoofPatch)
     execute {
         val replacements = mapOf("Ljava/util/Locale;" to "locale", "Ljava/util/TimeZone;" to "timeZone")
         val counts = mutableMapOf<String, Int>()

@@ -10,6 +10,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import com.android.tools.smali.dexlib2.Opcode
 
 private const val FEATURE_CONTROLS_DESCRIPTOR =
@@ -21,7 +22,7 @@ val hideQuickCommentReactionsPatch = bytecodePatch(
     description = "Hides TikTok's exposed quick emoji row in supported comment inputs.",
     default = true,
 ) {
-    dependsOn(sharedExtensionPatch)
+    dependsOn(settingsPatch, sharedExtensionPatch)
     compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {

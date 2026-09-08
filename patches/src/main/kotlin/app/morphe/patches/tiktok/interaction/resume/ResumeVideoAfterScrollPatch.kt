@@ -12,6 +12,7 @@ import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionReversedOrThrow
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
@@ -25,7 +26,7 @@ val resumeVideoAfterScrollPatch = bytecodePatch(
     description = "Continues supported videos from where playback stopped when returning after a scroll.",
     default = true,
 ) {
-    dependsOn(sharedExtensionPatch)
+    dependsOn(settingsPatch, sharedExtensionPatch)
 
     compatibleWith(*AppCompatibilities.tiktok4623())
 

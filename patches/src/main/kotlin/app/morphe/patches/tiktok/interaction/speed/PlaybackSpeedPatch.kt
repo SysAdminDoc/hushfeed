@@ -10,6 +10,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
+import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.patches.tiktok.shared.OnRenderFirstFrameFingerprint
 import app.morphe.patches.tiktok.interaction.cleardisplay.OnRenderFirstFrameBodyFingerprint
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
@@ -33,7 +34,7 @@ val playbackSpeedPatch = bytecodePatch(
     description = "Remembers playback speed or applies a default to each new video, with custom menu choices up to 3x.",
     default = true,
 ) {
-    dependsOn(sharedExtensionPatch)
+    dependsOn(settingsPatch, sharedExtensionPatch)
 
     compatibleWith(*AppCompatibilities.tiktok4623())
 

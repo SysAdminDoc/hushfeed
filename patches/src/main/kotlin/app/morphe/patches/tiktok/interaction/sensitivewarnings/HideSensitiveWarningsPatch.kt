@@ -13,6 +13,7 @@ import app.morphe.patches.tiktok.interaction.blockauthor.VideoAuthorInfoParamsFi
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.interaction.blockauthor.registerOfParameter
+import app.morphe.patches.tiktok.misc.settings.settingsPatch
 
 private const val EXTENSION_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/feed/SensitiveWarnings;"
@@ -32,7 +33,7 @@ val hideSensitiveWarningsPatch = bytecodePatch(
         "overlay asking to be tapped through first. Supports TikTok 46.2.3.",
     default = false,
 ) {
-    dependsOn(sharedExtensionPatch)
+    dependsOn(settingsPatch, sharedExtensionPatch)
 
     compatibleWith(*AppCompatibilities.tiktok4623())
 

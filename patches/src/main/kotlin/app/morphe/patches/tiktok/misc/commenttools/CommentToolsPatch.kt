@@ -14,6 +14,7 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.interaction.blockauthor.BlockServiceFingerprint
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.patches.tiktok.misc.translation.BaseCommentCellBindFingerprint
 import app.morphe.patches.tiktok.misc.translation.CommentListLoadedFingerprint
 import app.morphe.util.getReference
@@ -40,7 +41,7 @@ val commentToolsPatch = bytecodePatch(
         "by what they say or who said it. Supports TikTok 46.2.3.",
     default = false,
 ) {
-    dependsOn(sharedExtensionPatch)
+    dependsOn(settingsPatch, sharedExtensionPatch)
 
     compatibleWith(*AppCompatibilities.tiktok4623())
 

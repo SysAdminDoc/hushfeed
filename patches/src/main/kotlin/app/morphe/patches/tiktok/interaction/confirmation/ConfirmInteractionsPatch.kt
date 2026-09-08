@@ -10,6 +10,7 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.interaction.blockauthor.blockAuthorPatch
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import app.morphe.patches.tiktok.misc.settings.settingsPatch
 
 private object FollowClickFingerprint : Fingerprint(
     strings = listOf("VIDEO_CANCEL_REPORT_SKIP_BEHAVIOR", "click_add", "guide_dm"),
@@ -32,7 +33,7 @@ val confirmInteractionsPatch = bytecodePatch(
     default = false,
 ) {
     compatibleWith(*AppCompatibilities.tiktok4623())
-    dependsOn(sharedExtensionPatch, blockAuthorPatch)
+    dependsOn(settingsPatch, sharedExtensionPatch, blockAuthorPatch)
     execute {
         listOf(FollowClickFingerprint to "follow", LikeClickFingerprint to "like").forEach { (fingerprint, callback) ->
             val method = fingerprint.method

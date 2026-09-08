@@ -15,6 +15,7 @@ import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.interaction.blockauthor.blockAuthorPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
@@ -83,7 +84,7 @@ val longPressPatch = bytecodePatch(
     default = false,
 ) {
     compatibleWith(*AppCompatibilities.tiktok4623())
-    dependsOn(blockAuthorPatch, doubleTapPatch)
+    dependsOn(settingsPatch, blockAuthorPatch, doubleTapPatch)
 
     execute {
         FeedLongPressFingerprint.method.apply {

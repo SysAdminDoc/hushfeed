@@ -10,6 +10,7 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.interaction.blockauthor.blockAuthorPatch
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import app.morphe.patches.tiktok.misc.settings.settingsPatch
 
 private const val EXTENSION = "Lapp/morphe/extension/tiktok/interaction/GestureActions;"
 private const val COMMENT_CLASS = "Lcom/ss/android/ugc/aweme/feed/assem/videocomment/VideoCommentAssem;"
@@ -35,7 +36,7 @@ val doubleTapPatch = bytecodePatch(
     default = false,
 ) {
     compatibleWith(*AppCompatibilities.tiktok4623())
-    dependsOn(sharedExtensionPatch, blockAuthorPatch)
+    dependsOn(settingsPatch, sharedExtensionPatch, blockAuthorPatch)
     execute {
         DoubleTapFingerprint.method.apply {
             check(implementation!!.registerCount > parameterTypes.size + 1)

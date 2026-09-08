@@ -11,6 +11,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import app.morphe.patches.tiktok.misc.settings.settingsPatch
 
 private object CaptchaPopupFingerprint : Fingerprint(
     definingClass = "/sec/SecApiImpl;",
@@ -71,7 +72,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
         "like, comment or repost, because hiding one of those makes the action fail with no message.",
     default = true,
 ) {
-    dependsOn(sharedExtensionPatch, captchaRequestRecorderPatch)
+    dependsOn(settingsPatch, sharedExtensionPatch, captchaRequestRecorderPatch)
     compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {

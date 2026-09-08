@@ -4,6 +4,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import app.morphe.patches.tiktok.misc.settings.settingsPatch
 
 @Suppress("unused")
 val featureGateRecorderPatch = bytecodePatch(
@@ -11,7 +12,7 @@ val featureGateRecorderPatch = bytecodePatch(
     description = "Records feature gate reads while you use TikTok and compares them with their previous values.",
     default = false,
 ) {
-    dependsOn(featureGateLabPatch)
+    dependsOn(settingsPatch, featureGateLabPatch)
     compatibleWith(*AppCompatibilities.tiktok4623())
     execute {
         SettingsStatusLoadFingerprint.method.addInstruction(0,

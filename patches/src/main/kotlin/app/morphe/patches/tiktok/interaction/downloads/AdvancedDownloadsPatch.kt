@@ -9,6 +9,7 @@ import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import com.android.tools.smali.dexlib2.AccessFlags
 
 private const val VIDEO = "Lcom/ss/android/ugc/aweme/feed/model/Video;"
@@ -80,7 +81,7 @@ val advancedDownloadsPatch = bytecodePatch(
     default = false,
 ) {
     compatibleWith(*AppCompatibilities.tiktok4623())
-    dependsOn(sharedExtensionPatch)
+    dependsOn(settingsPatch, sharedExtensionPatch)
     execute {
         listOf(DownloadAddressFingerprint, CleanDownloadAddressFingerprint).forEach { fingerprint ->
             fingerprint.method.apply {

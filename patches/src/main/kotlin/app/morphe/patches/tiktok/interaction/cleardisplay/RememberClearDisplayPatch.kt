@@ -6,6 +6,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.cloneMutable
 import app.morphe.util.getReference
 import app.morphe.util.returnEarly
@@ -19,7 +20,7 @@ val rememberClearDisplayPatch = bytecodePatch(
     description = "Remembers clear display between videos, or enters it automatically after a chosen delay.",
     default = true,
 ) {
-    dependsOn(sharedExtensionPatch)
+    dependsOn(settingsPatch, sharedExtensionPatch)
     compatibleWith(*AppCompatibilities.tiktok4623())
     execute {
         ClearModeLogCoreFingerprint.methodOrNull?.returnEarly()

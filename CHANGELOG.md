@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The published patch list names what each patch actually depends on instead of saying "BytecodePatch" for all of them. Every patch that adds a setting now requires the Settings patch too, so the patcher cannot leave you with switches on a screen that was never built.
+
 * The Long-press controls description in the patcher now mentions saving the original sound, which it has done since 0.21.0 while the description still listed three actions.
 
 * The README says why saving works the way it does. It reads the addresses the app already fetched, on the session you are already signed in with, so there is nothing pretending to be a browser and nothing to keep in step with the site.
