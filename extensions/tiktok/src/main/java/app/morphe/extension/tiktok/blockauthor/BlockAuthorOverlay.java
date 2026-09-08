@@ -128,6 +128,9 @@ public final class BlockAuthorOverlay {
         }
         View feedback = notInterestedReference.get();
         if (feedback != null) feedback.setVisibility(visible && notInterestedEnabled() ? View.VISIBLE : View.GONE);
+        // Off the feed every button above is GONE, so there is nothing to place. This also keeps
+        // the whole of placeSoundButton off the layout callback on Profile, Inbox and Search.
+        if (!visible) return;
         if (button.getParent() instanceof ViewGroup) {
             placeSoundButton(button, (ViewGroup) button.getParent());
         }
@@ -349,25 +352,38 @@ public final class BlockAuthorOverlay {
                 && localHide.getParent() == parent;
         if (localVisible) {
             ViewGroup.MarginLayoutParams localParams = (ViewGroup.MarginLayoutParams) localHide.getLayoutParams();
-            localParams.leftMargin = blockParams.leftMargin;
-            localParams.topMargin = Math.min(nextTop, Math.max(0, parent.getHeight() - size));
-            localHide.setLayoutParams(localParams);
+            setMargins(localHide, localParams, blockParams.leftMargin,
+                    Math.min(nextTop, Math.max(0, parent.getHeight() - size)));
             nextTop += size + gap;
         }
         int top = nextTop;
         int maxTop = Math.max(0, parent.getHeight() - size);
-        soundParams.leftMargin = blockParams.leftMargin;
-        soundParams.topMargin = Math.min(top, maxTop);
-        soundButton.setLayoutParams(soundParams);
+        setMargins(soundButton, soundParams, blockParams.leftMargin, Math.min(top, maxTop));
         View feedback = notInterestedReference.get();
         if (feedback != null && feedback.getParent() == parent) {
             ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) feedback.getLayoutParams();
             int left = blockParams.leftMargin - size - gap;
             if (left < 0) left = blockParams.leftMargin + size + gap;
-            params.leftMargin = Math.max(0, Math.min(left, parent.getWidth() - size));
-            params.topMargin = blockParams.topMargin;
-            feedback.setLayoutParams(params);
+            setMargins(feedback, params, Math.max(0, Math.min(left, parent.getWidth() - size)),
+                    blockParams.topMargin);
         }
+    }
+
+    /**
+     * Writes margins only when they actually move.
+     *
+     * <p>{@link View#setLayoutParams} calls {@code requestLayout()} whatever it is handed, and
+     * this runs from an {@code OnGlobalLayoutListener}, which the framework dispatches after
+     * layout inside the same traversal. So an unconditional call schedules another traversal,
+     * whose layout calls this again, once every frame for as long as the overlay is attached.
+     * {@code InboxFilter.setRowHidden} and {@code ShareSheetTools.setCellHidden} guard their own
+     * layout callbacks the same way.
+     */
+    private static void setMargins(View view, ViewGroup.MarginLayoutParams params, int left, int top) {
+        if (params.leftMargin == left && params.topMargin == top) return;
+        params.leftMargin = left;
+        params.topMargin = top;
+        view.setLayoutParams(params);
     }
 
     private static View createButton(Activity activity) {

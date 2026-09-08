@@ -94,6 +94,49 @@ public class OverlayControlsTest {
         }
     }
 
+    @Test public void placingTheFeedButtonsTwiceOverDoesNotAskForAnotherLayout() throws Exception {
+        // placeSoundButton runs from an OnGlobalLayoutListener, which the framework dispatches
+        // after layout inside the same traversal. setLayoutParams calls requestLayout whatever
+        // it is handed, so writing the same margins back scheduled another traversal, whose
+        // layout called this again: the whole content root measured and laid out every frame for
+        // as long as the overlay was attached, including on screens where every button is GONE.
+        Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
+        Utils.setContext(activity);
+        Utils.setActivity(activity);
+        android.view.ViewGroup root = activity.findViewById(android.R.id.content);
+
+        Method attach = BlockAuthorOverlay.class.getDeclaredMethod("attach", VideoAuthor.class);
+        attach.setAccessible(true);
+        attach.invoke(null, new VideoAuthor("1", "sec", "someone", "7712345"));
+        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+
+        Method place = BlockAuthorOverlay.class.getDeclaredMethod(
+                "placeSoundButton", View.class, android.view.ViewGroup.class);
+        place.setAccessible(true);
+        java.lang.reflect.Field held = BlockAuthorOverlay.class.getDeclaredField("buttonReference");
+        held.setAccessible(true);
+        View button = ((java.lang.ref.WeakReference<View>) held.get(null)).get();
+        assertNotNull("attach never created the block button", button);
+
+        // Settle the tree the way a real traversal would, so the flag under test starts clear.
+        int spec = View.MeasureSpec.makeMeasureSpec(1080, View.MeasureSpec.EXACTLY);
+        place.invoke(null, button, root);
+        root.measure(spec, spec);
+        root.layout(0, 0, 1080, 1080);
+        assertFalse("the tree did not settle, so this proves nothing", root.isLayoutRequested());
+
+        // Nothing has moved, so this pass must write no margins and ask for no layout.
+        place.invoke(null, button, root);
+        assertFalse("placing the buttons again asked for another layout, which the layout"
+                + " callback would answer by placing them again", root.isLayoutRequested());
+
+        // And off the feed the placement is skipped outright rather than relied on to be a no-op.
+        Method setFeedVisible = BlockAuthorOverlay.class.getDeclaredMethod("setFeedVisible", boolean.class);
+        setFeedVisible.setAccessible(true);
+        setFeedVisible.invoke(null, false);
+        assertFalse("going off the feed asked for another layout", root.isLayoutRequested());
+    }
+
     @Test public void theOverlaysFollowTheActivityTheHostRecreated() {
         Activity first = Robolectric.buildActivity(Activity.class).setup().get();
         Utils.setContext(first);
