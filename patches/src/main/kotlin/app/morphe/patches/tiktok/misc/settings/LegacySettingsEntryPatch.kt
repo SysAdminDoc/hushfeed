@@ -5,8 +5,10 @@
 package app.morphe.patches.tiktok.misc.settings
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
+import app.morphe.patcher.util.smali.ExternalLabel
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction22c
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
@@ -42,15 +44,23 @@ internal fun addLegacySettingsEntryFallback() = with(patchContext) {
 
             addSettingsMethod.addInstructions(markIndex + 2, listOf(getUnitManager, addEntry))
 
-            addSettingsMethod.addInstructions(
+            // Somewhere to land when there is no row to add. A nop of our own rather than one of
+            // the instructions above, because those were copied and so appear twice in the
+            // method, and a label resolved by identity would find the wrong one.
+            addSettingsMethod.addInstructions(markIndex + 4, "nop")
+            val skipTheRow = addSettingsMethod.getInstruction(markIndex + 4)
+
+            addSettingsMethod.addInstructionsWithLabels(
                 markIndex + 2,
                 """
                     const-string v0, "$settingsButtonClass"
                     const-string v1, "$settingsButtonInfoClass"
                     invoke-static {v0, v1}, $createSettingsEntryMethodDescriptor
                     move-result-object v0
+                    if-eqz v0, :morphe_no_settings_row
                     check-cast v0, ${SettingsEntryFingerprint.originalClassDef.type}
                 """,
+                ExternalLabel("morphe_no_settings_row", skipTheRow),
             )
         }
 
