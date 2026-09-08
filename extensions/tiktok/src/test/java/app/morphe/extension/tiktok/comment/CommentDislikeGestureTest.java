@@ -1,6 +1,8 @@
 package app.morphe.extension.tiktok.comment;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
@@ -37,9 +39,13 @@ public class CommentDislikeGestureTest {
     private Activity activity;
     private View.OnTouchListener touch;
 
+    @org.junit.After public void tearDown() {
+        app.morphe.extension.tiktok.settings.Settings.BLOCK_FROM_COMMENT.resetToDefault();
+    }
+
     @Before public void setUp() {
         Utils.setContext(RuntimeEnvironment.getApplication());
-        activity = Robolectric.buildActivity(Activity.class).setup().get();
+        activity = Robolectric.buildActivity(Activity.class).setup().visible().get();
         touch = ReflectionHelpers.getStaticField(CommentTools.class, "DISLIKE_TOUCH");
         // The listener outlives any one comment sheet, so a press left over from an earlier test
         // would decide what this one observes.
@@ -50,6 +56,104 @@ public class CommentDislikeGestureTest {
         ReflectionHelpers.setStaticField(CommentTools.class, "blockInFlight", false);
         ReflectionHelpers.<Set<String>>getStaticField(CommentTools.class, "BLOCKED_UIDS").clear();
         ShadowToast.reset();
+    }
+
+    @Test public void turningTheSettingOffHandsTheControlBackOnTheNextBind() throws Exception {
+        // The takeover was one way, so a cell already in the RecyclerView's pool went on
+        // blocking after the setting was turned off, and a screen reader went on offering it.
+        app.morphe.extension.tiktok.settings.Settings.BLOCK_FROM_COMMENT.save(true);
+        Cell cell = cell();
+        bind(cell);
+
+        assertTrue("the takeover never happened, so there is nothing to hand back",
+                pressLands(cell.button));
+        assertEquals("Block this commenter", String.valueOf(cell.button.getContentDescription()));
+        assertEquals(View.IMPORTANT_FOR_ACCESSIBILITY_NO, cell.icon.getImportantForAccessibility());
+
+        app.morphe.extension.tiktok.settings.Settings.BLOCK_FROM_COMMENT.save(false);
+        bind(cell);
+
+        assertFalse("the thumbs down still swallows touches", pressLands(cell.button));
+        assertFalse("the icon still swallows touches", pressLands(cell.icon));
+        assertNull("a screen reader is still offered the block",
+                cell.button.getContentDescription());
+        assertEquals("the icon is still hidden from a screen reader",
+                View.IMPORTANT_FOR_ACCESSIBILITY_AUTO, cell.icon.getImportantForAccessibility());
+    }
+
+    @Test public void aTapLeftOverFromBeforeTheSettingWentOffBlocksNobody() {
+        app.morphe.extension.tiktok.settings.Settings.BLOCK_FROM_COMMENT.save(true);
+        Cell cell = cell();
+        bind(cell);
+        ShadowToast.reset();
+
+        // No rebind, so the listener is still on the control and the cell still knows its
+        // comment. That is a cell TikTok rebound with its own code rather than through the
+        // hook, and it is the one case the per bind hand-back cannot reach.
+        app.morphe.extension.tiktok.settings.Settings.BLOCK_FROM_COMMENT.save(false);
+        cell.button.performClick();
+
+        assertEquals("a stale tap acted on the comment anyway", 0, toastCount());
+        // The tap is spent handing the control back rather than blocking anyone.
+        assertNull("a screen reader is still offered the block",
+                cell.button.getContentDescription());
+        assertFalse("the thumbs down still swallows touches", pressLands(cell.button));
+    }
+
+    /** Whether a press on this view reaches the shared thumbs down listener. */
+    private boolean pressLands(View view) {
+        java.util.Map<View, ?> gestures = ReflectionHelpers.getField(touch, "gestures");
+        gestures.clear();
+        view.dispatchTouchEvent(event(MotionEvent.ACTION_DOWN, 5, 5));
+        boolean landed = gestures.containsKey(view);
+        gestures.clear();
+        return landed;
+    }
+
+    private void bind(Cell cell) {
+        CommentTools.registerCommentCell(cell.itemView, cell.manager);
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+    }
+
+    /** A comment row with the two controls the takeover reaches for. */
+    private static final class Cell {
+        final android.widget.FrameLayout itemView;
+        final View button;
+        final android.widget.ImageView icon;
+        final Object manager;
+
+        Cell(android.widget.FrameLayout itemView, View button, android.widget.ImageView icon, Object manager) {
+            this.itemView = itemView;
+            this.button = button;
+            this.icon = icon;
+            this.manager = manager;
+        }
+    }
+
+    private Cell cell() {
+        // The ids are looked up by name against TikTok's own resources, which are not here, so
+        // the cache is seeded with ids the test's own views carry.
+        Object cache = ReflectionHelpers.getStaticField(CommentTools.class, "RESOURCE_IDS");
+        java.util.Map<String, Integer> ids = ReflectionHelpers.getField(cache, "ids");
+        ids.put("com.zhiliaoapp.musically:jlk", 0x7f000101);
+        ids.put("com.zhiliaoapp.musically:m3b", 0x7f000102);
+
+        android.widget.FrameLayout itemView = new android.widget.FrameLayout(activity);
+        View button = new View(activity);
+        button.setId(0x7f000101);
+        android.widget.ImageView icon = new android.widget.ImageView(activity);
+        icon.setId(0x7f000102);
+        itemView.addView(button);
+        itemView.addView(icon);
+        // Attached, because the takeover is posted to the view and an unattached view holds a
+        // posted runnable until it joins a window.
+        activity.setContentView(itemView);
+        return new Cell(itemView, button, icon, new Manager());
+    }
+
+    /** A cell state holder carrying a comment, which is what findComment reaches for. */
+    public static final class Manager {
+        public final Comment comment = new Comment("uid-bound");
     }
 
     @Test public void aReleaseActsOnTheControlItsOwnPressLandedOn() {

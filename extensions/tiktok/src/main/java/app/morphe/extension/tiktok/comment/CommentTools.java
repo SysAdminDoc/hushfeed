@@ -99,8 +99,23 @@ public final class CommentTools {
      * fields include the bound {@code Comment}.
      */
     public static void registerCommentCell(View itemView, Object manager) {
+        if (itemView == null || manager == null) {
+            return;
+        }
         boolean block = Settings.BLOCK_FROM_COMMENT.get();
-        if ((!block && !CommentSearch.enabled()) || itemView == null || manager == null) {
+        if (!block) {
+            // The takeover used to be one way. A cell sitting in the RecyclerView's pool kept it
+            // after the setting was turned off, so the thumbs down went on blocking and a screen
+            // reader went on reading "Block this commenter", until the pool emptied, which is
+            // not something a reader can see or bring about. Every pooled cell is rebound before
+            // it is shown again, so handing the control back on a bind is self healing and needs
+            // no record of which cells were ever taken over.
+            synchronized (CELL_COMMENTS) {
+                CELL_COMMENTS.remove(itemView);
+            }
+            itemView.post(() -> releaseDislike(itemView));
+        }
+        if (!block && !CommentSearch.enabled()) {
             return;
         }
 
@@ -197,6 +212,44 @@ public final class CommentTools {
             applyBlockedState(cell);
         } catch (Throwable ex) {
             Logger.printException(() -> "Could not take over the comment thumbs down", ex);
+        }
+    }
+
+    /**
+     * Hands the thumbs down back to TikTok on a cell that still carries the takeover.
+     *
+     * <p>The click listener is deliberately left alone. TikTok wires its own during every bind,
+     * which is the whole reason the takeover has to run after every bind rather than once, so by
+     * the time this lands the listener on the control is TikTok's again and nulling it would
+     * kill the ordinary dislike for as long as the setting is off. A listener of ours that did
+     * somehow survive cannot block anyone either: {@link #onDislikeTapped} checks the setting.
+     */
+    private static void releaseDislike(View cell) {
+        if (cell == null) return;
+        try {
+            View button = cell.findViewById(identifier(cell, DISLIKE_BUTTON_ID));
+            View icon = cell.findViewById(identifier(cell, DISLIKE_ICON_ID));
+            unwireBlockControl(button, icon);
+            if (cell.getAlpha() != 1f) cell.setAlpha(1f);
+        } catch (Throwable ex) {
+            Logger.printException(() -> "Could not hand the comment thumbs down back", ex);
+        }
+    }
+
+    static void unwireBlockControl(View button, View icon) {
+        if (button != null) {
+            DISLIKE_TOUCH.forget(button);
+            button.setOnTouchListener(null);
+            button.setContentDescription(null);
+            if (android.os.Build.VERSION.SDK_INT >= 30) {
+                button.setStateDescription(null);
+            }
+        }
+        if (icon != null) {
+            DISLIKE_TOUCH.forget(icon);
+            icon.setOnTouchListener(null);
+            icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
+            if (icon instanceof ImageView) ((ImageView) icon).clearColorFilter();
         }
     }
 
@@ -306,6 +359,13 @@ public final class CommentTools {
     }
 
     private static void onDislikeTapped(View touched) {
+        if (!Settings.BLOCK_FROM_COMMENT.get()) {
+            // A listener left on a cell from before the setting was turned off. One tap spent
+            // handing the control back is the right answer; blocking someone the reader did not
+            // choose to block is not.
+            releaseDislike(cellOf(touched));
+            return;
+        }
         try {
             View cell = cellOf(touched);
             if (cell == null) {

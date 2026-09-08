@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Turning "Thumbs down blocks the commenter" off now takes effect on comment sheets you had already opened. The takeover only went one way, so a comment row TikTok had kept in memory went on blocking, and a screen reader went on offering to block, until that memory was reused. Every row hands the control back the next time it is filled in.
+
 * "Start today over" can be taken back. It ends a running hold and forgets what has been counted, and it used to leave nothing at all behind, so a mis-tap cost you the rest of the day. The row now says "Tap again to put the counts back", the same bargain the seen video history row already made. The offer lasts until the day turns over, because after that the counts belong to a day that is finished.
 
 * The rows that do something no longer look like the rows that open a page. Reset settings, Undo, Start today over, Clear the seen video history and Clear diagnostic data all wore the same ">" as a row that opens a screen. They have dropped it. Back up and Restore keep it, because those really do open a file picker.
