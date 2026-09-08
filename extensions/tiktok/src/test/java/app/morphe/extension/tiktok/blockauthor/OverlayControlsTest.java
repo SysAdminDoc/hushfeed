@@ -52,4 +52,19 @@ public class OverlayControlsTest {
         }
         activity.finish();
     }
+
+    @Test public void theOverlaysFollowTheActivityTheHostRecreated() {
+        Activity first = Robolectric.buildActivity(Activity.class).setup().get();
+        Utils.setContext(first);
+        assertSame(first, Utils.getActivity());
+
+        // The host recreates its main activity on a configuration change it does not swallow,
+        // and the extension hook runs again for the new one. Keeping the first instance left
+        // every overlay attaching to a window nobody was looking at, and isFinishing() reports
+        // nothing for a recreated activity because it is destroyed rather than finishing.
+        Activity second = Robolectric.buildActivity(Activity.class).setup().get();
+        Utils.setContext(second);
+
+        assertSame("the overlays would still be drawing on the old window", second, Utils.getActivity());
+    }
 }

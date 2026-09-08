@@ -479,8 +479,12 @@ public class Utils {
         // Must initially set context to check the app language.
         context = appContext;
 
-        // Set activity if not already set.
-        if (appContext instanceof Activity activity && getActivity() == null) {
+        // Follow the activity rather than keeping the first one. The host recreates its main
+        // activity on a configuration change it does not swallow, and this hook runs again for
+        // the new one; holding the old instance left every overlay attaching to a window nobody
+        // is looking at, which isFinishing() does not report because a recreated activity is
+        // destroyed rather than finishing.
+        if (appContext instanceof Activity activity && getActivity() != activity) {
             setActivity(activity);
         }
 

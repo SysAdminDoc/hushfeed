@@ -87,7 +87,7 @@ public final class SessionLockOverlay {
                 return;
             }
             Activity activity = Utils.getActivity();
-            if (activity == null || activity.isFinishing()) return;
+            if (activity == null || activity.isFinishing() || activity.isDestroyed()) return;
             if (!FeedVisibility.isOnFeed(activity)) {
                 View existing = overlayReference.get();
                 if (existing != null) existing.setVisibility(View.GONE);

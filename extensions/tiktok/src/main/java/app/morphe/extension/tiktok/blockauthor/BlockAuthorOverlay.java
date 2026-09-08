@@ -145,7 +145,7 @@ public final class BlockAuthorOverlay {
     private static void attach(VideoAuthor author) {
         try {
             Activity activity = Utils.getActivity();
-            if (activity == null || activity.isFinishing()) {
+            if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
                 return;
             }
 
@@ -597,7 +597,7 @@ public final class BlockAuthorOverlay {
     public static void showUndoBanner(String message, Runnable undoAction) {
         Utils.runOnMainThread(() -> {
             Activity activity = Utils.getActivity();
-            ViewGroup root = activity == null || activity.isFinishing()
+            ViewGroup root = activity == null || activity.isFinishing() || activity.isDestroyed()
                     ? null : activity.findViewById(android.R.id.content);
             showUndoBanner(root, message, undoAction);
         });
