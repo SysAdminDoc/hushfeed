@@ -1,6 +1,7 @@
 package app.morphe.extension.tiktok.featuregatelab;
 
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.diagnostics.DiagnosticRedactor;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -93,9 +94,14 @@ public final class FeatureGateLearnMode {
                 String state = !read.known ? "new" : Objects.equals(read.before, read.after) ? "read" : "changed";
                 if ("new".equals(state)) added++;
                 if ("changed".equals(state)) changed++;
+                // Redacted here rather than at the read, so the Lab keeps showing real values
+                // while the thing people attach to an issue does not. These are server config:
+                // CDN hosts, endpoint addresses and per-install identifiers turn up in them, and
+                // every other export this project produces goes through the same reader.
                 gates.put(new JSONObject().put("manager", read.manager).put("key", read.key)
                         .put("type", read.type).put("state", state).put("calls", read.calls)
-                        .put("before", read.known ? read.before : JSONObject.NULL).put("after", read.after));
+                        .put("before", read.known ? DiagnosticRedactor.redact(read.before) : JSONObject.NULL)
+                        .put("after", DiagnosticRedactor.redact(read.after)));
             }
             lastCount = gates.length();
             lastReport = new JSONObject().put("target", "TikTok 46.2.3")

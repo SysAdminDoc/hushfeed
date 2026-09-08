@@ -1,3 +1,7 @@
+## Unreleased
+
+* The feature gate recording is redacted before it leaves the app. It is the one file the issue templates ask people to attach, and gate values are server configuration, so addresses and per-install identifiers were going out in it while every other export here was already cleaned. The values are redacted and the structure is not, so it is still a readable report, and the Lab itself still shows what it actually read.
+
 ## 0.22.0 (2026-09-07)
 
 * The block button, the sound and Not interested buttons, the undo banner and the daily budget hold come back after TikTok rebuilds its main screen. The extension kept the first activity it was handed for the life of the process, so anything drawn over the feed went to a window that was no longer on screen, and nothing noticed because a rebuilt screen is destroyed rather than finishing.
