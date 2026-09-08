@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The README says which Morphe Manager you need. Manager refuses a bundle built against a patcher newer than its own, so on 1.28.0 and older this one simply would not load, and nothing said so. It also now says in plain terms that everything Hushfeed adds runs inside TikTok with TikTok's permissions and data, and that this repository and its GitHub releases are the only official source.
+
 * Comment translation notices every batch finishing, not half of them. TikTok signs off a finished batch from two different places, and Hushfeed was only listening to one, so batches that finished the other way were never marked done or failed. Depending on which way TikTok went, those comments were either never translated or asked for again on every scroll.
 
 * A very wide animated sticker no longer saves as a black video. The converter checked how many pixels a frame held but not how big a picture the phone's graphics chip will take, which on a lot of Android phones stops at 4096 a side. A frame past that failed to upload, nothing was reading the failure, and the file came out black. It is refused now, and the sticker is saved in its original form instead.

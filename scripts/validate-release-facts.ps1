@@ -352,6 +352,52 @@ if ($VerifyPublishedAsset) {
     }
 }
 
+# Manager refuses a bundle whose Patcher-Version is newer than its own patcher, and the README
+# names the Manager release that first shipped the pinned one. The manifest is written by the
+# Gradle plugin from the resolved patcher, so a catalog pin that drifts from it means the README
+# names the wrong floor and the bundle is refused by a Manager the README says is new enough.
+$catalogPath = Join-Path $rootPath 'gradle/libs.versions.toml'
+if (-not (Test-Path -LiteralPath $catalogPath -PathType Leaf)) {
+    throw "The version catalog is missing: $catalogPath"
+}
+$catalogText = Get-Content -LiteralPath $catalogPath -Raw
+$catalogMatch = [regex]::Match($catalogText, '(?m)^\s*morphe-patcher\s*=\s*"([^"]+)"')
+if (-not $catalogMatch.Success) {
+    throw 'gradle/libs.versions.toml does not pin morphe-patcher.'
+}
+$pinnedPatcher = $catalogMatch.Groups[1].Value
+
+$bundlePath = if ($ArtifactPath) { $ArtifactPath } else {
+    Join-Path $rootPath "patches/build/libs/patches-$releaseVersion.mpp"
+}
+if (-not (Test-Path -LiteralPath $bundlePath -PathType Leaf)) {
+    throw ("The built bundle is missing, so its patcher version cannot be checked against the " +
+        "$pinnedPatcher the catalog pins: $bundlePath. Run :patches:buildAndroid first.")
+}
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$manifestText = $null
+$bundleZip = [System.IO.Compression.ZipFile]::OpenRead($bundlePath)
+try {
+    $manifestEntry = $bundleZip.Entries | Where-Object { $_.FullName -eq 'META-INF/MANIFEST.MF' }
+    if (-not $manifestEntry) { throw "The bundle has no META-INF/MANIFEST.MF: $bundlePath" }
+    $manifestReader = New-Object System.IO.StreamReader($manifestEntry.Open())
+    try { $manifestText = $manifestReader.ReadToEnd() } finally { $manifestReader.Dispose() }
+} finally {
+    $bundleZip.Dispose()
+}
+# Manifest lines wrap at 72 characters with a leading space on the continuation.
+$manifestText = $manifestText -replace "\r?\n ", ''
+$stampMatch = [regex]::Match($manifestText, '(?m)^Patcher-Version:\s*(\S+)\s*$')
+if (-not $stampMatch.Success) {
+    throw "The bundle manifest has no Patcher-Version: $bundlePath"
+}
+if ($stampMatch.Groups[1].Value -ne $pinnedPatcher) {
+    throw ("The bundle stamps Patcher-Version " + $stampMatch.Groups[1].Value + " but the catalog " +
+        "pins morphe-patcher " + $pinnedPatcher + ". The README's Manager floor is written from " +
+        'the pin, so one of the two is now wrong.')
+}
+Write-Host "[release] the bundle stamps patcher $pinnedPatcher, as the catalog pins"
+
 Write-Host ("[facts] " + $sourceVersion + ": " + $patchCount + " patches for " + $targetPackage + " " + $targetVersion + "; " + $testCount + " runtime tests")
 
 # Callers check the exit code, and a script invoked with & leaves the previous native
