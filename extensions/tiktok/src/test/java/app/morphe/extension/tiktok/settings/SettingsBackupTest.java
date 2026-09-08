@@ -325,6 +325,42 @@ public class SettingsBackupTest {
         }
     }
 
+    @Test public void aFailureBeforeTheLabIsReachedLeavesTheLabAlone() throws Exception {
+        // The apply writes the ordinary settings first, so a failure in those never reaches the
+        // Lab. Putting it back anyway is not free: replaceSettings clears every triggered marker
+        // and raises a restart notice, for a store the failed restore did not touch.
+        var app = Utils.getContext();
+        FeatureGateLabStore.saveRule("abmock", "untouched", "BOOLEAN", "true", true);
+        JSONObject next = new JSONObject(SettingsBackup.create(false));
+        next.getJSONObject("settings").put(Settings.REGION_SPOOF.key, true);
+
+        var original = Setting.preferences.preferences;
+        var labWrites = new java.util.concurrent.atomic.AtomicInteger();
+        var normal = failingCommits(original, () -> true, () -> {});
+        var lab = failingCommits(app.getSharedPreferences("morphe_feature_gate_lab", 0),
+                () -> false, labWrites::incrementAndGet);
+        var field = app.morphe.extension.shared.settings.preference.SharedPrefCategory.class
+                .getDeclaredField("preferences");
+        field.setAccessible(true);
+        field.set(Setting.preferences, normal);
+        Utils.setContext(new android.content.ContextWrapper(app) {
+            @Override public android.content.SharedPreferences getSharedPreferences(String name, int mode) {
+                return name.equals("morphe_feature_gate_lab") ? lab : super.getSharedPreferences(name, mode);
+            }
+        });
+        try {
+            assertThrows(Exception.class,
+                    () -> SettingsBackup.restore(Utils.getContext(), next.toString(), true));
+            assertEquals("the Lab was written on a failure that never reached it",
+                    0, labWrites.get());
+        } finally {
+            field.set(Setting.preferences, original);
+            Utils.setContext(app);
+        }
+        assertNotNull("the rule the restore never touched is gone",
+                FeatureGateLabStore.rule("abmock", "untouched", "BOOLEAN"));
+    }
+
     @Test public void rollbackStillAttemptsLabWhenOrdinaryPreferenceRecoveryFails() throws Exception {
         var app = Utils.getContext();
         FeatureGateLabStore.setMasterEnabled(true);

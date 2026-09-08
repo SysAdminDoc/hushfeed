@@ -40,7 +40,12 @@ public final class CommentBatchTranslator {
      * alone until the list reloads.
      */
     private static final long[] RETRY_DELAYS_MS = {2_000L, 8_000L, 30_000L};
-    private static final int MAX_ATTEMPTS = RETRY_DELAYS_MS.length;
+    /**
+     * One more than the number of waits: three delays sit between four tries. Set to the number
+     * of delays instead, the last one was never reached and the class said it waited thirty
+     * seconds when it had already given up.
+     */
+    private static final int MAX_ATTEMPTS = RETRY_DELAYS_MS.length + 1;
     private static final int MAX_RETRY_STATES = MAX_REQUESTED_BATCH_KEYS * 2;
 
     private static final Object LOCK = new Object();
@@ -132,6 +137,11 @@ public final class CommentBatchTranslator {
             LoadedBatch batch = new LoadedBatch(aid, comments, cids, SystemClock.elapsedRealtime());
             synchronized (LOCK) {
                 pruneLocked(batch.loadedAtMs);
+                // A list that has loaded again is a fresh ask. Without this the remembered keys
+                // were only ever let go by the twelve entry eviction, so a reload landing on the
+                // same comments stayed suppressed and the batch was never retried, which is not
+                // what "until the list reloads" means.
+                forgetRequestsForLocked(batch.key());
                 latestLoadedBatch = batch;
                 loadedBatches.put(batch.key(), batch);
                 while (loadedBatches.size() > MAX_LOADED_BATCHES) {
@@ -192,8 +202,16 @@ public final class CommentBatchTranslator {
                     requestedLoadedBatchKeys.add(pending.key);
                     trimRequestedKeysLocked();
                     retryStates.remove(pending.key);
+                } else if (succeeded && !Collections.disjoint(translatedCids, pending.cids)) {
+                    // Some of what was asked for came back. The key is built from the whole
+                    // loaded list, so a batch answered a few comments at a time keeps the same
+                    // key round after round, and counting those rounds as failures abandoned a
+                    // thirty comment list after three of them. A translated comment is filtered
+                    // out of the next batch, so each round is strictly smaller than the last and
+                    // starting the count again cannot go on for ever.
+                    retryStates.remove(pending.key);
                 } else {
-                    noteAttemptLocked(pending.key, SystemClock.elapsedRealtime(), succeeded);
+                    noteAttemptLocked(pending.key, SystemClock.elapsedRealtime());
                 }
             }
             pruneLocked(SystemClock.elapsedRealtime());
@@ -261,7 +279,7 @@ public final class CommentBatchTranslator {
             // this looks up is gone, so it will fail on every bind for as long as the list is up.
             removePendingRequest(effectiveRequestKey, pending);
             synchronized (LOCK) {
-                noteAttemptLocked(effectiveRequestKey, SystemClock.elapsedRealtime(), false);
+                noteAttemptLocked(effectiveRequestKey, SystemClock.elapsedRealtime());
             }
             Logger.printException(() -> "[Morphe CommentBatchTranslator] native request failed", ex);
         }
@@ -412,6 +430,17 @@ public final class CommentBatchTranslator {
         return false;
     }
 
+    /** Lets go of everything remembered about one comment list, so a reload starts clean. */
+    private static void forgetRequestsForLocked(String batchKey) {
+        String prefix = batchKey + ":";
+        for (Iterator<String> keys = requestedLoadedBatchKeys.iterator(); keys.hasNext(); ) {
+            if (keys.next().startsWith(prefix)) keys.remove();
+        }
+        for (Iterator<String> keys = retryStates.keySet().iterator(); keys.hasNext(); ) {
+            if (keys.next().startsWith(prefix)) keys.remove();
+        }
+    }
+
     private static void trimRequestedKeysLocked() {
         while (requestedLoadedBatchKeys.size() > MAX_REQUESTED_BATCH_KEYS) {
             Iterator<String> iterator = requestedLoadedBatchKeys.iterator();
@@ -421,14 +450,11 @@ public final class CommentBatchTranslator {
         }
     }
 
-    /**
-     * Records one unsuccessful attempt at a batch and decides when it may be asked for again.
-     *
-     * @param madeProgress true when the host answered with some of the comments translated. That
-     *                     is worth asking again for straight away; an outright failure is not,
-     *                     because the next cell bind is milliseconds away.
+/**
+     * Records one attempt at a batch that got nowhere, and decides when it may be asked for
+     * again. A round that translated something is not one of these: it clears the state instead.
      */
-    private static void noteAttemptLocked(String key, long now, boolean madeProgress) {
+    private static void noteAttemptLocked(String key, long now) {
         RetryState retry = retryStates.get(key);
         if (retry == null) {
             retry = new RetryState();
@@ -442,7 +468,7 @@ public final class CommentBatchTranslator {
             trimRequestedKeysLocked();
             return;
         }
-        retry.retryAfterMs = madeProgress ? now : now + RETRY_DELAYS_MS[retry.attempts - 1];
+        retry.retryAfterMs = now + RETRY_DELAYS_MS[retry.attempts - 1];
         while (retryStates.size() > MAX_RETRY_STATES) {
             Iterator<String> iterator = retryStates.keySet().iterator();
             if (!iterator.hasNext()) break;

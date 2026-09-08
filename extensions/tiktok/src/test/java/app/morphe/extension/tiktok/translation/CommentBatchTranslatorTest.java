@@ -239,20 +239,84 @@ public class CommentBatchTranslatorTest {
         assertEquals("the third try never went out at all", 3, NativeManager.requests);
     }
 
-    @Test public void aThirdFailureGivesUpOnTheBatchRatherThanWaitingLonger() {
-        // The waits are the real windows, two then eight seconds. Idling a full thirty between
-        // tries would age the loaded batch out at sixty and prove nothing about the attempt count.
+    @Test public void theLastFailureGivesUpOnTheBatchRatherThanWaitingLonger() {
+        // Three waits sit between four tries, and the last of them is the thirty second one. It
+        // used to be unreachable: the give-up test fired one try early, so the delay the class
+        // and the changelog both advertised was never used.
         Anchor anchor = loadedAnchor("aid-give-up", "cid-give-up");
         long[] waits = {2_100L, 8_500L, 30_500L};
-        for (int attempt = 1; attempt <= 3; attempt++) {
+        for (int attempt = 1; attempt <= 4; attempt++) {
             CommentBatchTranslator.registerCommentCell(new View(context), anchor);
             assertEquals("try " + attempt + " never reached the host", attempt, NativeManager.requests);
             CommentBatchTranslator.onNativeBatchComplete(new Runner(null, anchor.comment));
-            idleFor(waits[attempt - 1]);
+            if (attempt < 4) idleFor(waits[attempt - 1]);
         }
+        idleFor(60_000L);
         CommentBatchTranslator.registerCommentCell(new View(context), anchor);
-        assertEquals("a batch that failed three times is still being asked for",
+        assertEquals("a batch that failed four times is still being asked for",
+                4, NativeManager.requests);
+    }
+
+    @Test public void theThirtySecondWindowIsRealRatherThanAdvertised() {
+        Anchor anchor = loadedAnchor("aid-third-window", "cid-third-window");
+        for (int attempt = 1; attempt <= 3; attempt++) {
+            CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+            assertEquals(attempt, NativeManager.requests);
+            CommentBatchTranslator.onNativeBatchComplete(new Runner(null, anchor.comment));
+            if (attempt < 3) idleFor(attempt == 1 ? 2_100L : 8_500L);
+        }
+
+        idleFor(20_000L);
+        CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+        assertEquals("the fourth try went out inside the thirty second window",
                 3, NativeManager.requests);
+
+        idleFor(11_000L);
+        CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+        assertEquals("the fourth try never went out at all", 4, NativeManager.requests);
+    }
+
+    @Test public void aBatchAnsweredAFewCommentsAtATimeIsSeenThroughToTheEnd() {
+        // The key is built from the whole loaded list, so every round carries the same one.
+        // Counting those rounds as failures abandoned a long list part way through.
+        Comment[] all = new Comment[9];
+        for (int index = 0; index < all.length; index++) {
+            all[index] = new Comment("aid-drip", "cid-drip-" + index);
+        }
+        CommentBatchTranslator.onCommentListLoaded(new CommentItemList(all));
+        Anchor anchor = new Anchor(all[0], new TranslationContext("aid-drip"));
+
+        // Three at a time, which is more rounds than the attempt cap allows for a failure.
+        for (int round = 1; round <= 3; round++) {
+            CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+            assertEquals("round " + round + " was never dispatched", round, NativeManager.requests);
+            List<Comment> translated = new ArrayList<>();
+            for (int index = (round - 1) * 3; index < round * 3; index++) {
+                all[index].translated = true;
+                translated.add(all[index]);
+            }
+            CommentBatchTranslator.onNativeBatchComplete(
+                    new Runner(translated, Arrays.asList(all)));
+        }
+        assertEquals("a list translated three at a time was abandoned part way through",
+                3, NativeManager.requests);
+    }
+
+    @Test public void aCommentListLoadingAgainAsksForItsBatchAgain() {
+        Anchor anchor = loadedAnchor("aid-reload", "cid-reload");
+        CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+        assertEquals(1, NativeManager.requests);
+        CommentBatchTranslator.onNativeBatchComplete(new Runner(new Object(), anchor.comment));
+
+        CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+        assertEquals("a settled batch was asked for twice", 1, NativeManager.requests);
+
+        // The same comments arriving again is a fresh ask, which is what the class claims by
+        // saying a batch is left alone "until the list reloads".
+        CommentBatchTranslator.onCommentListLoaded(new CommentItemList(anchor.comment));
+        CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+        assertEquals("reloading the comment list did not start the batch over",
+                2, NativeManager.requests);
     }
 
     @Test public void aBatchThatComesBackWithOneOfThreeTranslatedIsAskedForAgain() {
@@ -278,6 +342,11 @@ public class CommentBatchTranslatorTest {
                         Arrays.asList("cid-partial-2", "cid-partial-3")));
     }
 
+    /**
+     * The control for the partial case above. It passed before the change too, which is the
+     * point: it is here so the new "did the whole batch come back" test cannot be tightened
+     * into refusing an answer that was in fact complete.
+     */
     @Test public void aWholeBatchComingBackTranslatedIsNotAskedForAgain() {
         Comment first = new Comment("aid-whole", "cid-whole-1");
         Comment second = new Comment("aid-whole", "cid-whole-2");
@@ -395,6 +464,7 @@ public class CommentBatchTranslatorTest {
     public static final class Comment {
         private final String aid;
         private final String cid;
+        boolean translated;
 
         Comment(String aid, String cid) {
             this.aid = aid;
@@ -404,7 +474,7 @@ public class CommentBatchTranslatorTest {
         public String getAid() { return aid; }
         public String getAwemeId() { return aid; }
         public String getCid() { return cid; }
-        public boolean isTranslated() { return false; }
+        public boolean isTranslated() { return translated; }
         public String getCommentLanguage() { return "zh"; }
     }
 

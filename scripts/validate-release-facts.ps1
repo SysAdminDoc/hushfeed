@@ -277,10 +277,42 @@ if ($VerifyPublishedAsset) {
         # checkout just built. That moves the moment a patch is added; the file people download
         # does not. The index once advertised 70 patches while the published asset carried 68 and
         # nothing complained, because nothing had read the published asset. This does.
+        $localHash = (Get-FileHash -LiteralPath $ArtifactPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        $publishedHash = (Get-FileHash -LiteralPath $temporaryArtifact -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($localHash -ne $publishedHash) {
+            throw "The hosted bundle hash $publishedHash does not match the local artifact hash $localHash."
+        }
+
+        $checksumUri = [Uri]::new($assetUri, 'SHA256SUMS.txt')
+        try {
+            $checksumResponse = Invoke-WebRequest -Uri $checksumUri -MaximumRedirection 5 -TimeoutSec 60
+        } catch {
+            throw "Could not download the hosted SHA256SUMS.txt: $($_.Exception.Message)"
+        }
+        if ($checksumResponse.StatusCode -ne 200) {
+            throw "The hosted SHA256SUMS.txt returned HTTP $($checksumResponse.StatusCode)."
+        }
+        $checksumText = [Text.Encoding]::UTF8.GetString([byte[]]$checksumResponse.Content)
+        $checksumMatch = [regex]::Match(
+            $checksumText,
+            "(?im)^\s*([0-9a-f]{64})\s+\*?$([regex]::Escape($assetName))\s*$"
+        )
+        if (-not $checksumMatch.Success) {
+            throw "SHA256SUMS.txt has no entry for $assetName."
+        }
+        $listedHash = $checksumMatch.Groups[1].Value.ToLowerInvariant()
+        if ($listedHash -ne $publishedHash) {
+            throw "SHA256SUMS.txt lists $listedHash for $assetName, but the hosted artifact is $publishedHash."
+        }
+        Write-Host ("[release] verified " + $assetName + " from the indexed URL; sha256=" + $publishedHash)
         # No caller passed -DesktopJar and nothing in the repo set the variable, so this check
         # printed "NOT COUNTED" and passed on every run it has ever had. A switch named
         # -VerifyPublishedAsset that quietly skips the only check reading the published asset is
         # worse than no switch: look for the CLI, and say so plainly when there is none.
+        #
+        # Last of the three on purpose. It is the only one needing a tool from outside the
+        # repository, so running it first meant a machine without that tool also lost the hash
+        # and checksum comparisons, which need nothing but the download.
         $countJar = Resolve-DesktopCli -Explicit $DesktopJar -Root $Root
         if (-not $countJar) {
             throw ('The published bundle was downloaded but its patches cannot be counted: no ' +
@@ -315,34 +347,6 @@ if ($VerifyPublishedAsset) {
             }
         }
 
-        $localHash = (Get-FileHash -LiteralPath $ArtifactPath -Algorithm SHA256).Hash.ToLowerInvariant()
-        $publishedHash = (Get-FileHash -LiteralPath $temporaryArtifact -Algorithm SHA256).Hash.ToLowerInvariant()
-        if ($localHash -ne $publishedHash) {
-            throw "The hosted bundle hash $publishedHash does not match the local artifact hash $localHash."
-        }
-
-        $checksumUri = [Uri]::new($assetUri, 'SHA256SUMS.txt')
-        try {
-            $checksumResponse = Invoke-WebRequest -Uri $checksumUri -MaximumRedirection 5 -TimeoutSec 60
-        } catch {
-            throw "Could not download the hosted SHA256SUMS.txt: $($_.Exception.Message)"
-        }
-        if ($checksumResponse.StatusCode -ne 200) {
-            throw "The hosted SHA256SUMS.txt returned HTTP $($checksumResponse.StatusCode)."
-        }
-        $checksumText = [Text.Encoding]::UTF8.GetString([byte[]]$checksumResponse.Content)
-        $checksumMatch = [regex]::Match(
-            $checksumText,
-            "(?im)^\s*([0-9a-f]{64})\s+\*?$([regex]::Escape($assetName))\s*$"
-        )
-        if (-not $checksumMatch.Success) {
-            throw "SHA256SUMS.txt has no entry for $assetName."
-        }
-        $listedHash = $checksumMatch.Groups[1].Value.ToLowerInvariant()
-        if ($listedHash -ne $publishedHash) {
-            throw "SHA256SUMS.txt lists $listedHash for $assetName, but the hosted artifact is $publishedHash."
-        }
-        Write-Host ("[release] verified " + $assetName + " from the indexed URL; sha256=" + $publishedHash)
     } finally {
         Remove-Item -LiteralPath $temporaryArtifact -Force -ErrorAction SilentlyContinue
     }

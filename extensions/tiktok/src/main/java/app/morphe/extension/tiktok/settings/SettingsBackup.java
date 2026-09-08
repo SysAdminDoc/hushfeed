@@ -183,16 +183,21 @@ public final class SettingsBackup {
                     Setting.preferences.preferences.getAll());
             if (saveUndo) writeUndo(context, previousText);
             operation.recordSettings(previousText, text);
+            // Whether the apply below got as far as the Lab. It writes the ordinary settings
+            // first, so a failure in those never reaches the Lab at all, and reading
+            // labIncluded instead put the Lab back on every same-version failure: the common
+            // one, and the only case this guard exists for.
+            boolean[] touchedLab = new boolean[1];
             try {
-                applyForJournal(next);
+                applyForJournal(next, touchedLab);
                 operation.complete();
                 closed = true;
             } catch (Exception error) {
                 try { Setting.saveAll(previous.values); } catch (Exception rollback) { error.addSuppressed(rollback); }
-                // Only put the Lab back when the apply above could have changed it. Writing the
-                // same rules again is not free: it clears every triggered marker and raises a
-                // restart notice, for a store the failed restore never touched.
-                if (next.labIncluded) {
+                // Only put the Lab back when the apply above reached it. Writing the same
+                // rules again is not free: it clears every triggered marker and raises a restart
+                // notice, for a store the failed restore never touched.
+                if (touchedLab[0]) {
                     try { FeatureGateLabStore.replaceSettings(previous.rules, previous.master, previous.acknowledged); }
                     catch (Exception rollback) { error.addSuppressed(rollback); }
                 }
@@ -289,10 +294,21 @@ public final class SettingsBackup {
     }
 
     static void applyForJournal(Snapshot snapshot) throws IOException {
+        applyForJournal(snapshot, new boolean[1]);
+    }
+
+    /**
+     * @param touchedLab set to true the moment the Lab write is about to start, so a caller
+     *                   rolling back knows whether there is anything there to put back. Set
+     *                   before the write rather than after, because a write that throws part
+     *                   way through is exactly the one that needs undoing.
+     */
+    static void applyForJournal(Snapshot snapshot, boolean[] touchedLab) throws IOException {
         Setting.saveAll(snapshot.values);
         // A backup from another TikTok build carries no rules that mean anything here, so the
         // Lab is left as it was rather than emptied.
         if (snapshot.labIncluded) {
+            touchedLab[0] = true;
             FeatureGateLabStore.replaceSettings(snapshot.rules, snapshot.master, snapshot.acknowledged);
         }
     }
