@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Saving the original sound on Android 6 to 9 says what is wrong. Those versions write a real file, and without storage permission the save failed only after the sound had already been fetched, with nothing to act on. It is asked before anything is downloaded now, the way every other save here asks it.
+
 * The original sound and animated stickers are fetched over TLS only. Both read their addresses straight out of a server response and took whatever scheme was in them, while every other saver here already required https. A cleartext mirror is a body anyone on the network can choose, and the sticker one is handed to a decoder written in C.
 
 * Leaving the Feature Gate Lab while a reset, an undo or an import is still running no longer breaks it. The change finishes on the main thread and put the switch back without checking the screen was still there, so it crashed, and because that happened before the busy flag was released, every later Lab change was refused with a message about one already running until TikTok was restarted.

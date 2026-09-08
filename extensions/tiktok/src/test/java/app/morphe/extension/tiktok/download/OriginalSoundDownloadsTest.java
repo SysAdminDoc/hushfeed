@@ -164,6 +164,34 @@ public class OriginalSoundDownloadsTest {
         assertTrue("a nameless sound got no name at all: " + name, name.length() > 4);
     }
 
+    // ------------------------------------------------------------- before anything is fetched
+
+    @Test public void withoutStoragePermissionNothingIsFetchedAndTheReaderIsTold() {
+        // API 23 to 28 write a real file. Without the permission the save used to fail after the
+        // fetch had already run, and the only thing said was that it could not be saved.
+        org.robolectric.shadows.ShadowToast.reset();
+        Post post = new Post(new Music(
+                new PlayUrl(List.of("https://one.example/sound.m4a"), null), "A song"));
+
+        OriginalSoundDownloads.start(post, RuntimeEnvironment.getApplication());
+
+        assertEquals("Storage permission is needed to save a sound",
+                org.robolectric.shadows.ShadowToast.getTextOfLatestToast());
+    }
+
+    @Test public void withStoragePermissionTheSaveGetsPastTheCheck() {
+        org.robolectric.shadows.ShadowToast.reset();
+        org.robolectric.Shadows.shadowOf(RuntimeEnvironment.getApplication())
+                .grantPermissions(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        // A post with no sound entry, so the next answer proves the permission gate was passed
+        // without any network work being started.
+        OriginalSoundDownloads.start(new BarePost(), RuntimeEnvironment.getApplication());
+
+        assertEquals("This video has no original sound to save",
+                org.robolectric.shadows.ShadowToast.getTextOfLatestToast());
+    }
+
     // ------------------------------------------------------------------ what the server sent
 
     @Test public void anMpegSoundIsRecognisedByItsTagAndByItsFrameSync() throws Exception {

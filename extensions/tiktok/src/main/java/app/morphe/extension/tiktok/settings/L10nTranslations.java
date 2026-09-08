@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1246);
+        Map<String, String> table = new HashMap<>(1248);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -1120,6 +1120,8 @@ public final class L10nTranslations {
                 "Videoschleife beenden");
         table.put("Stop videos at the end instead of replaying them.",
                 "Videos am Ende anhalten, statt sie zu wiederholen.");
+        table.put("Storage permission is needed to save a sound",
+                "Zum Speichern eines Sounds wird die Speicherberechtigung gebraucht");
         table.put("Storage permission is needed to save a story",
                 "Zum Speichern einer Story wird die Speicherberechtigung gebraucht");
         table.put("Stories",
@@ -1162,11 +1164,11 @@ public final class L10nTranslations {
                 "Die Dateiauswahl ist auf diesem Gerät nicht verfügbar.");
         table.put("The minimum or maximum comments on a video to show.",
                 "Mindest- oder Höchstzahl an Kommentaren, damit ein Video gezeigt wird.");
-        table.put("The minimum or maximum favourites of a video to show.",
-                "Mindest- oder Höchstzahl an Favoriten, damit ein Video gezeigt wird.");
     }
 
     private static void fillDe9(Map<String, String> table) {
+        table.put("The minimum or maximum favourites of a video to show.",
+                "Mindest- oder Höchstzahl an Favoriten, damit ein Video gezeigt wird.");
         table.put("The minimum or maximum likes of a video to show.",
                 "Die Mindest- oder Höchstzahl an Likes, damit ein Video gezeigt wird.");
         table.put("The minimum or maximum shares of a video to show.",
@@ -1285,11 +1287,11 @@ public final class L10nTranslations {
                 "Videoqualität");
         table.put("Video saved",
                 "Video gespeichert");
-        table.put("Video saved in %1$s, but only %2$s of %3$s subtitles came with it",
-                "Video in %1$s gespeichert, aber nur %2$s von %3$s Untertiteln sind mitgekommen");
     }
 
     private static void fillDe10(Map<String, String> table) {
+        table.put("Video saved in %1$s, but only %2$s of %3$s subtitles came with it",
+                "Video in %1$s gespeichert, aber nur %2$s von %3$s Untertiteln sind mitgekommen");
         table.put("Video saved with %1$s subtitles in %2$s",
                 "Video mit %1$s Untertiteln in %2$s gespeichert");
         table.put("Wait before hiding the controls.",
@@ -1339,7 +1341,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1246);
+        Map<String, String> table = new HashMap<>(1248);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2415,6 +2417,8 @@ public final class L10nTranslations {
                 "Hentikan pengulangan video");
         table.put("Stop videos at the end instead of replaying them.",
                 "Hentikan video di akhir, bukan memutarnya ulang.");
+        table.put("Storage permission is needed to save a sound",
+                "Izin penyimpanan dibutuhkan untuk menyimpan suara");
         table.put("Storage permission is needed to save a story",
                 "Izin penyimpanan dibutuhkan untuk menyimpan Story");
         table.put("Stories",
@@ -2457,11 +2461,11 @@ public final class L10nTranslations {
                 "Pemilih berkas tidak tersedia di perangkat ini.");
         table.put("The minimum or maximum comments on a video to show.",
                 "Jumlah komentar minimum atau maksimum agar video ditampilkan.");
-        table.put("The minimum or maximum favourites of a video to show.",
-                "Jumlah favorit minimum atau maksimum agar video ditampilkan.");
     }
 
     private static void fillIn9(Map<String, String> table) {
+        table.put("The minimum or maximum favourites of a video to show.",
+                "Jumlah favorit minimum atau maksimum agar video ditampilkan.");
         table.put("The minimum or maximum likes of a video to show.",
                 "Jumlah suka minimum atau maksimum agar video ditampilkan.");
         table.put("The minimum or maximum shares of a video to show.",
@@ -2580,11 +2584,11 @@ public final class L10nTranslations {
                 "Kualitas video");
         table.put("Video saved",
                 "Video disimpan");
-        table.put("Video saved in %1$s, but only %2$s of %3$s subtitles came with it",
-                "Video disimpan di %1$s, tapi cuma %2$s dari %3$s subtitel yang ikut");
     }
 
     private static void fillIn10(Map<String, String> table) {
+        table.put("Video saved in %1$s, but only %2$s of %3$s subtitles came with it",
+                "Video disimpan di %1$s, tapi cuma %2$s dari %3$s subtitel yang ikut");
         table.put("Video saved with %1$s subtitles in %2$s",
                 "Video disimpan dengan %1$s subtitel di %2$s");
         table.put("Wait before hiding the controls.",
