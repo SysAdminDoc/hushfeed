@@ -18,12 +18,21 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("deprecation")
-public final class SettingsBackupPreference extends Preference {
+public final class SettingsBackupPreference extends Preference
+        implements app.morphe.extension.shared.settings.preference.ImmediateAction {
     private static final int EXPORT = 7311, IMPORT = 7312, RESET = 7313, UNDO = 7314;
     private static final AtomicBoolean BUSY = new AtomicBoolean();
 
+    /** Reset and Undo act on the tap. Back up and Restore open a file picker first. */
+    @Override public boolean actsOnTap() {
+        return rowAction == RESET || rowAction == UNDO;
+    }
+
+    private final int rowAction;
+
     private SettingsBackupPreference(TikTokPreferenceFragment fragment, int action, String title, String summary) {
         super(fragment.getActivity());
+        this.rowAction = action;
         setKey("settings_backup_" + action);
         setTitle(title);
         setSummary(summary);

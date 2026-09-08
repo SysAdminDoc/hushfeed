@@ -656,3 +656,5 @@ Off by default. Switched on, the hold that starts when today's budget runs out h
 Today's budget is locked. This can be changed again at %1$s.	Das heutige Budget ist gesperrt. Änderungen sind wieder ab %1$s möglich.
 Today's budget is locked. The day starts over at %1$s.	Das heutige Budget ist gesperrt. Der Tag beginnt um %1$s von vorn.
 Today's budget is locked. The feed opens again at %1$s. Messages, profiles and search still work.	Das heutige Budget ist gesperrt. Der Feed öffnet wieder um %1$s. Nachrichten, Profile und Suche funktionieren weiterhin.
+Today is back where it was	Der heutige Tag ist wieder wie zuvor
+Today has moved on, so there is nothing to put back	Der Tag ist weitergezogen, es gibt nichts zurückzuholen

@@ -63,7 +63,12 @@ final class SettingsListAdapter extends BaseAdapter implements WrapperListAdapte
         TextView summary = row.findViewById(android.R.id.summary);
         if (summary != null && preference instanceof ListPreference) summary.setTextColor(preference.isEnabled() ? SettingsUi.accent() : SettingsUi.textDisabled());
         ViewGroup widget = row.findViewById(android.R.id.widget_frame);
-        if (widget != null && !(preference instanceof SwitchPreference) && preference.isSelectable()) {
+        // A row that acts on the tap gets no chevron. Reset, Undo, Start today over and the two
+        // clear rows all wore the one that means "opens a page", which is the wrong promise to
+        // make about a row that replaces every setting.
+        boolean acts = preference instanceof app.morphe.extension.shared.settings.preference.ImmediateAction
+                && ((app.morphe.extension.shared.settings.preference.ImmediateAction) preference).actsOnTap();
+        if (widget != null && !acts && !(preference instanceof SwitchPreference) && preference.isSelectable()) {
             widget.setVisibility(View.VISIBLE);
             if (widget.findViewWithTag("metra_chevron") == null) {
                 ImageView arrow = new ImageView(row.getContext());

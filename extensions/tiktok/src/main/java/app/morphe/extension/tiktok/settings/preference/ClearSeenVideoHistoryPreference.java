@@ -16,7 +16,10 @@ import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.seen.SeenVideoHistory;
 
 @SuppressWarnings("deprecation")
-public final class ClearSeenVideoHistoryPreference extends Preference {
+public final class ClearSeenVideoHistoryPreference extends Preference
+        implements app.morphe.extension.shared.settings.preference.ImmediateAction {
+    @Override public boolean actsOnTap() { return true; }
+
     static final String CLEAR_SUMMARY = "Delete the local record of the videos you have watched.";
     static final String UNDO_SUMMARY = "Cleared. Tap again to put the record back.";
     static final String NOT_READY = "Still reading the record. Tap again in a moment.";

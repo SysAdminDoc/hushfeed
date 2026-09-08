@@ -143,6 +143,47 @@ public class BudgetLockSettingsTest {
                 0, SessionBudget.videosSeen());
     }
 
+    @Test public void startingTodayOverIsTakenBackByTheNextTap() {
+        // One tap, no dialog, because the next tap puts it back. The row used to make that
+        // bargain without keeping it: a mis-tap lifted a running hold and left nothing behind.
+        Settings.SESSION_BUDGET_VIDEOS.save(2);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(5);
+        SessionBudget.noteVideo("one");
+        SessionBudget.noteVideo("two");
+        assertTrue("the budget was not reached", SessionBudget.claimNotice());
+        assertTrue("no hold was placed", SessionBudget.isLocked());
+
+        PreferenceScreen screen = playbackRows();
+        Preference startOver = screen.findPreference("action_start_today_over");
+        assertNotNull("Start today over is missing", startOver);
+        assertTrue("the row does not offer the way back before it is used",
+                startOver.getSummary().toString().contains("left alone"));
+
+        startOver.getOnPreferenceClickListener().onPreferenceClick(startOver);
+        assertEquals("the day was not cleared", 0, SessionBudget.videosSeen());
+        assertFalse("the hold outlived the clear", SessionBudget.isLocked());
+        assertTrue("the row does not say the tap can be taken back: " + startOver.getSummary(),
+                startOver.getSummary().toString().contains("Tap again"));
+
+        startOver.getOnPreferenceClickListener().onPreferenceClick(startOver);
+        assertEquals("the counts did not come back", 2, SessionBudget.videosSeen());
+        assertTrue("the hold did not come back", SessionBudget.isLocked());
+        assertTrue("the row still offers a way back it has already used: " + startOver.getSummary(),
+                startOver.getSummary().toString().contains("left alone"));
+    }
+
+    @Test public void aClearedDayCannotBeTakenBackOnceTheDayHasTurned() {
+        Settings.SESSION_BUDGET_VIDEOS.save(2);
+        SessionBudget.noteVideo("one");
+        assertTrue(SessionBudget.clear());
+        assertTrue("nothing was kept to put back", SessionBudget.canUndoClear());
+
+        now.set(at(2026, Calendar.SEPTEMBER, 8, 4, 1));
+        assertFalse("yesterday's counts were still on offer", SessionBudget.canUndoClear());
+        assertFalse("yesterday's counts came back onto a new day", SessionBudget.undoClear());
+        assertEquals("the new day did not start empty", 0, SessionBudget.videosSeen());
+    }
+
     /** Spends a one video budget with the lock on, which commits the day. */
     private void lockTodayOut() {
         Settings.SESSION_BUDGET_LOCK.save(true);

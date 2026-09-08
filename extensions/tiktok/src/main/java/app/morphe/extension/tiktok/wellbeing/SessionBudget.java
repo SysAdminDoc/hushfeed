@@ -76,6 +76,18 @@ public final class SessionBudget {
      * else. Cleared only by the day turning over.
      */
     private static volatile boolean lockedToday;
+
+    /**
+     * What "start today over" cleared, so the next tap can put it back. Held in memory rather
+     * than in the record: it is the way back from a tap a moment ago, not a second day's worth
+     * of state, and writing it would double what every clear costs.
+     */
+    private static boolean undoAvailable;
+    private static long undoDay;
+    private static int undoVideos;
+    private static long undoWatchedMs;
+    private static long undoLockUntilMs;
+    private static boolean undoNoticeShown;
     private static long lastTickMs;
     private static String lastCountedId;
     private static boolean noticeShown;
@@ -312,6 +324,10 @@ public final class SessionBudget {
     /**
      * Ends the hold and clears both counts.
      *
+     * <p>One tap does it, with no dialog asking permission first, because the next tap puts it
+     * back. That is the same bargain the seen video history row makes, and it is the one this
+     * row was not keeping: it used to leave nothing behind at all.
+     *
      * @return false when today is locked and nothing was cleared.
      */
     public static boolean clear() {
@@ -319,6 +335,12 @@ public final class SessionBudget {
             load();
             rollOver(clock.now());
             if (lockedToday) return false;
+            undoDay = day;
+            undoVideos = videos;
+            undoWatchedMs = watchedMs;
+            undoLockUntilMs = lockUntilMs;
+            undoNoticeShown = noticeShown;
+            undoAvailable = true;
             day = dayOf(clock.now());
             videos = 0;
             watchedMs = 0;
@@ -326,6 +348,38 @@ public final class SessionBudget {
             lockUntilMs = 0;
             lastCountedId = null;
             noticeShown = false;
+            save();
+            return true;
+        }
+    }
+
+    /** Whether the last "start today over" is still there to be taken back. */
+    public static boolean canUndoClear() {
+        synchronized (LOCK) {
+            load();
+            rollOver(clock.now());
+            return undoAvailable && undoDay == day;
+        }
+    }
+
+    /**
+     * Puts back the counts and any hold that "start today over" cleared.
+     *
+     * @return false when there is nothing to put back, which includes a day that has since
+     *         turned over: the counts it saved belong to a day that is finished.
+     */
+    public static boolean undoClear() {
+        synchronized (LOCK) {
+            load();
+            rollOver(clock.now());
+            if (!undoAvailable || undoDay != day) return false;
+            videos = undoVideos;
+            watchedMs = undoWatchedMs;
+            writtenWatchedMs = undoWatchedMs;
+            lockUntilMs = undoLockUntilMs;
+            noticeShown = undoNoticeShown;
+            lastCountedId = null;
+            undoAvailable = false;
             save();
             return true;
         }
@@ -414,6 +468,7 @@ public final class SessionBudget {
         writtenWatchedMs = 0;
         lockUntilMs = 0;
         lockedToday = false;
+        undoAvailable = false;
         lastCountedId = null;
         noticeShown = false;
         lastTickMs = 0;
@@ -509,6 +564,7 @@ public final class SessionBudget {
             writtenWatchedMs = 0;
             lockUntilMs = 0;
             lockedToday = false;
+            undoAvailable = false;
             lastTickMs = 0;
             lastCountedId = null;
             noticeShown = false;

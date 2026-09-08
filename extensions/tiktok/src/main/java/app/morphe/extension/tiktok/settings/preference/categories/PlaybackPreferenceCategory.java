@@ -10,6 +10,7 @@ import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 import app.morphe.extension.tiktok.settings.preference.InputTextPreference;
 import app.morphe.extension.tiktok.settings.preference.ClockHourPreference;
 import app.morphe.extension.tiktok.settings.preference.NumberInputPreference;
+import app.morphe.extension.tiktok.settings.preference.StartTodayOverPreference;
 import app.morphe.extension.tiktok.speed.PlaybackSpeedPatch;
 import android.preference.Preference;
 
@@ -95,25 +96,7 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
             if (row != null) row.setOnPreferenceChangeListener(refuseWhileLocked);
         }
 
-        Preference clearBudget = new Preference(context);
-        // A key so the settings search can index this row.
-        clearBudget.setKey("action_start_today_over");
-        clearBudget.setTitle(L10n.t(context, "Start today over"));
-        clearBudget.setSummary(L10n.t(context,
-                "Forget what has been counted today and end any hold. The budgets themselves "
-                        + "are left alone."));
-        clearBudget.setOnPreferenceClickListener(preference -> {
-            if (!SessionBudget.clear()) {
-                Utils.showToastShort(L10n.f(context,
-                        "Today's budget is locked. The day starts over at %1$s.",
-                        SessionLockOverlay.resetTimeLabel()));
-                return true;
-            }
-            SessionLockOverlay.sync();
-            Utils.showToastShort(L10n.t(context, "Today starts again"));
-            return true;
-        });
-        addPreference(clearBudget);
+        addPreference(new StartTodayOverPreference(context));
         }
 
         if (SettingsStatus.playbackSpeedEnabled) {
