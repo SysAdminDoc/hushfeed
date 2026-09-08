@@ -251,7 +251,8 @@ public class AnimatedWebpGifConverterTest {
      * size, an ANIM chunk, and one ANMF chunk per frame holding its offset, size, duration and
      * the two bits that say whether it blends and whether its area is cleared afterwards.
      */
-    private static final class Webp {
+    /** Package-private so AnimatedWebpMp4ConverterTest can build the same files. */
+    static final class Webp {
         private final int width;
         private final int height;
         private final List<byte[]> chunks = new ArrayList<>();

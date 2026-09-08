@@ -31,6 +31,13 @@ import java.nio.FloatBuffer;
 
 /** Converts TikTok animated WebP sticker frames to a Gallery-compatible MP4. */
 final class AnimatedWebpMp4Converter {
+    /**
+     * A cap on one composed frame. Only one is held at a time here, unlike the GIF converter
+     * which holds every frame, so this counts pixels rather than pixels times frames. The same
+     * number the still sticker path uses.
+     */
+    private static final long MAX_FRAME_PIXELS = 16L * 1024 * 1024;
+
     private static final String MIME_TYPE = "video/avc";
     private static final int FRAME_RATE = 30;
     private static final int I_FRAME_INTERVAL_SECONDS = 1;
@@ -65,6 +72,13 @@ final class AnimatedWebpMp4Converter {
             int[] durations = (int[]) invoke(image, "getFrameDurations");
             if (sourceWidth <= 0 || sourceHeight <= 0 || frameCount <= 0) {
                 throw new IllegalStateException("Invalid animated WebP dimensions or frame count");
+            }
+            // The canvas size is header metadata, so a few hundred bytes inside the transfer cap
+            // can declare 16383 by 16383 and ask for about a gigabyte below. The GIF converter
+            // beside this one has always capped its frames; this path had nothing, and MP4 is the
+            // sticker format that ships on by default.
+            if ((long) sourceWidth * sourceHeight > MAX_FRAME_PIXELS) {
+                throw new IllegalStateException("Animated WebP frame is too large to compose");
             }
 
             int outputWidth = sourceWidth + (sourceWidth & 1);
