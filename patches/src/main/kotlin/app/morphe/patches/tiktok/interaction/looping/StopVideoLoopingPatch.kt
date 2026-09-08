@@ -35,7 +35,7 @@ val stopVideoLoopingPatch = bytecodePatch(
         VideoEngineSetLoopingFingerprint.method.addInstructions(
             0,
             """
-                invoke-static {p1}, $EXTENSION_DESCRIPTOR->overrideLooping(Z)Z
+                invoke-static/range {p1 .. p1}, $EXTENSION_DESCRIPTOR->overrideLooping(Z)Z
                 move-result p1
             """,
         )

@@ -12,6 +12,9 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.patches.tiktok.shared.callThroughLocals
+import app.morphe.patches.tiktok.shared.objectIn
+import app.morphe.patches.tiktok.shared.valueIn
 
 private object CaptchaPopupFingerprint : Fingerprint(
     definingClass = "/sec/SecApiImpl;",
@@ -113,22 +116,31 @@ val hideCaptchaPopupsPatch = bytecodePatch(
             """,
         )
 
-        OecCaptchaPopupFingerprint.method.addInstructions(
-            0,
-            """
-                invoke-static/range {p1 .. p1}, $CAPTCHA_GATE_CLASS_DESCRIPTOR->shouldHideOecCaptchaPopup(Ljava/lang/Object;)Z
-                move-result v0
-                if-eqz v0, :morphe_show_oec_captcha_popup
-                const/4 v0, 0x3
-                const/4 v1, 0x0
-                move-object/from16 v2, p2
-                invoke-interface {v2, v0, v1}, Lcom/tts/oecverify/BdTuringCallback;->onFail(ILorg/json/JSONObject;)V
-                const/4 v0, 0x1
-                return v0
-                :morphe_show_oec_captcha_popup
-                nop
-            """,
-        )
+        OecCaptchaPopupFingerprint.method.apply {
+            val onFail = callThroughLocals(
+                "Hide CAPTCHA popups",
+                "invoke-interface",
+                "Lcom/tts/oecverify/BdTuringCallback;->onFail(ILorg/json/JSONObject;)V",
+                objectIn("p2"),
+                valueIn("v0"),
+                objectIn("v1"),
+            )
+            addInstructions(
+                0,
+                """
+                    invoke-static/range {p1 .. p1}, $CAPTCHA_GATE_CLASS_DESCRIPTOR->shouldHideOecCaptchaPopup(Ljava/lang/Object;)Z
+                    move-result v0
+                    if-eqz v0, :morphe_show_oec_captcha_popup
+                    const/4 v0, 0x3
+                    const/4 v1, 0x0
+                    $onFail
+                    const/4 v0, 0x1
+                    return v0
+                    :morphe_show_oec_captcha_popup
+                    nop
+                """,
+            )
+        }
 
         LiveHostCaptchaPopupFingerprint.method.addInstructions(
             0,
@@ -146,21 +158,31 @@ val hideCaptchaPopupsPatch = bytecodePatch(
         )
 
         // Network verification can present Turing directly without passing through SecApiImpl.
-        BdTuringCaptchaPopupFingerprint.method.addInstructions(
-            0,
-            """
-                invoke-static/range {p1 .. p2}, $CAPTCHA_GATE_CLASS_DESCRIPTOR->shouldHideTuringDialog(Landroid/app/Activity;Ljava/lang/Object;)Z
-                move-result v0
-                if-eqz v0, :morphe_show_turing_captcha_popup
-                if-eqz p3, :morphe_hide_turing_captcha_popup_return
-                const/4 v0, 0x3
-                const/4 v1, 0x0
-                invoke-interface {p3, v0, v1}, Lcom/tts/oecverify/BdTuringCallback;->onFail(ILorg/json/JSONObject;)V
-                :morphe_hide_turing_captcha_popup_return
-                return-void
-                :morphe_show_turing_captcha_popup
-                nop
-            """,
-        )
+        BdTuringCaptchaPopupFingerprint.method.apply {
+            val onFail = callThroughLocals(
+                "Hide CAPTCHA popups",
+                "invoke-interface",
+                "Lcom/tts/oecverify/BdTuringCallback;->onFail(ILorg/json/JSONObject;)V",
+                objectIn("p3"),
+                valueIn("v0"),
+                objectIn("v1"),
+            )
+            addInstructions(
+                0,
+                """
+                    invoke-static/range {p1 .. p2}, $CAPTCHA_GATE_CLASS_DESCRIPTOR->shouldHideTuringDialog(Landroid/app/Activity;Ljava/lang/Object;)Z
+                    move-result v0
+                    if-eqz v0, :morphe_show_turing_captcha_popup
+                    if-eqz p3, :morphe_hide_turing_captcha_popup_return
+                    const/4 v0, 0x3
+                    const/4 v1, 0x0
+                    $onFail
+                    :morphe_hide_turing_captcha_popup_return
+                    return-void
+                    :morphe_show_turing_captcha_popup
+                    nop
+                """,
+            )
+        }
     }
 }

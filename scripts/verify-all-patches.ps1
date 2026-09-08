@@ -19,10 +19,13 @@ param(
     [Parameter(Mandatory = $true)][string]$WorkDir,
     [string]$Bundle,
     [string]$PatchList,
-    [string]$Java = "java"
+    [string]$Java
 )
 
 $ErrorActionPreference = 'Stop'
+
+. (Join-Path $PSScriptRoot 'Resolve-Java.ps1')
+$Java = Resolve-Java -Explicit $Java
 $root = Split-Path -Parent $PSScriptRoot
 $expectedPackageName = 'com.zhiliaoapp.musically'
 $expectedPackageVersion = '46.2.3'

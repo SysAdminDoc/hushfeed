@@ -352,7 +352,8 @@ val feedFilterPatch = bytecodePatch(
 
         TakoAiFeedButtonBindFingerprint.method.addInstructions(
             2,
-            "invoke-static {p1}, $TAKO_AI_FILTER_CLASS_DESCRIPTOR->hideBoundFeedButtonView(Landroid/view/View;)V",
+            "invoke-static/range {p1 .. p1}, " +
+                "$TAKO_AI_FILTER_CLASS_DESCRIPTOR->hideBoundFeedButtonView(Landroid/view/View;)V",
         )
 
         // Things TikTok slots into the feed that never arrive as ordinary items, so they

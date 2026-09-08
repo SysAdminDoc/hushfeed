@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The patches keep applying when TikTok's own methods grow. A call Hushfeed injects can only name sixteen registers, and a method with enough locals pushes its arguments past that, which fails the patch with an error that says nothing about registers. Eleven injections were written the short way and would have broken on the first TikTok build that crossed the line. They now use the long form only where they have to, so nothing about the current build changes, and a frame that cannot be patched at all says so in those words.
+
 * A sticker save no longer keeps the screen it started from in memory. The job held the Save button, and a button holds the whole screen behind it, so closing the sheet freed nothing until the save finished, up to two minutes later with eight more saves queued behind it. It holds the button weakly now and simply skips handing it back if the sheet has gone.
 
 * Saving an animated sticker as a video can be given up on. If the phone's encoder stopped producing frames partway, the save sat in a loop that neither the cancel nor the two minute limit could reach, and one of the three background workers that save media was gone until the app was killed. Two more stickers after that and saving stopped working entirely, with nothing said. The loop now gives up the moment the job is cancelled or runs out of time.

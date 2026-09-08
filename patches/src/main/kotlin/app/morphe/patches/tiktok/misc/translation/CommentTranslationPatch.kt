@@ -171,7 +171,7 @@ val commentTranslationPatch = bytecodePatch(
             carrier.addInstructions(
                 0,
                 """
-                    invoke-static {p0}, $EXTENSION_CLASS_DESCRIPTOR->onNativeBatchComplete(Ljava/lang/Object;)V
+                    invoke-static/range {p0 .. p0}, $EXTENSION_CLASS_DESCRIPTOR->onNativeBatchComplete(Ljava/lang/Object;)V
                 """,
             )
         }

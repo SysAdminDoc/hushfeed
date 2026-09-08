@@ -24,6 +24,8 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+. (Join-Path $PSScriptRoot 'Resolve-Java.ps1')
+
 function Resolve-DesktopCli {
     <#
     .SYNOPSIS
@@ -46,28 +48,6 @@ function Resolve-DesktopCli {
         if ($found.Count -gt 0) { return $found[0].FullName }
     }
     return $null
-}
-
-function Resolve-Java {
-    <#
-    .SYNOPSIS
-        A java to run the desktop CLI with, taken from -Java, HUSHFEED_JAVA or JAVA_HOME.
-    .DESCRIPTION
-        The CLI is built for a newer JDK than the one that is usually first on PATH here, and
-        the pre-push hook has no way to pass -Java. A bare 'java' therefore failed the check on
-        a machine that did have a new enough JDK, just not in front.
-    #>
-    param([string]$Explicit)
-
-    if ($Explicit) { return $Explicit }
-    if ($env:HUSHFEED_JAVA) { return $env:HUSHFEED_JAVA }
-    if ($env:JAVA_HOME) {
-        $candidate = Join-Path $env:JAVA_HOME 'bin/java.exe'
-        if (Test-Path -LiteralPath $candidate -PathType Leaf) { return $candidate }
-        $candidate = Join-Path $env:JAVA_HOME 'bin/java'
-        if (Test-Path -LiteralPath $candidate -PathType Leaf) { return $candidate }
-    }
-    return 'java'
 }
 
 function Read-JsonFile {
@@ -373,15 +353,8 @@ if ($VerifyPublishedAsset) {
                 $cliOutput = & $javaCommand '-jar' $countJar 'list-patches' "--patches=$temporaryArtifact" `
                     '-d=false' '-i=false' "--out=$listing" 2>&1
                 if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $listing -PathType Leaf)) {
-                    $detail = $cliOutput -join ' '
-                    # The one failure worth naming: the CLI is built for a newer JDK than the
-                    # java that was found, which reads as an unrelated class loading error.
-                    if ($detail -match 'UnsupportedClassVersionError') {
-                        throw ("The Morphe desktop CLI needs a newer JDK than $javaCommand. " +
-                            'Set HUSHFEED_JAVA or JAVA_HOME to a JDK 21 or newer, or pass -Java. ' +
-                            $detail)
-                    }
-                    throw "Could not list the patches in the published bundle: $detail"
+                    throw ("Could not list the patches in the published bundle: " +
+                        ($cliOutput -join ' '))
                 }
                 $publishedCount = @(Get-Content -LiteralPath $listing |
                     Where-Object { $_ -match '^Name:\s*\S' }).Count

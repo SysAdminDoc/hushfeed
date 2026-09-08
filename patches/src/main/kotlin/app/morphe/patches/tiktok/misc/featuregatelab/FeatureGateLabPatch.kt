@@ -14,6 +14,9 @@ import app.morphe.patches.tiktok.misc.absettings.APP_AB_INT_KEY_REGISTER
 import app.morphe.patches.tiktok.misc.absettings.APP_AB_INT_METHOD
 import app.morphe.patches.tiktok.misc.absettings.APP_AB_INT_PARAMETERS
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.patches.tiktok.shared.callThroughLocals
+import app.morphe.patches.tiktok.shared.objectIn
+import app.morphe.patches.tiktok.shared.valueIn
 import app.morphe.util.cloneMutableAndPreserveParameters
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -193,17 +196,25 @@ private fun MutableMethod.patchLiveSettingsObjectBoundary(hasClassKey: Boolean) 
             } else {
                 "\ncheck-cast v$register, $returnType"
             }
-            val hook = if (hasClassKey) {
-                """
-                    invoke-static {p1, v$register}, $RUNTIME_DESCRIPTOR->observeLiveSettingsClassObject(Ljava/lang/Class;Ljava/lang/Object;)Ljava/lang/Object;
-                    move-result-object v$register$returnCast
-                """
+            val call = if (hasClassKey) {
+                callThroughLocals(
+                    "Feature Gate Lab",
+                    "invoke-static",
+                    "$RUNTIME_DESCRIPTOR->observeLiveSettingsClassObject(Ljava/lang/Class;Ljava/lang/Object;)Ljava/lang/Object;",
+                    objectIn("p1"),
+                    objectIn("v$register"),
+                )
             } else {
-                """
-                    invoke-static {p1, p2, v$register}, $RUNTIME_DESCRIPTOR->observeLiveSettingsObject(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-                    move-result-object v$register$returnCast
-                """
+                callThroughLocals(
+                    "Feature Gate Lab",
+                    "invoke-static",
+                    "$RUNTIME_DESCRIPTOR->observeLiveSettingsObject(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+                    objectIn("p1"),
+                    objectIn("p2"),
+                    objectIn("v$register"),
+                )
             }
+            val hook = "$call\nmove-result-object v$register$returnCast"
             addInstructions(index, hook)
         }
 }
@@ -223,22 +234,36 @@ private fun MutableMethod.patchSettingsManagerObjectBoundary(
         }
         .asReversed()
         .forEach { (index, register) ->
-            val hook = if (hasDefault) {
-                """
-                    invoke-static {p1, p2, p3, v$register}, $RUNTIME_DESCRIPTOR->observeSettingsObject(Ljava/lang/String;Ljava/lang/Class;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-                    move-result-object v$register
-                """
+            val call = if (hasDefault) {
+                callThroughLocals(
+                    "Feature Gate Lab",
+                    "invoke-static",
+                    "$RUNTIME_DESCRIPTOR->observeSettingsObject(Ljava/lang/String;Ljava/lang/Class;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+                    objectIn("p1"),
+                    objectIn("p2"),
+                    objectIn("p3"),
+                    objectIn("v$register"),
+                )
             } else if (isStatic) {
-                """
-                    invoke-static {p0, p1, v$register}, $RUNTIME_DESCRIPTOR->observeSettingsObjectWithoutDefault(Ljava/lang/String;Ljava/lang/Class;Ljava/lang/Object;)Ljava/lang/Object;
-                    move-result-object v$register
-                """
+                callThroughLocals(
+                    "Feature Gate Lab",
+                    "invoke-static",
+                    "$RUNTIME_DESCRIPTOR->observeSettingsObjectWithoutDefault(Ljava/lang/String;Ljava/lang/Class;Ljava/lang/Object;)Ljava/lang/Object;",
+                    objectIn("p0"),
+                    objectIn("p1"),
+                    objectIn("v$register"),
+                )
             } else {
-                """
-                    invoke-static {p1, p2, v$register}, $RUNTIME_DESCRIPTOR->observeSettingsObjectWithoutDefault(Ljava/lang/String;Ljava/lang/Class;Ljava/lang/Object;)Ljava/lang/Object;
-                    move-result-object v$register
-                """
+                callThroughLocals(
+                    "Feature Gate Lab",
+                    "invoke-static",
+                    "$RUNTIME_DESCRIPTOR->observeSettingsObjectWithoutDefault(Ljava/lang/String;Ljava/lang/Class;Ljava/lang/Object;)Ljava/lang/Object;",
+                    objectIn("p1"),
+                    objectIn("p2"),
+                    objectIn("v$register"),
+                )
             }
+            val hook = "$call\nmove-result-object v$register"
             addInstructions(index, hook)
         }
 }
@@ -255,13 +280,15 @@ private fun MutableMethod.patchPlayerSettingBoundary() {
         }
         .asReversed()
         .forEach { (index, register) ->
-            addInstructions(
-                index,
-                """
-                    invoke-static {p1, p2, v$register}, $RUNTIME_DESCRIPTOR->overridePlayerValue(Ljava/lang/String;Ljava/lang/reflect/Type;Ljava/lang/Object;)Ljava/lang/Object;
-                    move-result-object v$register
-                """,
+            val call = callThroughLocals(
+                "Feature Gate Lab",
+                "invoke-static",
+                "$RUNTIME_DESCRIPTOR->overridePlayerValue(Ljava/lang/String;Ljava/lang/reflect/Type;Ljava/lang/Object;)Ljava/lang/Object;",
+                objectIn("p1"),
+                objectIn("p2"),
+                objectIn("v$register"),
             )
+            addInstructions(index, "$call\nmove-result-object v$register")
         }
 }
 
@@ -277,13 +304,15 @@ private fun MutableMethod.patchRawAbBoundary() {
         }
         .asReversed()
         .forEach { (index, register) ->
-            addInstructions(
-                index,
-                """
-                    invoke-static {p1, v$register, p2}, $RUNTIME_DESCRIPTOR->overrideRawAbValue(Ljava/lang/String;Ljava/lang/Object;Z)Ljava/lang/Object;
-                    move-result-object v$register
-                """,
+            val call = callThroughLocals(
+                "Feature Gate Lab",
+                "invoke-static",
+                "$RUNTIME_DESCRIPTOR->overrideRawAbValue(Ljava/lang/String;Ljava/lang/Object;Z)Ljava/lang/Object;",
+                objectIn("p1"),
+                objectIn("v$register"),
+                valueIn("p2"),
             )
+            addInstructions(index, "$call\nmove-result-object v$register")
         }
 }
 

@@ -57,7 +57,8 @@ $work = $env:HUSHFEED_WORKDIR
 if (-not $work) { throw 'Set HUSHFEED_WORKDIR to a directory holding morphe-desktop.jar and the fixture APK.' }
 New-Item -ItemType Directory -Force -Path $work | Out-Null
 $workRoot = (Resolve-Path -LiteralPath $work).Path
-$java = if ($env:HUSHFEED_JAVA) { $env:HUSHFEED_JAVA } else { 'java' }
+. (Join-Path $PSScriptRoot 'Resolve-Java.ps1')
+$java = Resolve-Java
 
 # The CLI ships under its version, morphe-desktop-1.15.0-all.jar and so on, so the most recently
 # written jar matching the name is taken rather than one exact filename that goes stale on every
