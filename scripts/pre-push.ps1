@@ -118,6 +118,7 @@ try {
         }
 
         $governor = Join-Path $HOME '.claude/scripts/build-governor.ps1'
+        $global:LASTEXITCODE = 0
         if (Test-Path -LiteralPath $governor) {
             & $governor -ProjectDir $Root -MinFreeGb 2 -NoReap -Tasks ':extensions:tiktok:test'
         } else {
@@ -132,6 +133,7 @@ try {
     if ($touchesRelease) {
         Write-Step 'a published file changed, checking the release facts'
         $validate = Join-Path $Root 'scripts/validate-release-facts.ps1'
+        $global:LASTEXITCODE = 0
         $artifacts = @(Get-ChildItem -LiteralPath (Join-Path $Root 'patches/build/libs') `
             -Filter '*.mpp' -File -ErrorAction SilentlyContinue)
         if ($artifacts.Count -eq 1) {
@@ -140,8 +142,12 @@ try {
             & $validate -Root $Root -VerifyPublishedAsset -ArtifactPath $artifacts[0].FullName
         } else {
             if ($artifacts.Count -gt 1) {
-                Write-Step "found $($artifacts.Count) bundles, so the published asset is not checked"
+                Write-Step "found $($artifacts.Count) bundles, so the hosted artifact is not compared"
+            } else {
+                Write-Step 'no local bundle here, so the hosted artifact is not compared'
             }
+            # The indexed URL is still fetched. Only the byte-for-byte hash comparison needs a
+            # local bundle to compare against.
             & $validate -Root $Root
         }
         if ($LASTEXITCODE -ne 0) {

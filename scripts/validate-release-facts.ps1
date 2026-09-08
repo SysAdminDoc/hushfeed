@@ -11,7 +11,10 @@
 param(
     [string]$Root = (Split-Path -Parent $PSScriptRoot),
     [switch]$VerifyPublishedAsset,
-    [string]$ArtifactPath
+    [string]$ArtifactPath,
+    # Only for running the rest of the checks with no network. Nothing in the repo
+    # passes it; the pre-push escape hatch is HUSHFEED_SKIP_PRE_PUSH=1.
+    [switch]$SkipUrlCheck
 )
 
 $ErrorActionPreference = 'Stop'
@@ -37,6 +40,23 @@ function Require-Match {
     if ($Text -notmatch $Pattern) {
         throw "${Description} does not match the generated release facts."
     }
+}
+
+function Assert-AssetReachable {
+    param([Uri]$Uri)
+    try {
+        $response = Invoke-WebRequest -Uri $Uri -Method Head -MaximumRedirection 5 `
+            -TimeoutSec 60 -SkipHttpErrorCheck
+    } catch {
+        throw ("Could not reach the indexed bundle URL ${Uri}: $($_.Exception.Message). " +
+            'If the network is down, push with HUSHFEED_SKIP_PRE_PUSH=1 and run this again later.')
+    }
+    $status = [int]$response.StatusCode
+    if ($status -ne 200) {
+        throw ("The indexed bundle URL ${Uri} answered HTTP ${status}. " +
+            'The Manager fetches that address, so the release it names has to exist first.')
+    }
+    Write-Host ("[release] indexed URL answers 200: " + $Uri)
 }
 
 $rootPath = (Resolve-Path -LiteralPath $Root).Path
@@ -87,6 +107,24 @@ if ([string]$bundle.version -ne $releaseVersion) {
     throw "patches-bundle.json version does not match $sourceVersion."
 }
 Require-Match -Text ([string]$bundle.download_url) -Pattern "/v$([regex]::Escape($releaseVersion))/patches-$([regex]::Escape($releaseVersion))\.mpp$" -Description 'patches-bundle.json download URL'
+
+# Matching the pattern only proves the index spells the version right. Reaching the address is
+# what catches an index pointed at a tag nobody published, which is how the bundle went missing
+# once already, and the hash comparison further down runs only when this checkout built a bundle.
+# So the URL is fetched on every run, not only on a release.
+$assetUri = [Uri]$bundle.download_url
+if ($assetUri.Scheme -ne 'https') {
+    throw "The published bundle URL must use HTTPS: $($bundle.download_url)"
+}
+$assetName = [IO.Path]::GetFileName($assetUri.AbsolutePath)
+if ($assetName -ne "patches-$releaseVersion.mpp") {
+    throw "The published bundle URL names $assetName instead of patches-$releaseVersion.mpp."
+}
+if ($SkipUrlCheck) {
+    Write-Host '[release] the indexed URL was not fetched because -SkipUrlCheck was given'
+} else {
+    Assert-AssetReachable -Uri $assetUri
+}
 Require-Match -Text $readme -Pattern "\b$patchCount patches\b" -Description 'README patch count'
 Require-Match -Text $readme -Pattern ([regex]::Escape($targetPackage)) -Description 'README package name'
 Require-Match -Text $readme -Pattern "TikTok\s+$([regex]::Escape($targetVersion))" -Description 'README target version'
@@ -153,15 +191,6 @@ if ($VerifyPublishedAsset) {
         throw "The local release artifact is missing: $ArtifactPath"
     }
 
-    $assetUri = [Uri]$bundle.download_url
-    if ($assetUri.Scheme -ne 'https') {
-        throw "The published bundle URL must use HTTPS: $($bundle.download_url)"
-    }
-    $assetName = [IO.Path]::GetFileName($assetUri.AbsolutePath)
-    if ($assetName -ne "patches-$releaseVersion.mpp") {
-        throw "The published bundle URL names $assetName instead of patches-$releaseVersion.mpp."
-    }
-
     $temporaryArtifact = Join-Path ([IO.Path]::GetTempPath()) ("hushfeed-$([Guid]::NewGuid()).mpp")
     try {
         try {
@@ -207,3 +236,7 @@ if ($VerifyPublishedAsset) {
 }
 
 Write-Host ("[facts] " + $sourceVersion + ": " + $patchCount + " patches for " + $targetPackage + " " + $targetVersion + "; " + $testCount + " runtime tests")
+
+# Callers check the exit code, and a script invoked with & leaves the previous native
+# command's code in $LASTEXITCODE, so a clean run has to say so itself.
+exit 0
