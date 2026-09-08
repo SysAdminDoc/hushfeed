@@ -50,7 +50,23 @@ public class FeatureGateLabBoundaryTest {
         FeatureGateLearnMode.cancel();
         SettingsManagerObservationRecorder.clear();
         FeatureGateLabStore.resetAllLabData();
+        FeatureGateCatalog.resetForTests();
         SettingsStatus.featureGateRecorderEnabled = recorderEnabled;
+    }
+
+    /** Publishes a catalogue the runtime can consult without the Lab's screen loading one. */
+    private static void publishCatalog(FeatureGateCatalog.Entry... entries) throws Exception {
+        java.util.Map<String, FeatureGateCatalog.Entry> byIdentity = new java.util.HashMap<>();
+        for (FeatureGateCatalog.Entry entry : entries) byIdentity.put(entry.identity(), entry);
+        var field = FeatureGateCatalog.class.getDeclaredField("cachedSnapshot");
+        field.setAccessible(true);
+        field.set(null, new FeatureGateCatalog.Snapshot(
+                List.of(entries), byIdentity, entries.length, 0L, true));
+    }
+
+    private static FeatureGateCatalog.Entry abEntry(String key, String type) {
+        return new FeatureGateCatalog.Entry(key, key, FeatureGateLabStore.MANAGER_ABMOCK, type,
+                true, true, List.of(), List.of(), List.of(), "", "", false, null, null);
     }
 
     @Test
@@ -133,6 +149,59 @@ public class FeatureGateLabBoundaryTest {
                 FeatureGateLabStore.MANAGER_ABMOCK, "import_gate", "BOOLEAN").enabled);
         FeatureGateLabStore.setMasterEnabled(true);
         assertFalse(FeatureGateLabRuntime.overrideBoolean("import_gate", false));
+    }
+
+    @Test
+    public void aRuleTheCatalogueDisagreesWithIsNotHandedToTheHost() throws Exception {
+        // The one path with no runtime type to check against: TikTok's cached value is null, so
+        // the rule is found by key alone. A STRING rule on a key the host reads as a number used
+        // to be handed straight back, and the ClassCastException landed in TikTok's own frame.
+        publishCatalog(abEntry("mistyped_gate", "INT"), abEntry("agreed_gate", "INT"));
+        FeatureGateLabStore.saveRule(FeatureGateLabStore.MANAGER_ABMOCK, "mistyped_gate",
+                "STRING", "not a number", true);
+        FeatureGateLabStore.saveRule(FeatureGateLabStore.MANAGER_ABMOCK, "agreed_gate",
+                "INT", "7", true);
+        FeatureGateLabStore.setMasterEnabled(true);
+
+        assertNull("a String was handed back for a key the catalogue calls INT",
+                FeatureGateLabRuntime.overrideRawAbValue("mistyped_gate", null, false));
+        assertFalse(FeatureGateLabRuntime.isTriggered(
+                FeatureGateLabStore.MANAGER_ABMOCK, "mistyped_gate", "STRING"));
+        assertEquals("the refusal was not reported anywhere", "Catalogue says INT, this rule is STRING",
+                FeatureGateLabRuntime.structuredFailure(
+                        FeatureGateLabStore.MANAGER_ABMOCK, "mistyped_gate", "STRING"));
+
+        // The positive control: a rule the catalogue agrees with still reaches the host, so the
+        // check is refusing the mistyped rule rather than the whole path.
+        assertEquals(7, FeatureGateLabRuntime.overrideRawAbValue("agreed_gate", null, false));
+        assertTrue(FeatureGateLabRuntime.isTriggered(
+                FeatureGateLabStore.MANAGER_ABMOCK, "agreed_gate", "INT"));
+    }
+
+    @Test
+    public void aKeyTheCatalogueHasNeverHeardOfIsLeftAlone() throws Exception {
+        // With a loaded catalogue that does not carry the key there is nothing to check the type
+        // against, so the host keeps what it had.
+        publishCatalog(abEntry("known_gate", "INT"));
+        FeatureGateLabStore.saveRule(FeatureGateLabStore.MANAGER_ABMOCK, "stranger_gate",
+                "INT", "3", true);
+        FeatureGateLabStore.setMasterEnabled(true);
+
+        assertNull(FeatureGateLabRuntime.overrideRawAbValue("stranger_gate", null, false));
+        assertFalse(FeatureGateLabRuntime.isTriggered(
+                FeatureGateLabStore.MANAGER_ABMOCK, "stranger_gate", "INT"));
+    }
+
+    @Test
+    public void withNoCatalogueLoadedTheRuleStillApplies() {
+        // The Lab's screen is what loads the catalogue, so on a process where it has never been
+        // opened there is nothing to consult and the fallback works as it always did.
+        FeatureGateLabStore.saveRule(FeatureGateLabStore.MANAGER_ABMOCK, "early_gate",
+                "INT", "5", true);
+        FeatureGateLabStore.setMasterEnabled(true);
+
+        assertNull("the test started with a catalogue loaded", FeatureGateCatalog.cachedSnapshot());
+        assertEquals(5, FeatureGateLabRuntime.overrideRawAbValue("early_gate", null, false));
     }
 
     @Test

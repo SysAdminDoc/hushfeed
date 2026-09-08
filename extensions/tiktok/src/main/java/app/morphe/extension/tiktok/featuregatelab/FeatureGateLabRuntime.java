@@ -318,7 +318,7 @@ public final class FeatureGateLabRuntime {
             if (original != null) {
                 return original;
             }
-            rule = uniqueActiveAbRule(key);
+            rule = catalogAgrees(key, uniqueActiveAbRule(key));
         } else {
             rule = activeRule(FeatureGateLabStore.MANAGER_ABMOCK, key, type);
         }
@@ -681,6 +681,42 @@ public final class FeatureGateLabRuntime {
         if (declaredType == Double.TYPE || declaredType == Double.class) return "DOUBLE";
         if (declaredType == String.class) return "STRING";
         return null;
+    }
+
+    /**
+     * Refuses a rule whose type the catalogue disagrees with.
+     *
+     * <p>Only the null-cached path needs this. Everywhere else the value TikTok already holds
+     * names the type, and the rule is looked up by it; here there is nothing to check against,
+     * so a rule matched by key alone can hand the host a String where its caller casts to a
+     * Number, and the ClassCastException lands in TikTok's own frame.
+     *
+     * <p>The catalogue is loaded by the Lab's own screen, so on a process where that screen has
+     * not been opened there is nothing to consult and the rule is taken as it stands, which is
+     * what this did for every rule before.
+     */
+    private static FeatureGateLabStore.Rule catalogAgrees(String key, FeatureGateLabStore.Rule rule) {
+        if (rule == null) {
+            return null;
+        }
+        FeatureGateCatalog.Snapshot catalog = FeatureGateCatalog.cachedSnapshot();
+        if (catalog == null) {
+            return rule;
+        }
+        FeatureGateCatalog.Entry entry =
+                catalog.byIdentity.get(FeatureGateLabStore.MANAGER_ABMOCK + "\n" + key);
+        if (entry == null) {
+            structuredFailures.put(rule.id, "Not in the catalogue, so the type cannot be checked");
+            return null;
+        }
+        if (!FeatureGateLabStore.normalizeType(entry.type)
+                .equals(FeatureGateLabStore.normalizeType(rule.type))) {
+            structuredFailures.put(rule.id,
+                    "Catalogue says " + entry.type + ", this rule is " + rule.type);
+            return null;
+        }
+        structuredFailures.remove(rule.id);
+        return rule;
     }
 
     private static FeatureGateLabStore.Rule uniqueActiveAbRule(String key) {
