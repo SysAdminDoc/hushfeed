@@ -159,6 +159,52 @@ public class SessionLockOverlayTest {
         }
     }
 
+    @Test public void theHoldIsAnnouncedAndTakesTheFeedOutOfTheReadingOrder() throws Exception {
+        // The panel swallows touches, which is the whole hold for anyone looking at the screen
+        // and nothing at all for anyone swiping through it with a screen reader: the like,
+        // comment and share controls behind it stayed reachable.
+        Settings.SESSION_BUDGET_VIDEOS.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(5);
+        SessionBudget.noteVideo("a");
+        assertTrue(SessionBudget.claimNotice());
+
+        try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setActivity(activity);
+            ViewGroup root = activity.findViewById(android.R.id.content);
+            View behind = new View(activity);
+            root.addView(behind);
+            int before = behind.getImportantForAccessibility();
+
+            SessionLockOverlay.sync();
+            ViewGroup panel = (ViewGroup) root.getChildAt(root.getChildCount() - 1);
+            assertNotNull(panel);
+
+            assertEquals("the hold goes up without saying so",
+                    SessionBudgetNotice.spentMessage(),
+                    String.valueOf(panel.getAccessibilityPaneTitle()));
+            assertEquals("the hold is not announced when it appears",
+                    View.ACCESSIBILITY_LIVE_REGION_POLITE, panel.getAccessibilityLiveRegion());
+            assertEquals("the feed behind the hold can still be swiped through",
+                    View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS,
+                    behind.getImportantForAccessibility());
+
+            View release = panel.getChildAt(3);
+            android.view.accessibility.AccessibilityNodeInfo info =
+                    android.view.accessibility.AccessibilityNodeInfo.obtain();
+            release.onInitializeAccessibilityNodeInfo(info);
+            assertEquals("the only way out of the hold is read as plain text",
+                    android.widget.Button.class.getName(), String.valueOf(info.getClassName()));
+
+            // And the feed is handed back exactly as it was found.
+            Method detach = SessionLockOverlay.class.getDeclaredMethod("detach");
+            detach.setAccessible(true);
+            detach.invoke(null);
+            assertEquals("the feed was left out of the reading order after the hold ended",
+                    before, behind.getImportantForAccessibility());
+        }
+    }
+
     @Test public void anUnlockedDayKeepsItsWayOut() throws Exception {
         Settings.SESSION_BUDGET_VIDEOS.save(1);
         Settings.SESSION_BUDGET_LOCK_MINUTES.save(5);
