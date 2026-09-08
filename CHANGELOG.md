@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The daily budget really is free when it is switched off. The hold check ran from the player's progress callback several times a second and took a lock and built a calendar every time, whether or not a budget was set. Now the off case is two field reads, and with a budget set the day is worked out once a day instead of once per callback.
+
 * The release check now fetches the address in the bundle index every time it runs, instead of only when the checkout happens to hold a freshly built bundle. Pointing the index at a release that does not exist yet is caught before the push rather than by someone whose Manager cannot fetch it.
 
 * The four feed buttons work in a right-to-left layout. Their positions are pixels worked out from where you drag them, and a mirrored layout was throwing those away, so the buttons piled up on each other and would not move sideways.

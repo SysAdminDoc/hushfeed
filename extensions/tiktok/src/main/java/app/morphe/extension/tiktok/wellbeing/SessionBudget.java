@@ -59,15 +59,33 @@ public final class SessionBudget {
 
     private static Clock clock = System::currentTimeMillis;
 
-    private static boolean loaded;
+    /**
+     * Read without the monitor by {@link #isLocked()}, which runs from the player's progress
+     * callback several times a second. Volatile rather than guarded because the fast path only
+     * ever answers "no hold", and it answers that from the same field every writer publishes.
+     */
+    private static volatile boolean loaded;
     private static long day;
     private static int videos;
     private static long watchedMs;
     private static long writtenWatchedMs;
-    private static long lockUntilMs;
+    private static volatile long lockUntilMs;
     private static long lastTickMs;
     private static String lastCountedId;
     private static boolean noticeShown;
+
+    /**
+     * The day {@link #dayOf(long)} last worked out and the span of time that answer holds for.
+     * Building a Calendar and a TimeZone clone on every player callback was the whole cost of
+     * the budget once one was set. Guarded by {@link #LOCK} like everything else here.
+     */
+    private static long cachedDay;
+    private static long cachedWindowStart;
+    private static long cachedWindowEnd;
+    private static int cachedResetHour = -1;
+    private static String cachedZoneId = "";
+    private static int dayComputations;
+    private static int lockChecksUnderTheMonitor;
 
     /** So a test can move time without waiting for it. */
     interface Clock {
@@ -200,12 +218,18 @@ public final class SessionBudget {
     // ------------------------------------------------------------------------------- the hold
 
     public static boolean isLocked() {
+        // SessionLockOverlay.ensureRunning reaches this from the player's progress callback, so
+        // the answer almost everyone gets, that no hold has ever been set, must not take the
+        // monitor or build a Calendar. Only "no hold" is answered here, and it is answered from
+        // the field every writer publishes, so a hold is never missed.
+        if (loaded && lockUntilMs == 0) return false;
         return lockRemainingMs() > 0;
     }
 
     /** How much of the hold is left, or zero when there is none. */
     public static long lockRemainingMs() {
         synchronized (LOCK) {
+            lockChecksUnderTheMonitor++;
             load();
             long now = clock.now();
             rollOver(now);
@@ -256,12 +280,44 @@ public final class SessionBudget {
      */
     static long dayOf(long now) {
         int resetHour = Settings.SESSION_BUDGET_RESET_HOUR.get();
-        Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
-        calendar.setTimeInMillis(now);
-        if (calendar.get(Calendar.HOUR_OF_DAY) < resetHour) {
-            calendar.add(Calendar.DAY_OF_YEAR, -1);
+        TimeZone zone = TimeZone.getDefault();
+        synchronized (LOCK) {
+            if (resetHour == cachedResetHour && zone.getID().equals(cachedZoneId)
+                    && now >= cachedWindowStart && now < cachedWindowEnd) {
+                return cachedDay;
+            }
+            dayComputations++;
+            Calendar calendar = Calendar.getInstance(zone);
+            calendar.setTimeInMillis(now);
+            if (calendar.get(Calendar.HOUR_OF_DAY) < resetHour) {
+                calendar.add(Calendar.DAY_OF_YEAR, -1);
+            }
+            long value = calendar.get(Calendar.YEAR) * 1000L + calendar.get(Calendar.DAY_OF_YEAR);
+
+            // How long that answer holds, so the next few thousand callbacks in the same day are
+            // two comparisons. The end is a day added rather than 24 hours, because the day the
+            // clocks change is 23 or 25 hours long.
+            calendar.set(Calendar.HOUR_OF_DAY, resetHour);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
+            long start = calendar.getTimeInMillis();
+            calendar.add(Calendar.DAY_OF_YEAR, 1);
+            long end = calendar.getTimeInMillis();
+            if (now >= start && now < end) {
+                cachedDay = value;
+                cachedWindowStart = start;
+                cachedWindowEnd = end;
+                cachedResetHour = resetHour;
+                cachedZoneId = zone.getID();
+            } else {
+                // An hour that does not exist on the day the clocks go forward lands outside its
+                // own window. Better to work it out again than to answer from a window that does
+                // not contain the moment it was built for.
+                cachedResetHour = -1;
+            }
+            return value;
         }
-        return calendar.get(Calendar.YEAR) * 1000L + calendar.get(Calendar.DAY_OF_YEAR);
     }
 
     /**
@@ -339,8 +395,29 @@ public final class SessionBudget {
         WRITER.submit(() -> null).get();
     }
 
+    /** How many times a Calendar was actually built, so a test can prove the memo holds. */
+    static int dayComputationsForTests() {
+        synchronized (LOCK) {
+            return dayComputations;
+        }
+    }
+
+    /** How many hold checks got past the fast path and took the monitor. */
+    static int lockChecksUnderTheMonitorForTests() {
+        synchronized (LOCK) {
+            return lockChecksUnderTheMonitor;
+        }
+    }
+
     static void resetForTests() {
         synchronized (LOCK) {
+            cachedResetHour = -1;
+            cachedZoneId = "";
+            cachedWindowStart = 0;
+            cachedWindowEnd = 0;
+            cachedDay = 0;
+            dayComputations = 0;
+            lockChecksUnderTheMonitor = 0;
             loaded = false;
             day = 0;
             videos = 0;

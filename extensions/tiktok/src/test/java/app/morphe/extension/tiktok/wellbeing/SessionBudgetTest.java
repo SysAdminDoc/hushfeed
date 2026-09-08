@@ -392,6 +392,72 @@ public class SessionBudgetTest {
         }
     }
 
+    @Test public void theHoldCheckCostsNothingWithNoBudgetSet() {
+        // SessionLockOverlay.ensureRunning asks this from the player's progress callback, which
+        // arrives several times a second while any video plays. With no budget set, which is the
+        // shipped default, it used to take the budget monitor and build a Calendar and a TimeZone
+        // clone every time, on the player thread.
+        assertFalse("a hold nobody set", SessionBudget.isLocked());
+        int days = SessionBudget.dayComputationsForTests();
+        int monitor = SessionBudget.lockChecksUnderTheMonitorForTests();
+
+        for (int callback = 0; callback < 500; callback++) {
+            now.addAndGet(40L);
+            assertFalse(SessionBudget.isLocked());
+        }
+
+        assertEquals("a Calendar was built per player callback",
+                days, SessionBudget.dayComputationsForTests());
+        assertEquals("the budget monitor was taken per player callback",
+                monitor, SessionBudget.lockChecksUnderTheMonitorForTests());
+    }
+
+    @Test public void aRunningHoldIsStillSeenByTheFastPath() {
+        // The fast path answers only "no hold". If it ever answered from a stale field, the hold
+        // would be invisible to the overlay and the panel would never appear.
+        Settings.SESSION_BUDGET_VIDEOS.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(5);
+        SessionBudget.noteVideo("a");
+        assertTrue(SessionBudget.claimNotice());
+
+        assertTrue("the hold the notice just started was not seen", SessionBudget.isLocked());
+        now.addAndGet(6L * 60_000L);
+        assertFalse("the hold outlived its own minutes", SessionBudget.isLocked());
+    }
+
+    @Test public void theDayIsWorkedOutOncePerDayNotOncePerCallback() {
+        Settings.SESSION_BUDGET_MINUTES.save(30);
+        SessionBudget.noteWatching();
+        int days = SessionBudget.dayComputationsForTests();
+
+        for (int callback = 0; callback < 500; callback++) {
+            now.addAndGet(1_000L);
+            SessionBudget.noteWatching();
+        }
+        assertEquals("a Calendar per callback inside one day",
+                days, SessionBudget.dayComputationsForTests());
+
+        // Past the reset hour the answer has to be worked out again, or the day never turns over.
+        now.set(at(2026, Calendar.SEPTEMBER, 9, 12, 0));
+        SessionBudget.noteWatching();
+        assertTrue("the day was answered from a window it had left",
+                SessionBudget.dayComputationsForTests() > days);
+        assertEquals("the new day did not start clean", 0, SessionBudget.watchedMs());
+    }
+
+    @Test public void changingTheResetHourIsNotAnsweredFromTheOldWindow() {
+        // The reader can move the hour the day ends at, and the window cached under the old hour
+        // still contains the moment being asked about.
+        Settings.SESSION_BUDGET_RESET_HOUR.save(4);
+        long early = SessionBudget.dayOf(now.get());
+        Settings.SESSION_BUDGET_RESET_HOUR.save(20);
+        long late = SessionBudget.dayOf(now.get());
+
+        assertEquals("noon belongs to the day before when the day ends at eight in the evening",
+                early - 1, late);
+        Settings.SESSION_BUDGET_RESET_HOUR.resetToDefault();
+    }
+
     private static String read(String relative) throws Exception {
         java.io.File root = new java.io.File("src/main/java/app/morphe/extension/tiktok");
         if (!root.isDirectory()) root = new java.io.File(
