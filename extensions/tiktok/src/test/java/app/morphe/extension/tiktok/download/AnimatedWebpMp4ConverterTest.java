@@ -57,6 +57,32 @@ public class AnimatedWebpMp4ConverterTest {
         }
     }
 
+    @Test public void aFrameWiderThanTheGpuWillTakeIsRefusedAndSaysBySoMuch() {
+        // 8192 by 2000 is 16.4 million pixels, inside the cap above, and past the 4096 a side
+        // that a great many Android GPUs stop at. Asked for anyway the upload fails silently
+        // and the saved video is black.
+        IllegalStateException refused = assertThrows(IllegalStateException.class, () ->
+                AnimatedWebpMp4Converter.requireFitsTexture(8192, 2000, 4096));
+        String said = String.valueOf(refused.getMessage());
+        assertTrue("the refusal does not say what the GPU will take: " + said,
+                said.contains("4096"));
+        assertTrue("the refusal does not say how big the frame is: " + said,
+                said.contains("8192"));
+
+        // Taller than it is wide, which the same check has to catch.
+        assertThrows(IllegalStateException.class, () ->
+                AnimatedWebpMp4Converter.requireFitsTexture(2000, 8192, 4096));
+    }
+
+    @Test public void aFrameTheGpuWillTakeGoesThroughAndSoDoesOneItWillNotDiscuss() {
+        // The positive control. Without it the check could refuse everything and the case
+        // above would still pass.
+        AnimatedWebpMp4Converter.requireFitsTexture(512, 512, 4096);
+        AnimatedWebpMp4Converter.requireFitsTexture(4096, 4096, 4096);
+        // A GPU that did not answer is not a reason to refuse a sticker on a number nobody gave.
+        AnimatedWebpMp4Converter.requireFitsTexture(8192, 8192, 0);
+    }
+
     @Test public void anOrdinaryStickerIsStillAccepted() {
         // The positive control for the guard above. Without one the cap could be "> 0" and the
         // reject case would still pass while nothing converted any more.
