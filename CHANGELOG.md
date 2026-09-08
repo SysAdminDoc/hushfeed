@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The patch bundle is byte reproducible. Two builds of the same commit used to differ, because the manifest recorded the moment it was built, so nobody could rebuild it and check the published checksum against their own. That field is pinned to the commit now, and a rebuild produces the same file down to the byte.
+
 * The README says which Morphe Manager you need. Manager refuses a bundle built against a patcher newer than its own, so on 1.28.0 and older this one simply would not load, and nothing said so. It also now says in plain terms that everything Hushfeed adds runs inside TikTok with TikTok's permissions and data, and that this repository and its GitHub releases are the only official source.
 
 * Comment translation notices every batch finishing, not half of them. TikTok signs off a finished batch from two different places, and Hushfeed was only listening to one, so batches that finished the other way were never marked done or failed. Depending on which way TikTok went, those comments were either never translated or asked for again on every scroll.
