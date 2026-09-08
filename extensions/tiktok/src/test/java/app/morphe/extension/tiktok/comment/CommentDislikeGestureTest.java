@@ -1,6 +1,7 @@
 package app.morphe.extension.tiktok.comment;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
 import android.os.Looper;
@@ -152,6 +153,44 @@ public class CommentDislikeGestureTest {
     }
 
     /** A row carrying a comment whose author can be read, which is what reaching a block needs. */
+    @Test public void anAccessibilityServiceActivatesTheBlockRatherThanTikToksDislike() {
+        // TalkBack and Switch Access activate a control with performClick(), which produces no
+        // MotionEvents, so a touch listener on its own left them reaching TikTok's own dislike
+        // while the label still said "dislike".
+        android.widget.FrameLayout cell = new android.widget.FrameLayout(activity);
+        Map<View, Object> cells = ReflectionHelpers.getStaticField(CommentTools.class, "CELL_COMMENTS");
+        synchronized (cells) {
+            cells.put(cell, new Comment("uid-spoken"));
+        }
+        View button = new View(activity);
+        View icon = new View(activity);
+        cell.addView(button);
+        cell.addView(icon);
+        CommentTools.wireBlockControl(button, icon);
+
+        assertTrue("the control was never given a click listener", button.performClick());
+        assertEquals("activating the control did not reach the comment it belongs to",
+                HapticFeedbackConstants.LONG_PRESS, hapticOn(cell));
+        assertEquals("a screen reader would read the same control twice",
+                View.IMPORTANT_FOR_ACCESSIBILITY_NO, icon.getImportantForAccessibility());
+    }
+
+    // The state description arrived in API 30, and the class runs at 28 for the gesture cases.
+    @Test @org.robolectric.annotation.Config(sdk = 30)
+    public void theControlSaysWhatItDoesAndWhetherItHasBeenUsed() {
+        View button = new View(activity);
+
+        CommentTools.describeBlockControl(button, false);
+        assertEquals("Block this commenter", String.valueOf(button.getContentDescription()));
+        assertEquals("Not blocked", String.valueOf(button.getStateDescription()));
+
+        // A blocked row was faded and tinted and said nothing, so a screen reader heard no
+        // difference between a blocked account and any other.
+        CommentTools.describeBlockControl(button, true);
+        assertEquals("Unblock this commenter", String.valueOf(button.getContentDescription()));
+        assertEquals("Blocked", String.valueOf(button.getStateDescription()));
+    }
+
     private View commentCell(String uid) {
         View cell = new View(activity);
         Map<View, Object> cells = ReflectionHelpers.getStaticField(CommentTools.class, "CELL_COMMENTS");

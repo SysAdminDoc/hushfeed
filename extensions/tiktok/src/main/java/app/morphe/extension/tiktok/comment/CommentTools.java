@@ -25,6 +25,7 @@ import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.blockauthor.VideoAuthor;
 import app.morphe.extension.shared.diagnostics.HookStatus;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.settings.preference.SettingsUi;
 import app.morphe.extension.tiktok.settings.L10n;
 
 import java.lang.reflect.Field;
@@ -73,8 +74,12 @@ public final class CommentTools {
     /** One log line for a cell with no thumbs down, not a verdict on the build. */
     private static boolean warnedNoDislikeControl;
     private static final String DISLIKE_ICON_ID = "m3b";
-    private static final float BLOCKED_ROW_ALPHA = 0.35f;
-    private static final int BLOCKED_TINT = Color.rgb(254, 44, 85);
+    /**
+     * Faded enough to read as blocked, still readable. At 0.35 the comment text dropped to about
+     * 3:1 on the sheet, which is below the floor for text of that size.
+     */
+    private static final float BLOCKED_ROW_ALPHA = 0.55f;
+    private static final int BLOCKED_TINT = SettingsUi.OVERLAY_ACCENT;
 
     /** Comment model bound to each cell view. */
     private static final WeakHashMap<View, Object> CELL_COMMENTS = new WeakHashMap<>();
@@ -183,11 +188,8 @@ public final class CommentTools {
             // that lands on it never reaches TikTok's handling either.
             // A press taken while this row held a different comment must not be released onto
             // the account that just arrived in it.
-            button.setOnTouchListener(DISLIKE_TOUCH);
             View icon = cell.findViewById(identifier(cell, DISLIKE_ICON_ID));
-            if (icon != null) {
-                icon.setOnTouchListener(DISLIKE_TOUCH);
-            }
+            wireBlockControl(button, icon);
             if (holdsAnotherComment) {
                 DISLIKE_TOUCH.forget(button);
                 DISLIKE_TOUCH.forget(icon);
@@ -272,6 +274,38 @@ public final class CommentTools {
         }
     }
 
+    /**
+     * Takes the control over for both a finger and an accessibility service. TalkBack and Switch
+     * Access activate a control with {@code performClick()}, which produces no MotionEvents at
+     * all, so a touch listener on its own left them reaching TikTok's dislike instead of the
+     * block. The touch listener always consumes, so a finger never reaches the click listener.
+     */
+    static void wireBlockControl(View button, View icon) {
+        if (button == null) return;
+        button.setOnTouchListener(DISLIKE_TOUCH);
+        button.setOnClickListener(CommentTools::onDislikeTapped);
+        if (icon != null) {
+            icon.setOnTouchListener(DISLIKE_TOUCH);
+            // One target for the row rather than two, so the label and the state are in one
+            // place and a screen reader does not read the same control twice.
+            icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        }
+    }
+
+    /**
+     * What the control is for and what it did. The label still said "dislike" for a control that
+     * blocks, and a faded row was the only sign an account was blocked, which a screen reader
+     * cannot see at all.
+     */
+    static void describeBlockControl(View button, boolean blocked) {
+        if (button == null) return;
+        button.setContentDescription(L10n.t(blocked
+                ? "Unblock this commenter" : "Block this commenter"));
+        if (android.os.Build.VERSION.SDK_INT >= 30) {
+            button.setStateDescription(L10n.t(blocked ? "Blocked" : "Not blocked"));
+        }
+    }
+
     private static void onDislikeTapped(View touched) {
         try {
             View cell = cellOf(touched);
@@ -311,6 +345,10 @@ public final class CommentTools {
         if (cell.getAlpha() != alpha) {
             cell.setAlpha(alpha);
         }
+
+        // The label still said "dislike" for a control that blocks, and a faded row was the
+        // only sign an account was blocked, which a screen reader cannot see at all.
+        describeBlockControl(cell.findViewById(identifier(cell, DISLIKE_BUTTON_ID)), blocked);
 
         View icon = cell.findViewById(identifier(cell, DISLIKE_ICON_ID));
         if (icon instanceof ImageView) {

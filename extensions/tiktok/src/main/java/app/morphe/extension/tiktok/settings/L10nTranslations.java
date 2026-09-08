@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1248);
+        Map<String, String> table = new HashMap<>(1256);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -160,8 +160,12 @@ public final class L10nTranslations {
                 "Neue untere Tabs blockieren");
         table.put("Block this account",
                 "Dieses Konto blockieren");
+        table.put("Block this commenter",
+                "Diesen Kommentierenden blockieren");
         table.put("Block this sound",
                 "Diesen Sound blockieren");
+        table.put("Blocked",
+                "Blockiert");
         table.put("Blocked %1$s",
                 "%1$s blockiert");
         table.put("Blocked caption words",
@@ -176,13 +180,13 @@ public final class L10nTranslations {
                 "Gesperrte Sound-Namen");
         table.put("Blocked sounds",
                 "Blockierte Sounds");
+    }
+
+    private static void fillDe1(Map<String, String> table) {
         table.put("Browse",
                 "Durchsuchen");
         table.put("Cancel",
                 "Abbrechen");
-    }
-
-    private static void fillDe1(Map<String, String> table) {
         table.put("Caption background",
                 "Untertitel-Hintergrund");
         table.put("Caption text size",
@@ -299,13 +303,13 @@ public final class L10nTranslations {
                 "Nicht erkennbar, welcher Ordner geändert werden soll. Bitte erneut auswählen.");
         table.put("Could not unblock %1$s",
                 "Die Blockierung von %1$s konnte nicht aufgehoben werden");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("Could not unblock %1$s: %2$s",
                 "Die Blockierung von %1$s konnte nicht aufgehoben werden: %2$s");
         table.put("Country ISO",
                 "Länder-ISO");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("Country and network preferences",
                 "Land und Netzwerkeinstellungen");
         table.put("Creator handle or id",
@@ -422,13 +426,13 @@ public final class L10nTranslations {
                 "Vergessen, was heute gezählt wurde, und jede Sperre beenden. Die Budgets selbst bleiben unverändert.");
         table.put("GIF",
                 "GIF");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("Ghost mode",
                 "Geistermodus");
         table.put("Hidden %1$s locally",
                 "%1$s lokal ausgeblendet");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("Hidden commenters",
                 "Ausgeblendete Kommentierende");
         table.put("Hidden creators",
@@ -545,13 +549,13 @@ public final class L10nTranslations {
                 "Den Hinweis „Dieses Bild suchen“ ausblenden, den TikTok über Videos zeigt, wenn es etwas zum Kaufen erkennt.");
         table.put("Hide the Activity row of likes and comments on your posts.",
                 "Die Zeile „Aktivität“ mit Likes und Kommentaren zu deinen Beiträgen ausblenden.");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Hide the Archive row.",
                 "Die Zeile „Archiv“ ausblenden.");
         table.put("Hide the Live button in the top left corner of the feed.",
                 "Die Live-Schaltfläche oben links im Feed ausblenden.");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("Hide the Message requests row.",
                 "Die Zeile „Nachrichtenanfragen“ ausblenden.");
         table.put("Hide the New followers row.",
@@ -668,13 +672,13 @@ public final class L10nTranslations {
                 "Hushfeed kann das Creator-Muster %1$s nicht lesen");
         table.put("Hushfeed filtered this batch",
                 "Hushfeed hat diese Ladung gefiltert");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working.",
                 "Hushfeed hat ein TikTok-Rätsel ausgeblendet. Schalte „CAPTCHA-Popups ausblenden“ aus, wenn etwas nicht mehr funktioniert.");
         table.put("Ignore the creator's choice so the Duet and Stitch entries appear. Everything else the app checks still applies, and whether the upload is accepted is the server's decision.",
                 "Die Wahl der erstellenden Person übergehen, damit die Einträge Duett und Stitch erscheinen. Alle übrigen Prüfungen der App gelten weiterhin, und ob der Upload angenommen wird, entscheidet der Server.");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("Inbox",
                 "Posteingang");
         table.put("Included diagnostics",
@@ -785,19 +789,21 @@ public final class L10nTranslations {
                 "Kein Video ausgewählt");
         table.put("No videos remained after Hushfeed applied your feed filters to %1$d batches. Most matches: %2$s.",
                 "Keine Videos blieben übrig, nachdem Hushfeed deine Feed-Filter auf %1$d Ladungen angewendet hatte. Am häufigsten: %2$s.");
+        table.put("Not blocked",
+                "Nicht blockiert");
         table.put("Not interested button",
                 "Schaltfläche „Kein Interesse“");
         table.put("Not interested in this video",
                 "Kein Interesse an diesem Video");
+    }
+
+    private static void fillDe6(Map<String, String> table) {
         table.put("Nothing has been looked up yet. Use the app for a moment, then come back.",
                 "Bisher wurde nichts nachgeschlagen. Nutze die App einen Moment und komm dann zurück.");
         table.put("Nothing is playing to seek",
                 "Es läuft gerade nichts zum Springen");
         table.put("Offline videos limit",
                 "Limit für Offline-Videos");
-    }
-
-    private static void fillDe6(Map<String, String> table) {
         table.put("On mobile data",
                 "Bei mobilen Daten");
         table.put("One minute left",
@@ -912,15 +918,15 @@ public final class L10nTranslations {
                 "Bericht gespeichert unter %1$s");
         table.put("Reset settings",
                 "Einstellungen zurücksetzen");
+    }
+
+    private static void fillDe7(Map<String, String> table) {
         table.put("Restore defaults immediately. Your current settings are kept for Undo.",
                 "Standardwerte sofort wiederherstellen. Deine aktuellen Einstellungen bleiben zum Rückgängigmachen erhalten.");
         table.put("Restore failed. Some settings may still be changed.",
                 "Wiederherstellung fehlgeschlagen. Einige Einstellungen können noch geändert sein.");
         table.put("Restore failed. Some settings may still be changed. Use Undo to recover.",
                 "Wiederherstellung fehlgeschlagen. Einige Einstellungen können noch geändert sein. Nutze „Rückgängig“, um sie wiederherzustellen.");
-    }
-
-    private static void fillDe7(Map<String, String> table) {
         table.put("Restore settings",
                 "Einstellungen wiederherstellen");
         table.put("Resume videos after scrolling",
@@ -1035,15 +1041,15 @@ public final class L10nTranslations {
                 "Shop-Beiträge");
         table.put("Show @username beside a video instead of the display name the creator chose.",
                 "Zeigt @Benutzername neben einem Video statt des Anzeigenamens, den die Person gewählt hat.");
+    }
+
+    private static void fillDe8(Map<String, String> table) {
         table.put("Show Live search",
                 "Live-Suche anzeigen");
         table.put("Show TikTok's own progress bar on videos where it is normally hidden.",
                 "TikToks eigene Fortschrittsleiste bei Videos zeigen, wo sie sonst versteckt ist.");
         table.put("Show TikTok's search entry in the Live drawer where supported.",
                 "TikToks Sucheingang im Live-Bereich anzeigen, wo das unterstützt wird.");
-    }
-
-    private static void fillDe8(Map<String, String> table) {
         table.put("Show a video preview thumbnail while dragging the seekbar.",
                 "Beim Ziehen der Fortschrittsleiste ein Vorschaubild des Videos anzeigen.");
         table.put("Show block button on videos",
@@ -1158,15 +1164,15 @@ public final class L10nTranslations {
                 "Dieser Sticker liegt in einem Format vor, das Hushfeed nicht lesen kann");
         table.put("The destination contains an invalid folder name",
                 "Im Zielpfad steht ein unzulässiger Ordnername");
+    }
+
+    private static void fillDe9(Map<String, String> table) {
         table.put("The feed is open again",
                 "Der Feed ist wieder offen");
         table.put("The file picker is not available on this device.",
                 "Die Dateiauswahl ist auf diesem Gerät nicht verfügbar.");
         table.put("The minimum or maximum comments on a video to show.",
                 "Mindest- oder Höchstzahl an Kommentaren, damit ein Video gezeigt wird.");
-    }
-
-    private static void fillDe9(Map<String, String> table) {
         table.put("The minimum or maximum favourites of a video to show.",
                 "Mindest- oder Höchstzahl an Favoriten, damit ein Video gezeigt wird.");
         table.put("The minimum or maximum likes of a video to show.",
@@ -1241,6 +1247,8 @@ public final class L10nTranslations {
                 "Zwei Buchstaben, etwa us, gb oder jp.");
         table.put("Type to search settings",
                 "Tippe, um Einstellungen zu durchsuchen");
+        table.put("Unblock this commenter",
+                "Blockierung dieses Kommentierenden aufheben");
         table.put("Unblocked %1$s",
                 "%1$s entblockt");
         table.put("Undo",
@@ -1279,6 +1287,9 @@ public final class L10nTranslations {
                 "Speicherort für Videos");
         table.put("Video download quality",
                 "Qualität für Video-Downloads");
+    }
+
+    private static void fillDe10(Map<String, String> table) {
         table.put("Video filename",
                 "Dateiname für Videos");
         table.put("Video playback quality",
@@ -1287,9 +1298,6 @@ public final class L10nTranslations {
                 "Videoqualität");
         table.put("Video saved",
                 "Video gespeichert");
-    }
-
-    private static void fillDe10(Map<String, String> table) {
         table.put("Video saved in %1$s, but only %2$s of %3$s subtitles came with it",
                 "Video in %1$s gespeichert, aber nur %2$s von %3$s Untertiteln sind mitgekommen");
         table.put("Video saved with %1$s subtitles in %2$s",
@@ -1341,7 +1349,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1248);
+        Map<String, String> table = new HashMap<>(1256);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1457,8 +1465,12 @@ public final class L10nTranslations {
                 "Blokir tab bawah yang baru");
         table.put("Block this account",
                 "Blokir akun ini");
+        table.put("Block this commenter",
+                "Blokir pengomentar ini");
         table.put("Block this sound",
                 "Blokir suara ini");
+        table.put("Blocked",
+                "Diblokir");
         table.put("Blocked %1$s",
                 "%1$s diblokir");
         table.put("Blocked caption words",
@@ -1473,13 +1485,13 @@ public final class L10nTranslations {
                 "Nama suara yang diblokir");
         table.put("Blocked sounds",
                 "Suara yang diblokir");
+    }
+
+    private static void fillIn1(Map<String, String> table) {
         table.put("Browse",
                 "Telusuri");
         table.put("Cancel",
                 "Batal");
-    }
-
-    private static void fillIn1(Map<String, String> table) {
         table.put("Caption background",
                 "Latar keterangan");
         table.put("Caption text size",
@@ -1596,13 +1608,13 @@ public final class L10nTranslations {
                 "Tidak diketahui folder mana yang harus diubah. Pilih lagi.");
         table.put("Could not unblock %1$s",
                 "Blokir %1$s tidak bisa dibuka");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("Could not unblock %1$s: %2$s",
                 "Blokir %1$s tidak bisa dibuka: %2$s");
         table.put("Country ISO",
                 "ISO negara");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("Country and network preferences",
                 "Preferensi negara dan jaringan");
         table.put("Creator handle or id",
@@ -1719,13 +1731,13 @@ public final class L10nTranslations {
                 "Lupakan yang sudah dihitung hari ini dan akhiri penahanan apa pun. Anggarannya sendiri tidak diubah.");
         table.put("GIF",
                 "GIF");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("Ghost mode",
                 "Mode siluman");
         table.put("Hidden %1$s locally",
                 "%1$s disembunyikan secara lokal");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("Hidden commenters",
                 "Pengomentar yang disembunyikan");
         table.put("Hidden creators",
@@ -1842,13 +1854,13 @@ public final class L10nTranslations {
                 "Sembunyikan ajakan \"Cari gambar ini\" yang TikTok tampilkan di atas video saat menemukan sesuatu yang bisa dibeli.");
         table.put("Hide the Activity row of likes and comments on your posts.",
                 "Sembunyikan baris Aktivitas berisi suka dan komentar pada unggahanmu.");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Hide the Archive row.",
                 "Sembunyikan baris Arsip.");
         table.put("Hide the Live button in the top left corner of the feed.",
                 "Sembunyikan tombol LIVE di pojok kiri atas feed.");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("Hide the Message requests row.",
                 "Sembunyikan baris Permintaan pesan.");
         table.put("Hide the New followers row.",
@@ -1965,13 +1977,13 @@ public final class L10nTranslations {
                 "Hushfeed tidak bisa membaca pola kreator %1$s");
         table.put("Hushfeed filtered this batch",
                 "Hushfeed menyaring pemuatan ini");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working.",
                 "Hushfeed menyembunyikan satu teka-teki TikTok. Matikan Sembunyikan popup CAPTCHA kalau ada yang berhenti berfungsi.");
         table.put("Ignore the creator's choice so the Duet and Stitch entries appear. Everything else the app checks still applies, and whether the upload is accepted is the server's decision.",
                 "Abaikan pilihan pembuat video supaya entri Duet dan Stitch muncul. Semua pemeriksaan lain di aplikasi tetap berlaku, dan diterima atau tidaknya unggahan adalah keputusan server.");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("Inbox",
                 "Kotak Masuk");
         table.put("Included diagnostics",
@@ -2082,19 +2094,21 @@ public final class L10nTranslations {
                 "Tidak ada video yang dipilih");
         table.put("No videos remained after Hushfeed applied your feed filters to %1$d batches. Most matches: %2$s.",
                 "Tidak ada video tersisa setelah Hushfeed menerapkan filter feed ke %1$d pemuatan. Yang paling sering: %2$s.");
+        table.put("Not blocked",
+                "Tidak diblokir");
         table.put("Not interested button",
                 "Tombol tidak tertarik");
         table.put("Not interested in this video",
                 "Tidak tertarik dengan video ini");
+    }
+
+    private static void fillIn6(Map<String, String> table) {
         table.put("Nothing has been looked up yet. Use the app for a moment, then come back.",
                 "Belum ada yang dicari. Gunakan aplikasi sebentar, lalu kembali ke sini.");
         table.put("Nothing is playing to seek",
                 "Tidak ada yang diputar untuk dilompati");
         table.put("Offline videos limit",
                 "Batas video offline");
-    }
-
-    private static void fillIn6(Map<String, String> table) {
         table.put("On mobile data",
                 "Saat memakai data seluler");
         table.put("One minute left",
@@ -2209,15 +2223,15 @@ public final class L10nTranslations {
                 "Laporan disimpan di %1$s");
         table.put("Reset settings",
                 "Setel ulang pengaturan");
+    }
+
+    private static void fillIn7(Map<String, String> table) {
         table.put("Restore defaults immediately. Your current settings are kept for Undo.",
                 "Kembalikan ke bawaan sekarang juga. Pengaturanmu yang sekarang disimpan untuk Urungkan.");
         table.put("Restore failed. Some settings may still be changed.",
                 "Pemulihan gagal. Beberapa pengaturan mungkin masih berubah.");
         table.put("Restore failed. Some settings may still be changed. Use Undo to recover.",
                 "Pemulihan gagal. Beberapa pengaturan mungkin masih berubah. Gunakan Urungkan untuk memulihkannya.");
-    }
-
-    private static void fillIn7(Map<String, String> table) {
         table.put("Restore settings",
                 "Pulihkan pengaturan");
         table.put("Resume videos after scrolling",
@@ -2332,15 +2346,15 @@ public final class L10nTranslations {
                 "Kiriman Shop");
         table.put("Show @username beside a video instead of the display name the creator chose.",
                 "Tampilkan @namapengguna di samping video, bukan nama tampilan pilihan kreator.");
+    }
+
+    private static void fillIn8(Map<String, String> table) {
         table.put("Show Live search",
                 "Tampilkan pencarian LIVE");
         table.put("Show TikTok's own progress bar on videos where it is normally hidden.",
                 "Tampilkan bilah progres TikTok pada video yang biasanya menyembunyikannya.");
         table.put("Show TikTok's search entry in the Live drawer where supported.",
                 "Tampilkan kolom cari TikTok di laci LIVE bila didukung.");
-    }
-
-    private static void fillIn8(Map<String, String> table) {
         table.put("Show a video preview thumbnail while dragging the seekbar.",
                 "Tampilkan pratinjau video saat bilah progres digeser.");
         table.put("Show block button on videos",
@@ -2455,15 +2469,15 @@ public final class L10nTranslations {
                 "Stiker itu formatnya tidak bisa dibaca Hushfeed");
         table.put("The destination contains an invalid folder name",
                 "Ada nama folder yang tidak sah di tujuannya");
+    }
+
+    private static void fillIn9(Map<String, String> table) {
         table.put("The feed is open again",
                 "Feed terbuka lagi");
         table.put("The file picker is not available on this device.",
                 "Pemilih berkas tidak tersedia di perangkat ini.");
         table.put("The minimum or maximum comments on a video to show.",
                 "Jumlah komentar minimum atau maksimum agar video ditampilkan.");
-    }
-
-    private static void fillIn9(Map<String, String> table) {
         table.put("The minimum or maximum favourites of a video to show.",
                 "Jumlah favorit minimum atau maksimum agar video ditampilkan.");
         table.put("The minimum or maximum likes of a video to show.",
@@ -2538,6 +2552,8 @@ public final class L10nTranslations {
                 "Dua huruf, misalnya us, gb atau jp.");
         table.put("Type to search settings",
                 "Ketik untuk mencari setelan");
+        table.put("Unblock this commenter",
+                "Buka blokir pengomentar ini");
         table.put("Unblocked %1$s",
                 "%1$s dibuka blokirnya");
         table.put("Undo",
@@ -2576,6 +2592,9 @@ public final class L10nTranslations {
                 "Lokasi simpan video");
         table.put("Video download quality",
                 "Kualitas unduhan video");
+    }
+
+    private static void fillIn10(Map<String, String> table) {
         table.put("Video filename",
                 "Nama berkas video");
         table.put("Video playback quality",
@@ -2584,9 +2603,6 @@ public final class L10nTranslations {
                 "Kualitas video");
         table.put("Video saved",
                 "Video disimpan");
-    }
-
-    private static void fillIn10(Map<String, String> table) {
         table.put("Video saved in %1$s, but only %2$s of %3$s subtitles came with it",
                 "Video disimpan di %1$s, tapi cuma %2$s dari %3$s subtitel yang ikut");
         table.put("Video saved with %1$s subtitles in %2$s",

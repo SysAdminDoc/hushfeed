@@ -9,7 +9,10 @@ A newer change replaced that undo. Tap Undo again.	Perubahan yang lebih baru men
 A hidden puzzle may be the cause.	Teka-teki yang disembunyikan bisa jadi penyebabnya.
 A host to put in place of tiktok.com when you share or copy a link, like vxtiktok.com. Leave it empty to share TikTok's own links. Only TikTok links are changed, and only the host: nothing is sent anywhere new.	Host pengganti tiktok.com saat kamu membagikan atau menyalin tautan, misalnya vxtiktok.com. Kosongkan untuk membagikan tautan TikTok sendiri. Hanya tautan TikTok yang diubah, dan hanya bagian host-nya, tidak ada yang dikirim ke mana pun.
 A settings operation is already running	Sudah ada proses pengaturan yang berjalan
+Block this commenter	Blokir pengomentar ini
+Blocked	Diblokir
 Completed an interrupted settings change. Restart TikTok to apply it.	Perubahan pengaturan yang terhenti telah diselesaikan. Mulai ulang TikTok untuk menerapkannya.
+Not blocked	Tidak diblokir
 Recovered an interrupted settings change. Restart TikTok to apply it.	Perubahan pengaturan yang terhenti telah dipulihkan. Mulai ulang TikTok untuk menerapkannya.
 Settings recovery needs attention. Use Undo or restore your backup.	Pemulihan pengaturan memerlukan perhatian. Gunakan Urungkan atau pulihkan cadanganmu.
 Settings recovery could not finish. Use Undo or restore your backup.	Pemulihan pengaturan tidak dapat diselesaikan. Gunakan Urungkan atau pulihkan cadanganmu.
@@ -36,6 +39,7 @@ App behavior	Perilaku aplikasi
 Applies to both video and photo downloads.	Berlaku untuk unduhan video dan foto.
 Arrange your feed and bottom tabs	Atur feed dan tab bawahmu
 Auto-advance session limit	Batas lanjut otomatis per sesi
+Unblock this commenter	Buka blokir pengomentar ini
 Zero keeps auto-advance unlimited. Count only videos that finish while Hushfeed started automatic advance; prefetches, manual swipes and native-only advance do not count. The count resets when the feed component is recreated and stays stopped across backgrounding until it is recreated or the limit changes.	Nol membuat lanjut otomatis tanpa batas. Hitung hanya video yang selesai saat Hushfeed memulai lanjut otomatis; pramuat, usapan manual, dan lanjut otomatis bawaan saja tidak dihitung. Hitungan diatur ulang saat komponen feed dibuat ulang dan tetap berhenti setelah aplikasi masuk latar belakang sampai komponen dibuat ulang atau batas diubah.
 Auto translate comments	Terjemahkan komentar otomatis
 Audio	Audio
