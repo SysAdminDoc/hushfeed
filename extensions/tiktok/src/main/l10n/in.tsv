@@ -102,9 +102,7 @@ Comma separated list of any other Inbox row titles to hide, matched exactly. Use
 Comma separated names exactly as the share sheet shows them: friends in the Send to row, share targets such as Facebook, and actions such as Create group or Repost. Stable keys such as copy, save and dislike also work before the sheet opens.	Nama dipisahkan koma, persis seperti yang ditampilkan menu bagikan: teman di baris Kirim ke, tujuan berbagi seperti Facebook, dan aksi seperti Buat grup atau Bagikan ulang. Kunci tetap seperti copy, save, dan dislike juga berlaku sebelum menunya terbuka.
 Comma separated sound ids recorded by the player's sound button. Remove one to unblock it.	Id suara dipisahkan koma yang direkam tombol suara di pemutar. Hapus salah satu untuk membuka blokirnya.
 Comma separated usernames or display names whose comments are hidden.	Nama pengguna atau nama tampilan dipisahkan koma yang komentarnya disembunyikan.
-Comma separated words or phrases. Matching captions are skipped. Case doesn't matter.	Kata atau frasa dipisahkan koma. Keterangan yang cocok akan dilewati. Huruf besar kecil tidak berpengaruh.
 Comma separated words to match against a sound's name, like saxophone. Case does not matter.	Kata dipisahkan koma untuk dicocokkan dengan nama suara, misalnya saxophone. Huruf besar kecil tidak berpengaruh.
-Comma separated. A comment is hidden if its text contains any of them. Case does not matter.	Dipisahkan koma. Sebuah komentar disembunyikan jika teksnya memuat salah satunya. Huruf besar kecil tidak berpengaruh.
 Comment media filename	Nama berkas media komentar
 Comments and translation	Komentar dan terjemahan
 Comments aren't available for this video	Komentar tidak tersedia untuk video ini
@@ -658,3 +656,6 @@ Today's budget is locked. The day starts over at %1$s.	Anggaran hari ini terkunc
 Today's budget is locked. The feed opens again at %1$s. Messages, profiles and search still work.	Anggaran hari ini terkunci. Feed terbuka lagi pada %1$s. Pesan, profil dan pencarian tetap berfungsi.
 Today is back where it was	Hari ini kembali seperti semula
 Today has moved on, so there is nothing to put back	Hari sudah berganti, jadi tidak ada yang bisa dikembalikan
+Comma separated words or phrases. Matching captions are skipped. Case doesn't matter. Two phrases in quotes can be joined: "a" & "b" needs both, "a" !& "b" needs the first without the second.	Kata atau frasa yang dipisahkan koma. Keterangan yang cocok dilewati. Huruf besar kecil tidak berpengaruh. Dua frasa dalam tanda kutip bisa digabung: "a" & "b" butuh keduanya, "a" !& "b" butuh yang pertama tanpa yang kedua.
+Comma separated. A comment is hidden if its text contains any of them. Case does not matter. Two phrases in quotes can be joined: "a" & "b" needs both, "a" !& "b" needs the first without the second.	Dipisahkan koma. Komentar disembunyikan jika teksnya memuat salah satunya. Huruf besar kecil tidak berpengaruh. Dua frasa dalam tanda kutip bisa digabung: "a" & "b" butuh keduanya, "a" !& "b" butuh yang pertama tanpa yang kedua.
+This line opens a rule and does not finish it: %1$s. Write two phrases as "a" & "b" for both, or "a" !& "b" for the first without the second.	Baris ini memulai sebuah aturan dan tidak menyelesaikannya: %1$s. Tulis dua frasa sebagai "a" & "b" untuk keduanya, atau "a" !& "b" untuk yang pertama tanpa yang kedua.

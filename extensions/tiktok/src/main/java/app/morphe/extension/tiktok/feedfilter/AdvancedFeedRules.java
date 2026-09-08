@@ -25,11 +25,10 @@ public final class AdvancedFeedRules {
         public boolean getFiltered(Aweme item) {
             String caption = Reflect.string(item, "getDesc", "desc");
             if (caption == null) return false;
-            caption = caption.toLowerCase(Locale.ROOT);
-            for (String word : terms(Settings.BLOCKED_CAPTION_WORDS.get())) {
-                if (!word.isEmpty() && caption.contains(word)) return true;
-            }
-            return false;
+            // Plain phrases still mean what they always did. The list also takes
+            // "a" & "b" and "a" !& "b", which a phrase on its own cannot say.
+            return KeywordRules.anyMatches(
+                    KeywordRules.parse(Settings.BLOCKED_CAPTION_WORDS.get()), caption);
         }
     }
 
@@ -368,10 +367,6 @@ public final class AdvancedFeedRules {
 
     private static long positive(Object value) {
         return value instanceof Number ? Math.max(0, ((Number) value).longValue()) : 0;
-    }
-
-    private static String[] terms(String value) {
-        return value.toLowerCase(Locale.ROOT).trim().split("\\s*[,\\n]\\s*");
     }
 
     /**

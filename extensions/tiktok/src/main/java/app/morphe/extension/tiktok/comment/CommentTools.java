@@ -160,7 +160,10 @@ public final class CommentTools {
         }
 
         try {
-            List<String> keywords = byWord ? entries(Settings.COMMENT_BLOCKED_KEYWORDS.get()) : List.of();
+            List<app.morphe.extension.tiktok.feedfilter.KeywordRules.Rule> keywords = byWord
+                    ? app.morphe.extension.tiktok.feedfilter.KeywordRules.parse(
+                            Settings.COMMENT_BLOCKED_KEYWORDS.get())
+                    : List.of();
             List<String> users = byWord ? entries(Settings.COMMENT_BLOCKED_USERS.get()) : List.of();
             if (keywords.isEmpty() && users.isEmpty() && !media) {
                 return;
@@ -549,7 +552,9 @@ public final class CommentTools {
 
     // ---- keyword filter ----------------------------------------------------------------
 
-    private static int filterComments(List<?> comments, List<String> keywords, List<String> users, boolean media) {
+    private static int filterComments(List<?> comments,
+            List<app.morphe.extension.tiktok.feedfilter.KeywordRules.Rule> keywords,
+            List<String> users, boolean media) {
         int removed = 0;
         Iterator<?> iterator = comments.iterator();
         while (iterator.hasNext()) {
@@ -577,19 +582,17 @@ public final class CommentTools {
         return removed;
     }
 
-    private static boolean matches(Object comment, List<String> keywords, List<String> users, boolean media) {
+    private static boolean matches(Object comment,
+            List<app.morphe.extension.tiktok.feedfilter.KeywordRules.Rule> keywords,
+            List<String> users, boolean media) {
         if (media && hasMedia(comment)) {
             return true;
         }
 
         String text = Reflect.string(comment, "getText", "text");
-        if (text != null && !keywords.isEmpty()) {
-            String lower = text.toLowerCase(Locale.ROOT);
-            for (String keyword : keywords) {
-                if (lower.contains(keyword.toLowerCase(Locale.ROOT))) {
-                    return true;
-                }
-            }
+        // Plain phrases as before, plus "a" & "b" and "a" !& "b".
+        if (app.morphe.extension.tiktok.feedfilter.KeywordRules.anyMatches(keywords, text)) {
+            return true;
         }
 
         if (!users.isEmpty()) {

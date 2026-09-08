@@ -46,7 +46,10 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
     }
 
     private void addFeedFilterRules(Context context) {
-        addPreference(new InputTextPreference(context, "Blocked caption words", "Comma separated words or phrases. Matching captions are skipped. Case doesn't matter.", Settings.BLOCKED_CAPTION_WORDS));
+        addPreference(new InputTextPreference(context, "Blocked caption words",
+                "Comma separated words or phrases. Matching captions are skipped. Case doesn't matter. Two phrases in quotes can be joined: \"a\" & \"b\" needs both, \"a\" !& \"b\" needs the first without the second.",
+                Settings.BLOCKED_CAPTION_WORDS)
+                .withCheck(app.morphe.extension.tiktok.feedfilter.KeywordRules::problem));
         addPreference(new InputTextPreference(context, "Only from these countries",
                 "Comma separated country codes, like GB, IE. Videos posted from anywhere else are hidden. Leave empty for all countries.",
                 Settings.REGION_ONLY_FROM));

@@ -1,5 +1,9 @@
 ## Unreleased
 
+* The blocked word lists take two operators as well as plain phrases. Put two phrases in quotes and join them: "cat" & "dog" hides only what has both, and "cat" !& "dog" hides what has the first and not the second. It works on blocked caption words and blocked comment words. Plain phrases mean exactly what they always did, a comma inside quotes is part of the phrase rather than a separator, and a line you started and did not finish is refused while the box is still open instead of quietly matching nothing.
+
+* A settings box with a long explanation no longer squeezes the field it explains. At twice the system text size the explanation could take the whole dialog. It scrolls and gives way now, and the box keeps its full height.
+
 * Turning "Thumbs down blocks the commenter" off now takes effect on comment sheets you had already opened. The takeover only went one way, so a comment row TikTok had kept in memory went on blocking, and a screen reader went on offering to block, until that memory was reused. Every row hands the control back the next time it is filled in.
 
 * "Start today over" can be taken back. It ends a running hold and forgets what has been counted, and it used to leave nothing at all behind, so a mis-tap cost you the rest of the day. The row now says "Tap again to put the counts back", the same bargain the seen video history row already made. The offer lasts until the day turns over, because after that the counts belong to a day that is finished.

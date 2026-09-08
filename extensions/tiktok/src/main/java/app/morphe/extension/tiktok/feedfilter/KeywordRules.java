@@ -1,0 +1,151 @@
+/*
+ * Copyright 2026 Hushfeed contributors
+ * https://github.com/SysAdminDoc/hushfeed
+ */
+package app.morphe.extension.tiktok.feedfilter;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * The blocked word lists, which are plain phrases plus two operators.
+ *
+ * <p>A phrase on its own still means what it always did: hide anything containing it. Two quoted
+ * phrases joined by {@code &} mean both have to be there, and joined by {@code !&} mean the first
+ * has to be there and the second must not. That is as far as this goes on purpose. The one fork
+ * that took keyword lists further settled on the same two rather than regular expressions,
+ * because a settings box is read by the person who typed into it.
+ *
+ * <p>A line that opens a rule and does not finish it is left out rather than matched literally,
+ * and the row that holds the list says which line it was. Quietly treating {@code "cat" & } as a
+ * phrase would hide nothing and say nothing about why.
+ */
+public final class KeywordRules {
+    /** Both spellings of the second operator, because people write it either way round. */
+    private static final Pattern COMPOSITE =
+            Pattern.compile("^\\s*\"([^\"]+)\"\\s*(!?&!?)\\s*\"([^\"]+)\"\\s*$");
+
+    private KeywordRules() {
+    }
+
+    /** One entry from a list: a phrase, or two phrases and how they go together. */
+    public static final class Rule {
+        private final String first;
+        private final String second;
+        private final boolean without;
+
+        private Rule(String first, String second, boolean without) {
+            this.first = first;
+            this.second = second;
+            this.without = without;
+        }
+
+        /** @param lowerCased the text to test, already lower cased with {@link Locale#ROOT}. */
+        public boolean matches(String lowerCased) {
+            if (lowerCased == null || first.isEmpty() || !lowerCased.contains(first)) return false;
+            if (second == null) return true;
+            return without != lowerCased.contains(second);
+        }
+    }
+
+    /**
+     * The entries in a stored list.
+     *
+     * <p>Commas and newlines separate, except inside quotes: a rule is allowed to hold a phrase
+     * with a comma in it, and splitting that would leave two halves that match nothing.
+     */
+    public static List<String> split(String stored) {
+        List<String> entries = new ArrayList<>();
+        if (stored == null) return entries;
+        StringBuilder current = new StringBuilder();
+        boolean quoted = false;
+        for (int index = 0; index < stored.length(); index++) {
+            char character = stored.charAt(index);
+            if (character == '"') quoted = !quoted;
+            if (!quoted && (character == ',' || character == '\n')) {
+                add(entries, current);
+                continue;
+            }
+            current.append(character);
+        }
+        add(entries, current);
+        return entries;
+    }
+
+    private static void add(List<String> entries, StringBuilder current) {
+        String entry = current.toString().trim();
+        current.setLength(0);
+        if (!entry.isEmpty()) entries.add(entry);
+    }
+
+    /** The rules a stored list holds, with anything unfinished left out. */
+    public static List<Rule> parse(String stored) {
+        List<Rule> rules = new ArrayList<>();
+        for (String entry : split(stored)) {
+            Rule rule = rule(entry);
+            if (rule != null) rules.add(rule);
+        }
+        return rules;
+    }
+
+    /**
+     * The entries that read as a rule and are not one, in the order they were typed. A phrase
+     * with an ampersand and no quotes is not one of these: "AT&T" is a phrase.
+     */
+    public static List<String> malformed(String stored) {
+        List<String> broken = new ArrayList<>();
+        for (String entry : split(stored)) {
+            if (rule(entry) == null) broken.add(entry);
+        }
+        return broken;
+    }
+
+    /** @return null when the entry opens a rule and does not finish it. */
+    private static Rule rule(String entry) {
+        Matcher matcher = COMPOSITE.matcher(entry);
+        if (matcher.matches()) {
+            String operator = matcher.group(2);
+            return new Rule(lower(matcher.group(1)), lower(matcher.group(3)),
+                    operator.contains("!"));
+        }
+        if (looksComposite(entry)) return null;
+        return new Rule(lower(entry), null, false);
+    }
+
+    private static boolean looksComposite(String entry) {
+        return entry.indexOf('&') >= 0 && entry.indexOf('"') >= 0;
+    }
+
+    private static String lower(String value) {
+        return value.toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * What is wrong with a stored list, or null when nothing is.
+     *
+     * <p>Refused while the dialog is open rather than left to go wrong later: a line that opens
+     * a rule and does not finish it would match nothing and say nothing about why.
+     */
+    public static String problem(String stored) {
+        List<String> broken = malformed(stored);
+        if (broken.isEmpty()) return null;
+        // One literal, because the translation gate reads the literal handed to L10n and a
+        // string built from two of them is two entries it cannot find.
+        return app.morphe.extension.tiktok.settings.L10n.f(
+                "This line opens a rule and does not finish it: %1$s. Write two phrases as \"a\" & \"b\" for both, or \"a\" !& \"b\" for the first without the second.",
+                broken.get(0));
+    }
+
+    /** Whether any rule in the list matches. The text is lower cased once, here. */
+    public static boolean anyMatches(List<Rule> rules, String text) {
+        if (text == null || rules.isEmpty()) return false;
+        String lowerCased = text.toLowerCase(Locale.ROOT);
+        for (Rule rule : rules) {
+            if (rule.matches(lowerCased)) return true;
+        }
+        return false;
+    }
+}

@@ -104,12 +104,20 @@ public class InputTextPreference extends EditTextPreference {
                     SettingsUi.textSecondary(),
                     android.graphics.Typeface.NORMAL
             );
-            LinearLayout.LayoutParams summaryParams = new LinearLayout.LayoutParams(
+            // The summary scrolls and gives way, the box does not. A long summary at twice the
+            // system text size used to take the whole dialog and squeeze the field it explains
+            // down to nothing, which is the one part nobody can do without.
+            android.widget.ScrollView scroller = new android.widget.ScrollView(context);
+            scroller.setFillViewport(false);
+            scroller.addView(summary, new android.widget.FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
+            ));
+            LinearLayout.LayoutParams summaryParams = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f
             );
             summaryParams.setMargins(0, SettingsUi.dp(context, 14), 0, SettingsUi.dp(context, 10));
-            dialogView.addView(summary, summaryParams);
+            dialogView.addView(scroller, summaryParams);
         }
 
         EditText editText = getEditText();

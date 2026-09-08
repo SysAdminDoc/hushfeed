@@ -93,9 +93,9 @@ public class CommentsPreferenceCategory extends ConditionalPreferenceCategory {
             addPreference(new InputTextPreference(
                     context,
                     "Blocked comment words",
-                    "Comma separated. A comment is hidden if its text contains any of them. Case does not matter.",
+                    "Comma separated. A comment is hidden if its text contains any of them. Case does not matter. Two phrases in quotes can be joined: \"a\" & \"b\" needs both, \"a\" !& \"b\" needs the first without the second.",
                     Settings.COMMENT_BLOCKED_KEYWORDS
-            ));
+            ).withCheck(app.morphe.extension.tiktok.feedfilter.KeywordRules::problem));
             addPreference(new InputTextPreference(
                     context,
                     "Hidden commenters",
