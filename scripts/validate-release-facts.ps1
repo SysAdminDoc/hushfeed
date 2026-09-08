@@ -12,6 +12,10 @@ param(
     [string]$Root = (Split-Path -Parent $PSScriptRoot),
     [switch]$VerifyPublishedAsset,
     [string]$ArtifactPath,
+    # The Morphe desktop CLI, the only thing that can read a patch list back out of a bundle
+    # this checkout did not build. Falls back to HUSHFEED_DESKTOP_JAR.
+    [string]$DesktopJar,
+    [string]$Java = 'java',
     # Only for running the rest of the checks with no network. Nothing in the repo
     # passes it; the pre-push escape hatch is HUSHFEED_SKIP_PRE_PUSH=1.
     [switch]$SkipUrlCheck
@@ -243,6 +247,43 @@ if ($VerifyPublishedAsset) {
         }
         if ($assetResponse.StatusCode -ne 200) {
             throw "The indexed bundle URL returned HTTP $($assetResponse.StatusCode)."
+        }
+
+        # Every other check here reads patches-list.json, which describes the bundle this
+        # checkout just built. That moves the moment a patch is added; the file people download
+        # does not. The index once advertised 70 patches while the published asset carried 68 and
+        # nothing complained, because nothing had read the published asset. This does.
+        $countJar = if ($DesktopJar) { $DesktopJar } else { $env:HUSHFEED_DESKTOP_JAR }
+        if (-not $countJar) {
+            Write-Host ('[release] NOT COUNTED: the published bundle was downloaded but its patches ' +
+                'were not counted, because no Morphe desktop CLI was given. Pass -DesktopJar or set ' +
+                'HUSHFEED_DESKTOP_JAR to compare it against the ' + $patchCount + ' the index describes.')
+        } elseif (-not (Test-Path -LiteralPath $countJar -PathType Leaf)) {
+            throw "The Morphe desktop CLI is missing: $countJar"
+        } else {
+            $listing = Join-Path ([IO.Path]::GetTempPath()) ("hushfeed-$([Guid]::NewGuid()).txt")
+            try {
+                # --out keeps the list clear of the CLI's own log lines, which share stdout.
+                $global:LASTEXITCODE = 0
+                $cliOutput = & $Java '-jar' $countJar 'list-patches' "--patches=$temporaryArtifact" `
+                    '-d=false' '-i=false' "--out=$listing" 2>&1
+                if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $listing -PathType Leaf)) {
+                    throw "Could not list the patches in the published bundle: $($cliOutput -join ' ')"
+                }
+                $publishedCount = @(Get-Content -LiteralPath $listing |
+                    Where-Object { $_ -match '^Name:\s*\S' }).Count
+                if ($publishedCount -eq 0) {
+                    throw 'Read no patch names out of the published bundle, so its count could not be compared.'
+                }
+                if ($publishedCount -ne $patchCount) {
+                    throw ("The published bundle carries $publishedCount patches but the index " +
+                        "describes $patchCount. Publish the built bundle before the index advertises " +
+                        'what the release does not serve.')
+                }
+                Write-Host "[release] the published bundle carries $publishedCount patches, as described"
+            } finally {
+                Remove-Item -LiteralPath $listing -Force -ErrorAction SilentlyContinue
+            }
         }
 
         $localHash = (Get-FileHash -LiteralPath $ArtifactPath -Algorithm SHA256).Hash.ToLowerInvariant()

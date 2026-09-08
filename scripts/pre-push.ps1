@@ -144,8 +144,12 @@ try {
         Write-Step 'a published file changed, checking the release facts'
         $validate = Join-Path $Root 'scripts/validate-release-facts.ps1'
         $global:LASTEXITCODE = 0
+        # The sources and javadoc jars share the .mpp extension, so an unfiltered listing found
+        # three files after every build, took the branch below, and the hash comparison this
+        # exists for never ran once.
         $artifacts = @(Get-ChildItem -LiteralPath (Join-Path $Root 'patches/build/libs') `
-            -Filter '*.mpp' -File -ErrorAction SilentlyContinue)
+            -Filter '*.mpp' -File -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -notmatch '(^|-)(sources|javadoc)\.mpp$' })
         if ($artifacts.Count -eq 1) {
             # The bundle this checkout built, so the indexed URL, its hash and the hosted
             # checksum entry can all be compared against something real.
