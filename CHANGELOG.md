@@ -1,12 +1,10 @@
 ## Unreleased
 
-* A Lab change that fails halfway no longer erases what the Lab had recorded. Saving a set of overrides, resetting them, or undoing that puts the previous configuration back when the write fails, and the record of which gates had actually fired was thrown away with it, so the detail screen reported "not triggered" for gates that were.
+* A Lab change that fails halfway no longer erases what the Lab had recorded. Saving a set of overrides, resetting them, undoing that, or restoring a backup puts the previous configuration back when the write fails, and the record of which gates had actually fired was thrown away with it, so the detail screen reported "not triggered" for gates that were.
 
 * An override profile written somewhere other than the Lab's own export applies on a Turkish phone. Turkish capitalises i to a dotted letter, so a lowercase `int` in the file folded to a different word than the catalogue's, and the rule was refused as a type mismatch on that phone and no other.
 
 * A gate override whose type the catalogue disagrees with is no longer handed to TikTok. It only mattered on one path, where TikTok holds no cached value and so there is no type to check the rule against: a text rule on a key the app reads as a number came back as text, and the app crashed in its own code rather than in anything this project added. The Lab's detail screen says why the rule was refused. The catalogue has to have been loaded for this to bite, which today means the Lab screen has been opened.
-
-* The daily budget stops allocating on every frame of playback. Working out which day it is has been answered from a memo since 0.23.0, but the check itself asked Android for the device timezone first, and that hands back a copy.
 
 ## 0.24.0
 

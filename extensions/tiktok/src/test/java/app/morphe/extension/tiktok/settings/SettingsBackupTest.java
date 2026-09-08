@@ -11,6 +11,7 @@ import app.morphe.extension.shared.settings.AppLanguage;
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.shared.settings.BooleanSetting;
 import app.morphe.extension.shared.settings.Setting;
+import app.morphe.extension.tiktok.featuregatelab.FeatureGateLabRuntime;
 import app.morphe.extension.tiktok.featuregatelab.FeatureGateLabStore;
 import app.morphe.extension.tiktok.settings.preference.TikTokPreferenceFragment;
 import java.io.ByteArrayInputStream;
@@ -363,7 +364,13 @@ public class SettingsBackupTest {
 
     @Test public void rollbackStillAttemptsLabWhenOrdinaryPreferenceRecoveryFails() throws Exception {
         var app = Utils.getContext();
+        FeatureGateLabStore.saveRule("abmock", "rollback_gate", "BOOLEAN", "true", true);
         FeatureGateLabStore.setMasterEnabled(true);
+        // A gate that actually fired before the restore was attempted. The rollback puts these
+        // very rules back, so what the Lab recorded about them is still true afterwards.
+        FeatureGateLabRuntime.reloadRules();
+        assertTrue(FeatureGateLabRuntime.overrideBoolean("rollback_gate", false));
+        assertTrue(FeatureGateLabRuntime.isTriggered("abmock", "rollback_gate", "BOOLEAN"));
         JSONObject next = new JSONObject(SettingsBackup.create(false));
         next.getJSONObject("settings").put(Settings.REGION_SPOOF.key, true);
         next.getJSONObject("lab").put("master", false);
@@ -387,6 +394,8 @@ public class SettingsBackupTest {
             assertThrows(Exception.class, () -> SettingsBackup.restore(Utils.getContext(), next.toString(), true));
             assertTrue("Lab recovery must run even after the other store fails", FeatureGateLabStore.masterEnabled());
             assertTrue(labCommits.get() >= 2);
+            assertTrue("the rollback cleared the record of which overrides fired",
+                    FeatureGateLabRuntime.isTriggered("abmock", "rollback_gate", "BOOLEAN"));
         } finally {
             field.set(Setting.preferences, original);
             Utils.setContext(app);

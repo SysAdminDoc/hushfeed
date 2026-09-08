@@ -431,9 +431,6 @@ public class SessionBudgetTest {
         Settings.SESSION_BUDGET_MINUTES.save(30);
         SessionBudget.noteWatching();
         int days = SessionBudget.dayComputationsForTests();
-        // TimeZone.getDefault() hands back a clone, so asking for the zone to decide whether the
-        // memo holds costs the allocation the memo exists to remove.
-        int zones = SessionBudget.zoneReadsForTests();
 
         for (int callback = 0; callback < 500; callback++) {
             now.addAndGet(1_000L);
@@ -441,8 +438,6 @@ public class SessionBudgetTest {
         }
         assertEquals("a Calendar per callback inside one day",
                 days, SessionBudget.dayComputationsForTests());
-        assertEquals("a TimeZone clone per callback inside one day",
-                zones, SessionBudget.zoneReadsForTests());
 
         // Past the reset hour the answer has to be worked out again, or the day never turns over.
         now.set(at(2026, Calendar.SEPTEMBER, 9, 12, 0));

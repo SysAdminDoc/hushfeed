@@ -172,6 +172,11 @@ public class FeatureGateLabActionsTest {
             assertTrue(commits.get() >= 2);
             assertTrue("a failed commit cleared the record of which overrides fired",
                     FeatureGateLabRuntime.isTriggered("abmock", "gate", "BOOLEAN"));
+            // Both halves of that are load bearing. The failed write must not clear, because
+            // nothing was written; and the rollback must not clear either, because it puts the
+            // very rules back that the record describes.
+            assertEquals("the original the rule replaced went with it",
+                    "false", FeatureGateLabRuntime.originalValue("abmock", "gate", "BOOLEAN"));
         } finally { Utils.setContext(app); }
     }
 

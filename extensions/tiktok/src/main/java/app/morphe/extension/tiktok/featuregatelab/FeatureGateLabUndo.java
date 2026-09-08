@@ -97,15 +97,13 @@ final class FeatureGateLabUndo {
             writeUndo(file, text);
             operation.recordLab(text, replacement(rules, master, acknowledged).toString());
             observationsUndo = observations;
-            FeatureGateLabRuntime.Diagnostics diagnostics = FeatureGateLabRuntime.captureDiagnostics();
             try {
                 FeatureGateLabStore.replaceSettings(rules, master, acknowledged);
                 if (clearObservations) SettingsManagerObservationRecorder.clear();
                 operation.complete();
                 closed = true;
             } catch (Exception error) {
-                try { apply(before); } catch (Exception recovery) { error.addSuppressed(recovery); }
-                FeatureGateLabRuntime.restoreDiagnostics(diagnostics);
+                try { apply(before, true); } catch (Exception recovery) { error.addSuppressed(recovery); }
                 boolean rollbackComplete = matches(before);
                 if (rollbackComplete) operation.complete();
                 else operation.retainForRecovery();
@@ -128,14 +126,12 @@ final class FeatureGateLabUndo {
             }
             JSONObject before = FeatureGateLabStore.exportSettings();
             operation.recordLab(before.toString(), saved.toString());
-            FeatureGateLabRuntime.Diagnostics diagnostics = FeatureGateLabRuntime.captureDiagnostics();
             try {
-                apply(saved);
+                apply(saved, false);
                 operation.complete();
                 closed = true;
             } catch (Exception error) {
-                try { apply(before); } catch (Exception recovery) { error.addSuppressed(recovery); }
-                FeatureGateLabRuntime.restoreDiagnostics(diagnostics);
+                try { apply(before, true); } catch (Exception recovery) { error.addSuppressed(recovery); }
                 boolean rollbackComplete = matches(before);
                 if (rollbackComplete) operation.complete();
                 else operation.retainForRecovery();
@@ -181,9 +177,9 @@ final class FeatureGateLabUndo {
         return FeatureGateLabStore.settingsMatch(expected);
     }
 
-    private static void apply(JSONObject saved) throws Exception {
+    private static void apply(JSONObject saved, boolean rollingBack) throws Exception {
         FeatureGateLabStore.replaceSettings(FeatureGateLabStore.parseSettings(saved),
-                saved.getBoolean("master"), saved.getBoolean("acknowledged"));
+                saved.getBoolean("master"), saved.getBoolean("acknowledged"), rollingBack);
     }
 
     private static AtomicFile file() throws IOException {

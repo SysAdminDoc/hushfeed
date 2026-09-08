@@ -70,53 +70,6 @@ public final class FeatureGateLabRuntime {
         observedPlayerValues.clear();
     }
 
-    /**
-     * Everything the Lab has recorded about which overrides actually fired, taken as a copy.
-     *
-     * <p>A configuration change clears all of it, because after the change the record describes
-     * rules that are no longer loaded. A change that fails and is rolled back is the one case
-     * where that is wrong: the configuration the rollback puts back is the very one these were
-     * recorded against, and without them the detail screen reports "not triggered" for gates
-     * that were.
-     */
-    public static final class Diagnostics {
-        private final Set<String> triggered;
-        private final Map<String, String> firstCallers;
-        private final Map<String, String> originalValues;
-        private final Map<String, String> structuredFailures;
-        private final Map<String, Object> observedPlayerValues;
-
-        private Diagnostics(Set<String> triggered, Map<String, String> firstCallers,
-                Map<String, String> originalValues, Map<String, String> structuredFailures,
-                Map<String, Object> observedPlayerValues) {
-            this.triggered = triggered;
-            this.firstCallers = firstCallers;
-            this.originalValues = originalValues;
-            this.structuredFailures = structuredFailures;
-            this.observedPlayerValues = observedPlayerValues;
-        }
-    }
-
-    public static Diagnostics captureDiagnostics() {
-        return new Diagnostics(new java.util.HashSet<>(triggered), new HashMap<>(firstCallers),
-                new HashMap<>(originalValues), new HashMap<>(structuredFailures),
-                new HashMap<>(observedPlayerValues));
-    }
-
-    /**
-     * Puts a captured record back. Gate threads keep reading throughout, so this only ever adds
-     * to what is there: a gate that fired during the failed change stays recorded rather than
-     * being erased a second time.
-     */
-    public static void restoreDiagnostics(Diagnostics saved) {
-        if (saved == null) return;
-        triggered.addAll(saved.triggered);
-        firstCallers.putAll(saved.firstCallers);
-        originalValues.putAll(saved.originalValues);
-        structuredFailures.putAll(saved.structuredFailures);
-        observedPlayerValues.putAll(saved.observedPlayerValues);
-    }
-
     public static boolean isTriggered(String manager, String key, String type) {
         return triggered.contains(FeatureGateLabStore.idFor(manager, key, type));
     }

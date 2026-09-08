@@ -195,10 +195,14 @@ public final class SettingsBackup {
             } catch (Exception error) {
                 try { Setting.saveAll(previous.values); } catch (Exception rollback) { error.addSuppressed(rollback); }
                 // Only put the Lab back when the apply above reached it. Writing the same
-                // rules again is not free: it clears every triggered marker and raises a restart
-                // notice, for a store the failed restore never touched.
+                // rules again is not free: it raises a restart notice for a store the failed
+                // restore never touched. It goes in as a rollback, so the record of which
+                // overrides fired survives: these are the rules it was made against.
                 if (touchedLab[0]) {
-                    try { FeatureGateLabStore.replaceSettings(previous.rules, previous.master, previous.acknowledged); }
+                    try {
+                        FeatureGateLabStore.replaceSettings(
+                                previous.rules, previous.master, previous.acknowledged, true);
+                    }
                     catch (Exception rollback) { error.addSuppressed(rollback); }
                 }
                 boolean rollbackComplete = ordinarySettingsMatch(previousPreferences)

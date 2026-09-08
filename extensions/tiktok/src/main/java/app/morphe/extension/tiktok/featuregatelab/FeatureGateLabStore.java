@@ -229,7 +229,22 @@ public final class FeatureGateLabStore {
     }
 
     /** Replace configuration only; captured diagnostics are retained. Call on a worker thread. */
-    public static void replaceSettings(List<Rule> rules, boolean master, boolean acknowledged) throws java.io.IOException {
+    public static void replaceSettings(List<Rule> rules, boolean master, boolean acknowledged)
+            throws java.io.IOException {
+        replaceSettings(rules, master, acknowledged, false);
+    }
+
+    /**
+     * As above, where {@code rollingBack} says these rules are the ones that were loaded until a
+     * moment ago and a change to them failed.
+     *
+     * <p>What the Lab recorded about which overrides fired describes the rules that were loaded
+     * when they fired, so any change to those rules throws the record away. A rollback is the one
+     * case where that is wrong: it puts back the very configuration the record was made against,
+     * and clearing it leaves the detail screen reporting "not triggered" for gates that were.
+     */
+    public static void replaceSettings(List<Rule> rules, boolean master, boolean acknowledged,
+            boolean rollingBack) throws java.io.IOException {
         if (!canWrite()) {
             throw new java.io.IOException("Feature Gate Lab is writable only from the main process");
         }
@@ -249,7 +264,7 @@ public final class FeatureGateLabStore {
                 .putBoolean(WARNING_ACK_KEY, acknowledged).putBoolean(MIGRATION_NOTICE_KEY, false)
                 .putString(STORED_TARGET_VERSION_KEY, TARGET_VERSION).commit();
         if (!saved) throw new java.io.IOException("Could not save Lab settings");
-        FeatureGateLabRuntime.clearTriggered();
+        if (!rollingBack) FeatureGateLabRuntime.clearTriggered();
         FeatureGateLabRuntime.reloadRules();
         FeatureGateLabSession.markRestartNeeded();
     }
