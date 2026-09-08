@@ -15,11 +15,19 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 private const val EXTENSION = "Lapp/morphe/extension/tiktok/interaction/AutoAdvance;"
 private const val COMPONENT = "Lcom/ss/android/ugc/feed/platform/panel/autoscroll/AutoScrollComponent;"
 
 private object Availability : Fingerprint(returnType = "Z", parameters = emptyList(), strings = listOf("fyp_auto_scroll"))
+
+// The feed gate and the panel entry are two different flags. Both are anchored on the string
+// rather than on the class that reads it, because those names change every build. Parameter and
+// return types match by prefix, so "L" is any object: the factory that builds the panel entry
+// takes one and returns one, and the facade gate beside it takes none and returns Z.
+private object PanelAction : Fingerprint(returnType = "L", parameters = listOf("L"), strings = listOf("panel_auto_scroll"))
+private object PanelGate : Fingerprint(returnType = "Z", parameters = emptyList(), strings = listOf("panel_auto_scroll"))
 private object Completion : Fingerprint(definingClass = COMPONENT, name = "onPlayCompleted",
     returnType = "V", parameters = listOf("Ljava/lang/String;"))
 private object Stop : Fingerprint(definingClass = COMPONENT, returnType = "V",
@@ -28,7 +36,9 @@ private object Stop : Fingerprint(definingClass = COMPONENT, returnType = "V",
 @Suppress("unused")
 val autoAdvancePatch = bytecodePatch(
     name = "Automatic video advance",
-    description = "Keeps TikTok's automatic advance enabled while preserving its pause, dialog and gesture checks.",
+    description = "Keeps TikTok's automatic advance enabled while preserving its pause, dialog " +
+        "and gesture checks, and shows TikTok's own Auto scroll action in the video panel for " +
+        "accounts outside its rollout.",
     default = false,
 ) {
     dependsOn(settingsPatch, sharedExtensionPatch)
@@ -110,6 +120,43 @@ val autoAdvancePatch = bytecodePatch(
                 move-result v$register
             """)
         }
+        // TikTok's own Auto scroll action in the video panel hangs off a second flag, so an
+        // account outside the rollout never sees the entry however the feed gate answers. Both
+        // reads go through the same switch.
+        val panelAction = PanelAction.method
+        val panelInstructions = panelAction.implementation!!.instructions.toList()
+        val panelStringIndex = panelInstructions.indexOfFirst {
+            it.opcode == Opcode.CONST_STRING &&
+                it.getReference<StringReference>()?.string == "panel_auto_scroll"
+        }
+        check(panelStringIndex >= 0)
+        val panelResultIndex = panelInstructions.withIndex().first { (index, instruction) ->
+            index > panelStringIndex && instruction.opcode == Opcode.MOVE_RESULT
+        }.index
+        val panelRegister = (panelInstructions[panelResultIndex] as OneRegisterInstruction).registerA
+        panelAction.addInstructions(
+            panelResultIndex + 1,
+            """
+                invoke-static/range {v$panelRegister .. v$panelRegister}, $EXTENSION->available(Z)Z
+                move-result v$panelRegister
+            """,
+        )
+
+        val panelGate = PanelGate.method
+        val panelReturns = panelGate.implementation!!.instructions.withIndex()
+            .filter { it.value.opcode == Opcode.RETURN }
+        check(panelReturns.isNotEmpty())
+        panelReturns.asReversed().forEach { (index, instruction) ->
+            val register = (instruction as OneRegisterInstruction).registerA
+            panelGate.addInstructions(
+                index,
+                """
+                    invoke-static/range {v$register .. v$register}, $EXTENSION->available(Z)Z
+                    move-result v$register
+                """,
+            )
+        }
+
         SettingsStatusLoadFingerprint.method.addInstruction(0,
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableAutoAdvance()V")
     }

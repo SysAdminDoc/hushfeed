@@ -293,7 +293,7 @@ Includes all Morphe diagnostic events.	Enthält alle Morphe-Diagnoseereignisse.
 Interface	Oberfläche
 Invalid SIM preset	Ungültige SIM-Vorlage
 Keep a local record of what you have watched and drop those videos from later feed pages.	Lokal festhalten, was du gesehen hast, und diese Videos aus späteren Feed-Seiten entfernen.
-Keep automatic advance enabled. Pauses and open dialogs still stop scrolling. Restart after enabling it; use this switch to turn it off.	Automatisches Weiterschalten eingeschaltet lassen. Pausen und offene Dialoge stoppen das Scrollen weiterhin. Nach dem Einschalten neu starten; zum Ausschalten diesen Schalter verwenden.
+Keep automatic advance enabled, and show TikTok's own Auto scroll action in the video panel even if your account never had it. Pauses and open dialogs still stop scrolling. Restart after enabling it, then use this switch to turn it off.	Automatisches Weiterschalten eingeschaltet lassen und TikToks eigene Aktion „Auto-Scroll“ im Videopanel anzeigen, auch wenn dein Konto sie nie hatte. Pausen und offene Dialoge stoppen das Scrollen weiterhin. Nach dem Einschalten neu starten, dann zum Ausschalten diesen Schalter verwenden.
 Keep captions in clear display	Untertitel in der freien Ansicht behalten
 Keep holding Like from opening TikTok's repost action.	Verhindern, dass Halten von „Gefällt mir“ TikToks Repost-Aktion öffnet.
 Keep long-pressing Share from opening TikTok's quick-share interaction.	Verhindern, dass langes Drücken auf „Teilen“ TikToks schnelles Teilen öffnet.

@@ -39,7 +39,10 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
     @Override public void addPreferences(Context context) {
         if (SettingsStatus.autoAdvanceEnabled) {
             addPreference(new TogglePreference(context, "Advance when a video ends",
-                    "Keep automatic advance enabled. Pauses and open dialogs still stop scrolling. Restart after enabling it; use this switch to turn it off.",
+                    "Keep automatic advance enabled, and show TikTok's own Auto scroll action in "
+                            + "the video panel even if your account never had it. Pauses and open "
+                            + "dialogs still stop scrolling. Restart after enabling it, then use "
+                            + "this switch to turn it off.",
                     Settings.AUTO_ADVANCE));
             addPreference(new NumberInputPreference(context, "Auto-advance session limit",
                     "Zero keeps auto-advance unlimited. Count only videos that finish while Hushfeed "

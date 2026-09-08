@@ -293,7 +293,7 @@ Includes all Morphe diagnostic events.	Mencakup semua peristiwa diagnostik Morph
 Interface	Tampilan
 Invalid SIM preset	Pratata SIM tidak sah
 Keep a local record of what you have watched and drop those videos from later feed pages.	Simpan catatan tontonanmu di perangkat dan buang video itu dari halaman feed berikutnya.
-Keep automatic advance enabled. Pauses and open dialogs still stop scrolling. Restart after enabling it; use this switch to turn it off.	Biarkan lanjut otomatis tetap aktif. Jeda dan dialog yang terbuka tetap menghentikan gulir. Mulai ulang setelah mengaktifkannya; pakai sakelar ini untuk mematikannya.
+Keep automatic advance enabled, and show TikTok's own Auto scroll action in the video panel even if your account never had it. Pauses and open dialogs still stop scrolling. Restart after enabling it, then use this switch to turn it off.	Biarkan lanjut otomatis tetap aktif, dan tampilkan aksi Auto scroll milik TikTok di panel video meskipun akunmu belum pernah memilikinya. Jeda dan dialog yang terbuka tetap menghentikan gulir. Mulai ulang setelah mengaktifkannya, lalu pakai sakelar ini untuk mematikannya.
 Keep captions in clear display	Pertahankan keterangan saat tampilan bersih
 Keep holding Like from opening TikTok's repost action.	Cegah menahan tombol Suka membuka aksi bagikan ulang milik TikTok.
 Keep long-pressing Share from opening TikTok's quick-share interaction.	Cegah tekan lama pada Bagikan membuka bagikan cepat milik TikTok.

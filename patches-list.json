@@ -162,7 +162,7 @@
     },
     {
       "name": "Automatic video advance",
-      "description": "Keeps TikTok's automatic advance enabled while preserving its pause, dialog and gesture checks.",
+      "description": "Keeps TikTok's automatic advance enabled while preserving its pause, dialog and gesture checks, and shows TikTok's own Auto scroll action in the video panel for accounts outside its rollout.",
       "use": false,
       "dependencies": [
         "Settings",
