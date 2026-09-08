@@ -7,6 +7,8 @@ package app.morphe.patches.tiktok.interaction.quickactions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.callThroughLocals
+import app.morphe.patches.tiktok.shared.valueIn
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
@@ -38,13 +40,16 @@ val hideQuickCommentReactionsPatch = bytecodePatch(
                 .map { it.index }
                 .asReversed()
                 .forEach { returnIndex ->
-                    addInstructions(
-                        returnIndex,
-                        """
-                            invoke-static {v0, p0}, $FEATURE_CONTROLS_DESCRIPTOR->overrideHideQuickCommentEmoji(ZI)Z
-                            move-result v0
-                        """,
+                    // p0 is a parameter register, which a plain invoke cannot name on a host
+                    // method with enough locals to push it past v15.
+                    val call = callThroughLocals(
+                        "Hide quick comment reactions",
+                        "invoke-static",
+                        "$FEATURE_CONTROLS_DESCRIPTOR->overrideHideQuickCommentEmoji(ZI)Z",
+                        valueIn("v0"),
+                        valueIn("p0"),
                     )
+                    addInstructions(returnIndex, "$call\nmove-result v0")
                 }
         }
     }

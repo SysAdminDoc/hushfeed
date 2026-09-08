@@ -8,6 +8,9 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
+import app.morphe.patches.tiktok.shared.callThroughLocals
+import app.morphe.patches.tiktok.shared.objectIn
+import app.morphe.patches.tiktok.shared.valueIn
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
@@ -35,13 +38,17 @@ internal fun BytecodePatchContext.hookAppAbIntBoundary(
             .asReversed()
             .forEach { returnIndex ->
                 val register = getInstruction<OneRegisterInstruction>(returnIndex).registerA
-                addInstructions(
-                    returnIndex,
-                    """
-                        invoke-static {$APP_AB_INT_KEY_REGISTER, v$register}, $extensionDescriptor->$extensionMethod(Ljava/lang/String;I)I
-                        move-result v$register
-                    """,
+                // The key register is a parameter, which a plain invoke cannot name on a host
+                // method with enough locals. Behind a constant, so no search for the literal
+                // finds it.
+                val call = callThroughLocals(
+                    "App AB int boundary",
+                    "invoke-static",
+                    "$extensionDescriptor->$extensionMethod(Ljava/lang/String;I)I",
+                    objectIn(APP_AB_INT_KEY_REGISTER),
+                    valueIn("v$register"),
                 )
+                addInstructions(returnIndex, "$call\nmove-result v$register")
             }
     }
 }
