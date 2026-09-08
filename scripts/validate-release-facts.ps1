@@ -235,6 +235,26 @@ if ($null -ne $newestSource) {
             'Run :extensions:tiktok:test again.')
     }
 }
+# Gradle clears the results directory on every run and writes only the classes that ran, so a
+# filtered run such as --tests *SomeTest leaves that one XML and nothing else. Every count below
+# then describes part of a run: on 2026-09-08 this summed 83 tests from six files while the index
+# said 682. The failure named the index rather than the filtered run, and anyone reconciling the
+# index to match would have written down a number no full run ever produced.
+$testSourceRoot = Join-Path $rootPath 'extensions/tiktok/src/test'
+if (Test-Path -LiteralPath $testSourceRoot) {
+    $sourceClasses = @(Get-ChildItem -LiteralPath $testSourceRoot -Recurse -File -Filter '*Test.java' |
+        ForEach-Object { $_.BaseName })
+    # TEST-<package>.<Class>.xml, and the package is not needed to tell one class from another.
+    $ranClasses = @($testFiles | ForEach-Object { ($_.BaseName -replace '^TEST-', '') -replace '^.*\.', '' })
+    $missing = @($sourceClasses | Where-Object { $ranClasses -notcontains $_ } | Sort-Object)
+    if ($missing.Count -gt 0) {
+        throw ("Runtime test results are missing " + $missing.Count + " of " + $sourceClasses.Count +
+            " test classes, so the counts here describe part of a run: " +
+            (($missing | Select-Object -First 8) -join ', ') +
+            ". Run :extensions:tiktok:test unfiltered.")
+    }
+}
+
 $testCount = 0
 foreach ($file in $testFiles) {
     try {
