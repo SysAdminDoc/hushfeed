@@ -259,8 +259,9 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             return;
         }
         Window window = activity.getWindow();
-        window.setStatusBarColor(SettingsUi.background());
-        window.setNavigationBarColor(SettingsUi.background());
+        // setStatusBarColor and setNavigationBarColor were here. Both do nothing from target 35,
+        // which TikTok is well past, so the bars are painted by the root view's own background
+        // reaching behind them instead. The icon flags below still work.
         view.setBackgroundColor(SettingsUi.background());
 
         View decor = window.getDecorView();

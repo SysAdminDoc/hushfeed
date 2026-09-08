@@ -15,6 +15,7 @@ import android.widget.LinearLayout;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.tiktok.settings.preference.SettingsUi;
 import app.morphe.extension.tiktok.settings.preference.TikTokPreferenceFragment;
 
 import com.bytedance.ies.ugc.aweme.commercialize.compliance.personalization.AdPersonalizationActivity;
@@ -48,7 +49,11 @@ public class TikTokActivityHook {
         LinearLayout linearLayout = new LinearLayout(base);
         linearLayout.setLayoutParams(new LinearLayout.LayoutParams(-1, -1));
         linearLayout.setOrientation(LinearLayout.VERTICAL);
-        linearLayout.setFitsSystemWindows(true);
+        // The background sits here rather than only on the fragment, so it reaches behind the
+        // bars. fitsSystemWindows would pad this view too, but it consumes the insets on the way
+        // past, and it has no answer for a display cutout on a side edge.
+        linearLayout.setBackgroundColor(SettingsUi.background());
+        SystemBarInsets.applyTo(linearLayout);
         linearLayout.setTransitionGroup(true);
 
         FrameLayout fragment = new FrameLayout(base);
