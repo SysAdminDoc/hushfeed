@@ -120,7 +120,7 @@ final class StructuredConfigController {
         }
 
         try {
-            JSONObject patch = new JSONObject(patchText);
+            JSONObject patch = parsed(patchText);
             if (requestedClass.isArray()) {
                 if (!patch.has(ROOT_VALUE)) {
                     return ApplyResult.failure(returnedValue, "No array value selected");
@@ -182,15 +182,67 @@ final class StructuredConfigController {
         return constructor.newInstance();
     }
 
+    /**
+     * The parsed form of a stored value, kept because this runs on TikTok's own gate threads.
+     *
+     * <p>A structured gate the host reads often used to pay a JSON parse of up to 64 KB on every
+     * read. The parsed object is only ever read from here, and it is published through a
+     * concurrent map, so sharing one across those threads is safe. The cache is keyed by the
+     * text, so a rule that changes parses again on its next read and the old entry falls out.
+     */
+    private static final java.util.concurrent.ConcurrentHashMap<String, JSONObject> parsedPatches =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Bounds the cache, which is keyed by text and would otherwise hold every value ever saved. */
+    private static final int MAX_PARSED_PATCHES = 32;
+
+    private static JSONObject parsed(String patchText) throws org.json.JSONException {
+        JSONObject cached = parsedPatches.get(patchText);
+        if (cached != null) {
+            return cached;
+        }
+        JSONObject patch = new JSONObject(patchText);
+        parsesForTests++;
+        if (parsedPatches.size() >= MAX_PARSED_PATCHES) {
+            parsedPatches.clear();
+        }
+        parsedPatches.put(patchText, patch);
+        return patch;
+    }
+
+    /** How many stored values were actually parsed, so a test can show the cache holds. */
+    static int parsesForTests;
+
+    static void clearParsedPatchesForTests() {
+        parsedPatches.clear();
+        parsesForTests = 0;
+    }
+
     private static boolean isEditable(Field field) {
         int modifiers = field.getModifiers();
         if (Modifier.isStatic(modifiers) || field.isSynthetic()) {
             return false;
         }
-        return isSupportedType(field.getType(), field.getGenericType(), 0);
+        return isSupportedType(field.getType(), field.getGenericType());
     }
 
-    private static Object coerce(Object value, Class<?> targetType, Type genericType) throws Exception {
+    /**
+     * How deeply a stored value may nest. The same bound the save time check uses, so a value
+     * that was accepted when it was written cannot be refused when it is read.
+     */
+    private static final int MAX_NESTING = 32;
+
+    private static Object coerce(Object value, Class<?> targetType, Type genericType)
+            throws Exception {
+        return coerce(value, targetType, genericType, 0);
+    }
+
+    private static Object coerce(Object value, Class<?> targetType, Type genericType, int depth)
+            throws Exception {
+        if (depth > MAX_NESTING) {
+            throw new IllegalArgumentException(
+                    "nested more than " + MAX_NESTING + " deep, which no gate configuration is");
+        }
         if (value == null || value == JSONObject.NULL) {
             if (targetType.isPrimitive()) {
                 throw new IllegalArgumentException("null is not valid for " + targetType.getName());
@@ -287,7 +339,7 @@ final class StructuredConfigController {
                     : new ArrayList<>();
             JSONArray source = (JSONArray) value;
             for (int index = 0; index < source.length(); index++) {
-                result.add(coerce(source.opt(index), elementType, elementType));
+                result.add(coerce(source.opt(index), elementType, elementType, depth + 1));
             }
             return result;
         }
@@ -305,7 +357,8 @@ final class StructuredConfigController {
                     throw new IllegalArgumentException("unsupported nested field " + name);
                 }
                 makeAccessible(field);
-                field.set(result, coerce(source.opt(name), field.getType(), field.getGenericType()));
+                field.set(result,
+                        coerce(source.opt(name), field.getType(), field.getGenericType(), depth + 1));
             }
             return result;
         }
@@ -370,10 +423,14 @@ final class StructuredConfigController {
         return null;
     }
 
-    private static boolean isSupportedType(Class<?> type, Type genericType, int depth) {
-        if (depth >= 4) {
-            return false;
-        }
+    /**
+     * Whether a field is one this knows how to write.
+     *
+     * <p>This used to take a depth and refuse anything past four. It never recursed, and its one
+     * caller passed zero, so the guard could not fire. What recurses is {@link #coerce}, through
+     * this method and back, and that is where the bound now lives.
+     */
+    private static boolean isSupportedType(Class<?> type, Type genericType) {
         if (isScalar(type)) {
             return true;
         }

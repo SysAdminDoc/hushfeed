@@ -102,11 +102,27 @@ public final class FeatureGateLabStore {
         return result;
     }
 
-    public static void saveRule(String manager, String key, String type, String value, boolean enabled) {
-        if (!canWrite()) return;
+    /**
+     * Writes a rule, and answers whether it was written.
+     *
+     * <p>A structured value is checked here as well as in the screen that collects it. This is
+     * the one way into the store that skipped the check, so a structured value saved through it
+     * carried no depth bound of its own and reached the reflective apply on a gate thread
+     * unchecked. Scalars are deliberately not checked: a malformed one is refused at the
+     * boundary, where the test for that behaviour drives it.
+     */
+    public static boolean saveRule(String manager, String key, String type, String value, boolean enabled) {
+        if (!canWrite()) return false;
         SharedPreferences prefs = prefs();
         if (prefs == null) {
-            return;
+            return false;
+        }
+        if ("OBJECT".equals(normalizeType(type))) {
+            String rejected = validateValue(type, value);
+            if (rejected != null) {
+                Logger.printInfo(() -> "Refused a structured Lab rule for " + key + ": " + rejected);
+                return false;
+            }
         }
         String id = idFor(manager, key, type);
         List<String> ids = ruleIds(prefs);
@@ -126,6 +142,7 @@ public final class FeatureGateLabStore {
         FeatureGateLabRuntime.resetTriggered(id);
         FeatureGateLabRuntime.reloadRules();
         FeatureGateLabSession.markRestartNeeded();
+        return true;
     }
 
     public static void deleteRule(String manager, String key, String type) {

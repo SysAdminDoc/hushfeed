@@ -72,6 +72,47 @@ public class StructuredConfigControllerTest {
         assertEquals(2L, source.weights.get("old").longValue());
     }
 
+    @Test public void theSameStoredValueIsParsedOnceHoweverOftenTheGateIsRead() throws Exception {
+        // This runs on TikTok's own gate threads. A structured gate the host reads often used to
+        // pay a JSON parse of the whole stored value, up to 64 KB of it, on every single read.
+        StructuredConfigController.clearParsedPatchesForTests();
+        String patch = new JSONObject().put("count", "7").put("name", "after").toString();
+
+        for (int read = 0; read < 100; read++) {
+            StructuredConfigController.ApplyResult result =
+                    StructuredConfigController.apply(Config.class, null, new Config(), patch);
+            assertTrue(result.applied);
+        }
+
+        assertEquals("the stored value was parsed again for a read that could have reused it",
+                1, StructuredConfigController.parsesForTests);
+    }
+
+    @Test public void aValueNestedPastTheLimitIsRefusedRatherThanRecursedInto() throws Exception {
+        // The guard that looked like it bounded this could never fire: it sat on a method that
+        // does not recurse, and its only caller passed zero. What recurses is coerce, through
+        // that method and back, forty deep here.
+        // Deep holds a Deep, so this really can nest as far as the text does. Config cannot:
+        // its child is a Child with no child of its own, so a nested value there stops two
+        // levels down for a different reason and never reaches the depth check at all.
+        StringBuilder open = new StringBuilder();
+        StringBuilder close = new StringBuilder();
+        for (int level = 0; level < 40; level++) {
+            open.append("{\"child\":");
+            close.append("}");
+        }
+        String deep = "{\"child\":" + open + "{\"value\":\"1\"}" + close + "}";
+
+        StructuredConfigController.ApplyResult result =
+                StructuredConfigController.apply(Deep.class, null, new Deep(), deep);
+
+        assertFalse("a forty deep value was walked all the way down", result.applied);
+        // Not just "nested": without the depth guard this fails anyway, with "unsupported nested
+        // field child", so a looser assertion would pass against the bug.
+        assertTrue("the refusal does not name the depth limit: " + result.error,
+                result.error != null && result.error.contains("nested more than"));
+    }
+
     @Test public void overflowAndNonFiniteNumbersFailWithoutChangingTheSource() throws Exception {
         Config source = new Config();
 
@@ -97,6 +138,12 @@ public class StructuredConfigControllerTest {
         assertEquals("LIST_INT", StructuredConfigController.fieldKind(int[].class.getName(), "$value"));
         assertTrue(result.applied);
         assertArrayEquals(new int[]{4, 9}, (int[]) result.value);
+    }
+
+    /** Nests without limit, which is what the depth guard is for. */
+    public static final class Deep {
+        public int value = 0;
+        public Deep child;
     }
 
     public static final class Config {

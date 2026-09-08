@@ -4,6 +4,8 @@
 
 * An override profile written somewhere other than the Lab's own export applies on a Turkish phone. Turkish capitalises i to a dotted letter, so a lowercase `int` in the file folded to a different word than the catalogue's, and the rule was refused as a type mismatch on that phone and no other.
 
+* A gate override that replaces a whole configuration object is worked out once instead of on every read. TikTok reads some of these constantly, and each read used to parse the stored value from scratch, up to 64 KB of it, on the thread asking for the gate. A value nested past a sane limit is also refused now with a message saying so; the check that appeared to do that sat on a method that never recurses and so could never fire.
+
 * Comment translation stops doing work for batches it never asked for. The hook that notices a finished translation sits on TikTok's own completion path, so it ran for every batch in the app, and with the feature switched off it still walked the fields of two objects and took a lock on that thread each time. A request already in flight when the switch goes off is still finished properly.
 
 * Turning clear display on by itself no longer looks to TikTok like you asked for it. The patch stops the events its own code sends when clear display changes, and two of the three it was written to stop had not matched anything in this version of TikTok for some time. Both were looked up in a way that gave no sign when they were missing, so the patch reported success and sent the events anyway. The patched app now silences four of those events where it silenced one.
