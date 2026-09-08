@@ -49,27 +49,4 @@ public class RestartNoticeTest {
             app.morphe.extension.tiktok.UiCapture.save(activity.getWindow().getDecorView(), "restart-notice-settings.png");
         }
     }
-
-    @Test public void arenamedEntryClassHidesTheRowInsteadOfTakingTheScreenDown() {
-        // The only uncaught reflection in the tree. TikTok renames these classes every build, so
-        // a miss threw out of the host's own settings screen and took the whole page with it.
-        // The row is the only thing that should go missing.
-        Utils.setContext(org.robolectric.RuntimeEnvironment.getApplication());
-        app.morphe.extension.shared.diagnostics.HookStatus.clear();
-        ShadowToast.reset();
-        org.robolectric.util.ReflectionHelpers.setStaticField(
-                TikTokActivityHook.class, "saidTheRowIsMissing", false);
-
-        assertNull("a renamed entry class produced something to add",
-                TikTokActivityHook.createSettingsEntry(
-                        "does.not.Exist", "also.does.not.Exist"));
-
-        assertTrue("the miss was not recorded for the diagnostic report",
-                app.morphe.extension.shared.diagnostics.HookStatus.anyMissing());
-        assertEquals("the reader was not told once", 1, ShadowToast.shownToastCount());
-
-        // Every later open of the screen is silent: this runs each time the page is built.
-        assertNull(TikTokActivityHook.createSettingsEntry("does.not.Exist", "also.does.not.Exist"));
-        assertEquals("it said the same thing again", 1, ShadowToast.shownToastCount());
-    }
 }

@@ -52,8 +52,6 @@ val settingsPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
-        addLegacySettingsEntryFallback()
-
         val initializeSettingsMethodDescriptor =
             "$SETTINGS_EXTENSION_CLASS_DESCRIPTOR->initialize(" +
                 "Lcom/bytedance/ies/ugc/aweme/commercialize/compliance/personalization/AdPersonalizationActivity;" +

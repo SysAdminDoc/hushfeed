@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1274);
+        Map<String, String> table = new HashMap<>(1272);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -683,8 +683,6 @@ public final class L10nTranslations {
                 "Hushfeed hat diese Ladung gefiltert");
         table.put("Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working.",
                 "Hushfeed hat ein TikTok-Rätsel ausgeblendet. Schalte „CAPTCHA-Popups ausblenden“ aus, wenn etwas nicht mehr funktioniert.");
-        table.put("Hushfeed settings could not be added to this screen",
-                "Hushfeed-Einstellungen konnten diesem Bildschirm nicht hinzugefügt werden");
         table.put("Ignore the creator's choice so the Duet and Stitch entries appear. Everything else the app checks still applies, and whether the upload is accepted is the server's decision.",
                 "Die Wahl der erstellenden Person übergehen, damit die Einträge Duett und Stitch erscheinen. Alle übrigen Prüfungen der App gelten weiterhin, und ob der Upload angenommen wird, entscheidet der Server.");
         table.put("Inbox",
@@ -795,11 +793,11 @@ public final class L10nTranslations {
                 "Noch hat keine Oberfläche etwas nachgeschlagen, es gibt also nichts zu melden.");
         table.put("No video selected",
                 "Kein Video ausgewählt");
+        table.put("No videos remained after Hushfeed applied your feed filters to %1$d batches. Most matches: %2$s.",
+                "Keine Videos blieben übrig, nachdem Hushfeed deine Feed-Filter auf %1$d Ladungen angewendet hatte. Am häufigsten: %2$s.");
     }
 
     private static void fillDe6(Map<String, String> table) {
-        table.put("No videos remained after Hushfeed applied your feed filters to %1$d batches. Most matches: %2$s.",
-                "Keine Videos blieben übrig, nachdem Hushfeed deine Feed-Filter auf %1$d Ladungen angewendet hatte. Am häufigsten: %2$s.");
         table.put("No videos remained after Hushfeed applied your feed filters to one batch. Most matches: %1$s.",
                 "Nach Hushfeeds Feed-Filtern blieb in einem Stapel kein Video übrig. Häufigste Treffer: %1$s.");
         table.put("Not blocked",
@@ -918,11 +916,11 @@ public final class L10nTranslations {
                 "Die Aktionszeile aus dem Teilen-Menü entfernen.");
         table.put("Remove the ads TikTok puts between videos.",
                 "Die Werbung entfernen, die TikTok zwischen die Videos setzt.");
+        table.put("Remove the row of friends from the top of the share sheet.",
+                "Die Freundesreihe oben im Teilen-Menü entfernen.");
     }
 
     private static void fillDe7(Map<String, String> table) {
-        table.put("Remove the row of friends from the top of the share sheet.",
-                "Die Freundesreihe oben im Teilen-Menü entfernen.");
         table.put("Remove tracking parameters from shared links.",
                 "Tracking-Parameter aus geteilten Links entfernen.");
         table.put("Remove watermark",
@@ -1041,11 +1039,11 @@ public final class L10nTranslations {
                 "Die Einstellungswiederherstellung benötigt Aufmerksamkeit. Nutze Rückgängig oder stelle deine Sicherung wieder her.");
         table.put("Settings saved. Restart TikTok to apply all changes.",
                 "Einstellungen gespeichert. Starte TikTok neu, damit alle Änderungen wirken.");
+        table.put("Share action checklist",
+                "Checkliste der Share-Aktionen");
     }
 
     private static void fillDe8(Map<String, String> table) {
-        table.put("Share action checklist",
-                "Checkliste der Share-Aktionen");
         table.put("Share links through another host",
                 "Links über einen anderen Host teilen");
         table.put("Share sheet",
@@ -1164,11 +1162,11 @@ public final class L10nTranslations {
                 "Dieser Creator ist bereits in der Liste");
         table.put("That creator pattern is too long to use, so it was skipped: %1$s",
                 "Dieses Kreator-Muster ist zu lang und wurde übersprungen: %1$s");
+        table.put("That creator pattern is too long to use: %1$s",
+                "Dieses Kreator-Muster ist zu lang: %1$s");
     }
 
     private static void fillDe9(Map<String, String> table) {
-        table.put("That creator pattern is too long to use: %1$s",
-                "Dieses Kreator-Muster ist zu lang: %1$s");
         table.put("That is %1$d minutes today",
                 "Das sind %1$d Minuten heute");
         table.put("That is %1$d videos today",
@@ -1287,11 +1285,11 @@ public final class L10nTranslations {
                 "TikToks eigene Geste „Halten, nach unten wischen, loslassen“ verwenden, um die 2x-Geschwindigkeit zu fixieren.");
         table.put("Use a default playback speed",
                 "Standardgeschwindigkeit verwenden");
+        table.put("Use non-personalized search",
+                "Nicht personalisierte Suche verwenden");
     }
 
     private static void fillDe10(Map<String, String> table) {
-        table.put("Use non-personalized search",
-                "Nicht personalisierte Suche verwenden");
         table.put("Use the preset for TikTok's account and store region getters too. May affect search. Requires the locale option and a restart.",
                 "Die Vorgabe auch für TikToks Konto- und Store-Regionsabfragen verwenden. Kann die Suche beeinflussen. Erfordert die Sprachoption und einen Neustart.");
         table.put("Use the selected country and operator values. Restart TikTok after changing region settings.",
@@ -1367,7 +1365,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1274);
+        Map<String, String> table = new HashMap<>(1272);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2006,8 +2004,6 @@ public final class L10nTranslations {
                 "Hushfeed menyaring pemuatan ini");
         table.put("Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working.",
                 "Hushfeed menyembunyikan satu teka-teki TikTok. Matikan Sembunyikan popup CAPTCHA kalau ada yang berhenti berfungsi.");
-        table.put("Hushfeed settings could not be added to this screen",
-                "Pengaturan Hushfeed tidak dapat ditambahkan ke layar ini");
         table.put("Ignore the creator's choice so the Duet and Stitch entries appear. Everything else the app checks still applies, and whether the upload is accepted is the server's decision.",
                 "Abaikan pilihan pembuat video supaya entri Duet dan Stitch muncul. Semua pemeriksaan lain di aplikasi tetap berlaku, dan diterima atau tidaknya unggahan adalah keputusan server.");
         table.put("Inbox",
@@ -2118,11 +2114,11 @@ public final class L10nTranslations {
                 "Belum ada permukaan yang mencari apa pun, jadi tidak ada yang bisa dilaporkan.");
         table.put("No video selected",
                 "Tidak ada video yang dipilih");
+        table.put("No videos remained after Hushfeed applied your feed filters to %1$d batches. Most matches: %2$s.",
+                "Tidak ada video tersisa setelah Hushfeed menerapkan filter feed ke %1$d pemuatan. Yang paling sering: %2$s.");
     }
 
     private static void fillIn6(Map<String, String> table) {
-        table.put("No videos remained after Hushfeed applied your feed filters to %1$d batches. Most matches: %2$s.",
-                "Tidak ada video tersisa setelah Hushfeed menerapkan filter feed ke %1$d pemuatan. Yang paling sering: %2$s.");
         table.put("No videos remained after Hushfeed applied your feed filters to one batch. Most matches: %1$s.",
                 "Tidak ada video tersisa setelah Hushfeed menerapkan filter feed pada satu kelompok. Paling sering cocok: %1$s.");
         table.put("Not blocked",
@@ -2241,11 +2237,11 @@ public final class L10nTranslations {
                 "Hapus baris aksi dari menu bagikan.");
         table.put("Remove the ads TikTok puts between videos.",
                 "Hapus iklan yang TikTok sisipkan di antara video.");
+        table.put("Remove the row of friends from the top of the share sheet.",
+                "Hapus baris teman dari bagian atas menu bagikan.");
     }
 
     private static void fillIn7(Map<String, String> table) {
-        table.put("Remove the row of friends from the top of the share sheet.",
-                "Hapus baris teman dari bagian atas menu bagikan.");
         table.put("Remove tracking parameters from shared links.",
                 "Hapus parameter pelacakan dari tautan yang dibagikan.");
         table.put("Remove watermark",
@@ -2364,11 +2360,11 @@ public final class L10nTranslations {
                 "Pemulihan pengaturan memerlukan perhatian. Gunakan Urungkan atau pulihkan cadanganmu.");
         table.put("Settings saved. Restart TikTok to apply all changes.",
                 "Pengaturan tersimpan. Mulai ulang TikTok untuk menerapkan semua perubahan.");
+        table.put("Share action checklist",
+                "Daftar periksa tindakan berbagi");
     }
 
     private static void fillIn8(Map<String, String> table) {
-        table.put("Share action checklist",
-                "Daftar periksa tindakan berbagi");
         table.put("Share links through another host",
                 "Bagikan tautan lewat host lain");
         table.put("Share sheet",
@@ -2487,11 +2483,11 @@ public final class L10nTranslations {
                 "Kreator itu sudah ada di daftar");
         table.put("That creator pattern is too long to use, so it was skipped: %1$s",
                 "Pola kreator itu terlalu panjang, jadi dilewati: %1$s");
+        table.put("That creator pattern is too long to use: %1$s",
+                "Pola kreator itu terlalu panjang: %1$s");
     }
 
     private static void fillIn9(Map<String, String> table) {
-        table.put("That creator pattern is too long to use: %1$s",
-                "Pola kreator itu terlalu panjang: %1$s");
         table.put("That is %1$d minutes today",
                 "Itu %1$d menit hari ini");
         table.put("That is %1$d videos today",
@@ -2610,11 +2606,11 @@ public final class L10nTranslations {
                 "Pakai gestur bawaan TikTok, tahan lalu geser ke bawah dan lepas, untuk mengunci kecepatan 2x.");
         table.put("Use a default playback speed",
                 "Pakai kecepatan pemutaran bawaan");
+        table.put("Use non-personalized search",
+                "Pakai pencarian nonpersonal");
     }
 
     private static void fillIn10(Map<String, String> table) {
-        table.put("Use non-personalized search",
-                "Pakai pencarian nonpersonal");
         table.put("Use the preset for TikTok's account and store region getters too. May affect search. Requires the locale option and a restart.",
                 "Pakai praset itu untuk pembaca wilayah akun dan toko TikTok juga. Bisa memengaruhi pencarian. Perlu opsi lokal dan mulai ulang.");
         table.put("Use the selected country and operator values. Restart TikTok after changing region settings.",

@@ -6,11 +6,6 @@ package app.morphe.patches.tiktok.misc.settings
 
 import app.morphe.patcher.Fingerprint
 
-internal object AddSettingsEntryFingerprint : Fingerprint(
-    custom = { method, classDef ->
-        classDef.endsWith("/SettingNewVersionFragment;") && method.name == "initUnitManger"
-    },
-)
 
 internal object AdPersonalizationActivityOnCreateFingerprint : Fingerprint(
     custom = { method, classDef ->
@@ -27,16 +22,7 @@ internal object AdPersonalizationActivityOnBackPressedFingerprint : Fingerprint(
     },
 )
 
-internal object SettingsEntryFingerprint : Fingerprint(
-    strings = listOf("pls pass item or extends the EventUnit"),
-)
 
-internal object SettingsEntryInfoFingerprint : Fingerprint(
-    strings = listOf(
-        "ExposeItem(title=",
-        ", icon=",
-    ),
-)
 
 internal object SettingsStatusLoadFingerprint : Fingerprint(
     custom = { method, classDef ->

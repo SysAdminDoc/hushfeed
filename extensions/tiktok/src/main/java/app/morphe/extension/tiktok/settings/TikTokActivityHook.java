@@ -14,13 +14,11 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import app.morphe.extension.shared.Logger;
-import app.morphe.extension.shared.diagnostics.HookStatus;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.preference.TikTokPreferenceFragment;
 
 import com.bytedance.ies.ugc.aweme.commercialize.compliance.personalization.AdPersonalizationActivity;
 
-import java.lang.reflect.Constructor;
 
 /**
  * Hooks AdPersonalizationActivity to inject a custom {@link TikTokPreferenceFragment}.
@@ -30,41 +28,6 @@ public class TikTokActivityHook {
     private static final String SETTINGS_ACTION = "morphe_settings";
     private static final String SETTINGS_EXTRA = "morphe";
     private static final String SETTINGS_SECTION_EXTRA = "morphe_settings_section";
-
-    /** Said once per process, because this runs every time the settings screen is opened. */
-    private static boolean saidTheRowIsMissing;
-
-    /**
-     * Builds the row that opens Hushfeed's settings, or answers null when the host has renamed
-     * the classes it is made of.
-     *
-     * <p>This was the only uncaught reflection in the tree. TikTok renames these classes on
-     * every build, so a miss here threw out of the host's own settings screen and took the whole
-     * page down with it. The row is the only thing that should go missing. The injected code
-     * checks for null and branches past the add.
-     */
-    public static Object createSettingsEntry(String entryClazzName, String entryInfoClazzName) {
-        try {
-            Class entryClazz = Class.forName(entryClazzName);
-            Class entryInfoClazz = Class.forName(entryInfoClazzName);
-            Constructor entryConstructor = entryClazz.getConstructor(entryInfoClazz);
-            Constructor entryInfoConstructor = entryInfoClazz.getDeclaredConstructors()[0];
-            Object buttonInfo = entryInfoConstructor.newInstance(
-                    "Hushfeed", null, (View.OnClickListener) view -> startSettingsActivity(), "morphe");
-            return entryConstructor.newInstance(buttonInfo);
-        } catch (Exception missing) {
-            // Info rather than exception: this is a rename, not a fault, and printException
-            // raises a toast of its own when the debug setting is on, which would say the same
-            // thing twice. An Error is left to propagate.
-            Logger.printInfo(() -> "Could not build the Hushfeed settings row", missing);
-            HookStatus.missingMember("settings", "class", entryClazzName, "<init>");
-            if (!saidTheRowIsMissing) {
-                saidTheRowIsMissing = true;
-                Utils.showToastLong(L10n.t("Hushfeed settings could not be added to this screen"));
-            }
-            return null;
-        }
-    }
 
     /***
      * Initialize the settings menu.
