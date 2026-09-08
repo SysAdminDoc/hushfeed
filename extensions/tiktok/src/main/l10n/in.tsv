@@ -643,3 +643,10 @@ Today starts again	Hari ini dimulai lagi
 Save the original sound	Simpan suara asli
 This video has no original sound to save	Video ini tidak punya suara asli untuk disimpan
 Storage permission is needed to save a sound	Izin penyimpanan dibutuhkan untuk menyimpan suara
+Settings saved. The Feature Gate Lab rules were for another TikTok version and were left out. Restart TikTok to apply all changes.	Pengaturan disimpan. Aturan Feature Gate Lab dibuat untuk versi TikTok lain dan tidak disertakan. Mulai ulang TikTok untuk menerapkan semua perubahan.
+That file is too large to be a settings backup. Nothing was altered.	Berkas itu terlalu besar untuk sebuah cadangan pengaturan. Tidak ada yang diubah.
+That file is not readable text, so it may have been damaged in transit. Nothing was altered.	Berkas itu bukan teks yang dapat dibaca, jadi mungkin rusak saat dikirim. Tidak ada yang diubah.
+That is not a Hushfeed settings backup. Nothing was altered.	Itu bukan cadangan pengaturan Hushfeed. Tidak ada yang diubah.
+That backup was written by a newer Hushfeed than this one. Nothing was altered.	Cadangan itu dibuat oleh Hushfeed yang lebih baru dari ini. Tidak ada yang diubah.
+That settings backup is incomplete, so it may have been cut short. Nothing was altered.	Cadangan pengaturan itu tidak lengkap, jadi mungkin terpotong. Tidak ada yang diubah.
+That settings backup holds a value Hushfeed cannot read. Nothing was altered.	Cadangan pengaturan itu memuat nilai yang tidak dapat dibaca Hushfeed. Tidak ada yang diubah.

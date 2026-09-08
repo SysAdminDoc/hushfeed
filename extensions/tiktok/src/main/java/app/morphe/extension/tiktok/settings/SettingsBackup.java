@@ -36,26 +36,72 @@ public final class SettingsBackup {
         RECOVERY_REQUIRED
     }
 
+    /**
+     * Why a backup was refused.
+     *
+     * <p>Every one of these used to reach the user as "The settings backup was rejected", so a
+     * truncated download, a file from a newer Hushfeed and a perfectly good backup all read the
+     * same and there was nothing to act on.
+     */
+    public enum Reason {
+        SIZE,
+        ENCODING,
+        FORMAT,
+        SCHEMA,
+        INCOMPLETE,
+        VALUE,
+        UNKNOWN
+    }
+
+    /** Carries {@link Reason} out of the parse, which throws JSONException and IOException. */
+    static final class RejectedBackup extends JSONException {
+        final Reason reason;
+
+        RejectedBackup(Reason reason, String message) {
+            super(message);
+            this.reason = reason;
+        }
+    }
+
     /** A restore failure that records whether both stores are back at their prior state. */
     public static final class RestoreException extends Exception {
         private final Failure failure;
+        private final Reason reason;
         private final boolean rollbackComplete;
         private final boolean recoveryAvailable;
 
-        private RestoreException(Throwable cause, Failure failure, boolean rollbackComplete,
-                boolean recoveryAvailable) {
+        private RestoreException(Throwable cause, Failure failure, Reason reason,
+                boolean rollbackComplete, boolean recoveryAvailable) {
             super(cause.getMessage(), cause);
             this.failure = failure;
+            this.reason = reason;
             this.rollbackComplete = rollbackComplete;
             this.recoveryAvailable = recoveryAvailable;
         }
 
+        private RestoreException(Throwable cause, Failure failure, boolean rollbackComplete,
+                boolean recoveryAvailable) {
+            this(cause, failure, Reason.UNKNOWN, rollbackComplete, recoveryAvailable);
+        }
+
         public Failure getFailure() { return failure; }
+        /** Only meaningful for {@link Failure#REJECTED_INPUT}. */
+        public Reason getReason() { return reason; }
         public boolean isRollbackComplete() { return rollbackComplete; }
         public boolean isRecoveryAvailable() { return recoveryAvailable; }
 
         private static RestoreException rejected(Throwable cause) {
-            return new RestoreException(cause, Failure.REJECTED_INPUT, true, false);
+            return new RestoreException(cause, Failure.REJECTED_INPUT, reasonOf(cause), true, false);
+        }
+
+        private static Reason reasonOf(Throwable cause) {
+            if (cause instanceof RejectedBackup) return ((RejectedBackup) cause).reason;
+            if (cause instanceof java.nio.charset.CharacterCodingException) return Reason.ENCODING;
+            if (cause instanceof IOException) {
+                String message = cause.getMessage();
+                if (message != null && message.contains("2 MB")) return Reason.SIZE;
+            }
+            return Reason.UNKNOWN;
         }
     }
 
@@ -213,7 +259,20 @@ public final class SettingsBackup {
 
     static void applyForJournal(Snapshot snapshot) throws IOException {
         Setting.saveAll(snapshot.values);
-        FeatureGateLabStore.replaceSettings(snapshot.rules, snapshot.master, snapshot.acknowledged);
+        // A backup from another TikTok build carries no rules that mean anything here, so the
+        // Lab is left as it was rather than emptied.
+        if (snapshot.labIncluded) {
+            FeatureGateLabStore.replaceSettings(snapshot.rules, snapshot.master, snapshot.acknowledged);
+        }
+    }
+
+    /** True when the file restored its settings but its Lab rules were for another TikTok build. */
+    public static boolean labRulesWereSkipped(String text) {
+        try {
+            return !parseForJournal(text).labIncluded;
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     private static Snapshot parse(String text) throws JSONException, IOException {
@@ -252,22 +311,34 @@ public final class SettingsBackup {
     }
 
     static Snapshot parseForJournal(String text) throws JSONException, IOException {
-        if (text == null || text.getBytes(StandardCharsets.UTF_8).length > MAX_BYTES) throw new IOException("Invalid backup size");
+        if (text == null || text.getBytes(StandardCharsets.UTF_8).length > MAX_BYTES) {
+            throw new RejectedBackup(Reason.SIZE, "Invalid backup size");
+        }
         Settings.REGION_SPOOF.get();
         JSONObject root = SettingsJson.parseObject(text);
         String format = root.optString("format");
-        if (!(FORMAT.equals(format) || LEGACY_FORMAT.equals(format)) || !Integer.valueOf(1).equals(root.get("schema"))
-                || !FeatureGateLabStore.TARGET_VERSION.equals(root.optString("target"))) {
-            throw new JSONException("Unsupported settings backup or TikTok version");
+        if (!(FORMAT.equals(format) || LEGACY_FORMAT.equals(format))) {
+            throw new RejectedBackup(Reason.FORMAT, "Not a Hushfeed settings backup");
         }
+        if (!Integer.valueOf(1).equals(root.get("schema"))) {
+            throw new RejectedBackup(Reason.SCHEMA, "Unsupported settings backup schema");
+        }
+        // The target belongs to the Lab rules, which name gates in one TikTok build. It used to
+        // refuse the whole file, so the day this project retargets, every backup anyone holds
+        // becomes unrestorable, settings included, for a reason that only concerns the Lab. The
+        // settings half is version independent and is restored either way; the Lab half is
+        // dropped and the caller says so.
+        boolean labApplies = FeatureGateLabStore.TARGET_VERSION.equals(root.optString("target"));
         JSONObject values = root.getJSONObject("settings"), lab = root.getJSONObject("lab");
         JSONArray required = root.getJSONArray("setting_keys");
         java.util.Set<String> keys = new java.util.HashSet<>();
-        if (required.length() == 0 || required.length() != values.length()) throw new JSONException("Incomplete settings backup");
+        if (required.length() == 0 || required.length() != values.length()) {
+            throw new RejectedBackup(Reason.INCOMPLETE, "Incomplete settings backup");
+        }
         for (int i = 0; i < required.length(); i++) {
             Object key = required.get(i);
             if (!(key instanceof String) || !keys.add((String) key) || !values.has((String) key)) {
-                throw new JSONException("Incomplete settings backup");
+                throw new RejectedBackup(Reason.INCOMPLETE, "Incomplete settings backup");
             }
         }
         Map<Setting<?>, Object> updates = new LinkedHashMap<>();
@@ -276,8 +347,13 @@ public final class SettingsBackup {
             updates.put(setting, values.has(setting.key)
                     ? convert(setting.defaultValue, values.get(setting.key), setting.key) : setting.defaultValue);
         }
+        if (!labApplies) {
+            // Leaving the Lab exactly as it is, rather than clearing it: the backup says nothing
+            // about this TikTok build, so it is not evidence that the user wanted no rules.
+            return new Snapshot(updates, null, false, false, false);
+        }
         return new Snapshot(updates, FeatureGateLabStore.parseSettings(lab),
-                lab.getBoolean("master"), lab.getBoolean("acknowledged"));
+                lab.getBoolean("master"), lab.getBoolean("acknowledged"), true);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -295,17 +371,26 @@ public final class SettingsBackup {
                 if (fallback instanceof Float && Float.isFinite(number.floatValue())) return number.floatValue();
             }
         } catch (IllegalArgumentException | ArithmeticException invalid) {
-            throw new JSONException("Invalid value for " + key);
+            throw new RejectedBackup(Reason.VALUE, "Invalid value for " + key);
         }
-        throw new JSONException("Invalid value for " + key);
+        throw new RejectedBackup(Reason.VALUE, "Invalid value for " + key);
     }
 
     static final class Snapshot {
         final Map<Setting<?>, Object> values;
         final List<FeatureGateLabStore.Rule> rules;
         final boolean master, acknowledged;
+        /** False when the backup was written against another TikTok build, so the Lab is left alone. */
+        final boolean labIncluded;
+
+        Snapshot(Map<Setting<?>, Object> values, List<FeatureGateLabStore.Rule> rules,
+                boolean master, boolean acknowledged, boolean labIncluded) {
+            this.values = values; this.rules = rules; this.master = master;
+            this.acknowledged = acknowledged; this.labIncluded = labIncluded;
+        }
+
         Snapshot(Map<Setting<?>, Object> values, List<FeatureGateLabStore.Rule> rules, boolean master, boolean acknowledged) {
-            this.values = values; this.rules = rules; this.master = master; this.acknowledged = acknowledged;
+            this(values, rules, master, acknowledged, true);
         }
     }
 }

@@ -97,6 +97,7 @@ public final class SettingsBackupPreference extends Preference {
         Utils.showToastShort(L10n.t(action == EXPORT
                 ? "Saving settings backup" : "Updating settings"));
         Utils.runOnBackgroundThread(() -> {
+            boolean labRulesSkipped = false;
             try {
                 if (action == EXPORT) {
                     byte[] bytes = SettingsBackup.create(false).getBytes(StandardCharsets.UTF_8);
@@ -105,11 +106,17 @@ public final class SettingsBackupPreference extends Preference {
                         output.write(bytes);
                     }
                 } else if (action == IMPORT) {
-                    SettingsBackup.restore(context, SettingsBackup.read(context.getContentResolver().openInputStream(uri)), true);
+                    String text = SettingsBackup.read(context.getContentResolver().openInputStream(uri));
+                    SettingsBackup.restore(context, text, true);
+                    labRulesSkipped = SettingsBackup.labRulesWereSkipped(text);
                 } else if (action == RESET) SettingsBackup.reset(context);
                 else SettingsBackup.undo(context);
+                // Each of these is one literal, because the translation gate reads the literal
+                // handed to L10n and a string built from two of them is two entries it cannot find.
                 Utils.showToastLong(L10n.t(action == EXPORT ? "Settings backup saved"
-                        : "Settings saved. Restart TikTok to apply all changes."));
+                        : labRulesSkipped
+                                ? "Settings saved. The Feature Gate Lab rules were for another TikTok version and were left out. Restart TikTok to apply all changes."
+                                : "Settings saved. Restart TikTok to apply all changes."));
             } catch (Exception error) {
                 Logger.printException(() -> "Settings backup operation failed", error);
                 Utils.showToastLong(L10n.t(failureMessage(action, error)));
@@ -130,7 +137,29 @@ public final class SettingsBackupPreference extends Preference {
             SettingsBackup.RestoreException restore = (SettingsBackup.RestoreException) error;
             switch (restore.getFailure()) {
                 case REJECTED_INPUT:
-                    return "The settings backup was rejected. Nothing was altered.";
+                    // One sentence per reason. All of these read as the same rejection before,
+                    // so a truncated download and a backup from a newer Hushfeed were
+                    // indistinguishable to the person holding the file.
+                    switch (restore.getReason()) {
+                        case SIZE:
+                            return "That file is too large to be a settings backup. Nothing was altered.";
+                        case ENCODING:
+                            return "That file is not readable text, so it may have been damaged in "
+                                    + "transit. Nothing was altered.";
+                        case FORMAT:
+                            return "That is not a Hushfeed settings backup. Nothing was altered.";
+                        case SCHEMA:
+                            return "That backup was written by a newer Hushfeed than this one. "
+                                    + "Nothing was altered.";
+                        case INCOMPLETE:
+                            return "That settings backup is incomplete, so it may have been cut "
+                                    + "short. Nothing was altered.";
+                        case VALUE:
+                            return "That settings backup holds a value Hushfeed cannot read. "
+                                    + "Nothing was altered.";
+                        default:
+                            return "The settings backup was rejected. Nothing was altered.";
+                    }
                 case ROLLED_BACK:
                     return "That settings change did not go through. Nothing was altered.";
                 case RECOVERY_REQUIRED:

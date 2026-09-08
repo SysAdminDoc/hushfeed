@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1284);
+        Map<String, String> table = new HashMap<>(1298);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -1048,6 +1048,8 @@ public final class L10nTranslations {
                 "Die Einstellungswiederherstellung benötigt Aufmerksamkeit. Nutze Rückgängig oder stelle deine Sicherung wieder her.");
         table.put("Settings saved. Restart TikTok to apply all changes.",
                 "Einstellungen gespeichert. Starte TikTok neu, damit alle Änderungen wirken.");
+        table.put("Settings saved. The Feature Gate Lab rules were for another TikTok version and were left out. Restart TikTok to apply all changes.",
+                "Einstellungen gespeichert. Die Feature-Gate-Lab-Regeln galten für eine andere TikTok-Version und wurden ausgelassen. Starte TikTok neu, um alle Änderungen zu übernehmen.");
         table.put("Share action checklist",
                 "Checkliste der Share-Aktionen");
         table.put("Share links through another host",
@@ -1162,29 +1164,41 @@ public final class L10nTranslations {
                 "Noch einmal tippen zum Folgen");
         table.put("Tap again to like",
                 "Noch einmal tippen zum Liken");
-        table.put("Tap the feed Follow button twice within four seconds.",
-                "Tippe die Folgen-Schaltfläche im Feed innerhalb von vier Sekunden zweimal an.");
     }
 
     private static void fillDe9(Map<String, String> table) {
+        table.put("Tap the feed Follow button twice within four seconds.",
+                "Tippe die Folgen-Schaltfläche im Feed innerhalb von vier Sekunden zweimal an.");
         table.put("Tap the like heart twice within four seconds. Removing a like stays immediate.",
                 "Tippe das Like-Herz innerhalb von vier Sekunden zweimal an. Das Entfernen eines Likes bleibt sofort.");
+        table.put("That backup was written by a newer Hushfeed than this one. Nothing was altered.",
+                "Diese Sicherung stammt aus einem neueren Hushfeed als diesem. Es wurde nichts geändert.");
         table.put("That creator is already in the list",
                 "Dieser Creator ist bereits in der Liste");
         table.put("That creator pattern is too long to use, so it was skipped: %1$s",
                 "Dieses Kreator-Muster ist zu lang und wurde übersprungen: %1$s");
         table.put("That creator pattern is too long to use: %1$s",
                 "Dieses Kreator-Muster ist zu lang: %1$s");
+        table.put("That file is not readable text, so it may have been damaged in transit. Nothing was altered.",
+                "Diese Datei ist kein lesbarer Text und wurde womöglich bei der Übertragung beschädigt. Es wurde nichts geändert.");
+        table.put("That file is too large to be a settings backup. Nothing was altered.",
+                "Diese Datei ist zu groß für eine Einstellungssicherung. Es wurde nichts geändert.");
         table.put("That is %1$d minutes today",
                 "Das sind %1$d Minuten heute");
         table.put("That is %1$d videos today",
                 "Das sind %1$d Videos heute");
+        table.put("That is not a Hushfeed settings backup. Nothing was altered.",
+                "Das ist keine Hushfeed-Einstellungssicherung. Es wurde nichts geändert.");
         table.put("That is not an app name. Try something like com.example.downloader, or leave the box empty to keep saving in TikTok.",
                 "Das ist kein App-Name. Versuche etwas wie com.example.downloader, oder lass das Feld leer, damit weiter in TikTok gespeichert wird.");
         table.put("That is one minute today",
                 "Das ist eine Minute heute");
         table.put("That is one video today",
                 "Das ist ein Video heute");
+        table.put("That settings backup holds a value Hushfeed cannot read. Nothing was altered.",
+                "Diese Einstellungssicherung enthält einen Wert, den Hushfeed nicht lesen kann. Es wurde nichts geändert.");
+        table.put("That settings backup is incomplete, so it may have been cut short. Nothing was altered.",
+                "Diese Einstellungssicherung ist unvollständig und wurde womöglich abgeschnitten. Es wurde nichts geändert.");
         table.put("That settings change did not go through. Nothing was altered.",
                 "Diese Änderung hat nicht geklappt. Es wurde nichts geändert.");
         table.put("That sticker is in a format Hushfeed cannot read",
@@ -1273,6 +1287,9 @@ public final class L10nTranslations {
                 "Versuche ein anderes Wort oder lösche die Suche.");
         table.put("Two letters, like us, gb or jp.",
                 "Zwei Buchstaben, etwa us, gb oder jp.");
+    }
+
+    private static void fillDe10(Map<String, String> table) {
         table.put("Type to search settings",
                 "Tippe, um Einstellungen zu durchsuchen");
         table.put("Unblock this commenter",
@@ -1287,9 +1304,6 @@ public final class L10nTranslations {
                 "Unbegrenzt");
         table.put("Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.",
                 "Bis zu 8 Geschwindigkeiten von 0.5 bis 3, durch Kommas getrennt. Beispiel: 0.5, 1, 1.5, 2, 2.5, 3. Leer lassen für TikToks Liste. Nach dem Ändern der Liste neu starten.");
-    }
-
-    private static void fillDe10(Map<String, String> table) {
         table.put("Updating settings",
                 "Einstellungen werden aktualisiert");
         table.put("Use 0 for TikTok's size, or 12 to 48 sp. Applies to the next caption.",
@@ -1377,7 +1391,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1284);
+        Map<String, String> table = new HashMap<>(1298);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2381,6 +2395,8 @@ public final class L10nTranslations {
                 "Pemulihan pengaturan memerlukan perhatian. Gunakan Urungkan atau pulihkan cadanganmu.");
         table.put("Settings saved. Restart TikTok to apply all changes.",
                 "Pengaturan tersimpan. Mulai ulang TikTok untuk menerapkan semua perubahan.");
+        table.put("Settings saved. The Feature Gate Lab rules were for another TikTok version and were left out. Restart TikTok to apply all changes.",
+                "Pengaturan disimpan. Aturan Feature Gate Lab dibuat untuk versi TikTok lain dan tidak disertakan. Mulai ulang TikTok untuk menerapkan semua perubahan.");
         table.put("Share action checklist",
                 "Daftar periksa tindakan berbagi");
         table.put("Share links through another host",
@@ -2495,29 +2511,41 @@ public final class L10nTranslations {
                 "Ketuk lagi untuk mengikuti");
         table.put("Tap again to like",
                 "Ketuk lagi untuk menyukai");
-        table.put("Tap the feed Follow button twice within four seconds.",
-                "Ketuk tombol Ikuti di feed dua kali dalam empat detik.");
     }
 
     private static void fillIn9(Map<String, String> table) {
+        table.put("Tap the feed Follow button twice within four seconds.",
+                "Ketuk tombol Ikuti di feed dua kali dalam empat detik.");
         table.put("Tap the like heart twice within four seconds. Removing a like stays immediate.",
                 "Ketuk ikon hati dua kali dalam empat detik. Membatalkan suka tetap langsung berlaku.");
+        table.put("That backup was written by a newer Hushfeed than this one. Nothing was altered.",
+                "Cadangan itu dibuat oleh Hushfeed yang lebih baru dari ini. Tidak ada yang diubah.");
         table.put("That creator is already in the list",
                 "Kreator itu sudah ada di daftar");
         table.put("That creator pattern is too long to use, so it was skipped: %1$s",
                 "Pola kreator itu terlalu panjang, jadi dilewati: %1$s");
         table.put("That creator pattern is too long to use: %1$s",
                 "Pola kreator itu terlalu panjang: %1$s");
+        table.put("That file is not readable text, so it may have been damaged in transit. Nothing was altered.",
+                "Berkas itu bukan teks yang dapat dibaca, jadi mungkin rusak saat dikirim. Tidak ada yang diubah.");
+        table.put("That file is too large to be a settings backup. Nothing was altered.",
+                "Berkas itu terlalu besar untuk sebuah cadangan pengaturan. Tidak ada yang diubah.");
         table.put("That is %1$d minutes today",
                 "Itu %1$d menit hari ini");
         table.put("That is %1$d videos today",
                 "Itu %1$d video hari ini");
+        table.put("That is not a Hushfeed settings backup. Nothing was altered.",
+                "Itu bukan cadangan pengaturan Hushfeed. Tidak ada yang diubah.");
         table.put("That is not an app name. Try something like com.example.downloader, or leave the box empty to keep saving in TikTok.",
                 "Itu bukan nama aplikasi. Coba seperti com.example.downloader, atau kosongkan saja biar tetap disimpan di TikTok.");
         table.put("That is one minute today",
                 "Itu satu menit hari ini");
         table.put("That is one video today",
                 "Itu satu video hari ini");
+        table.put("That settings backup holds a value Hushfeed cannot read. Nothing was altered.",
+                "Cadangan pengaturan itu memuat nilai yang tidak dapat dibaca Hushfeed. Tidak ada yang diubah.");
+        table.put("That settings backup is incomplete, so it may have been cut short. Nothing was altered.",
+                "Cadangan pengaturan itu tidak lengkap, jadi mungkin terpotong. Tidak ada yang diubah.");
         table.put("That settings change did not go through. Nothing was altered.",
                 "Perubahan itu tidak berhasil. Tidak ada yang diubah.");
         table.put("That sticker is in a format Hushfeed cannot read",
@@ -2606,6 +2634,9 @@ public final class L10nTranslations {
                 "Coba kata lain atau hapus pencarian.");
         table.put("Two letters, like us, gb or jp.",
                 "Dua huruf, misalnya us, gb atau jp.");
+    }
+
+    private static void fillIn10(Map<String, String> table) {
         table.put("Type to search settings",
                 "Ketik untuk mencari setelan");
         table.put("Unblock this commenter",
@@ -2620,9 +2651,6 @@ public final class L10nTranslations {
                 "Tanpa batas");
         table.put("Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.",
                 "Sampai 8 kecepatan dari 0.5 hingga 3, dipisahkan koma. Contoh: 0.5, 1, 1.5, 2, 2.5, 3. Kosongkan untuk memakai daftar TikTok. Mulai ulang setelah mengubah daftar ini.");
-    }
-
-    private static void fillIn10(Map<String, String> table) {
         table.put("Updating settings",
                 "Memperbarui pengaturan");
         table.put("Use 0 for TikTok's size, or 12 to 48 sp. Applies to the next caption.",

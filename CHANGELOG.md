@@ -1,5 +1,7 @@
 ## Unreleased
 
+* A settings backup keeps working when Hushfeed moves to a new TikTok version. The file carries a note of which TikTok build it was made for, and that note used to refuse the whole file, so on the day this project retargets every backup anyone held would have stopped restoring. Only the Feature Gate Lab rules in it depend on the TikTok build, so those are left out and the toast says so; your settings come back either way. And a refused file now says which way it was wrong, so a download that was cut short reads differently from a backup written by a newer Hushfeed, instead of both saying only that it was rejected.
+
 * A Feature Gate Lab rule saved at the wrong moment could do nothing at all. If TikTok happened to be reading its configuration on another thread while you saved, the rules it had already read were written back over your change, and the change stayed invisible until the next one. Reads made before TikTok has finished starting no longer queue up behind each other either.
 
 * The Feature Gate Lab was making the whole app slower even with nothing switched on. TikTok asks itself hundreds of configuration questions a second, from every thread, and the Lab sits on the answer to each one. It was taking a single lock on every one of those before checking whether it had anything to record, which it does not unless you selected the Feature Gate Recorder, so every thread in the app queued behind every other. It checks first now and takes the lock only when there is something to write down.

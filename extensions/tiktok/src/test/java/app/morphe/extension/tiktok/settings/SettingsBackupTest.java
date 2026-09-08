@@ -99,19 +99,100 @@ public class SettingsBackupTest {
         assertEquals(42, (int) Settings.MAX_VIDEO_SECONDS.get());
     }
 
-    @Test public void invalidLabVersionRuleAndTrailingInputLeaveSettingsUntouched() throws Exception {
+    @Test public void invalidLabRuleAndTrailingInputLeaveSettingsUntouched() throws Exception {
+        // A backup stamped with another TikTok version used to belong in this list. It does not
+        // any more: the settings half of a backup does not depend on the TikTok build, so it is
+        // restored and only the Lab rules are dropped. That case is its own test below.
         Settings.REGION_SPOOF.save(true);
         String baseline = SettingsBackup.create(false);
-        JSONObject wrongVersion = new JSONObject(baseline).put("target", "other");
         JSONObject wrongLab = new JSONObject(baseline);
         wrongLab.getJSONObject("lab").put("master", "true");
         JSONObject badRule = new JSONObject(baseline);
         badRule.getJSONObject("lab").getJSONArray("rules").put(new JSONObject()
                 .put("manager", "abmock").put("key", "bad").put("type", "FLOAT").put("value", "NaN").put("force", true));
-        for (String invalid : new String[]{wrongVersion.toString(), wrongLab.toString(), badRule.toString(), baseline + "garbage", "[]"}) {
+        for (String invalid : new String[]{wrongLab.toString(), badRule.toString(), baseline + "garbage", "[]"}) {
             assertThrows(Exception.class, () -> SettingsBackup.restore(Utils.getContext(), invalid, true));
             assertEquals(baseline, SettingsBackup.create(false));
         }
+    }
+
+    @Test public void aBackupFromAnotherTikTokVersionRestoresSettingsAndLeavesTheLabAlone() throws Exception {
+        // The target stamp is there for the Lab rules, which name gates in one TikTok build. It
+        // used to refuse the whole file, so the day this project retargets, every backup anyone
+        // holds stops restoring, settings included.
+        Settings.BLOCKED_CREATORS.save("from the backup");
+        Settings.AUTO_ADVANCE.save(true);
+        String backup = SettingsBackup.create(false);
+        String otherVersion = new JSONObject(backup).put("target", "40.0.0").toString();
+
+        // State that must survive: a Lab rule this backup knows nothing about.
+        Settings.BLOCKED_CREATORS.save("changed since");
+        Settings.AUTO_ADVANCE.save(false);
+        FeatureGateLabStore.saveRule("abmock", "rule_for_this_build", "INT", "7", true);
+        FeatureGateLabStore.setMasterEnabled(true);
+
+        SettingsBackup.restore(Utils.getContext(), otherVersion, true);
+
+        assertEquals("the settings half did not restore", "from the backup", Settings.BLOCKED_CREATORS.get());
+        assertTrue("the settings half did not restore", Settings.AUTO_ADVANCE.get());
+        assertTrue("the caller was not told the Lab rules were left out",
+                SettingsBackup.labRulesWereSkipped(otherVersion));
+        assertNotNull("the Lab was emptied by a backup that said nothing about this build",
+                FeatureGateLabStore.rule("abmock", "rule_for_this_build", "INT"));
+        assertTrue("the Lab master switch was changed by a backup for another build",
+                FeatureGateLabStore.masterEnabled());
+    }
+
+    @Test public void everyRefusalSaysWhichOneItWas() throws Exception {
+        String baseline = SettingsBackup.create(false);
+        JSONObject wrongFormat = new JSONObject(baseline).put("format", "something-else");
+        JSONObject wrongSchema = new JSONObject(baseline).put("schema", 99);
+        JSONObject shortKeys = new JSONObject(baseline).put("setting_keys", new org.json.JSONArray());
+        JSONObject badValue = new JSONObject(baseline);
+        badValue.getJSONObject("settings").put(Settings.AUTO_ADVANCE.key, "not a boolean");
+
+        assertEquals(SettingsBackup.Reason.FORMAT, reasonFor(wrongFormat.toString()));
+        assertEquals(SettingsBackup.Reason.SCHEMA, reasonFor(wrongSchema.toString()));
+        assertEquals(SettingsBackup.Reason.INCOMPLETE, reasonFor(shortKeys.toString()));
+        assertEquals(SettingsBackup.Reason.VALUE, reasonFor(badValue.toString()));
+
+        // And each of them reaches the user as its own sentence rather than one shared rejection,
+        // which is what made a truncated download and a good backup read the same.
+        java.util.Set<String> sentences = new java.util.HashSet<>();
+        for (String input : new String[]{wrongFormat.toString(), wrongSchema.toString(),
+                shortKeys.toString(), badValue.toString()}) {
+            sentences.add(sentenceFor(input));
+        }
+        assertEquals("two refusals share a sentence, so the user cannot tell them apart",
+                4, sentences.size());
+    }
+
+    private static SettingsBackup.Reason reasonFor(String text) {
+        try {
+            SettingsBackup.restore(Utils.getContext(), text, true);
+        } catch (SettingsBackup.RestoreException rejected) {
+            return rejected.getReason();
+        } catch (Exception other) {
+            throw new AssertionError("expected a RestoreException, got " + other, other);
+        }
+        throw new AssertionError("that input was accepted");
+    }
+
+    /** The sentence the user actually sees. failureMessage is package private one package over. */
+    private static String sentenceFor(String text) throws Exception {
+        Exception refusal;
+        try {
+            SettingsBackup.restore(Utils.getContext(), text, true);
+            throw new AssertionError("that input was accepted");
+        } catch (SettingsBackup.RestoreException rejected) {
+            refusal = rejected;
+        }
+        Class<?> preference = Class.forName(
+                "app.morphe.extension.tiktok.settings.preference.SettingsBackupPreference");
+        java.lang.reflect.Method message =
+                preference.getDeclaredMethod("failureMessage", int.class, Exception.class);
+        message.setAccessible(true);
+        return (String) message.invoke(null, 7312 /* IMPORT */, refusal);
     }
 
     @Test public void resetAndUndoRestoreBothStoresAndSurviveAnUnrelatedSettingChange() throws Exception {
