@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.interaction.cleardisplay
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
@@ -10,6 +11,7 @@ import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.cloneMutable
 import app.morphe.util.getReference
 import app.morphe.util.returnEarly
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val EXTENSION = "Lapp/morphe/extension/tiktok/cleardisplay/RememberClearDisplayPatch;"
@@ -23,9 +25,46 @@ val rememberClearDisplayPatch = bytecodePatch(
     dependsOn(settingsPatch, sharedExtensionPatch)
     compatibleWith(*AppCompatibilities.tiktok4623())
     execute {
-        ClearModeLogCoreFingerprint.methodOrNull?.returnEarly()
-        ClearModeLogStateFingerprint.methodOrNull?.returnEarly()
-        ClearModeLogPlaytimeFingerprint.methodOrNull?.returnEarly()
+        // Entering clear display by itself must not look to TikTok like the reader asked for
+        // it, so the events its own code sends are stopped. Two of the three were written as bare
+        // signatures, both had stopped matching anything on 46.2.3, and both call sites were
+        // methodOrNull, so the patch skipped them and still reported Applied. They are found
+        // inside the logging class now, which the one surviving signature identifies.
+        val stateMethod = ClearModeLogStateFingerprint.method
+        val loggerClass = mutableClassDefBy(stateMethod.definingClass)
+        stateMethod.returnEarly()
+
+        fun suppress(event: String, parameterPrefix: List<String>) {
+            val matches = loggerClass.methods.filter { candidate ->
+                candidate.returnType == "V" &&
+                    AccessFlags.STATIC.isSet(candidate.accessFlags) &&
+                    candidate.parameters.map { it.type }.take(parameterPrefix.size) == parameterPrefix
+            }
+            if (matches.isEmpty()) {
+                throw PatchException(
+                    "Remember clear display: ${stateMethod.definingClass} no longer logs the " +
+                        "$event event, so entering clear display would be reported as a tap.",
+                )
+            }
+            matches.forEach { it.returnEarly() }
+        }
+
+        suppress(
+            "clear mode change",
+            listOf(
+                "Z",
+                "Ljava/lang/String;",
+                "Ljava/lang/String;",
+                "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+                "Ljava/lang/String;",
+                "J",
+                "I",
+            ),
+        )
+        suppress(
+            "clear mode playtime",
+            listOf("F", "I", "J", "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
+        )
         val eventMethod = OnClearDisplayEventFingerprint.method
         val eventClass = eventMethod.parameters[0].type
         val frameMethod = OnRenderFirstFrameBodyFingerprint.method

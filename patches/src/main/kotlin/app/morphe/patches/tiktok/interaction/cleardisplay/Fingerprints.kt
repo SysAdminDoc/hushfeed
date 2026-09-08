@@ -25,20 +25,14 @@ internal object OnRenderFirstFrameBodyFingerprint : Fingerprint(
     custom = { method, _ -> method.name == "LLILZIL" },
 )
 
-internal object ClearModeLogCoreFingerprint : Fingerprint(
-    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC, AccessFlags.FINAL),
-    returnType = "V",
-    parameters = listOf(
-        "Z",
-        "Ljava/lang/String;",
-        "Ljava/lang/String;",
-        "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
-        "Ljava/lang/String;",
-        "J",
-        "I",
-    ),
-)
-
+/**
+ * The one clear mode event this can still find by signature alone.
+ *
+ * On 46.2.3 exactly one method out of 1,872,612 matches, and its class exists only to log clear
+ * mode: every caller is an onClearModeEvent, an onPageSelected or an onPageUnSelected. The other
+ * two events are found inside that class rather than by their own bare signature, because that is
+ * what the core and playtime fingerprints did and both had stopped matching anything at all.
+ */
 internal object ClearModeLogStateFingerprint : Fingerprint(
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC, AccessFlags.FINAL),
     returnType = "V",
@@ -50,22 +44,6 @@ internal object ClearModeLogStateFingerprint : Fingerprint(
         "J",
         "I",
         "I",
-    ),
-)
-
-internal object ClearModeLogPlaytimeFingerprint : Fingerprint(
-    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
-    returnType = "V",
-    parameters = listOf(
-        "F",
-        "I",
-        "J",
-        "J",
-        "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
-        "Ljava/lang/String;",
-        "Ljava/lang/String;",
-        "Z",
-        "Z",
     ),
 )
 
