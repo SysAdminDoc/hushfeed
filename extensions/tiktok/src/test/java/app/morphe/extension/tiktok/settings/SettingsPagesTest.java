@@ -182,42 +182,90 @@ public class SettingsPagesTest {
         // one patch's flag takes every later patch's rows with it: the offline videos limit set
         // its own flag, gated its own rows on it, and still put nothing on the page because an
         // "if (!downloadEnabled) return;" sat above them. Blocks, not returns.
-        //
-        // Comments go first and then all whitespace, so the shape is caught however it is
-        // written: on one line or two, braced or bare, with a comment after it. The whole file is
-        // read rather than the part after addPreferences, because a helper it calls can sit
-        // anywhere in the class.
+        java.util.List<String> offenders = new java.util.ArrayList<>();
+        int scanned = 0;
+        for (java.io.File file : categorySources()) {
+            String source = new String(java.nio.file.Files.readAllBytes(file.toPath()),
+                    java.nio.charset.StandardCharsets.UTF_8);
+            scanned++;
+            for (String found : earlyReturns(source)) {
+                offenders.add(file.getName() + ": " + found);
+            }
+        }
+        assertTrue("no categories were read at all", scanned > 5);
+        assertEquals("a flag returning early from a settings page hides every flag below it: "
+                + offenders, 0, offenders.size());
+    }
+
+    @Test public void theEarlyReturnScanCanActuallyFail() {
+        // A scan with nothing to find proves nothing, and the first version of this one was
+        // defeated by a brace, a line break and a trailing comment. Every shape it has to catch
+        // is put in front of it here, along with the ones it must leave alone.
+        String source = "class Sample {\n"
+                + "    void addPreferences(Context context) {\n"
+                + "        char quote = '\"';\n"
+                + "        if (!SettingsStatus.bare) return;\n"
+                + "        if (!SettingsStatus.braced) { return; }\n"
+                + "        if (!SettingsStatus.wrapped)\n            return;\n"
+                + "        if (!SettingsStatus.commented) return; // and a note\n"
+                + "        if (!isAvailable()) return;\n"
+                + "        if (!Settings.SOME_TOGGLE.get()) return;\n"
+                + "        if (context == null) return;\n"
+                + "        // if (!SettingsStatus.inAComment) return;\n"
+                + "        String text = \"if (!SettingsStatus.inAString) return;\";\n"
+                + "        if (SettingsStatus.positive) { addPreference(null); }\n"
+                + "    }\n"
+                + "}\n";
+
+        java.util.List<String> found = earlyReturns(source);
+        assertEquals("the scan missed one of the shapes it exists for: " + found, 6, found.size());
+        for (String shape : new String[]{"bare", "braced", "wrapped", "commented",
+                "isAvailable()", "SOME_TOGGLE"}) {
+            assertTrue(shape + " walked past the scan: " + found,
+                    found.toString().contains(shape));
+        }
+        assertFalse("an ordinary null guard was reported: " + found,
+                found.toString().contains("context"));
+        assertFalse("a commented-out line was reported: " + found,
+                found.toString().contains("inAComment"));
+        assertFalse("a string literal was reported: " + found,
+                found.toString().contains("inAString"));
+    }
+
+    /** Every preference category source, wherever a page is built from. */
+    private static java.io.File[] categorySources() {
         java.io.File directory = new java.io.File(
                 "src/main/java/app/morphe/extension/tiktok/settings/preference/categories");
         if (!directory.isDirectory()) directory = new java.io.File(
                 "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories");
         assertTrue("could not find " + directory.getAbsolutePath(), directory.isDirectory());
+        java.io.File[] files = directory.listFiles(
+                (dir, name) -> name.endsWith(".java"));
+        return java.util.Objects.requireNonNull(files);
+    }
 
-        java.util.List<String> offenders = new java.util.ArrayList<>();
-        java.io.File[] files = java.util.Objects.requireNonNull(directory.listFiles());
-        assertTrue("no categories were read at all", files.length > 5);
-        for (java.io.File file : files) {
-            if (!file.getName().endsWith(".java")) continue;
-            String source = new String(java.nio.file.Files.readAllBytes(file.toPath()),
-                    java.nio.charset.StandardCharsets.UTF_8);
-            String packed = withoutComments(source).replaceAll("\\s+", "");
-            int at = 0;
-            while ((at = packed.indexOf("if(", at)) >= 0) {
-                int close = matchingBracket(packed, at + 2);
-                if (close < 0) break;
-                String condition = packed.substring(at + 3, close);
-                String rest = packed.substring(close + 1);
-                boolean returnsNow = rest.startsWith("return;") || rest.startsWith("{return;}");
-                boolean aboutAPatch = condition.contains("SettingsStatus.")
-                        || condition.contains("isAvailable()");
-                if (returnsNow && aboutAPatch) {
-                    offenders.add(file.getName() + ": if (" + condition + ") return;");
-                }
-                at = close + 1;
-            }
+    /**
+     * Guards that end a page's build early on something a patch decides. Comments and both kinds
+     * of literal go first and then all whitespace, so the shape is caught however it is written:
+     * on one line or two, braced or bare, with a note after it.
+     */
+    private static java.util.List<String> earlyReturns(String source) {
+        java.util.List<String> found = new java.util.ArrayList<>();
+        String packed = withoutCommentsOrLiterals(source).replaceAll("\\s+", "");
+        int at = 0;
+        while ((at = packed.indexOf("if(", at)) >= 0) {
+            int close = matchingBracket(packed, at + 2);
+            if (close < 0) break;
+            String condition = packed.substring(at + 3, close);
+            String rest = packed.substring(close + 1);
+            boolean returnsNow = rest.startsWith("return;") || rest.startsWith("{return;}");
+            boolean aboutAPatch = condition.startsWith("!")
+                    && (condition.contains("SettingsStatus.") || condition.contains("isAvailable()")
+                            || condition.contains("Settings."));
+            if (returnsNow && aboutAPatch) found.add("if (" + condition + ") return;");
+            at = close + 1;
         }
-        assertEquals("a flag returning early from a settings page hides every flag below it: "
-                + offenders, 0, offenders.size());
+        return found;
     }
 
     /** Index of the ')' matching the '(' at {@code open}, or -1. */
@@ -231,25 +279,29 @@ public class SettingsPagesTest {
         return -1;
     }
 
-    /** Source with line and block comments blanked out, so their text cannot look like code. */
-    private static String withoutComments(String source) {
+    /** Source with comments and both kinds of literal removed, so their text is not read as code. */
+    private static String withoutCommentsOrLiterals(String source) {
         StringBuilder out = new StringBuilder(source.length());
         for (int at = 0; at < source.length(); ) {
+            char c = source.charAt(at);
             if (source.startsWith("//", at)) {
                 while (at < source.length() && source.charAt(at) != '\n') at++;
             } else if (source.startsWith("/*", at)) {
                 int end = source.indexOf("*/", at + 2);
                 at = end < 0 ? source.length() : end + 2;
-            } else if (source.charAt(at) == '"') {
-                // A literal can hold anything, including the shape being looked for.
+            } else if (c == '"' || c == '\'') {
+                // A char literal holding a quote used to leave the scanner reading the rest of
+                // the file as one string, which swallowed any real finding after it.
+                char quote = c;
                 at++;
-                while (at < source.length() && source.charAt(at) != '"') {
+                while (at < source.length() && source.charAt(at) != quote) {
                     if (source.charAt(at) == '\\') at++;
                     at++;
                 }
                 at++;
             } else {
-                out.append(source.charAt(at++));
+                out.append(c);
+                at++;
             }
         }
         return out.toString();
@@ -851,6 +903,18 @@ public class SettingsPagesTest {
             String summary = String.valueOf(row.getSummary());
             assertTrue("the hour does not read as a time: " + summary, summary.contains("04:00"));
             assertTrue("the unit is still there: " + summary, summary.indexOf("o'clock") < 0);
+
+            // The two values the old wording actually broke on.
+            Settings.SESSION_BUDGET_RESET_HOUR.save(13);
+            row.setValue("13");
+            assertTrue("an afternoon hour: " + row.getSummary(),
+                    String.valueOf(row.getSummary()).contains("13:00"));
+
+            Settings.SESSION_BUDGET_RESET_HOUR.save(0);
+            row.setValue("0");
+            assertTrue("midnight: " + row.getSummary(),
+                    String.valueOf(row.getSummary()).contains("00:00"));
+            Settings.SESSION_BUDGET_RESET_HOUR.resetToDefault();
         }
     }
 }

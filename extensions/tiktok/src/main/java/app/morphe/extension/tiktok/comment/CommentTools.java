@@ -334,7 +334,9 @@ public final class CommentTools {
     }
 
     /**
-     * Every comment on screen, not only the one that was tapped. A thread usually holds several
+     * Every cell still registered, which is every comment on screen plus any pooled rows the
+     * map has not let go of yet. Refreshing a pooled row costs nothing and it is bound again
+     * before it is shown. Not only the one that was tapped: a thread usually holds several
      * comments by the same account, and refreshing one left the others reading "Block this
      * commenter, not blocked" for an account that is already blocked. Acting on that label did
      * the opposite of what it said, because the toggle reads the blocked set rather than the

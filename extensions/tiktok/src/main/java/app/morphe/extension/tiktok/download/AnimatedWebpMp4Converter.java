@@ -32,9 +32,12 @@ import java.nio.FloatBuffer;
 /** Converts TikTok animated WebP sticker frames to a Gallery-compatible MP4. */
 final class AnimatedWebpMp4Converter {
     /**
-     * A cap on one composed frame. Only one is held at a time here, unlike the GIF converter
-     * which holds every frame, so this counts pixels rather than pixels times frames. The same
-     * number the still sticker path uses.
+     * A cap on one composed frame, in pixels rather than pixels times frames, because only one
+     * frame is held at a time here. It is not the same situation as the still sticker path,
+     * which decodes one bitmap: at this cap the composed bitmap, the frame bitmap and the
+     * texture upload are each around 64 MB. What actually holds the ceiling down on a device is
+     * the encoder, which refuses a format far below this, and that runs before the allocation.
+     * This is the guard for the case where it does not.
      */
     private static final long MAX_FRAME_PIXELS = 16L * 1024 * 1024;
 

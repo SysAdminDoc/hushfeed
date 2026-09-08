@@ -48,11 +48,24 @@ public class LogBufferManagerExportTest {
                 org.robolectric.shadows.ShadowActivityManager.ApplicationExitInfoBuilder.newBuilder()
                 .setReason(13)
                 .setTimestamp(1757260800000L)
+                .setProcessName(RuntimeEnvironment.getApplication().getPackageName())
                 .setDescription("MemoryLimiter:AnonSwap")
+                .build();
+
+        // TikTok runs several processes, and the most recent record is routinely a background
+        // helper the system reaped. Reporting that as why the app went away is worse than saying
+        // nothing, so the newer of the two here must be passed over.
+        android.app.ApplicationExitInfo helper = org.robolectric.shadows.ShadowActivityManager
+                .ApplicationExitInfoBuilder.newBuilder()
+                .setReason(10)
+                .setTimestamp(1757260900000L)
+                .setProcessName(RuntimeEnvironment.getApplication().getPackageName() + ":push")
+                .setDescription("a background helper nobody asked about")
                 .build();
         android.app.ActivityManager manager = (android.app.ActivityManager) RuntimeEnvironment
                 .getApplication().getSystemService(Context.ACTIVITY_SERVICE);
         org.robolectric.Shadows.shadowOf(manager).addApplicationExitInfo(exit);
+        org.robolectric.Shadows.shadowOf(manager).addApplicationExitInfo(helper);
 
         // The line rides along with a report that was already worth making. On its own it must
         // not make one, because every process has a last exit and most of them are ordinary.
@@ -65,6 +78,14 @@ public class LogBufferManagerExportTest {
         assertTrue("the reason was not named: " + report, report.contains("reason: OTHER"));
         assertTrue("the description the kill carried was dropped: " + report,
                 report.contains("MemoryLimiter:AnonSwap"));
+        assertTrue("a background helper's exit was reported as the app's: " + report,
+                report.indexOf("a background helper nobody asked about") < 0);
+        java.text.SimpleDateFormat utc =
+                new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US);
+        utc.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+        String when = utc.format(new java.util.Date(1757260800000L));
+        assertTrue("the time it happened was left out or in another format: " + report,
+                report.contains(when));
     }
 
     @Test public void repeatedLegacyExportsUseTheRealUniqueDocumentsPaths() throws Exception {

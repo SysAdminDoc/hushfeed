@@ -1,5 +1,13 @@
 ## Unreleased
 
+* A hold no longer argues with a phone call over the sound. It asks once as the panel goes up, and again only when you come back to the feed, instead of asking every second for as long as the hold lasts.
+
+* The diagnostic report names the exit of the app itself rather than whichever of TikTok's background processes the system happened to reap last, and it carries the exit status and importance alongside the reason.
+
+* A feed filter that emptied a single batch says "one batch" rather than "1 batches".
+
+* A settings backup and a diagnostics report made in the same second are now named with the same timestamp. The backup used local time and the report used UTC.
+
 * Three search boxes read back what you typed instead of their own label. A content description on an editable field replaces its contents for a screen reader, so typing "cats" came back as "Search settings".
 
 * The tab picker rows say whether they are on, and say so again after you tap one. The check box in each row is not the thing you press, so a screen reader had no state to read at all.

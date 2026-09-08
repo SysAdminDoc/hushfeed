@@ -114,6 +114,14 @@ final class FeedFilterFeedback {
             summary.append(L10n.t(entry.getKey())).append(" (").append(entry.getValue()).append(")");
         }
         if (summary.length() == 0) summary.append(L10n.t(OTHER_REASON));
+        // One batch is the common case the first time this shows, and "to 1 batches" is not a
+        // sentence.
+        if (filteredBatches == 1) {
+            return L10n.f(
+                    "No videos remained after Hushfeed applied your feed filters to one batch. Most matches: %1$s.",
+                    summary.toString()
+            );
+        }
         return L10n.f(
                 "No videos remained after Hushfeed applied your feed filters to %1$d batches. Most matches: %2$s.",
                 filteredBatches,

@@ -213,17 +213,18 @@ public class SessionLockOverlayTest {
         }
     }
 
-    @Test public void losingTheAudioFocusDoesNotEndTheHoldsOnlyLever() throws Exception {
-        // A call, or another app taking the focus, drops us off the stack. Nothing else would
-        // notice: the tick kept seeing the flag set and never asked again, so the feed played
-        // behind the panel for the rest of the hold.
+    @Test public void theHoldDoesNotFightWhoeverTookTheSoundAway() throws Exception {
+        // A call takes the focus for good. The flag has to follow, or nothing would ever ask
+        // again for the rest of the hold. What must not happen is asking again a second later:
+        // the tick runs every second, and that would be taking the sound off the call.
         Settings.SESSION_BUDGET_VIDEOS.save(1);
         Settings.SESSION_BUDGET_LOCK_MINUTES.save(5);
         SessionBudget.noteVideo("a");
         assertTrue(SessionBudget.claimNotice());
 
         try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
-            Utils.setActivity(owner.get());
+            Activity activity = owner.get();
+            Utils.setActivity(activity);
             SessionLockOverlay.sync();
             assertTrue("the hold never took the focus", quietened());
 
@@ -234,7 +235,14 @@ public class SessionLockOverlayTest {
             assertTrue("losing the focus left the hold thinking it still had it", !quietened());
 
             SessionLockOverlay.sync();
-            assertTrue("the hold never asked for the focus again", quietened());
+            assertTrue("the hold asked a call to give the sound back a second later", !quietened());
+
+            // The panel going up again is a thing the reader did, so that is when it is fair to
+            // ask. This is the state the off-feed branch leaves the panel in.
+            ViewGroup root = activity.findViewById(android.R.id.content);
+            root.getChildAt(root.getChildCount() - 1).setVisibility(View.GONE);
+            SessionLockOverlay.sync();
+            assertTrue("coming back to the feed did not quiet it again", quietened());
         }
     }
 

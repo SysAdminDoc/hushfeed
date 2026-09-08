@@ -106,6 +106,13 @@ public class SimSpoofPreferenceCategory extends ConditionalPreferenceCategory {
             addPreference(simPresetPreference);
             addPreference(mccMncPreference);
             addPreference(operatorNamePreference);
+        } else {
+            // The preset row is not on the page, so the listeners that keep its summary in step
+            // with three fields have nothing to keep in step. Left in place they read text from
+            // two rows that were never attached.
+            countryIsoPreference.setOnPreferenceChangeListener(null);
+            mccMncPreference.setOnPreferenceChangeListener(null);
+            operatorNamePreference.setOnPreferenceChangeListener(null);
         }
     }
 }

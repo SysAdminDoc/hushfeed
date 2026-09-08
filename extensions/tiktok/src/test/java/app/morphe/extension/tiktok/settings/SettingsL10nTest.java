@@ -1,5 +1,6 @@
 package app.morphe.extension.tiktok.settings;
 
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -81,41 +82,43 @@ public class SettingsL10nTest {
      * walked either: it is TikTok-independent code, and this table is TikTok's.
      */
     @Test public void everyTranslationKeepsTheShapeOfItsKey() {
-        // Three defects the tables carried, none of which the key-set checks could see. A bare
-        // "%d" where the key says "%1$d" works only while there is exactly one argument. Five
-        // German summaries on one screen ended without the full stop the rest of the screen has.
-        // One value opened a German quote and closed it with an ASCII one.
+        // Defects the key-set checks cannot see. A placeholder that changed, was dropped or was
+        // invented; a sentence that lost or gained its terminator; a quote pair that does not
+        // close. The first pass of this check only looked at numbered placeholders in the key,
+        // so a bare "%s" and an invented placeholder both walked past it.
         java.util.List<String> problems = new java.util.ArrayList<>();
         java.util.Map<String, java.util.Map<String, String>> tables = new java.util.LinkedHashMap<>();
         tables.put("de", GERMAN);
         tables.put("in", INDONESIAN);
 
-        java.util.regex.Pattern placeholder = java.util.regex.Pattern.compile("%\\d+\\$[a-z]");
         for (java.util.Map.Entry<String, java.util.Map<String, String>> table : tables.entrySet()) {
+            String language = table.getKey();
             for (java.util.Map.Entry<String, String> row : table.getValue().entrySet()) {
                 String key = row.getKey();
                 String value = row.getValue();
 
-                java.util.Set<String> wanted = new java.util.TreeSet<>();
-                var inKey = placeholder.matcher(key);
-                while (inKey.find()) wanted.add(inKey.group());
-                java.util.Set<String> given = new java.util.TreeSet<>();
-                var inValue = placeholder.matcher(value);
-                while (inValue.find()) given.add(inValue.group());
-                if (!wanted.isEmpty() && !wanted.equals(given)) {
-                    problems.add(table.getKey() + " placeholders " + wanted + " became " + given
+                // Both directions and both spellings, so a dropped, changed, added or
+                // renumbered placeholder is all the same finding.
+                java.util.List<String> wanted = placeholders(key);
+                java.util.List<String> given = placeholders(value);
+                if (!wanted.equals(given)) {
+                    problems.add(language + " placeholders " + wanted + " became " + given
                             + " in: " + key);
                 }
 
-                if (key.endsWith(".") && !endsASentence(value)) {
-                    problems.add(table.getKey() + " dropped the full stop from: " + key);
+                if (terminator(key) != terminator(value)) {
+                    problems.add(language + " ends the sentence with '" + terminator(value)
+                            + "' where the key ends with '" + terminator(key) + "' in: " + key);
                 }
 
-                long opened = value.chars().filter(c -> c == '\u201e').count();
-                long closed = value.chars().filter(c -> c == '\u201c').count();
+                // German opens low and closes high. Everything else here uses the English pair.
+                char open = "de".equals(language) ? '\u201e' : '\u201c';
+                char close = "de".equals(language) ? '\u201c' : '\u201d';
+                long opened = value.chars().filter(c -> c == open).count();
+                long closed = value.chars().filter(c -> c == close).count();
                 if (opened != closed) {
-                    problems.add(table.getKey() + " opened " + opened + " quotes and closed "
-                            + closed + " in: " + key);
+                    problems.add(language + " opened " + opened + " quotes and closed " + closed
+                            + " in: " + key);
                 }
             }
         }
@@ -123,11 +126,34 @@ public class SettingsL10nTest {
                 0, problems.size());
     }
 
-    private static boolean endsASentence(String value) {
-        String trimmed = value.trim();
-        if (trimmed.isEmpty()) return false;
+    @Test public void theTranslationShapeCheckCanActuallyFail() {
+        // A scan with nothing to find is a scan that proves nothing. These are the four shapes
+        // the check exists for, put in front of it on purpose.
+        assertNotEquals("a dropped placeholder", placeholders("across %1$d surfaces"),
+                placeholders("auf %d Oberflachen"));
+        assertNotEquals("a renumbered placeholder", placeholders("%1$s and %2$s"),
+                placeholders("%2$s and %1$s"));
+        assertNotEquals("an invented placeholder", placeholders("no placeholder here"),
+                placeholders("keiner %1$s hier"));
+        assertNotEquals("a dropped full stop", terminator("Hide the caption."),
+                terminator("Beschreibung ausblenden"));
+        assertNotEquals("a changed terminator", terminator("Really?"), terminator("Wirklich."));
+    }
+
+    /** Every placeholder in order, numbered or bare, so a change of either kind shows up. */
+    private static java.util.List<String> placeholders(String text) {
+        java.util.List<String> found = new java.util.ArrayList<>();
+        var match = java.util.regex.Pattern.compile("%(?:\\d+\\$)?[a-zA-Z]").matcher(text);
+        while (match.find()) found.add(match.group());
+        return found;
+    }
+
+    /** The character a string ends a sentence with, or a space when it ends with none. */
+    private static char terminator(String text) {
+        String trimmed = text.trim();
+        if (trimmed.isEmpty()) return ' ';
         char last = trimmed.charAt(trimmed.length() - 1);
-        return last == '.' || last == '!' || last == '?' || last == '\u2026';
+        return ".!?:\u2026".indexOf(last) >= 0 ? last : ' ';
     }
 
     @Test public void everyRuntimeToastGoesThroughTheTable() throws Exception {

@@ -312,12 +312,25 @@ public final class LogBufferManager {
             ActivityManager manager =
                     (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
             if (manager == null) return "";
-            List<ApplicationExitInfo> history = manager.getHistoricalProcessExitReasons(
-                    context.getPackageName(), 0, 1);
+            // Pid 0 means any process, and TikTok runs several. The most recent record is
+            // routinely a background helper the system reaped, which says nothing about why the
+            // app went away, so the main process is picked out by name.
+            String packageName = context.getPackageName();
+            List<ApplicationExitInfo> history =
+                    manager.getHistoricalProcessExitReasons(packageName, 0, 16);
             if (history == null || history.isEmpty()) return "";
-            ApplicationExitInfo exit = history.get(0);
+            ApplicationExitInfo exit = null;
+            for (ApplicationExitInfo candidate : history) {
+                if (packageName.equals(candidate.getProcessName())) {
+                    exit = candidate;
+                    break;
+                }
+            }
+            if (exit == null) return "";
             StringBuilder line = new StringBuilder();
             line.append("reason: ").append(exitReasonName(exit.getReason()))
+                    .append("\nstatus: ").append(exit.getStatus())
+                    .append("\nimportance: ").append(exit.getImportance())
                     .append("\nat: ").append(utcOf(exit.getTimestamp()));
             String description = exit.getDescription();
             if (description != null && !description.isEmpty()) {
@@ -348,12 +361,14 @@ public final class LogBufferManager {
             case 14: return "FREEZER";
             case 15: return "PACKAGE_STATE_CHANGE";
             case 16: return "PACKAGE_UPDATED";
-            default: return "UNKNOWN (" + reason + ")";
+            case 0: return "UNKNOWN";
+            default: return "REASON " + reason;
         }
     }
 
+    /** The same stamp the report header carries, so one report does not hold two formats. */
     private static String utcOf(long epochMillis) {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
         format.setTimeZone(TimeZone.getTimeZone("UTC"));
         return format.format(new Date(epochMillis));
     }
@@ -459,7 +474,8 @@ public final class LogBufferManager {
         return format.format(new Date());
     }
 
-    private static String fileTimestamp() {
+    /** The stamp every Hushfeed export is named with. UTC, so two exports sort together. */
+    public static String fileTimestamp() {
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US);
         format.setTimeZone(TimeZone.getTimeZone("UTC"));
         return format.format(new Date());

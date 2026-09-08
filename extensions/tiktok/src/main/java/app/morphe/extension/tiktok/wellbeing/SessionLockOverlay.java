@@ -70,12 +70,16 @@ public final class SessionLockOverlay {
      * feed playing, not to play anything.
      */
     private static final AudioManager.OnAudioFocusChangeListener QUIET = change -> {
-        // Losing it for good, to a call or to another app, drops us off the focus stack and
-        // nothing else would notice: the tick would keep seeing the flag set and never ask
-        // again, so the feed would play behind the panel for the rest of the hold.
+        // Losing it for good, to a call or to another app, drops us off the focus stack, and
+        // the flag has to follow or nothing would ever ask again. What must not happen is
+        // asking again a second later: that is how you take the sound off the call that just
+        // took it, once a second, for the length of the hold. So the flag is cleared and the
+        // next request waits for the panel to be put up again, which only happens when the
+        // reader comes back to the feed.
         if (change == AudioManager.AUDIOFOCUS_LOSS) quietened = false;
     };
-    private static boolean quietened;
+    /** Written from the audio focus callback, which is not guaranteed to be the main thread. */
+    private static volatile boolean quietened;
 
     private SessionLockOverlay() {
     }
@@ -101,7 +105,12 @@ public final class SessionLockOverlay {
                 return;
             }
             Activity activity = Utils.getActivity();
-            if (activity == null || activity.isFinishing() || activity.isDestroyed()) return;
+            if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
+                // Mid teardown, so there is nothing to attach to yet. The hold is still on and
+                // the player may still be running, so the sound is still worth asking for.
+                requestQuiet();
+                return;
+            }
             if (!FeedVisibility.isOnFeed(activity)) {
                 // Messages, profiles and search still work, which the panel says in as many
                 // words, so the hold has no business silencing anything played there.
@@ -110,10 +119,20 @@ public final class SessionLockOverlay {
                 if (existing != null) existing.setVisibility(View.GONE);
                 return;
             }
+            View before = overlayReference.get();
             View overlay = attach(activity);
-            if (overlay == null) return;
+            if (overlay == null) {
+                // No content root to hold the panel. The feed is still running, so ask for the
+                // sound anyway rather than leaving the hold with nothing at all.
+                requestQuiet();
+                return;
+            }
+            // A panel that was just built, or one coming back from the reader being away on
+            // messages or search. Not every tick: a tick that asked again would be asking a
+            // phone call to give the sound back once a second, for as long as the hold runs.
+            boolean goingUp = before != overlay || overlay.getVisibility() != View.VISIBLE;
             overlay.setVisibility(View.VISIBLE);
-            requestQuiet();
+            if (goingUp) requestQuiet();
             TextView remaining = remainingReference.get();
             if (remaining != null) remaining.setText(remainingLabel());
         } catch (Throwable error) {

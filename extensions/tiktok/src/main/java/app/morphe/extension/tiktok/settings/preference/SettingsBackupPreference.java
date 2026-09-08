@@ -64,9 +64,11 @@ public final class SettingsBackupPreference extends Preference {
      * put a name in the picker that nobody could tell two backups apart by.
      */
     public static String suggestedExportName() {
-        String stamp = new java.text.SimpleDateFormat("yyyyMMdd-HHmmss", java.util.Locale.US)
-                .format(new java.util.Date());
-        return "hushfeed-settings-" + stamp + ".json";
+        // The diagnostics export stamps in UTC, and a backup made in the same second used to get
+        // a name hours away from it because this one used local time.
+        return "hushfeed-settings-"
+                + app.morphe.extension.shared.settings.preference.LogBufferManager.fileTimestamp()
+                + ".json";
     }
 
     private static void pickFile(TikTokPreferenceFragment fragment, int action) {
