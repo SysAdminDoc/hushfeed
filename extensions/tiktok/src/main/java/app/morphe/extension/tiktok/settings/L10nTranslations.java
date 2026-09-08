@@ -1062,8 +1062,8 @@ public final class L10nTranslations {
                 "Live-Suche anzeigen");
         table.put("Show TikTok's own progress bar on videos where it is normally hidden.",
                 "TikToks eigene Fortschrittsleiste bei Videos zeigen, wo sie sonst versteckt ist.");
-        table.put("Show TikTok's own sort sheet on every post, with its hot, newest, media and creator options, instead of whichever cut-down row your account was given.",
-                "TikToks eigenes Sortierfenster bei jedem Beitrag anzeigen, mit den Optionen Beliebt, Neueste, Medien und Ersteller, statt der gekürzten Zeile, die dein Konto bekommen hat.");
+        table.put("Show TikTok's own sort sheet on every post, with its hot, newest, media and creator options, instead of whichever cut-down row your account was given. Restart TikTok after changing this: TikTok reads the style once per run and remembers it.",
+                "TikToks eigenes Sortierfenster bei jedem Beitrag anzeigen, mit den Optionen Beliebt, Neueste, Medien und Ersteller, statt der gekürzten Zeile, die dein Konto bekommen hat. Starte TikTok danach neu: TikTok liest den Stil einmal pro Lauf und merkt ihn sich.");
         table.put("Show TikTok's search entry in the Live drawer where supported.",
                 "TikToks Sucheingang im Live-Bereich anzeigen, wo das unterstützt wird.");
         table.put("Show a video preview thumbnail while dragging the seekbar.",
@@ -2395,8 +2395,8 @@ public final class L10nTranslations {
                 "Tampilkan pencarian LIVE");
         table.put("Show TikTok's own progress bar on videos where it is normally hidden.",
                 "Tampilkan bilah progres TikTok pada video yang biasanya menyembunyikannya.");
-        table.put("Show TikTok's own sort sheet on every post, with its hot, newest, media and creator options, instead of whichever cut-down row your account was given.",
-                "Tampilkan lembar urutan milik TikTok di setiap unggahan, dengan opsi populer, terbaru, media, dan kreator, alih-alih baris ringkas yang diberikan ke akunmu.");
+        table.put("Show TikTok's own sort sheet on every post, with its hot, newest, media and creator options, instead of whichever cut-down row your account was given. Restart TikTok after changing this: TikTok reads the style once per run and remembers it.",
+                "Tampilkan lembar urutan milik TikTok di setiap unggahan, dengan opsi populer, terbaru, media, dan kreator, alih-alih baris ringkas yang diberikan ke akunmu. Mulai ulang TikTok setelah mengubah ini: TikTok membaca gayanya sekali per proses dan mengingatnya.");
         table.put("Show TikTok's search entry in the Live drawer where supported.",
                 "Tampilkan kolom cari TikTok di laci LIVE bila didukung.");
         table.put("Show a video preview thumbnail while dragging the seekbar.",

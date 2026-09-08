@@ -28,6 +28,8 @@ val commentSortControlsPatch = bytecodePatch(
     description = "Shows TikTok's own comment sort sheet on every post, with its hot, newest, " +
         "media and creator options, instead of the cut-down row an account outside the rollout " +
         "is given. Supports TikTok 46.2.3.",
+    // Off by default, unlike upstream. It changes a surface every comment sheet shows and
+    // nobody here has watched it on a device yet.
     default = false,
 ) {
     dependsOn(settingsPatch, sharedExtensionPatch)
@@ -41,17 +43,24 @@ val commentSortControlsPatch = bytecodePatch(
         )
 
         // The style the rollout hands out decides whether the full sheet or the cut-down row is
-        // built, so the value is read on its way out of the settings lookup.
+        // built, so the value is read on its way out of the settings lookup. The insert lands
+        // inside the method's try block, so anything thrown out of the extension is swallowed by
+        // the host's own handler and the stock style is used: it fails to the unpatched
+        // behaviour rather than taking the comment sheet down, but it fails silently.
         val style = CommentSortOptionStyleFingerprint.method
         val styleInstructions = style.implementation!!.instructions.toList()
         val stringIndex = styleInstructions.indexOfFirst {
             it.opcode == Opcode.CONST_STRING &&
                 it.getReference<StringReference>()?.string == "comment_sort_opt_style"
         }
-        check(stringIndex >= 0)
-        val resultIndex = styleInstructions.withIndex().first { (index, instruction) ->
-            index > stringIndex && instruction.opcode == Opcode.MOVE_RESULT
-        }.index
+        check(stringIndex >= 0) {
+            "comment_sort_opt_style is not in the method the fingerprint matched"
+        }
+        val resultIndex = checkNotNull(
+            styleInstructions.withIndex().firstOrNull { (index, instruction) ->
+                index > stringIndex && instruction.opcode == Opcode.MOVE_RESULT
+            },
+        ) { "nothing reads a result after comment_sort_opt_style any more" }.index
         val styleRegister = (styleInstructions[resultIndex] as OneRegisterInstruction).registerA
         style.addInstructions(
             resultIndex + 1,

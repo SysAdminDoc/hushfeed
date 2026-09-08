@@ -62,7 +62,8 @@ public class CommentsPreferenceCategory extends ConditionalPreferenceCategory {
                     "Full comment sort options",
                     "Show TikTok's own sort sheet on every post, with its hot, newest, media and "
                             + "creator options, instead of whichever cut-down row your account was "
-                            + "given.",
+                            + "given. Restart TikTok after changing this: TikTok reads the style "
+                            + "once per run and remembers it.",
                     Settings.COMMENT_SORT_CONTROLS
             ));
         }
