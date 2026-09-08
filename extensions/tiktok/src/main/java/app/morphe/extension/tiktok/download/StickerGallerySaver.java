@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.InterruptedIOException;
@@ -198,10 +199,22 @@ public final class StickerGallerySaver {
         button.setEnabled(false);
         toast(context, L10n.t("Saving sticker"));
 
-        MediaJobScheduler.JobHandle job = MediaJobScheduler.submit("sticker", () -> {
+        // A submitted job stays in the scheduler's static map until it finishes, which is up to
+        // the two minute deadline with eight more queued behind it. Capturing the button held
+        // the sheet's Activity for that whole window after the sheet itself was gone. Every
+        // other view this file keeps hold of is already weak.
+        WeakReference<View> anchor = new WeakReference<>(button);
+        MediaJobScheduler.JobHandle job = MediaJobScheduler.submit(
+                "sticker", stickerSaveWork(context, asset, anchor), handBackLater(anchor));
+        if (job == null) handBackLater(anchor).run();
+    }
+
+    /** The work one sticker save does, holding the sheet by nothing stronger than {@code anchor}. */
+    static Runnable stickerSaveWork(Context context, StickerAsset asset, WeakReference<View> anchor) {
+        return () -> {
             SaveResult result = saveSticker(context, asset);
             MAIN_HANDLER.post(() -> {
-                button.setEnabled(true);
+                handBack(anchor);
                 toast(context, result.message);
                 if (result.success) {
                     debugLog("[Morphe Stickers] saved sticker path=" + result.path);
@@ -210,8 +223,18 @@ public final class StickerGallerySaver {
                             + " url=" + summarizeUrl(asset.url));
                 }
             });
-        }, () -> MAIN_HANDLER.post(() -> button.setEnabled(true)));
-        if (job == null) MAIN_HANDLER.post(() -> button.setEnabled(true));
+        };
+    }
+
+    /** Hands the button back on the main thread, for a save that never ran. */
+    static Runnable handBackLater(WeakReference<View> anchor) {
+        return () -> MAIN_HANDLER.post(() -> handBack(anchor));
+    }
+
+    /** Re-enables the Save button, unless the sheet that owned it has already gone. */
+    private static void handBack(WeakReference<View> anchor) {
+        View button = anchor.get();
+        if (button != null) button.setEnabled(true);
     }
 
     private static SaveResult saveSticker(Context context, StickerAsset asset) {
@@ -1106,7 +1129,8 @@ public final class StickerGallerySaver {
         }
     }
 
-    private static final class StickerAsset {
+    /** Package-private with {@link #stickerSaveWork}, which a test builds directly. */
+    static final class StickerAsset {
         final String url;
         final List<String> urls;
         final boolean animated;

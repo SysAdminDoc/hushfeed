@@ -1,6 +1,7 @@
 package app.morphe.extension.tiktok.download;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -174,6 +175,86 @@ public class StickerGallerySaverTest {
         Field f = asset.getClass().getDeclaredField("url");
         f.setAccessible(true);
         return (String) f.get(asset);
+    }
+
+    @Test public void aRunningSaveDoesNotHoldTheSheetThatStartedIt() {
+        View button = new View(RuntimeEnvironment.getApplication());
+        java.lang.ref.WeakReference<View> anchor = new java.lang.ref.WeakReference<>(button);
+        StickerGallerySaver.StickerAsset asset =
+                new StickerGallerySaver.StickerAsset("https://cdn.example/sticker.webp", false);
+
+        Runnable work = StickerGallerySaver.stickerSaveWork(
+                RuntimeEnvironment.getApplication(), asset, anchor);
+        Runnable cancelled = StickerGallerySaver.handBackLater(anchor);
+
+        // The control: a closure that does capture the button has to be found, or the walk below
+        // proves nothing about the two that should not.
+        Runnable capturing = () -> button.setEnabled(true);
+        assertTrue("the reachability walk cannot even see a captured view",
+                reaches(capturing, button));
+
+        assertFalse("a queued sticker save holds the button, and through it the Activity",
+                reaches(work, button));
+        assertFalse("a cancelled sticker save holds the button",
+                reaches(cancelled, button));
+    }
+
+    @Test public void aSaveThatNeverRanStillHandsTheButtonBack() {
+        View button = new View(RuntimeEnvironment.getApplication());
+        button.setEnabled(false);
+        StickerGallerySaver.handBackLater(new java.lang.ref.WeakReference<>(button)).run();
+        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+        assertTrue("the Save button was left disabled for good", button.isEnabled());
+    }
+
+    /**
+     * Whether {@code target} can be reached from {@code root} by strong references only.
+     *
+     * <p>A {@link java.lang.ref.Reference} is a stop: what it points at is exactly what this is
+     * checking is not held. A {@link android.content.Context} is a stop too, because the
+     * application context is a process-lifetime object the save is meant to carry, and walking
+     * into it would drag in every Activity the test framework knows about.
+     */
+    private static boolean reaches(Object root, Object target) {
+        java.util.IdentityHashMap<Object, Boolean> seen = new java.util.IdentityHashMap<>();
+        java.util.ArrayDeque<Object> pending = new java.util.ArrayDeque<>();
+        pending.add(root);
+        while (!pending.isEmpty()) {
+            Object current = pending.poll();
+            if (current == null || seen.put(current, Boolean.TRUE) != null) continue;
+            if (current == target) return true;
+            if (current instanceof java.lang.ref.Reference
+                    || current instanceof android.content.Context
+                    || current instanceof Class
+                    || current instanceof ClassLoader
+                    || current instanceof String) {
+                continue;
+            }
+            Class<?> type = current.getClass();
+            if (type.isArray()) {
+                if (!type.getComponentType().isPrimitive()) {
+                    int length = java.lang.reflect.Array.getLength(current);
+                    for (int index = 0; index < length; index++) {
+                        pending.add(java.lang.reflect.Array.get(current, index));
+                    }
+                }
+                continue;
+            }
+            for (Class<?> level = type; level != null && level != Object.class;
+                    level = level.getSuperclass()) {
+                for (Field field : level.getDeclaredFields()) {
+                    if (java.lang.reflect.Modifier.isStatic(field.getModifiers())) continue;
+                    if (field.getType().isPrimitive()) continue;
+                    try {
+                        field.setAccessible(true);
+                        pending.add(field.get(current));
+                    } catch (Throwable closed) {
+                        // A platform internal that will not open. Nothing of ours is behind one.
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     @Test public void aCleartextStickerMirrorIsNotFetchedFrom() {
