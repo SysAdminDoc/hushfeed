@@ -14,6 +14,7 @@ Block this commenter	Diesen Kommentierenden blockieren
 Blocked	Blockiert
 Completed an interrupted settings change. Restart TikTok to apply it.	Eine unterbrochene Einstellungsänderung wurde abgeschlossen. Starte TikTok neu, um sie anzuwenden.
 Current: %1$s	Aktuell: %1$s
+Full comment sort options	Vollständige Sortieroptionen für Kommentare
 Hushfeed settings could not be added to this screen	Hushfeed-Einstellungen konnten diesem Bildschirm nicht hinzugefügt werden
 No videos remained after Hushfeed applied your feed filters to one batch. Most matches: %1$s.	Nach Hushfeeds Feed-Filtern blieb in einem Stapel kein Video übrig. Häufigste Treffer: %1$s.
 Not blocked	Nicht blockiert
@@ -43,6 +44,7 @@ App behavior	App-Verhalten
 Applies to both video and photo downloads.	Gilt für Video- und Foto-Downloads.
 Arrange your feed and bottom tabs	Ordne deine Feed-Tabs und unteren Tabs an
 Auto-advance session limit	Limit für automatisches Weiterschalten pro Sitzung
+Show TikTok's own sort sheet on every post, with its hot, newest, media and creator options, instead of whichever cut-down row your account was given.	TikToks eigenes Sortierfenster bei jedem Beitrag anzeigen, mit den Optionen Beliebt, Neueste, Medien und Ersteller, statt der gekürzten Zeile, die dein Konto bekommen hat.
 Tap again to follow	Noch einmal tippen zum Folgen
 Tap again to like	Noch einmal tippen zum Liken
 That is one minute today	Das ist eine Minute heute

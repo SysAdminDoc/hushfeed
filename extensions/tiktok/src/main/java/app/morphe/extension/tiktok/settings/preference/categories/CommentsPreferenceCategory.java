@@ -21,7 +21,8 @@ public class CommentsPreferenceCategory extends ConditionalPreferenceCategory {
                 || SettingsStatus.commentTranslationEnabled
                 || SettingsStatus.hideCommentQuickReactionsEnabled
                 || SettingsStatus.copyCommentsWithoutUsernameEnabled
-                || SettingsStatus.hideCommentEggsEnabled;
+                || SettingsStatus.hideCommentEggsEnabled
+                || SettingsStatus.commentSortControlsEnabled;
     }
 
     @Override
@@ -53,6 +54,16 @@ public class CommentsPreferenceCategory extends ConditionalPreferenceCategory {
                     "Copy comments without username",
                     "Copy only the comment text when using TikTok's copy comment action.",
                     Settings.COPY_COMMENTS_WITHOUT_USERNAME
+            ));
+        }
+        if (SettingsStatus.commentSortControlsEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Full comment sort options",
+                    "Show TikTok's own sort sheet on every post, with its hot, newest, media and "
+                            + "creator options, instead of whichever cut-down row your account was "
+                            + "given.",
+                    Settings.COMMENT_SORT_CONTROLS
             ));
         }
         if (SettingsStatus.hideCommentEggsEnabled) {
