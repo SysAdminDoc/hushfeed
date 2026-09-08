@@ -263,10 +263,7 @@ public final class SessionBudget {
         synchronized (LOCK) {
             load();
             rollOver(clock.now());
-            // The switch turned on after the budget has already run out locks the rest of that
-            // day too. Without this it did nothing at all until tomorrow, while still reading
-            // as on, and the day it was turned on for stayed open.
-            return lockedToday || (Settings.SESSION_BUDGET_LOCK.get() && spent());
+            return lockedToday;
         }
     }
 
@@ -275,9 +272,7 @@ public final class SessionBudget {
         synchronized (LOCK) {
             load();
             rollOver(clock.now());
-            if (!lockedToday) {
-                return Settings.SESSION_BUDGET_LOCK.get() && spent() ? dayEndAfter(clock.now()) : 0L;
-            }
+            if (!lockedToday) return 0L;
             // The instant the lock committed to, not one worked out again now: the reset hour
             // and the timezone can both have moved since, and neither may bring the day forward.
             return lockUntilMs > 0 ? lockUntilMs : dayEndAfter(clock.now());
@@ -322,7 +317,7 @@ public final class SessionBudget {
             load();
             rollOver(clock.now());
             // The one exit the hold has, and the whole point of the lock is that today has none.
-            if (lockedToday || (Settings.SESSION_BUDGET_LOCK.get() && spent())) return;
+            if (lockedToday) return;
             if (lockUntilMs == 0) return;
             lockUntilMs = 0;
             save();
@@ -342,7 +337,7 @@ public final class SessionBudget {
         synchronized (LOCK) {
             load();
             rollOver(clock.now());
-            if (lockedToday || (Settings.SESSION_BUDGET_LOCK.get() && spent())) return false;
+            if (lockedToday) return false;
             undoDay = day;
             undoVideos = videos;
             undoWatchedMs = watchedMs;
@@ -356,6 +351,28 @@ public final class SessionBudget {
             lockUntilMs = 0;
             lastCountedId = null;
             noticeShown = false;
+            save();
+            return true;
+        }
+    }
+
+    /**
+     * Locks the rest of today when the budget has already run out, and says whether it did.
+     *
+     * <p>Called as the switch is turned on. Deriving the answer from the switch and the counts
+     * instead was a trap: {@code spent()} reads the budget live, so lowering the budget under
+     * the count you already had locked the day on the spot, for someone who never reached it.
+     * A locked day is one fact, written once, and only here or by the budget running out.
+     */
+    public static boolean lockIfSpent() {
+        synchronized (LOCK) {
+            load();
+            long now = clock.now();
+            rollOver(now);
+            if (lockedToday || !spent()) return false;
+            lockedToday = true;
+            long untilReset = dayEndAfter(now);
+            if (untilReset > lockUntilMs) lockUntilMs = untilReset;
             save();
             return true;
         }

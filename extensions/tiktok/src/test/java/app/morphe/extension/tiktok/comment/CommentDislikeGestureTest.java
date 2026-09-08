@@ -100,6 +100,52 @@ public class CommentDislikeGestureTest {
         assertFalse("the thumbs down still swallows touches", pressLands(cell.button));
     }
 
+    @Test public void aRowThisNeverTouchedKeepsWhatTikTokPutOnIt() {
+        // The hand-back used to run on every bind while the setting was off, whether or not the
+        // row had ever been taken over, and it restored framework defaults rather than what was
+        // there. Turning the feature off stripped TikTok's own label, tint and touch handling
+        // from every comment row it had never touched.
+        app.morphe.extension.tiktok.settings.Settings.BLOCK_FROM_COMMENT.save(false);
+        Cell cell = cell();
+
+        View.OnTouchListener host = (view, event) -> false;
+        cell.button.setOnTouchListener(host);
+        cell.button.setContentDescription("Dislike");
+        cell.icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+        cell.icon.setColorFilter(0xFF112233);
+        android.graphics.ColorFilter hostFilter = cell.icon.getColorFilter();
+
+        bind(cell);
+
+        assertEquals("TikTok's own label was cleared", "Dislike",
+                String.valueOf(cell.button.getContentDescription()));
+        assertEquals("the icon was hidden from a screen reader",
+                View.IMPORTANT_FOR_ACCESSIBILITY_YES, cell.icon.getImportantForAccessibility());
+        assertEquals("TikTok's own tint was cleared", hostFilter, cell.icon.getColorFilter());
+        // The listener is still TikTok's, which a press reaching ours would disprove.
+        assertFalse("TikTok's own touch handling was replaced", pressLands(cell.button));
+    }
+
+    @Test public void aRowThisDidTakeOverGetsBackWhatItHadBeforeTheTakeover() {
+        app.morphe.extension.tiktok.settings.Settings.BLOCK_FROM_COMMENT.save(true);
+        Cell cell = cell();
+        cell.button.setContentDescription("Dislike");
+        cell.icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+
+        bind(cell);
+        assertEquals("the takeover never happened", "Block this commenter",
+                String.valueOf(cell.button.getContentDescription()));
+
+        app.morphe.extension.tiktok.settings.Settings.BLOCK_FROM_COMMENT.save(false);
+        bind(cell);
+
+        assertEquals("the label came back as nothing rather than as TikTok's", "Dislike",
+                String.valueOf(cell.button.getContentDescription()));
+        assertEquals("the icon was left hidden from a screen reader",
+                View.IMPORTANT_FOR_ACCESSIBILITY_YES, cell.icon.getImportantForAccessibility());
+        assertFalse("the thumbs down still swallows touches", pressLands(cell.button));
+    }
+
     /** Whether a press on this view reaches the shared thumbs down listener. */
     private boolean pressLands(View view) {
         java.util.Map<View, ?> gestures = ReflectionHelpers.getField(touch, "gestures");

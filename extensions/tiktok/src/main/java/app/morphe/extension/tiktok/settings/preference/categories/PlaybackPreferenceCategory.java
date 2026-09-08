@@ -91,9 +91,22 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
         };
         for (String key : new String[]{Settings.SESSION_BUDGET_VIDEOS.key,
                 Settings.SESSION_BUDGET_MINUTES.key, Settings.SESSION_BUDGET_LOCK_MINUTES.key,
-                Settings.SESSION_BUDGET_RESET_HOUR.key, Settings.SESSION_BUDGET_LOCK.key}) {
+                Settings.SESSION_BUDGET_RESET_HOUR.key}) {
             Preference row = findPreference(key);
             if (row != null) row.setOnPreferenceChangeListener(refuseWhileLocked);
+        }
+
+        // The switch itself refuses the same way, and turning it on when the budget has already
+        // run out locks the rest of that day. Left to work it out from the switch and the counts
+        // together, lowering the budget under the count you already had locked the day for
+        // someone who never reached it.
+        Preference lockRow = findPreference(Settings.SESSION_BUDGET_LOCK.key);
+        if (lockRow != null) {
+            lockRow.setOnPreferenceChangeListener((preference, value) -> {
+                if (!refuseWhileLocked.onPreferenceChange(preference, value)) return false;
+                if (Boolean.TRUE.equals(value)) SessionBudget.lockIfSpent();
+                return true;
+            });
         }
 
         addPreference(new StartTodayOverPreference(context));

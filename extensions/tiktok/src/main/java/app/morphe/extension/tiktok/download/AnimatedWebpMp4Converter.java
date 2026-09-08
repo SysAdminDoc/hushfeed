@@ -420,6 +420,13 @@ final class AnimatedWebpMp4Converter {
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
             GLES20.glUseProgram(program);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
+            // The flag is sticky and nothing else here reads it, so program and texture setup
+            // leave whatever they set for the first frame to find. Drained first, the check
+            // below reports this upload rather than something that happened before it.
+            while (GLES20.glGetError() != GLES20.GL_NO_ERROR) {
+                // Discarding on purpose: these belong to setup, which has already succeeded far
+                // enough to get here, and attributing them to a frame would be a lie.
+            }
             android.opengl.GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
             // Belt and braces for a device whose reported maximum is not the whole story. The
             // caller writes the WebP as it came instead, which beats writing a black MP4.

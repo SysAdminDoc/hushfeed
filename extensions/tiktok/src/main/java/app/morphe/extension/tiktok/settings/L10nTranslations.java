@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1316);
+        Map<String, String> table = new HashMap<>(1318);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -826,6 +826,8 @@ public final class L10nTranslations {
                 "Bei mobilen Daten");
         table.put("One minute left",
                 "Noch eine Minute");
+        table.put("One of the quote marks in that list has nothing to close it, so the rest of the line reads as one phrase. Add the missing quote or take the stray one out.",
+                "Eines der Anführungszeichen in dieser Liste wird nicht geschlossen, deshalb liest sich der Rest der Zeile als eine einzige Wendung. Ergänzen Sie das fehlende Anführungszeichen oder entfernen Sie das überzählige.");
         table.put("One surface was checked and found everything it needed.",
                 "Eine Oberfläche wurde geprüft und hat alles gefunden, was sie braucht.");
         table.put("Only enable when recording logs to report an issue. Leaving it on for too long can make TikTok feel laggy and may lead to crashes.",
@@ -916,11 +918,11 @@ public final class L10nTranslations {
                 "Regionseinstellungen");
         table.put("Remove",
                 "Entfernen");
-        table.put("Remove %1$s",
-                "%1$s entfernen");
     }
 
     private static void fillDe7(Map<String, String> table) {
+        table.put("Remove %1$s",
+                "%1$s entfernen");
         table.put("Remove feed ads",
                 "Werbung im Feed entfernen");
         table.put("Remove the Share via row.",
@@ -1039,11 +1041,11 @@ public final class L10nTranslations {
                 "Rückmeldung wird gesendet");
         table.put("Series posts",
                 "Serienbeiträge");
-        table.put("Settings",
-                "Einstellungen");
     }
 
     private static void fillDe8(Map<String, String> table) {
+        table.put("Settings",
+                "Einstellungen");
         table.put("Settings backup saved",
                 "Einstellungssicherung gespeichert");
         table.put("Settings recovery could not finish. Use Undo or restore your backup.",
@@ -1162,11 +1164,11 @@ public final class L10nTranslations {
                 "Untertitelsprache");
         table.put("Take away the streak button in a chat and the reminder message that goes with it.",
                 "Entfernt die Serien-Schaltfläche in einem Chat und die zugehörige Erinnerung.");
-        table.put("Tap %1$s again to send",
-                "Zum Senden noch einmal auf %1$s tippen");
     }
 
     private static void fillDe9(Map<String, String> table) {
+        table.put("Tap %1$s again to send",
+                "Zum Senden noch einmal auf %1$s tippen");
         table.put("Tap again to follow",
                 "Noch einmal tippen zum Folgen");
         table.put("Tap again to like",
@@ -1285,11 +1287,11 @@ public final class L10nTranslations {
                 "Das heutige Budget ist gesperrt. Der Tag beginnt um %1$s von vorn.");
         table.put("Today's budget is locked. The feed opens again at %1$s. Messages, profiles and search still work.",
                 "Das heutige Budget ist gesperrt. Der Feed öffnet wieder um %1$s. Nachrichten, Profile und Suche funktionieren weiterhin.");
-        table.put("Today's budget is locked. This can be changed again at %1$s.",
-                "Das heutige Budget ist gesperrt. Änderungen sind wieder ab %1$s möglich.");
     }
 
     private static void fillDe10(Map<String, String> table) {
+        table.put("Today's budget is locked. This can be changed again at %1$s.",
+                "Das heutige Budget ist gesperrt. Änderungen sind wieder ab %1$s möglich.");
         table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Save original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",
                 "Tokens: {creator}, {date}, {video_id}, {index}. {index} nummeriert die Fotos einer Diashow, die du mit „Originalfotos speichern“ sicherst; alles, was über TikToks eigene Schaltfläche gespeichert wird, nummeriert stattdessen der Ordner. Die Dateiendung wird automatisch beibehalten.");
         table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
@@ -1409,7 +1411,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1316);
+        Map<String, String> table = new HashMap<>(1318);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2191,6 +2193,8 @@ public final class L10nTranslations {
                 "Saat memakai data seluler");
         table.put("One minute left",
                 "Satu menit lagi");
+        table.put("One of the quote marks in that list has nothing to close it, so the rest of the line reads as one phrase. Add the missing quote or take the stray one out.",
+                "Salah satu tanda kutip dalam daftar itu tidak ditutup, sehingga sisa barisnya terbaca sebagai satu frasa. Tambahkan tanda kutip yang hilang atau hapus yang berlebih.");
         table.put("One surface was checked and found everything it needed.",
                 "Satu permukaan diperiksa dan menemukan semua yang dibutuhkannya.");
         table.put("Only enable when recording logs to report an issue. Leaving it on for too long can make TikTok feel laggy and may lead to crashes.",
@@ -2281,11 +2285,11 @@ public final class L10nTranslations {
                 "Pengaturan wilayah");
         table.put("Remove",
                 "Hapus");
-        table.put("Remove %1$s",
-                "Hapus %1$s");
     }
 
     private static void fillIn7(Map<String, String> table) {
+        table.put("Remove %1$s",
+                "Hapus %1$s");
         table.put("Remove feed ads",
                 "Hapus iklan di feed");
         table.put("Remove the Share via row.",
@@ -2404,11 +2408,11 @@ public final class L10nTranslations {
                 "Mengirim masukan");
         table.put("Series posts",
                 "Kiriman serial");
-        table.put("Settings",
-                "Pengaturan");
     }
 
     private static void fillIn8(Map<String, String> table) {
+        table.put("Settings",
+                "Pengaturan");
         table.put("Settings backup saved",
                 "Cadangan pengaturan disimpan");
         table.put("Settings recovery could not finish. Use Undo or restore your backup.",
@@ -2527,11 +2531,11 @@ public final class L10nTranslations {
                 "Bahasa subtitle");
         table.put("Take away the streak button in a chat and the reminder message that goes with it.",
                 "Hilangkan tombol rentetan di obrolan beserta pesan pengingatnya.");
-        table.put("Tap %1$s again to send",
-                "Ketuk %1$s lagi untuk mengirim");
     }
 
     private static void fillIn9(Map<String, String> table) {
+        table.put("Tap %1$s again to send",
+                "Ketuk %1$s lagi untuk mengirim");
         table.put("Tap again to follow",
                 "Ketuk lagi untuk mengikuti");
         table.put("Tap again to like",
@@ -2650,11 +2654,11 @@ public final class L10nTranslations {
                 "Anggaran hari ini terkunci. Hari dimulai ulang pada %1$s.");
         table.put("Today's budget is locked. The feed opens again at %1$s. Messages, profiles and search still work.",
                 "Anggaran hari ini terkunci. Feed terbuka lagi pada %1$s. Pesan, profil dan pencarian tetap berfungsi.");
-        table.put("Today's budget is locked. This can be changed again at %1$s.",
-                "Anggaran hari ini terkunci. Ini bisa diubah lagi pada %1$s.");
     }
 
     private static void fillIn10(Map<String, String> table) {
+        table.put("Today's budget is locked. This can be changed again at %1$s.",
+                "Anggaran hari ini terkunci. Ini bisa diubah lagi pada %1$s.");
         table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Save original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",
                 "Token: {creator}, {date}, {video_id}, {index}. {index} menomori foto slideshow yang kamu simpan dengan Simpan foto asli; apa pun yang disimpan lewat tombol TikTok sendiri dinomori oleh folder. Ekstensi file dipertahankan otomatis.");
         table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",

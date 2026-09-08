@@ -83,6 +83,39 @@ public final class CommentTools {
     /** Comment model bound to each cell view. */
     private static final WeakHashMap<View, Object> CELL_COMMENTS = new WeakHashMap<>();
 
+    /**
+     * What a control looked like before the takeover, keyed by every view the takeover touched.
+     *
+     * <p>The hand-back used to restore framework defaults on any cell that came past with the
+     * setting off, whether or not it had ever been taken over, so turning the feature off
+     * stripped TikTok's own label, its tint and its touch handling from every comment row. A
+     * control is only put back if it is in here, and it is put back to what it had.
+     */
+    private static final WeakHashMap<View, ControlState> TAKEN_OVER = new WeakHashMap<>();
+
+    /** The values the takeover overwrites. One instance is shared by a row's button and icon. */
+    private static final class ControlState {
+        final View button;
+        final View icon;
+        final CharSequence description;
+        final CharSequence stateDescription;
+        final int iconImportance;
+        final android.graphics.ColorFilter iconFilter;
+        final float cellAlpha;
+
+        ControlState(View button, View icon, View cell) {
+            this.button = button;
+            this.icon = icon;
+            this.description = button == null ? null : button.getContentDescription();
+            this.stateDescription = button != null && android.os.Build.VERSION.SDK_INT >= 30
+                    ? button.getStateDescription() : null;
+            this.iconImportance = icon == null
+                    ? View.IMPORTANT_FOR_ACCESSIBILITY_AUTO : icon.getImportantForAccessibility();
+            this.iconFilter = icon instanceof ImageView ? ((ImageView) icon).getColorFilter() : null;
+            this.cellAlpha = cell == null ? 1f : cell.getAlpha();
+        }
+    }
+
     /** Accounts blocked this session, by uid, so a recycled cell shows the right state. */
     private static final Set<String> BLOCKED_UIDS = Collections.synchronizedSet(new HashSet<>());
 
@@ -206,6 +239,7 @@ public final class CommentTools {
             // A press taken while this row held a different comment must not be released onto
             // the account that just arrived in it.
             View icon = cell.findViewById(identifier(cell, DISLIKE_ICON_ID));
+            rememberBeforeTakeover(cell, button, icon);
             wireBlockControl(button, icon);
             if (holdsAnotherComment) {
                 DISLIKE_TOUCH.forget(button);
@@ -227,33 +261,76 @@ public final class CommentTools {
      * kill the ordinary dislike for as long as the setting is off. A listener of ours that did
      * somehow survive cannot block anyone either: {@link #onDislikeTapped} checks the setting.
      */
-    private static void releaseDislike(View cell) {
-        if (cell == null) return;
+    /** Records what the takeover is about to overwrite, the first time it touches a control. */
+    private static void rememberBeforeTakeover(View cell, View button, View icon) {
+        if (button == null) return;
+        synchronized (TAKEN_OVER) {
+            if (TAKEN_OVER.containsKey(button)) return;
+            ControlState state = new ControlState(button, icon, cell);
+            TAKEN_OVER.put(button, state);
+            if (icon != null) TAKEN_OVER.put(icon, state);
+        }
+    }
+
+    /** Hands back whichever of a row's controls this took over, and only those. */
+    private static void releaseDislike(View touched) {
+        if (touched == null) return;
         try {
-            View button = cell.findViewById(identifier(cell, DISLIKE_BUTTON_ID));
-            View icon = cell.findViewById(identifier(cell, DISLIKE_ICON_ID));
-            unwireBlockControl(button, icon);
-            if (cell.getAlpha() != 1f) cell.setAlpha(1f);
+            ControlState state = null;
+            synchronized (TAKEN_OVER) {
+                state = TAKEN_OVER.get(touched);
+                if (state == null) {
+                    // The tap-time path is handed the control; the bind-time path is handed the
+                    // row, so look inside it before deciding this row was never taken over.
+                    View button = touched.findViewById(identifier(touched, DISLIKE_BUTTON_ID));
+                    if (button != null) state = TAKEN_OVER.get(button);
+                }
+                if (state == null) return;
+                TAKEN_OVER.remove(state.button);
+                if (state.icon != null) TAKEN_OVER.remove(state.icon);
+            }
+            unwireBlockControl(state);
         } catch (Throwable ex) {
             Logger.printException(() -> "Could not hand the comment thumbs down back", ex);
         }
     }
 
-    static void unwireBlockControl(View button, View icon) {
+    static void unwireBlockControl(ControlState state) {
+        View button = state.button;
         if (button != null) {
             DISLIKE_TOUCH.forget(button);
+            // TikTok sets no touch listener of its own on this control, which is why ours
+            // survives a rebind at all, so clearing it hands the touches back rather than
+            // dropping one of TikTok's.
             button.setOnTouchListener(null);
-            button.setContentDescription(null);
+            button.setContentDescription(state.description);
             if (android.os.Build.VERSION.SDK_INT >= 30) {
-                button.setStateDescription(null);
+                button.setStateDescription(state.stateDescription);
             }
         }
+        View icon = state.icon;
         if (icon != null) {
             DISLIKE_TOUCH.forget(icon);
             icon.setOnTouchListener(null);
-            icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
-            if (icon instanceof ImageView) ((ImageView) icon).clearColorFilter();
+            icon.setImportantForAccessibility(state.iconImportance);
+            if (icon instanceof ImageView) ((ImageView) icon).setColorFilter(state.iconFilter);
         }
+        View cell = cellOfAny(button);
+        if (cell != null && cell.getAlpha() != state.cellAlpha) cell.setAlpha(state.cellAlpha);
+    }
+
+    /** The row a control sits in, without needing it to still be in {@link #CELL_COMMENTS}. */
+    private static View cellOfAny(View view) {
+        View current = view;
+        for (int depth = 0; current != null && depth < 12; depth++) {
+            if (current.findViewById(identifier(current, DISLIKE_BUTTON_ID)) != null
+                    && current != view) {
+                return current;
+            }
+            ViewParent parent = current.getParent();
+            current = parent instanceof View ? (View) parent : null;
+        }
+        return null;
     }
 
     /**

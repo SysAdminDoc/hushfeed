@@ -63,6 +63,17 @@ private fun BytecodePatchContext.completionCarriers(): List<MutableMethod> {
     if (carriers.isEmpty()) {
         throw PatchException("Translate comments: no method carries the batch completion anchor.")
     }
+    // All of them have to take the same thing. The extension answers a runner with no results
+    // field by standing the whole feature down for the session, so hooking a carrier that takes
+    // some other object would turn the first comment list into the opposite of this fix.
+    // toString because dexlib2 hands back CharSequence, which does not sort or compare.
+    val parameterTypes = carriers.map { it.parameterTypes.single().toString() }.toSet()
+    if (parameterTypes.size != 1) {
+        throw PatchException(
+            "Translate comments: the batch completion carriers take different things, so one of " +
+                "them is not the batch runner: " + parameterTypes.sorted().joinToString(", ") + ".",
+        )
+    }
     return carriers
 }
 

@@ -595,9 +595,54 @@ public class SessionBudgetTest {
 
         Settings.SESSION_BUDGET_LOCK.save(true);
         assertTrue("turning the switch on did nothing for the day it was turned on for",
-                SessionBudget.lockedToday());
+                SessionBudget.lockIfSpent());
+        assertTrue(SessionBudget.lockedToday());
         assertFalse("Start today over still cleared the day", SessionBudget.clear());
         assertEquals(1, SessionBudget.videosSeen());
+    }
+
+    @Test public void loweringTheBudgetUnderTodaysCountDoesNotLockTheDay() {
+        // Worked out from the switch and the counts together, this locked the day on the spot
+        // for someone who never reached their budget, and everything stayed refused until
+        // tomorrow. A locked day is written once, by the budget running out or by the switch.
+        Settings.SESSION_BUDGET_LOCK.save(true);
+        Settings.SESSION_BUDGET_VIDEOS.save(10);
+        for (int video = 0; video < 5; video++) SessionBudget.noteVideo("video-" + video);
+        assertFalse("the budget was reached", SessionBudget.claimNotice());
+        assertFalse(SessionBudget.lockedToday());
+
+        Settings.SESSION_BUDGET_VIDEOS.save(3);
+
+        assertFalse("lowering the budget locked a day nobody spent", SessionBudget.lockedToday());
+        assertTrue("Start today over was refused", SessionBudget.clear());
+        assertEquals("the day was not cleared", 0, SessionBudget.videosSeen());
+    }
+
+    @Test public void aDayLockedByTheSwitchAlsoSurvivesATimezoneChange() {
+        // The guard reads the field, so the day the switch locked has to set the field too.
+        java.util.TimeZone original = java.util.TimeZone.getDefault();
+        try {
+            java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("America/Los_Angeles"));
+            SessionBudget.resetForTests();
+            now.set(at(2026, Calendar.SEPTEMBER, 7, 12, 0));
+            Settings.SESSION_BUDGET_VIDEOS.save(1);
+            SessionBudget.noteVideo("only-one");
+            assertTrue(SessionBudget.claimNotice());
+
+            Settings.SESSION_BUDGET_LOCK.save(true);
+            assertTrue(SessionBudget.lockIfSpent());
+            long until = SessionBudget.lockedUntilMs();
+            assertTrue("the switch locked no day at all", until > now.get());
+
+            java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Pacific/Kiritimati"));
+            assertTrue("a timezone change ended the day the switch locked",
+                    SessionBudget.lockedToday());
+            assertEquals("the locked day moved when the zone did", until,
+                    SessionBudget.lockedUntilMs());
+        } finally {
+            java.util.TimeZone.setDefault(original);
+            SessionBudget.resetForTests();
+        }
     }
 
     @Test public void theLockLetsGoWhenTheDayTurnsOver() {

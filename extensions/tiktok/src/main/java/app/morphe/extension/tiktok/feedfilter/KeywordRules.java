@@ -60,11 +60,16 @@ public final class KeywordRules {
     public static List<String> split(String stored) {
         List<String> entries = new ArrayList<>();
         if (stored == null) return entries;
+        // One stray quote used to make every comma and newline after it part of the phrase, so a
+        // three line list collapsed into one entry that matched nothing and said nothing about
+        // why. When the quotes do not pair up they cannot be marking phrases, so they are
+        // ignored and the list separates the way it always did. The row says so on save.
+        boolean honourQuotes = !hasUnpairedQuote(stored);
         StringBuilder current = new StringBuilder();
         boolean quoted = false;
         for (int index = 0; index < stored.length(); index++) {
             char character = stored.charAt(index);
-            if (character == '"') quoted = !quoted;
+            if (honourQuotes && character == '"') quoted = !quoted;
             if (!quoted && (character == ',' || character == '\n')) {
                 add(entries, current);
                 continue;
@@ -73,6 +78,16 @@ public final class KeywordRules {
         }
         add(entries, current);
         return entries;
+    }
+
+    /** True when the quote characters in a stored list do not pair up. */
+    static boolean hasUnpairedQuote(String stored) {
+        if (stored == null) return false;
+        int quotes = 0;
+        for (int index = 0; index < stored.length(); index++) {
+            if (stored.charAt(index) == '"') quotes++;
+        }
+        return quotes % 2 != 0;
     }
 
     private static void add(List<String> entries, StringBuilder current) {
@@ -115,8 +130,22 @@ public final class KeywordRules {
         return new Rule(lower(entry), null, false);
     }
 
+    /**
+     * Whether an entry was meant as a rule and did not finish.
+     *
+     * <p>Only an entry that opens with a quote and then puts an ampersand outside quotes. Asking
+     * merely for an ampersand and a quote anywhere refused working phrases: "Q&A" holds both,
+     * and so does {@code R&B "remix"}, and both were being thrown away with no way to tell.
+     */
     private static boolean looksComposite(String entry) {
-        return entry.indexOf('&') >= 0 && entry.indexOf('"') >= 0;
+        if (!entry.startsWith("\"")) return false;
+        boolean quoted = false;
+        for (int index = 0; index < entry.length(); index++) {
+            char character = entry.charAt(index);
+            if (character == '"') quoted = !quoted;
+            else if (character == '&' && !quoted) return true;
+        }
+        return false;
     }
 
     private static String lower(String value) {
@@ -130,6 +159,10 @@ public final class KeywordRules {
      * a rule and does not finish it would match nothing and say nothing about why.
      */
     public static String problem(String stored) {
+        if (hasUnpairedQuote(stored)) {
+            return app.morphe.extension.tiktok.settings.L10n.t(
+                    "One of the quote marks in that list has nothing to close it, so the rest of the line reads as one phrase. Add the missing quote or take the stray one out.");
+        }
         List<String> broken = malformed(stored);
         if (broken.isEmpty()) return null;
         // One literal, because the translation gate reads the literal handed to L10n and a

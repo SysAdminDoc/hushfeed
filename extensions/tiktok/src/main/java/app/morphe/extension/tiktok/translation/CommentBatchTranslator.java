@@ -461,13 +461,23 @@ public final class CommentBatchTranslator {
         // suppressed across a reload.
         String prefix = batchKey + ":";
         String visiblePrefix = "visible:" + batchKey + ":";
+        // A visible request built without an aid is keyed by the context's identity rather than
+        // by any list, so no prefix from this batch can find it. A reload is as good a moment as
+        // any to let those go, and leaving them suppressed that half of the path across a reload.
+        String contextPrefix = "visible:context:";
         for (Iterator<String> keys = requestedLoadedBatchKeys.iterator(); keys.hasNext(); ) {
             String key = keys.next();
-            if (key.startsWith(prefix) || key.startsWith(visiblePrefix)) keys.remove();
+            if (key.startsWith(prefix) || key.startsWith(visiblePrefix)
+                    || key.startsWith(contextPrefix)) {
+                keys.remove();
+            }
         }
         for (Iterator<String> keys = retryStates.keySet().iterator(); keys.hasNext(); ) {
             String key = keys.next();
-            if (key.startsWith(prefix) || key.startsWith(visiblePrefix)) keys.remove();
+            if (key.startsWith(prefix) || key.startsWith(visiblePrefix)
+                    || key.startsWith(contextPrefix)) {
+                keys.remove();
+            }
         }
     }
 

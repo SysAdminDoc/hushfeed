@@ -71,6 +71,36 @@ public class KeywordRulesTest {
         assertTrue(hides("crypto\n\"cat\" & ", "a crypto video"));
     }
 
+    @Test public void aStrayQuoteDoesNotSwallowTheRestOfTheList() {
+        // One unmatched quote used to make every comma and newline after it part of the phrase,
+        // so a three line list became one entry that matched nothing, with nothing said about it.
+        String list = "5\" screen, crypto, giveaway";
+        assertEquals("the list collapsed into one entry", 3, KeywordRules.split(list).size());
+        assertTrue("a later phrase stopped matching", hides(list, "a crypto video"));
+        assertTrue(hides(list, "free giveaway"));
+        assertNotNull("nothing was said about the stray quote", KeywordRules.problem(list));
+
+        // Newlines separate the same way.
+        String lines = "he said \"hi\ncrypto\ngiveaway";
+        assertEquals(3, KeywordRules.split(lines).size());
+        assertTrue(hides(lines, "a crypto video"));
+    }
+
+    @Test public void aPhraseWithAnAmpersandAndQuotesIsNotMistakenForARule() {
+        // Asking only for an ampersand and a quote anywhere threw these away with no way to
+        // tell, and they were working phrases before.
+        for (String phrase : new String[]{"\"Q&A\"", "R&B \"remix\"", "he said \"hi\" & bye"}) {
+            assertNull("refused a working phrase: " + phrase, KeywordRules.problem(phrase));
+            assertEquals("the phrase was not kept: " + phrase, 1, KeywordRules.parse(phrase).size());
+        }
+        assertTrue(hides("\"Q&A\"", "a \"q&a\" video"));
+        assertTrue(hides("R&B \"remix\"", "an r&b \"remix\" of it"));
+
+        // And an entry that really did open a rule is still refused.
+        assertNotNull(KeywordRules.problem("\"cat\" & "));
+        assertNotNull("an empty phrase is not a rule", KeywordRules.problem("\"\" & \"b\""));
+    }
+
     @Test public void anAmpersandInAPhraseIsStillAPhrase() {
         assertNull("AT&T was read as a rule nobody finished", KeywordRules.problem("AT&T"));
         assertTrue(hides("AT&T", "an at&t advert"));
