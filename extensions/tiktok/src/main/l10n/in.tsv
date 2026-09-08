@@ -13,8 +13,11 @@ Automatic advance stopped after one video	Lanjut otomatis dihentikan setelah sat
 Block this commenter	Blokir pengomentar ini
 Blocked	Diblokir
 Completed an interrupted settings change. Restart TikTok to apply it.	Perubahan pengaturan yang terhenti telah diselesaikan. Mulai ulang TikTok untuk menerapkannya.
+Copy the sound link	Salin tautan suara
+Copy the video link	Salin tautan video
 Current: %1$s	Saat ini: %1$s
 Full comment sort options	Opsi urutan komentar lengkap
+Link copied	Tautan disalin
 No videos remained after Hushfeed applied your feed filters to one batch. Most matches: %1$s.	Tidak ada video tersisa setelah Hushfeed menerapkan filter feed pada satu kelompok. Paling sering cocok: %1$s.
 Not blocked	Tidak diblokir
 Recovered an interrupted settings change. Restart TikTok to apply it.	Perubahan pengaturan yang terhenti telah dipulihkan. Mulai ulang TikTok untuk menerapkannya.
@@ -44,10 +47,13 @@ Applies to both video and photo downloads.	Berlaku untuk unduhan video dan foto.
 Arrange your feed and bottom tabs	Atur feed dan tab bawahmu
 Auto-advance session limit	Batas lanjut otomatis per sesi
 Show TikTok's own sort sheet on every post, with its hot, newest, media and creator options, instead of whichever cut-down row your account was given.	Tampilkan lembar urutan milik TikTok di setiap unggahan, dengan opsi populer, terbaru, media, dan kreator, alih-alih baris ringkas yang diberikan ke akunmu.
+Sound link copied	Tautan suara disalin
 Tap again to follow	Ketuk lagi untuk mengikuti
 Tap again to like	Ketuk lagi untuk menyukai
 That is one minute today	Itu satu menit hari ini
 That is one video today	Itu satu video hari ini
+This video has no link to copy	Video ini tidak punya tautan untuk disalin
+This video has no sound of its own	Video ini tidak punya suara sendiri
 Unblock this commenter	Buka blokir pengomentar ini
 Zero keeps auto-advance unlimited. Count only videos that finish while Hushfeed started automatic advance; prefetches, manual swipes and native-only advance do not count. The count resets when the feed component is recreated and stays stopped across backgrounding until it is recreated or the limit changes.	Nol membuat lanjut otomatis tanpa batas. Hitung hanya video yang selesai saat Hushfeed memulai lanjut otomatis; pramuat, usapan manual, dan lanjut otomatis bawaan saja tidak dihitung. Hitungan diatur ulang saat komponen feed dibuat ulang dan tetap berhenti setelah aplikasi masuk latar belakang sampai komponen dibuat ulang atau batas diubah.
 Auto translate comments	Terjemahkan komentar otomatis

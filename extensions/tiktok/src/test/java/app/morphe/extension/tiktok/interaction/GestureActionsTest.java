@@ -167,7 +167,7 @@ public class GestureActionsTest {
         }
     }
 
-    @Test public void longPressPatchHasFourReachableChoices() throws Exception {
+    @Test public void longPressPatchHasSixReachableChoices() throws Exception {
         try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
             var activity = controller.get();
             Utils.setContext(activity);
@@ -176,8 +176,10 @@ public class GestureActionsTest {
             new InterfacePreferenceCategory(activity, screen);
             ChoicePreference choice = (ChoicePreference) screen.findPreference("long_press_action");
             assertNotNull(choice);
-            assertArrayEquals(new String[]{"default", "nothing", "comments", "original_sound"},
-                    choice.getEntryValues());
+            assertArrayEquals(new String[]{"default", "nothing", "comments", "original_sound",
+                    "copy_link", "copy_sound_link"}, choice.getEntryValues());
+            assertEquals("every value needs a label to pick it by",
+                    choice.getEntryValues().length, choice.getEntries().length);
             // The edge seek rides on the same patch, so its two controls come with it.
             assertNotNull(screen.findPreference("edge_seek"));
             assertNotNull(screen.findPreference("edge_seek_seconds"));
@@ -328,5 +330,55 @@ public class GestureActionsTest {
             SettingsStatus.videoOverlaysEnabled = false;
             SettingsStatus.sensitiveWarningsEnabled = false;
         }
+    }
+
+    @Test public void copyingTheLinkPutsTheSanitisedAddressOnTheClipboard() {
+        // The clipboard is somewhere the link goes, so it gets the same treatment a shared link
+        // gets: TikTok's own address carries the parameters that say who sent it.
+        try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup()) {
+            Utils.setContext(controller.get());
+            assertTrue(GestureActions.copyToClipboard("TikTok link",
+                    "https://www.tiktok.com/@someone/video/7712345"));
+
+            android.content.ClipboardManager clipboard =
+                    (android.content.ClipboardManager) controller.get()
+                            .getSystemService(android.content.Context.CLIPBOARD_SERVICE);
+            android.content.ClipData clip = clipboard.getPrimaryClip();
+            assertNotNull("nothing reached the clipboard", clip);
+            assertEquals("https://www.tiktok.com/@someone/video/7712345",
+                    String.valueOf(clip.getItemAt(0).getText()));
+
+            // Nothing to copy is not something to put on the clipboard.
+            assertFalse(GestureActions.copyToClipboard("TikTok link", null));
+            assertFalse(GestureActions.copyToClipboard("TikTok link", ""));
+        }
+    }
+
+    public static final class SoundStub {
+        private final String id;
+        SoundStub(String id) { this.id = id; }
+        public String getId() { return id; }
+        public String getMid() { return id; }
+    }
+
+    /** Only what soundLink reads: a post whose music entry may or may not be there. */
+    public static final class PostWithSound {
+        private final SoundStub music;
+        PostWithSound(SoundStub music) { this.music = music; }
+        public SoundStub getMusic() { return music; }
+    }
+
+    @Test public void theSoundLinkIsThePageForThatSound() {
+        // A post with only its own audio carries no sound entry, which is the ordinary case
+        // rather than a failure, so the action has to say so instead of copying nothing.
+        assertNull("a post with no sound produced a link", GestureActions.soundLink(new PostWithSound(null)));
+        assertNull("no aweme produced a link", GestureActions.soundLink(null));
+
+        String link = GestureActions.soundLink(new PostWithSound(new SoundStub("7712345678901234567")));
+        assertNotNull("a post with a sound produced no link", link);
+        assertTrue("the link is not a sound page: " + link,
+                link.startsWith("https://www.tiktok.com/music/"));
+        assertTrue("the link does not name the sound: " + link,
+                link.endsWith("7712345678901234567"));
     }
 }

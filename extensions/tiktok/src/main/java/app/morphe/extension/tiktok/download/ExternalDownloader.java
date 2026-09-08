@@ -107,7 +107,8 @@ public final class ExternalDownloader {
     }
 
     /** TikTok's own link for the video, or one built from the handle and the id. */
-    static String shareUrl(Object aweme) {
+    /** The post's own link, which the long-press copy action reads as well as the hand-off. */
+    public static String shareUrl(Object aweme) {
         String shared = Reflect.string(aweme, "getShareUrl", "shareUrl");
         if (shared != null) return shared;
         Object author = Reflect.property(aweme, "getAuthor", "author");

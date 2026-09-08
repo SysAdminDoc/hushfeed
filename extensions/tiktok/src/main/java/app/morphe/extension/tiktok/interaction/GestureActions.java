@@ -1,6 +1,9 @@
 package app.morphe.extension.tiktok.interaction;
 
 import android.content.Context;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.graphics.Rect;
 import android.view.MotionEvent;
 import android.view.View;
@@ -9,6 +12,9 @@ import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.blockauthor.CurrentVideoAuthor;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.download.OriginalSoundDownloads;
+import app.morphe.extension.tiktok.download.ExternalDownloader;
+import app.morphe.extension.tiktok.share.ShareUrlSanitizer;
+import app.morphe.extension.tiktok.feedfilter.SoundIdentity;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.L10n;
 import java.lang.ref.WeakReference;
@@ -48,6 +54,24 @@ public final class GestureActions {
     public static boolean onDoubleTap() {
         String action = Settings.DOUBLE_TAP_ACTION.get();
         if ("nothing".equals(action)) return true;
+        if ("copy_link".equals(action)) {
+            String link = ExternalDownloader.shareUrl(CurrentVideoAuthor.getAweme());
+            // The same treatment a shared link gets: TikTok's own link carries the parameters
+            // that say who sent it, and the clipboard is somewhere else that goes.
+            String clean = link == null ? null : ShareUrlSanitizer.rewriteShareUrl(link);
+            String said = copyToClipboard("TikTok link", clean)
+                    ? L10n.t("Link copied")
+                    : L10n.t("This video has no link to copy");
+            Utils.showToastShort(said);
+            return true;
+        }
+        if ("copy_sound_link".equals(action)) {
+            String said = copyToClipboard("TikTok sound", soundLink(CurrentVideoAuthor.getAweme()))
+                    ? L10n.t("Sound link copied")
+                    : L10n.t("This video has no sound of its own");
+            Utils.showToastShort(said);
+            return true;
+        }
         if (!"comments".equals(action)) return false;
         if (!openComments(Reflect.string(CurrentVideoAuthor.getAweme(), "getAid", "aid"))) {
             Utils.showToastShort(L10n.t("Comments aren't available for this video"));
@@ -109,6 +133,33 @@ public final class GestureActions {
         if (!openComments(Reflect.string(CurrentVideoAuthor.getAweme(), "getAid", "aid"))) {
             Utils.showToastShort(L10n.t("Comments aren't available for this video"));
         }
+        return true;
+    }
+
+    /** The page for the post's sound, or null when the post carries only its own audio. */
+    static String soundLink(Object aweme) {
+        Object music = aweme == null ? null : Reflect.property(aweme, "getMusic", "music");
+        if (music == null) return null;
+        Object shareInfo = Reflect.property(music, "getShareInfo", "shareInfo");
+        String shared = shareInfo == null
+                ? null : Reflect.string(shareInfo, "getShareUrl", "shareUrl");
+        if (shared == null) shared = Reflect.string(music, "getShareUrl", "shareUrl");
+        if (shared != null && shared.startsWith("https://")) return shared;
+
+        String id = SoundIdentity.idOf(music);
+        if (id == null || id.isEmpty()) return null;
+        // The slug in front of the id is decoration; the id is what the page is looked up by.
+        return "https://www.tiktok.com/music/x-" + id;
+    }
+
+    static boolean copyToClipboard(String label, String text) {
+        if (text == null || text.isEmpty()) return false;
+        Context context = Utils.getContext();
+        if (context == null) return false;
+        ClipboardManager clipboard =
+                (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+        if (clipboard == null) return false;
+        clipboard.setPrimaryClip(ClipData.newPlainText(label, text));
         return true;
     }
 
