@@ -1,12 +1,15 @@
 package app.morphe.patches.tiktok.misc.follow
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.util.findMutableMethodOf
 import app.morphe.util.getReference
+import app.morphe.util.numberOfParameterRegisters
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -126,94 +129,137 @@ val followDiagnosticsPatch = bytecodePatch(
     }
 }
 
-private fun patchNetworkParseResponse(method: MutableMethod) {
-    val implementation = method.implementation ?: return
+/**
+ * Both network lancets have the same three anchors: the read of the request being sent, the
+ * result of the call TikTok's own method makes, and the exception when it throws. Every register
+ * is read off the instruction it belongs to, so the layout of the surrounding method is free to
+ * move; only the anchors themselves have to be there, and a missing one fails the build.
+ */
+private fun patchNetworkLancet(
+    method: MutableMethod,
+    twinName: String,
+    requestLogger: String?,
+    responseLogger: String,
+    throwableLogger: String,
+) {
+    val implementation = method.implementation
+        ?: throw PatchException("Follow diagnostics: ${method.name} has no body.")
+    val instructions = implementation.instructions.toList()
 
-    val parseResponseIndex = implementation.instructions.indexOfFirst { instruction ->
+    val requestIndex = instructions.indexOfFirst { instruction ->
+        instruction.opcode == Opcode.IGET_OBJECT &&
+            instruction.getReference<FieldReference>()?.name == "mOriginalRequest"
+    }
+    if (requestIndex < 0) {
+        throw PatchException("Follow diagnostics: mOriginalRequest is not read in ${method.name}.")
+    }
+    val requestRegister = (instructions[requestIndex] as OneRegisterInstruction).registerA
+
+    val twinIndex = instructions.indexOfFirst { instruction ->
         instruction.opcode == Opcode.INVOKE_VIRTUAL &&
-            instruction.getReference<MethodReference>()?.name ==
-            "com_bytedance_retrofit2_CallServerInterceptor__parseResponse\$___twin___"
+            instruction.getReference<MethodReference>()?.name == twinName
     }
-
-    val responseIndex = if (parseResponseIndex >= 0) parseResponseIndex + 1 else -1
-    val exceptionIndex = implementation.instructions.indexOfFirst { it.opcode == Opcode.MOVE_EXCEPTION }
-
-    if (exceptionIndex >= 0) {
-        method.addInstructions(
-            exceptionIndex + 1,
-            "invoke-static {v5, v4}, " +
-                "$EXTENSION_CLASS_DESCRIPTOR->logParseThrowable(Ljava/lang/Object;Ljava/lang/Throwable;)V",
+    if (twinIndex < 0) {
+        throw PatchException("Follow diagnostics: $twinName is not called in ${method.name}.")
+    }
+    val responseInstruction = instructions.getOrNull(twinIndex + 1)
+    if (responseInstruction?.opcode != Opcode.MOVE_RESULT_OBJECT) {
+        throw PatchException(
+            "Follow diagnostics: $twinName in ${method.name} is followed by " +
+                "${responseInstruction?.opcode?.name ?: "nothing"}, not a move-result-object, " +
+                "so there is no response to read.",
         )
     }
+    val responseRegister = (responseInstruction as OneRegisterInstruction).registerA
 
-    if (responseIndex >= 0) {
-        method.addInstructions(
-            responseIndex + 1,
-            "invoke-static {v5, v3}, " +
-                "$EXTENSION_CLASS_DESCRIPTOR->logParsedResponse(Ljava/lang/Object;Ljava/lang/Object;)V",
-        )
+    val exceptionIndex = instructions.indexOfFirst { it.opcode == Opcode.MOVE_EXCEPTION }
+    if (exceptionIndex < 0) {
+        throw PatchException("Follow diagnostics: ${method.name} catches nothing to report.")
+    }
+    val throwableRegister = (instructions[exceptionIndex] as OneRegisterInstruction).registerA
+
+    // Highest index first. Every index above was read from the untouched method, and inserting
+    // at a lower one moves all of them; this held only because the catch handler happens to sit
+    // last on this build.
+    listOfNotNull(
+        (exceptionIndex + 1) to
+            "invoke-static {v$requestRegister, v$throwableRegister}, $throwableLogger",
+        (twinIndex + 2) to
+            "invoke-static {v$requestRegister, v$responseRegister}, $responseLogger",
+        requestLogger?.let {
+            (requestIndex + 1) to "invoke-static/range {v$requestRegister .. v$requestRegister}, $it"
+        },
+    ).sortedByDescending { it.first }.forEach { (index, instruction) ->
+        method.addInstructions(index, instruction)
     }
 }
 
+private fun patchNetworkParseResponse(method: MutableMethod) = patchNetworkLancet(
+    method,
+    twinName = "com_bytedance_retrofit2_CallServerInterceptor__parseResponse\$___twin___",
+    // The parse lancet logs the request only alongside a response or a throwable: on its own it
+    // says nothing the execute lancet has not already reported for the same request.
+    requestLogger = null,
+    responseLogger = "$EXTENSION_CLASS_DESCRIPTOR->logParsedResponse(Ljava/lang/Object;Ljava/lang/Object;)V",
+    throwableLogger = "$EXTENSION_CLASS_DESCRIPTOR->logParseThrowable(Ljava/lang/Object;Ljava/lang/Throwable;)V",
+)
+
+/**
+ * The ten parameters the extension's logCommonFollowRequest reads, in order. LIZ is matched by
+ * name alone, so this is what says the method found is the one meant: another LIZ with a
+ * different shape would otherwise be handed ten registers holding something else.
+ */
+private val COMMON_FOLLOW_PARAMETERS = listOf(
+    "I", "I", "I", "I",
+    "Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;",
+    "Ljava/lang/String;", "Ljava/util/Map;",
+)
+
 private fun patchCommonFollowApi(method: MutableMethod) {
-    val implementation = method.implementation ?: return
-    val returnIndex = implementation.instructions.indexOfLast { it.opcode == Opcode.RETURN_OBJECT }
-    if (returnIndex >= 0) {
-        method.addInstructions(
-            returnIndex,
-            "invoke-static/range {v4 .. v4}, " +
-                "$EXTENSION_CLASS_DESCRIPTOR->logFollowResult(Ljava/lang/Object;)V",
+    val implementation = method.implementation
+        ?: throw PatchException("Follow diagnostics: CommonFollowApi.LIZ has no body.")
+
+    val parameters = method.parameters.map { it.type }
+    if (!AccessFlags.STATIC.isSet(method.accessFlags) || parameters != COMMON_FOLLOW_PARAMETERS) {
+        throw PatchException(
+            "Follow diagnostics: CommonFollowApi.LIZ is not the follow request this reads. " +
+                "Expected a static method taking $COMMON_FOLLOW_PARAMETERS, found " +
+                "${if (AccessFlags.STATIC.isSet(method.accessFlags)) "a static" else "an instance"} " +
+                "method taking $parameters.",
         )
     }
 
+    // Where the parameters actually sit. On 46.2.3 that is v5 to v14 of fifteen registers, and
+    // it moves the moment TikTok's own method needs one more local.
+    val firstParameter = implementation.registerCount - method.numberOfParameterRegisters
+    val lastParameter = implementation.registerCount - 1
+
+    val returnIndex = implementation.instructions.indexOfLast { it.opcode == Opcode.RETURN_OBJECT }
+    if (returnIndex < 0) {
+        throw PatchException("Follow diagnostics: CommonFollowApi.LIZ returns no object to read.")
+    }
+    val returnRegister = (implementation.instructions.elementAt(returnIndex) as OneRegisterInstruction).registerA
+
+    method.addInstructions(
+        returnIndex,
+        "invoke-static/range {v$returnRegister .. v$returnRegister}, " +
+            "$EXTENSION_CLASS_DESCRIPTOR->logFollowResult(Ljava/lang/Object;)V",
+    )
+
     method.addInstructions(
         0,
-        "invoke-static/range {v5 .. v14}, " +
+        "invoke-static/range {v$firstParameter .. v$lastParameter}, " +
             "$EXTENSION_CLASS_DESCRIPTOR->logCommonFollowRequest(IIIILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V",
     )
 }
 
-private fun patchNetworkExecuteCall(method: MutableMethod) {
-    val implementation = method.implementation ?: return
-
-    val requestIndex = implementation.instructions.indexOfFirst { instruction ->
-        instruction.opcode == Opcode.IGET_OBJECT &&
-            instruction.getReference<FieldReference>()?.name == "mOriginalRequest"
-    }
-
-    val executeCallIndex = implementation.instructions.indexOfFirst { instruction ->
-        instruction.opcode == Opcode.INVOKE_VIRTUAL &&
-            instruction.getReference<MethodReference>()?.name ==
-            "com_bytedance_retrofit2_CallServerInterceptor__executeCall\$___twin___"
-    }
-
-    val responseIndex = if (executeCallIndex >= 0) executeCallIndex + 1 else -1
-    val exceptionIndex = implementation.instructions.indexOfFirst { it.opcode == Opcode.MOVE_EXCEPTION }
-
-    if (exceptionIndex >= 0) {
-        method.addInstructions(
-            exceptionIndex + 1,
-            "invoke-static {v3, v4}, " +
-                "$EXTENSION_CLASS_DESCRIPTOR->logNetworkThrowable(Ljava/lang/Object;Ljava/lang/Throwable;)V",
-        )
-    }
-
-    if (responseIndex >= 0) {
-        method.addInstructions(
-            responseIndex + 1,
-            "invoke-static {v3, v0}, " +
-                "$EXTENSION_CLASS_DESCRIPTOR->logNetworkResponse(Ljava/lang/Object;Ljava/lang/Object;)V",
-        )
-    }
-
-    if (requestIndex >= 0) {
-        method.addInstructions(
-            requestIndex + 1,
-            "invoke-static/range {v3 .. v3}, " +
-                "$EXTENSION_CLASS_DESCRIPTOR->logNetworkRequest(Ljava/lang/Object;)V",
-        )
-    }
-}
+private fun patchNetworkExecuteCall(method: MutableMethod) = patchNetworkLancet(
+    method,
+    twinName = "com_bytedance_retrofit2_CallServerInterceptor__executeCall\$___twin___",
+    requestLogger = "$EXTENSION_CLASS_DESCRIPTOR->logNetworkRequest(Ljava/lang/Object;)V",
+    responseLogger = "$EXTENSION_CLASS_DESCRIPTOR->logNetworkResponse(Ljava/lang/Object;Ljava/lang/Object;)V",
+    throwableLogger = "$EXTENSION_CLASS_DESCRIPTOR->logNetworkThrowable(Ljava/lang/Object;Ljava/lang/Throwable;)V",
+)
 
 private fun simpleFollowRequestInstructions(instruction: Instruction): String? {
     val actionRegister = instruction.argumentRegister(1) ?: return null

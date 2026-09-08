@@ -4,6 +4,8 @@
 
 * An override profile written somewhere other than the Lab's own export applies on a Turkish phone. Turkish capitalises i to a dotted letter, so a lowercase `int` in the file folded to a different word than the catalogue's, and the rule was refused as a type mismatch on that phone and no other.
 
+* Follow diagnostics keeps working when TikTok's own code moves. Eight registers were written out by hand, and every anchor it looks for was optional, so a build that renamed one would have left the patch reporting that it applied while logging the wrong thing, or crashing the app's own network layer. Each register is now read off the instruction it belongs to, and a missing anchor fails the build with a message naming it.
+
 * A gate override whose type the catalogue disagrees with is no longer handed to TikTok. It only mattered on one path, where TikTok holds no cached value and so there is no type to check the rule against: a text rule on a key the app reads as a number came back as text, and the app crashed in its own code rather than in anything this project added. The Lab's detail screen says why the rule was refused. The catalogue has to have been loaded for this to bite, which today means the Lab screen has been opened.
 
 ## 0.24.0
