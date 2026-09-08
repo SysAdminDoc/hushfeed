@@ -131,6 +131,49 @@ Require-Match -Text $readme -Pattern "TikTok\s+$([regex]::Escape($targetVersion)
 Require-Match -Text ([string]$bundle.description) -Pattern "\b$patchCount patches\b" -Description 'bundle description patch count'
 Require-Match -Text ([string]$bundle.description) -Pattern ([regex]::Escape($targetVersion)) -Description 'bundle description target version'
 
+# The one line GitHub shows above the README, which is also what search results, the awesome
+# lists and the Manager's community button repeat. Nothing here read it until now, and it had
+# gone two releases and two patches stale before anyone noticed. The repository it reads is the
+# one the index points at, so this cannot drift onto some other fork.
+if ($SkipUrlCheck) {
+    Write-Host '[release] the repository description was not read because -SkipUrlCheck was given'
+} else {
+    if ($assetUri.Host -ne 'github.com') {
+        throw "The indexed bundle URL is not on github.com, so the repository description cannot be checked: $assetUri"
+    }
+    $segments = @($assetUri.AbsolutePath.Trim('/') -split '/')
+    if ($segments.Count -lt 2) {
+        throw "Could not read an owner and repository out of the indexed bundle URL: $assetUri"
+    }
+    $slug = $segments[0] + '/' + $segments[1]
+
+    if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
+        throw ('The gh CLI is needed to read the repository description of ' + $slug +
+            '. Install it, or pass -SkipUrlCheck to run the rest with no network.')
+    }
+    $description = (& gh api "repos/$slug" --jq '.description' 2>$null)
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($description)) {
+        throw ("Could not read the description of $slug through gh. Run gh auth login, or pass " +
+            '-SkipUrlCheck to run the rest with no network.')
+    }
+    $description = $description.Trim()
+
+    $wanted = @(
+        @{ Pattern = "\b$([regex]::Escape($sourceVersion))\b";  Wanted = $sourceVersion }
+        @{ Pattern = "\b$patchCount patches\b";                 Wanted = "$patchCount patches" }
+        @{ Pattern = "TikTok\s+$([regex]::Escape($targetVersion))"; Wanted = "TikTok $targetVersion" }
+    )
+    $missing = @($wanted | Where-Object { $description -notmatch $_.Pattern } | ForEach-Object { $_.Wanted })
+    if ($missing.Count -gt 0) {
+        throw ("The GitHub description of $slug does not say " + ($missing -join ', ') + '. It reads: ' +
+            $description + [Environment]::NewLine +
+            'Set it with: gh repo edit ' + $slug + ' --description "Hushfeed ' + $sourceVersion +
+            ': ... ' + $patchCount + ' patches for TikTok ' + $targetVersion + '."')
+    }
+    Write-Host ("[release] the GitHub description of " + $slug + " names " + $sourceVersion +
+        ", " + $patchCount + " patches and TikTok " + $targetVersion)
+}
+
 $testRoot = Join-Path $rootPath 'extensions/tiktok/build/test-results/testDebugUnitTest'
 $testFiles = @(Get-ChildItem -LiteralPath $testRoot -Filter '*.xml' -File -ErrorAction SilentlyContinue)
 if ($testFiles.Count -eq 0) {
