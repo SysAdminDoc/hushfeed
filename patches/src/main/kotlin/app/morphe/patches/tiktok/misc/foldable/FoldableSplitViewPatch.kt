@@ -30,7 +30,9 @@ val foldableSplitViewPatch = bytecodePatch(
     dependsOn(sharedExtensionPatch, settingsPatch)
     execute {
         listOf(LiveCheck.method to true, ContainerCheck.method to false).forEach { (method, live) ->
-            check(AccessFlags.STATIC.isSet(method.accessFlags))
+            check(AccessFlags.STATIC.isSet(method.accessFlags)) {
+                "Split view: ${method.name} is not static, so p0 is not its first argument."
+            }
             check(method.implementation!!.registerCount - method.numberOfParameterRegisters >= 1) {
                 "Split check needs a local register"
             }

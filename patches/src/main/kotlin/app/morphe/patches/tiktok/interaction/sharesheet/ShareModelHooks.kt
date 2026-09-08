@@ -19,7 +19,9 @@ internal fun hookShareModel() {
     val method = ShareSnapshotFingerprint.method
     val builder = method.parameterTypes.single().toString()
     val fields = patchContext.mutableClassDefBy(builder).fields
-    check(fields.any { it.type == "Lcom/ss/android/ugc/aweme/share/base/model/BaseSharePackage;" })
+    check(fields.any { it.type == "Lcom/ss/android/ugc/aweme/share/base/model/BaseSharePackage;" }) {
+        "Share sheet: $builder holds no BaseSharePackage, so it is not the share model builder."
+    }
     val callbacks = mapOf("LIZ" to "channels", "LJFF" to "actions", "LJJIIJZLJL" to "contacts")
     val found = mutableSetOf<String>()
     method.implementation!!.instructions.withIndex().toList().asReversed().forEach { (index, instruction) ->

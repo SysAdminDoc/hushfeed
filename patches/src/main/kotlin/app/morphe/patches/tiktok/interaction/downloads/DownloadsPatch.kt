@@ -210,7 +210,7 @@ val downloadsPatch = bytecodePatch(
                 val pathRegister = getInstruction<OneRegisterInstruction>(fieldIndex).registerA
                 val builderRegister = getInstruction<FiveRegisterInstruction>(fieldIndex + 1).registerC
 
-                // Remove 'field load â†’ append â†’ "/Camera/" â†’ append' block.
+                // Remove 'field load, append, "/Camera/", append' block.
                 removeInstructions(fieldIndex, 4)
 
                 addInstructions(

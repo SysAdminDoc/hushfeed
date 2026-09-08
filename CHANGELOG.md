@@ -4,6 +4,8 @@
 
 * An override profile written somewhere other than the Lab's own export applies on a Turkish phone. Turkish capitalises i to a dotted letter, so a lowercase `int` in the file folded to a different word than the catalogue's, and the rule was refused as a type mismatch on that phone and no other.
 
+* A patch that cannot apply to a future TikTok build now says what it was looking for. Fourteen checks threw an error naming nothing, so a failure read as a crash in the patcher rather than as the patch reporting a missing anchor. The telemetry description also promised to stop location uploads that the supported build does not contain.
+
 * Five more injections and eight register checks stop assuming the shape of TikTok's own methods. Every register is now read off the instruction it belongs to, and the settings row this project adds took three working registers on trust: one of them was still in use, which a check now catches. A parameter that holds a long or a double occupies two registers and was being counted as one, so eight checks meant to prove a spare register existed could pass on a method that had none.
 
 * Follow diagnostics keeps working when TikTok's own code moves. Eight registers were written out by hand, and every anchor it looks for was optional, so a build that renamed one would have left the patch reporting that it applied while logging the wrong thing, or crashing the app's own network layer. Each register is now read off the instruction it belongs to, and a missing anchor fails the build with a message naming it.

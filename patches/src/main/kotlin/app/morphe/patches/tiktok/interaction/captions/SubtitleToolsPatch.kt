@@ -49,7 +49,10 @@ val subtitleToolsPatch = bytecodePatch(
                 it.parameterTypes[0] == "Ljava/lang/String;" &&
                 it.parameterTypes[2] == "Ljava/lang/String;" && it.parameterTypes[3] == "Z"
         }
-        check(mutableClassDefBy(render.parameterTypes[1].toString()).fields.any { it.name == "EXPANDED" })
+        check(mutableClassDefBy(render.parameterTypes[1].toString()).fields.any { it.name == "EXPANDED" }) {
+            "Subtitle tools: ${render.parameterTypes[1]} has no EXPANDED field, so it is not the " +
+                "caption state this reads."
+        }
         val layoutSetter = render.implementation!!.instructions.mapNotNull { it.getReference<MethodReference>() }
             .filter { it.name == "setTextLayout" && it.parameterTypes == listOf("Landroid/text/Layout;") }
             .distinctBy { it.toString() }.single()
@@ -77,7 +80,9 @@ val subtitleToolsPatch = bytecodePatch(
         ClearTransitionFingerprint.method.addInstruction(0,
             "invoke-static/range { p1 .. p2 }, ${EXTENSION}CaptionTools;->onClear(Ljava/lang/Object;Z)V")
         // Assert the download metadata fields exist on this target.
-        check(mutableClassDefBy("Lcom/ss/android/ugc/aweme/feed/model/CaptionModel;").fields.any { it.name == "captionList" })
+        check(mutableClassDefBy("Lcom/ss/android/ugc/aweme/feed/model/CaptionModel;").fields.any { it.name == "captionList" }) {
+            "Subtitle tools: CaptionModel has no captionList field to download from."
+        }
         val metadata = mutableClassDefBy("Lcom/ss/android/ugc/aweme/feed/model/CaptionItemModel;")
         listOf("format", "url", "urlList", "languageCode", "languageName", "isOriginalCaption").forEach { name ->
             check(metadata.fields.any { it.name == name }) { "Missing caption field: $name" }

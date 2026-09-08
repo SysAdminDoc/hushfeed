@@ -54,7 +54,11 @@ val autoAdvancePatch = bytecodePatch(
         val enumClass = mutableClassDefBy(state.type)
         check(enumClass.superclass == "Ljava/lang/Enum;" &&
             enumClass.fields.any { it.name == "AUTO_SCROLL_STATE_STOP" } &&
-            enumClass.fields.any { it.name == "AUTO_SCROLL_STATE_PAUSE" })
+            enumClass.fields.any { it.name == "AUTO_SCROLL_STATE_PAUSE" }
+        ) {
+            "Auto advance: ${state.type} is not the auto scroll state enum. Expected an enum " +
+                "with AUTO_SCROLL_STATE_STOP and AUTO_SCROLL_STATE_PAUSE."
+        }
         val aweme = completed.implementation!!.instructions.mapNotNull { it.getReference<MethodReference>() }
             .filter { it.parameterTypes.isEmpty() && it.returnType == "Lcom/ss/android/ugc/aweme/feed/model/Aweme;" }
             .distinctBy { it.toString() }.single()
@@ -112,7 +116,9 @@ val autoAdvancePatch = bytecodePatch(
             "invoke-static/range {p0 .. p1}, $EXTENSION->beforeCompletion(Ljava/lang/Object;Ljava/lang/String;)V")
         val available = Availability.method
         val returns = available.implementation!!.instructions.withIndex().filter { it.value.opcode == Opcode.RETURN }
-        check(returns.isNotEmpty())
+        check(returns.isNotEmpty()) {
+            "Auto advance: ${available.name} returns nothing this can answer for."
+        }
         returns.asReversed().forEach { (index, instruction) ->
             val register = (instruction as OneRegisterInstruction).registerA
             available.addInstructions(index, """
@@ -129,7 +135,9 @@ val autoAdvancePatch = bytecodePatch(
             it.opcode == Opcode.CONST_STRING &&
                 it.getReference<StringReference>()?.string == "panel_auto_scroll"
         }
-        check(panelStringIndex >= 0)
+        check(panelStringIndex >= 0) {
+            "Auto advance: the panel_auto_scroll string is gone from the settings panel."
+        }
         val panelResultIndex = panelInstructions.withIndex().first { (index, instruction) ->
             index > panelStringIndex && instruction.opcode == Opcode.MOVE_RESULT
         }.index
@@ -145,7 +153,9 @@ val autoAdvancePatch = bytecodePatch(
         val panelGate = PanelGate.method
         val panelReturns = panelGate.implementation!!.instructions.withIndex()
             .filter { it.value.opcode == Opcode.RETURN }
-        check(panelReturns.isNotEmpty())
+        check(panelReturns.isNotEmpty()) {
+            "Auto advance: ${panelGate.name} returns nothing this can answer for."
+        }
         panelReturns.asReversed().forEach { (index, instruction) ->
             val register = (instruction as OneRegisterInstruction).registerA
             panelGate.addInstructions(

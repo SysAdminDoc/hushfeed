@@ -40,7 +40,9 @@ val playbackSpeedPatch = bytecodePatch(
 
     execute {
         val selection = PlaybackSpeedSelectionBoundaryFingerprint.method
-        check(AccessFlags.STATIC.isSet(selection.accessFlags))
+        check(AccessFlags.STATIC.isSet(selection.accessFlags)) {
+            "Playback speed: ${selection.name} is no longer static, so p0 is not the speed."
+        }
         selection.addInstruction(
             0,
             "invoke-static/range {p0 .. p3}, $EXTENSION->onSelection(F${AWEME}Ljava/lang/String;Ljava/lang/String;)V",
@@ -118,7 +120,9 @@ val playbackSpeedPatch = bytecodePatch(
             }
         }
 
-        check(!AccessFlags.STATIC.isSet(transitionReset.accessFlags))
+        check(!AccessFlags.STATIC.isSet(transitionReset.accessFlags)) {
+            "Playback speed: ${transitionReset.name} became static, so p1 is not the video."
+        }
         transitionReset.addInstruction(0, "invoke-static/range {p1 .. p1}, $EXTENSION->beginVideo($AWEME)V")
 
         val frame = OnRenderFirstFrameBodyFingerprint.method
@@ -130,10 +134,16 @@ val playbackSpeedPatch = bytecodePatch(
             .filter { it.definingClass == selection.definingClass }
         val currentAwemeField = stateWrites.single { it.type == AWEME }
         val speedFields = stateWrites.filter { it.type == "F" }.distinctBy { it.toString() }
-        check(speedFields.size == 2)
+        check(speedFields.size == 2) {
+            "Playback speed: expected two float fields written before the first branch of " +
+                "${selection.name}, found ${speedFields.size}."
+        }
         check(mutableClassDefBy(selection.definingClass).fields.filter { field ->
             stateWrites.any { it.name == field.name }
-        }.all { AccessFlags.PUBLIC.isSet(it.accessFlags) })
+        }.all { AccessFlags.PUBLIC.isSet(it.accessFlags) }) {
+            "Playback speed: the state fields on ${selection.definingClass} are not all public, " +
+                "so the extension cannot read them."
+        }
         val awemeGetter = frame.implementation!!.instructions.mapNotNull {
             it.getReference<MethodReference>()
         }.filter {
@@ -179,7 +189,9 @@ val playbackSpeedPatch = bytecodePatch(
         val factory = factories.singleOrNull() ?: throw PatchException(
             "Playback speed: expected one menu list factory, found ${factories.size}.")
         val returns = factory.implementation!!.instructions.withIndex().filter { it.value.opcode == Opcode.RETURN_OBJECT }
-        check(returns.isNotEmpty())
+        check(returns.isNotEmpty()) {
+            "Playback speed: the menu list factory returns no object to replace."
+        }
         returns.asReversed().forEach { (index, instruction) ->
             val register = (instruction as OneRegisterInstruction).registerA
             factory.addInstructions(index, """

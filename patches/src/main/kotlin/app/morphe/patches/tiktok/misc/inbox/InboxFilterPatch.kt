@@ -51,7 +51,10 @@ val inboxFilterPatch = bytecodePatch(
                 it.name == "itemView" && it.type == "Landroid/view/View;" &&
                     it.definingClass == "Landroidx/recyclerview/widget/RecyclerView\$ViewHolder;"
             } == true
-        })
+        }) {
+            "Inbox filter: ${binding.name} does not read the ViewHolder's itemView, so it is not " +
+                "the row bind this hooks."
+        }
         binding.addInstruction(0,
             "invoke-static/range {p0 .. p2}, $EXTENSION_CLASS_DESCRIPTOR->onRowBound(Ljava/lang/Object;ILjava/lang/Object;)V")
         SettingsStatusLoadFingerprint.method.addInstruction(

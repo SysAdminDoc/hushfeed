@@ -71,7 +71,7 @@ internal fun main(args: Array<String>) {
 }
 
 /**
- * Emits `version`, root-level `appNames` (package â†’ label), and `patches` with
+ * Emits `version`, root-level `appNames` (package to label), and `patches` with
  * `compatiblePackages`, **`compatibility`** (full `Compatibility` metadata for Manager UI),
  * and options. Requires morphe-patcher 1.3.x and `compatibleWith(Compatibility(...))` in patches.
  */
