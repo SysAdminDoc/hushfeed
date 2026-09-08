@@ -1,5 +1,7 @@
 ## Unreleased
 
+* New patch, Enable voice comments. TikTok builds the recording and publishing entry points behind a gate that not every account is on. It ships off, so selecting it in the patcher is the switch, and nobody here has been able to try it on a real account yet. Ported from icysymmetra's Metra patches.
+
 * New patch, Comment sort controls. TikTok has a full comment sort sheet with hot, newest, media and creator options, and decides who gets it with a rollout gate and a per-post check. With the switch on you get the sheet TikTok already builds, on every post. Ported from icysymmetra's Metra patches.
 
 * Automatic video advance now also shows TikTok's own Auto scroll action in the video actions panel. That entry hangs off a second flag, so accounts outside TikTok's rollout never saw it however the feed gate answered.
