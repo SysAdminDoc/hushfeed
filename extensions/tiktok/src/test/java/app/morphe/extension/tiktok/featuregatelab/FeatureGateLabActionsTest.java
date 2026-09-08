@@ -319,6 +319,35 @@ public class FeatureGateLabActionsTest {
         }
     }
 
+    @Test public void leavingTheLabWhileAChangeRunsDoesNotWedgeIt() throws Exception {
+        try (var owner = Robolectric.buildActivity(TestActivity.class).setup().visible()) {
+            var fragment = attach(owner.get());
+            var reset = FeatureGateLabFragment.class.getDeclaredMethod("reset", boolean.class);
+            reset.setAccessible(true);
+
+            // Pressing Back while a reset is still running. The change finishes on the main
+            // thread afterwards, and by then the switch it wants to put back is gone.
+            reset.invoke(fragment, false);
+            fragment.onDestroyView();
+            Utils.awaitBackgroundTasksForTests();
+            // Robolectric runs a posted runnable on this thread, so the NPE this used to throw
+            // would surface right here.
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+            var changing = FeatureGateLabFragment.class.getDeclaredField("CHANGING");
+            changing.setAccessible(true);
+            assertFalse("the Lab stayed marked busy, so every later change would be refused",
+                    ((java.util.concurrent.atomic.AtomicBoolean) changing.get(null)).get());
+
+            // And the next change is not turned away.
+            ShadowToast.reset();
+            reset.invoke(fragment, false);
+            Utils.awaitBackgroundTasksForTests();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertNotEquals("A Lab change is already running", ShadowToast.getTextOfLatestToast());
+        }
+    }
+
     private static FeatureGateLabFragment attach(Activity activity) {
         var fragment = new FeatureGateLabFragment();
         activity.getFragmentManager().beginTransaction().replace(android.R.id.content, fragment).commit();

@@ -675,12 +675,24 @@ public final class FeatureGateLabFragment extends Fragment {
         showStyled(dialog);
     }
 
+    /**
+     * Puts the switch back where the store is, when the screen is still up.
+     *
+     * <p>The null check is the point: a Lab change finishes on the main thread after work that
+     * takes long enough to leave the screen during, and {@link #onDestroyView} has cleared the
+     * switch by then.
+     */
+    private void syncMasterSwitch() {
+        if (master == null) return;
+        master.setChecked(FeatureGateLabStore.masterEnabled());
+        master.setContentDescription("Enable overrides");
+        SettingsUi.styleSwitch(master);
+    }
+
     private void onMasterChanged(boolean checked) {
         if (FeatureGateLabStore.masterEnabled() == checked) return;
         if (CHANGING.get()) {
-            master.setChecked(FeatureGateLabStore.masterEnabled());
-        master.setContentDescription("Enable overrides");
-        SettingsUi.styleSwitch(master);
+            syncMasterSwitch();
             Utils.showToastLong("A Lab change is already running");
             return;
         }
@@ -690,7 +702,7 @@ public final class FeatureGateLabFragment extends Fragment {
             Utils.showToastLong(checked ? "Overrides enabled. Restart TikTok to apply saved values."
                     : "Overrides disabled. Restart TikTok to restore native values.");
         } catch (Exception error) {
-            master.setChecked(FeatureGateLabStore.masterEnabled());
+            syncMasterSwitch();
             Utils.showToastLong("Could not change Lab overrides. " + error.getMessage());
         }
     }
@@ -1009,11 +1021,12 @@ public final class FeatureGateLabFragment extends Fragment {
             }
             String notice = result;
             new Handler(Looper.getMainLooper()).post(() -> {
-                if (master != null) master.setChecked(FeatureGateLabStore.masterEnabled());
-        master.setContentDescription("Enable overrides");
-        SettingsUi.styleSwitch(master);
-                rebuild();
+                // Released first. The flag is process-wide and nothing else clears it, so a
+                // failure while putting the screen back used to refuse every later Lab change
+                // until TikTok was restarted.
                 CHANGING.set(false);
+                syncMasterSwitch();
+                rebuild();
                 Utils.showToastLong(notice);
             });
         });
