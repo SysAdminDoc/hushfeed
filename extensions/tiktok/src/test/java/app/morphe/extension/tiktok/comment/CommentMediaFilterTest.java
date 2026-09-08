@@ -37,6 +37,18 @@ public class CommentMediaFilterTest {
         public List<Object> textImageCommentPostItemList;
         public Object stickerStruct;
         public List<Object> replyComments;
+        public User user;
+    }
+
+    /** Stands in for the profile model, with the two ids the filter compares. */
+    public static class User {
+        public String uid;
+        public String secUid;
+
+        User(String uid, String secUid) {
+            this.uid = uid;
+            this.secUid = secUid;
+        }
     }
 
     /** Stands in for CommentItemList. */
@@ -61,6 +73,12 @@ public class CommentMediaFilterTest {
         Settings.COMMENT_KEYWORD_FILTER.save(false);
         Settings.COMMENT_BLOCKED_KEYWORDS.save("");
         Settings.COMMENT_BLOCKED_USERS.save("");
+        CommentTools.signedInUserIdForTests = null;
+    }
+
+    @org.junit.After
+    public void tearDown() {
+        CommentTools.signedInUserIdForTests = null;
     }
 
     @Test
@@ -80,6 +98,48 @@ public class CommentMediaFilterTest {
         CommentTools.onCommentListLoaded(page);
 
         assertEquals(Collections.singletonList(kept), page.items);
+    }
+
+    @Test
+    public void yourOwnStickersAndImagesStay() {
+        // Hiding comments with pictures is about what other people post. Watching your own
+        // sticker vanish from a thread you are in reads as the comment having failed to send.
+        Settings.HIDE_COMMENT_MEDIA.save(true);
+        CommentTools.signedInUserIdForTests = "me-123";
+
+        Comment mine = words("");
+        mine.stickerStruct = new Object();
+        mine.user = new User("me-123", "sec-me");
+        Comment mineBySecUid = words("");
+        mineBySecUid.imageList = new ArrayList<>(Collections.singletonList(new Object()));
+        mineBySecUid.user = new User(null, "me-123");
+        Comment theirs = words("");
+        theirs.stickerStruct = new Object();
+        theirs.user = new User("someone-else", "sec-them");
+
+        ItemList page = new ItemList(new ArrayList<>(Arrays.asList(mine, mineBySecUid, theirs)));
+        CommentTools.onCommentListLoaded(page);
+
+        assertEquals(Arrays.asList(mine, mineBySecUid), page.items);
+    }
+
+    @Test
+    public void withNobodySignedInEveryPictureStillGoes() {
+        // The account service answers nothing when signed out or when it has moved, and the
+        // filter has to behave as it always did rather than keeping everything.
+        Settings.HIDE_COMMENT_MEDIA.save(true);
+        CommentTools.signedInUserIdForTests = "";
+
+        Comment withSticker = words("");
+        withSticker.stickerStruct = new Object();
+        withSticker.user = new User("someone", "sec-someone");
+        Comment noUser = words("");
+        noUser.imageList = new ArrayList<>(Collections.singletonList(new Object()));
+
+        ItemList page = new ItemList(new ArrayList<>(Arrays.asList(withSticker, noUser)));
+        CommentTools.onCommentListLoaded(page);
+
+        assertEquals(Collections.emptyList(), page.items);
     }
 
     @Test

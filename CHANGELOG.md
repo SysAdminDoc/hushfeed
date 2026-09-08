@@ -1,5 +1,7 @@
 ## Unreleased
 
+* "Hide comments with pictures" leaves your own alone. Your stickers and images disappeared from threads you were in, which reads as the comment having failed to send rather than as a filter doing its job. Other people's are hidden as before, and if nobody is signed in nothing changes.
+
 * Undo is greyed out until there is something to undo. On a clean install it was offered like any other row, and tapping it said the settings could not be restored, which reads as a breakage rather than as an empty drawer. If it does somehow run with nothing saved it now says there is nothing to undo yet.
 
 * Saving a gate configuration writes what is on the screen. Rotating the phone, changing the text size or theme, or coming back from a deeper screen rebuilt the page and kept the fields from every earlier version of it, so a save could collect text from boxes nobody could see. Those pages are also released now instead of being held for the life of the app, and a custom value box left open when the screen goes is closed with it.

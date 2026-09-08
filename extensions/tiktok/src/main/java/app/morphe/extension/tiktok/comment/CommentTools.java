@@ -207,7 +207,11 @@ public final class CommentTools {
                 return;
             }
 
-            int removed = filterComments((List<?>) itemsObject, keywords, users, media);
+            // Looked up once for the page, not once per comment: two reflective calls into
+            // TikTok's account service.
+            String self = media ? signedInUserId() : null;
+
+            int removed = filterComments((List<?>) itemsObject, keywords, users, media, self);
             if (removed > 0) {
                 final int count = removed;
                 Logger.printDebug(() -> "Comment filter removed " + count + " comment(s)");
@@ -631,7 +635,7 @@ public final class CommentTools {
 
     private static int filterComments(List<?> comments,
             List<app.morphe.extension.tiktok.feedfilter.KeywordRules.Rule> keywords,
-            List<String> users, boolean media) {
+            List<String> users, boolean media, String self) {
         int removed = 0;
         Iterator<?> iterator = comments.iterator();
         while (iterator.hasNext()) {
@@ -640,7 +644,7 @@ public final class CommentTools {
                 continue;
             }
 
-            if (matches(comment, keywords, users, media)) {
+            if (matches(comment, keywords, users, media, self)) {
                 try {
                     iterator.remove();
                     removed++;
@@ -653,7 +657,7 @@ public final class CommentTools {
 
             Object replies = Reflect.property(comment, "getReplyComments", "replyComments");
             if (replies instanceof List) {
-                removed += filterComments((List<?>) replies, keywords, users, media);
+                removed += filterComments((List<?>) replies, keywords, users, media, self);
             }
         }
         return removed;
@@ -661,8 +665,11 @@ public final class CommentTools {
 
     private static boolean matches(Object comment,
             List<app.morphe.extension.tiktok.feedfilter.KeywordRules.Rule> keywords,
-            List<String> users, boolean media) {
-        if (media && hasMedia(comment)) {
+            List<String> users, boolean media, String self) {
+        // Your own stickers and images stay. Hiding comments with pictures is about what other
+        // people post, and having your own disappear from a thread you are in reads as the
+        // comment having failed to send.
+        if (media && hasMedia(comment) && !isOwnComment(comment, self)) {
             return true;
         }
 
@@ -691,6 +698,66 @@ public final class CommentTools {
      * the model: the attached images, a sticker struct, and the post items a text-on-image
      * comment is built from.
      */
+    /**
+     * Whether this comment was written by the account that is signed in.
+     *
+     * <p>Answers false when nobody is signed in, when the account service is not reachable, or
+     * when either side has no id, so a comment is only ever kept by a positive match.
+     */
+    private static boolean isOwnComment(Object comment, String self) {
+        if (self == null || self.isEmpty()) {
+            return false;
+        }
+        Object user = Reflect.property(comment, "getUser", "user");
+        if (user == null) {
+            return false;
+        }
+        String uid = Reflect.string(user, "getUid", "uid");
+        if (self.equals(uid)) {
+            return true;
+        }
+        String secUid = Reflect.string(user, "getSecUid", "secUid");
+        return secUid != null && !secUid.isEmpty() && self.equals(secUid);
+    }
+
+    /**
+     * The signed in account's id, or null when there is not one.
+     *
+     * <p>Both ids are worth having: a comment carries the plain uid and the sec uid, and which
+     * of them is filled in varies by where the list came from.
+     */
+    private static String signedInUserId() {
+        if (signedInUserIdForTests != null) {
+            return signedInUserIdForTests.isEmpty() ? null : signedInUserIdForTests;
+        }
+        try {
+            Class<?> serviceManagerClass = Class.forName(SERVICE_MANAGER_CLASS);
+            Object serviceManager = serviceManagerClass.getMethod("get").invoke(null);
+            Class<?> accountServiceClass = Class.forName(ACCOUNT_USER_SERVICE_CLASS);
+            Object accountService = serviceManagerClass
+                    .getMethod("getService", Class.class)
+                    .invoke(serviceManager, accountServiceClass);
+            if (accountService == null
+                    || !Boolean.TRUE.equals(accountServiceClass.getMethod("isLogin").invoke(accountService))) {
+                return null;
+            }
+            Object id = accountServiceClass.getMethod("getCurUserId").invoke(accountService);
+            return id instanceof String && !((String) id).isEmpty() ? (String) id : null;
+        } catch (Throwable ignored) {
+            // Not signed in, or a build where the account service moved. Either way the filter
+            // behaves as it did before: it hides every comment carrying a picture.
+            return null;
+        }
+    }
+
+    /** So a test can stand in for the account service, which needs the host to be running. */
+    static String signedInUserIdForTests;
+
+    private static final String SERVICE_MANAGER_CLASS =
+            "com.ss.android.ugc.aweme.framework.services.ServiceManager";
+    private static final String ACCOUNT_USER_SERVICE_CLASS =
+            "com.ss.android.ugc.aweme.IAccountUserService";
+
     private static boolean hasMedia(Object comment) {
         Object images = Reflect.property(comment, "getImageList", "imageList");
         if (images instanceof List && !((List<?>) images).isEmpty()) {
