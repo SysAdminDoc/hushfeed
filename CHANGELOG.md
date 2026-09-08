@@ -1,5 +1,9 @@
 ## Unreleased
 
+* Three search boxes read back what you typed instead of their own label. A content description on an editable field replaces its contents for a screen reader, so typing "cats" came back as "Search settings".
+
+* The tab picker rows say whether they are on, and say so again after you tap one. The check box in each row is not the thing you press, so a screen reader had no state to read at all.
+
 * A second undo banner within six seconds of the first now gets its own six seconds. The first banner's timer was still queued and took the new one away early, along with its Undo.
 
 * The published patch list names what each patch actually depends on instead of saying "BytecodePatch" for all of them. Every patch that adds a setting now requires the Settings patch too, so the patcher cannot leave you with switches on a screen that was never built.

@@ -53,7 +53,8 @@ public final class SettingsSearchInputPreference extends Preference {
         editText.setSingleLine(true);
         editText.setTextSize(16);
         editText.setHint(L10n.t(context, "Search settings"));
-        editText.setContentDescription(L10n.t(context, "Search settings"));
+        // No content description on a search box. On an editable view it replaces what was
+        // typed in the announcement, so "cats" came back as the label. The hint names it.
         editText.setMinimumHeight(SettingsUi.dp(context, 48));
         editText.setPadding(0, 0, 0, 0);
         SettingsUi.styleEditText(editText);

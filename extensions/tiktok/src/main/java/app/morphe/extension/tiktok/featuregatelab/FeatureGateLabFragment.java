@@ -233,7 +233,8 @@ public final class FeatureGateLabFragment extends Fragment {
         search = new EditText(context);
         search.setSingleLine(true);
         search.setTextSize(16);
-        search.setContentDescription("Search words or key");
+        // No content description on a search box. On an editable view it replaces what was
+        // typed in the announcement, so "cats" came back as the label. The hint names it.
         search.setHint("Search words or key");
         search.setBackgroundColor(Color.TRANSPARENT);
         search.setTextColor(SettingsUi.textPrimary());

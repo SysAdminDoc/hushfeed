@@ -201,7 +201,8 @@ public final class CommentSearch {
         Context context = column.getContext();
         EditText box = new EditText(context);
         box.setHint(L10n.t(context, "Search these comments"));
-        box.setContentDescription(L10n.t(context, "Search these comments"));
+        // No content description on a search box. On an editable view it replaces what was
+        // typed in the announcement, so "cats" came back as the label. The hint names it.
         box.setSingleLine(true);
         // A single line field with a newline key is a dead end; this is a search.
         box.setImeOptions(EditorInfo.IME_ACTION_SEARCH);

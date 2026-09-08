@@ -273,6 +273,21 @@ public class TabSelectionPreference extends Preference {
         );
         row.addView(textContainer, textParams);
 
+        // The box is not clickable and the row does the toggling, so without this a screen
+        // reader read the tab name and "double tap to activate" with no on or off in it, and
+        // said nothing at all after the tap.
+        row.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            @Override
+            public void onInitializeAccessibilityNodeInfo(
+                    View host, android.view.accessibility.AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                info.setClassName(CheckBox.class.getName());
+                info.setCheckable(!isRequiredOption(option.key));
+                info.setChecked(checkBox.isChecked());
+                info.setEnabled(!isRequiredOption(option.key));
+            }
+        });
+
         row.setOnClickListener(view -> {
             if (isRequiredOption(option.key)) {
                 return;
@@ -285,6 +300,9 @@ public class TabSelectionPreference extends Preference {
                 selected.add(option.key);
                 checkBox.setChecked(true);
             }
+            // What was just done, rather than leaving the reader to go back and check.
+            row.sendAccessibilityEvent(
+                    android.view.accessibility.AccessibilityEvent.TYPE_VIEW_CLICKED);
         });
 
         View divider = new View(context);
