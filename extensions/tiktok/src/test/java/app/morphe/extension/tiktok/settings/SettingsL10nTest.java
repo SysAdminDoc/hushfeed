@@ -81,6 +81,64 @@ public class SettingsL10nTest {
      * English by choice, which the row that opens it says. The shared extension module is not
      * walked either: it is TikTok-independent code, and this table is TikTok's.
      */
+    @Test public void theGeneratedTableIsTheOneInTheTsvFiles() throws Exception {
+        // Every other check here reads L10nTranslations, which is generated. A value edited in a
+        // .tsv without rerunning scripts/gen-l10n.py was invisible to all of them, and so was a
+        // generated file edited by hand, which its own header forbids.
+        for (String language : new String[]{"de", "in"}) {
+            java.util.Map<String, String> generated = L10nTranslations.of(language);
+            java.util.Map<String, String> table = readTsv(language);
+
+            java.util.List<String> problems = new java.util.ArrayList<>();
+            for (java.util.Map.Entry<String, String> row : table.entrySet()) {
+                String was = generated.get(row.getKey());
+                if (was == null) {
+                    problems.add(language + " has a row the generated table does not: " + row.getKey());
+                } else if (!was.equals(row.getValue())) {
+                    problems.add(language + " differs for " + row.getKey()
+                            + ": tsv has " + row.getValue() + ", generated has " + was);
+                }
+            }
+            for (String key : generated.keySet()) {
+                if (!table.containsKey(key)) {
+                    problems.add(language + " generated a row the tsv does not have: " + key);
+                }
+            }
+            assertEquals("the generated translations are not the ones in " + language
+                    + ".tsv, so run scripts/gen-l10n.py: " + problems, 0, problems.size());
+            assertTrue(language + ".tsv is empty", table.size() > 500);
+        }
+    }
+
+    @Test public void theTsvComparisonCanActuallyFail() throws Exception {
+        // The comparison above only means something if a changed value is visible to it.
+        java.util.Map<String, String> table = readTsv("de");
+        String key = table.keySet().iterator().next();
+        java.util.Map<String, String> changed = new java.util.LinkedHashMap<>(table);
+        changed.put(key, changed.get(key) + " x");
+        assertNotEquals("a changed value read the same", table.get(key), changed.get(key));
+        assertFalse("the tables compare equal after a change", table.equals(changed));
+    }
+
+    /** The tsv format is one key, a tab, and the translation, with # for a comment. */
+    private static java.util.Map<String, String> readTsv(String language) throws Exception {
+        java.io.File file = new java.io.File("src/main/l10n/" + language + ".tsv");
+        if (!file.isFile()) file = new java.io.File(
+                "extensions/tiktok/src/main/l10n/" + language + ".tsv");
+        assertTrue("could not find " + file.getAbsolutePath(), file.isFile());
+
+        java.util.Map<String, String> rows = new java.util.LinkedHashMap<>();
+        for (String line : new String(java.nio.file.Files.readAllBytes(file.toPath()),
+                java.nio.charset.StandardCharsets.UTF_8).split("\\n")) {
+            String text = line.replace("\r", "");
+            if (text.isEmpty() || text.startsWith("#")) continue;
+            int tab = text.indexOf('\t');
+            assertTrue("a row with no tab in " + language + ".tsv: " + text, tab > 0);
+            rows.put(text.substring(0, tab), text.substring(tab + 1));
+        }
+        return rows;
+    }
+
     @Test public void everyTranslationKeepsTheShapeOfItsKey() {
         // Defects the key-set checks cannot see. A placeholder that changed, was dropped or was
         // invented; a sentence that lost or gained its terminator; a quote pair that does not
