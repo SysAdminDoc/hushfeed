@@ -104,7 +104,8 @@ public final class FeatureGateLabFragment extends Fragment {
     private static final int FILTER_UNLOADED = 4;
 
     private final Handler searchHandler = new Handler(Looper.getMainLooper());
-    private final FeatureGateLabUi.SystemBackHandler systemBack = new FeatureGateLabUi.SystemBackHandler();
+    private final app.morphe.extension.tiktok.settings.SystemBackHandler systemBack =
+            new app.morphe.extension.tiktok.settings.SystemBackHandler("FeatureGateLabBackCallback");
     private final List<FeatureGateCatalog.Entry> visible = new ArrayList<>();
 
     private FeatureGateCatalog.Snapshot snapshot;

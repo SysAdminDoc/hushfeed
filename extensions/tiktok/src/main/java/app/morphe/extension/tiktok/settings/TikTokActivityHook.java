@@ -73,6 +73,14 @@ public class TikTokActivityHook {
         }
         base.getFragmentManager().beginTransaction().replace(fragmentId, preferenceFragment).commit();
 
+        // Back here rode entirely on the host's onBackPressed, which stops being called once
+        // TikTok drops enableOnBackInvokedCallback="false" from its manifest at target 36. The
+        // Lab has registered a dispatcher callback since API 33; this screen had not, so it
+        // would have lost Back the day that attribute goes. The hook below stays as the path
+        // for everything older.
+        new SystemBackHandler("HushfeedSettingsBackCallback")
+                .registerUntilDetached(base, linearLayout, () -> handleBackPressed(base));
+
         return true;
     }
 

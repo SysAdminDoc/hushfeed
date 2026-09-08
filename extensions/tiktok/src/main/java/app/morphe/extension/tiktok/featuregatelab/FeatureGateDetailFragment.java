@@ -41,7 +41,8 @@ public final class FeatureGateDetailFragment extends Fragment {
     private static final String ARG_KEY = "key";
     private static final String ARG_TYPE = "type";
 
-    private final FeatureGateLabUi.SystemBackHandler systemBack = new FeatureGateLabUi.SystemBackHandler();
+    private final app.morphe.extension.tiktok.settings.SystemBackHandler systemBack =
+            new app.morphe.extension.tiktok.settings.SystemBackHandler("FeatureGateDetailBackCallback");
 
     private FeatureGateCatalog.Entry entry;
     private FeatureGateLabStore.Rule rule;
