@@ -36,6 +36,7 @@ public final class SettingsBackupPreference extends Preference
         setKey("settings_backup_" + action);
         setTitle(title);
         setSummary(summary);
+        refreshUndoAvailability();
         setOnPreferenceClickListener(preference -> {
             if (BUSY.get()) { Utils.showToastShort(L10n.t("A settings operation is already running")); return true; }
             if (action == RESET || action == UNDO) run(fragment, action, null);
@@ -189,10 +190,37 @@ public final class SettingsBackupPreference extends Preference
                     break;
             }
         }
+        if (action == UNDO && hasCause(error, java.io.FileNotFoundException.class)) {
+            return "There is nothing to undo yet.";
+        }
         return "Could not restore settings.";
     }
 
+    /** Whether the throwable, or anything it wraps, is of the given kind. */
+    private static boolean hasCause(Throwable error, Class<? extends Throwable> kind) {
+        for (Throwable current = error; current != null; current = current.getCause()) {
+            if (kind.isInstance(current)) return true;
+            if (current.getCause() == current) break;
+        }
+        return false;
+    }
+
+    /**
+     * Greys out Undo when there is nothing to undo.
+     *
+     * <p>The row used to be offered on a clean install, and tapping it reported that the settings
+     * could not be restored, which reads as something having gone wrong rather than as there
+     * being nothing there. Checked again on every bind, so a reset or a restore enables it
+     * without the page being rebuilt.
+     */
+    private void refreshUndoAvailability() {
+        if (rowAction != UNDO) return;
+        boolean available = SettingsBackup.hasUndo(getContext());
+        if (isEnabled() != available) setEnabled(available);
+    }
+
     @Override protected void onBindView(View view) {
+        refreshUndoAvailability();
         super.onBindView(view);
         app.morphe.extension.tiktok.Utils.setTitleAndSummaryColor(view);
     }
