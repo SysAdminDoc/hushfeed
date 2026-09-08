@@ -21,7 +21,6 @@ import app.morphe.extension.tiktok.settings.preference.TikTokPreferenceFragment;
 import com.bytedance.ies.ugc.aweme.commercialize.compliance.personalization.AdPersonalizationActivity;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * Hooks AdPersonalizationActivity to inject a custom {@link TikTokPreferenceFragment}.

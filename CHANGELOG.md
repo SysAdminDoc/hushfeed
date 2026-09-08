@@ -2,7 +2,6 @@
 
 * Automatic video advance now also shows TikTok's own Auto scroll action in the video actions panel. That entry hangs off a second flag, so accounts outside TikTok's rollout never saw it however the feed gate answered.
 
-* A TikTok build that renames the classes the Hushfeed row is made of now loses the row instead of the whole settings screen. It used to throw out of TikTok's own page and take it down.
 
 * Every patch in the bundle is now verified against a real TikTok 46.2.3 APK rather than a stripped fixture. All 68 apply, and the README records the exact build and its checksum so anyone can reproduce the same run.
 

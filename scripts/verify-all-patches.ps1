@@ -120,11 +120,13 @@ function Test-PatchingReport {
     )
     if ($null -eq $Report) { return [pscustomobject]@{ Valid = $false; Reason = 'missing or invalid result JSON' } }
 
-    # Morphe desktop 1.15.0 writes no top-level success field; each entry in patchingSteps
-    # carries its own instead. So it is checked when it is there and not demanded when it is
-    # not. The step check below is what actually catches the case this script exists for, a
-    # result file written from a finally block after a failed compile, because the step that
-    # failed reports success false.
+    # The top-level success field defaults to true in morphe-desktop 1.15.0, and kotlinx
+    # serialization omits a field that equals its default, so a successful run has no such field
+    # while a failed one writes "success": false. It is therefore checked when present and not
+    # demanded when absent. If a later CLI changes that default, absence stops meaning success:
+    # read PatchingResult before relying on this. The step check below is the independent one,
+    # and it is what catches the case this script exists for, a result file written from a
+    # finally block after a failed compile, because the step that failed reports success false.
     $success = $Report.PSObject.Properties['success']
     $steps = @($Report.patchingSteps)
     $stepsOk = $steps.Count -gt 0 -and @($steps | Where-Object {

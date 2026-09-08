@@ -18,15 +18,21 @@ private data class ScreenCaptureCallSite(
 )
 
 /**
- * Bytecode only. 46.2.3 does not declare android.permission.DETECT_SCREEN_CAPTURE, so there is
- * nothing in the manifest to take out, and touching the manifest at all makes the patcher decode
- * the whole resource table. That decode is what put patching over the memory Morphe Manager
- * allows by default: measured 2026-09-06, this patch alone needed 768 MB with it and 512 MB
- * without.
+ * Bytecode only. 46.2.3 does declare android.permission.DETECT_SCREEN_CAPTURE, checked against
+ * the vendor APK on 2026-09-08 with aapt2 dump xmltree; an earlier note here said it did not,
+ * because the string is UTF-16 in the binary manifest and an ASCII search finds nothing.
  *
- * The sweep below matches call sites whose receiver is typed as Activity itself. A build that
- * called the API through a subclass reference, or that declared the permission, would need the
- * manifest cleanup back, so check both before widening compatibility past 46.2.3.
+ * Leaving the permission in place is still right. Every call to
+ * Activity.registerScreenCaptureCallback in 46.2.3 is typed on Activity itself, 11 of them
+ * across four dex files with 11 matching unregister calls, and the sweep below replaces all of
+ * them, so nothing ever registers a callback and the declared permission does nothing. Taking it
+ * out would make the patcher decode the whole resource table, which is what put patching over
+ * the memory Morphe Manager allows by default: measured 2026-09-06, this patch alone needed
+ * 768 MB with it and 512 MB without.
+ *
+ * The sweep matches only receivers typed as Activity. A build that called the API through a
+ * subclass reference would slip past it, and then the permission would matter, so check that
+ * before widening compatibility past 46.2.3.
  */
 @Suppress("unused")
 val antiRecordingPatch = bytecodePatch(
