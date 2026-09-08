@@ -26,6 +26,7 @@ import android.view.Surface;
 import androidx.annotation.RequiresApi;
 
 import java.io.FileDescriptor;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -238,14 +239,21 @@ final class AnimatedWebpMp4Converter {
         return (int) Math.max(500_000L, Math.min(8_000_000L, proposed));
     }
 
-    private static void drainEncoder(
+    /** Package-private so a test can drive the loop with no encoder behind it. */
+    static void drainEncoder(
             MediaCodec encoder,
             MediaMuxer muxer,
             boolean endOfStream,
             EncoderState state
-    ) {
+    ) throws IOException {
         MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
         while (true) {
+            // An encoder that stops emitting after signalEndOfInputStream leaves this loop
+            // spinning, and dequeueOutputBuffer does not answer Thread.interrupt(), so neither
+            // the scheduler's cancel nor the job deadline could end it. One of the three media
+            // worker threads was then gone for the life of the process. This is the only place
+            // in the loop that can notice either.
+            MediaBudget.check(null);
             int outputIndex = encoder.dequeueOutputBuffer(info, CODEC_TIMEOUT_US);
             if (outputIndex == MediaCodec.INFO_TRY_AGAIN_LATER) {
                 if (!endOfStream) return;
@@ -328,7 +336,8 @@ final class AnimatedWebpMp4Converter {
         }
     }
 
-    private static final class EncoderState {
+    /** Package-private with the drain loop it belongs to, so a test can call that loop. */
+    static final class EncoderState {
         int trackIndex = -1;
         boolean muxerStarted;
     }
