@@ -74,6 +74,10 @@ public class RangeValuePreference extends DialogPreference {
             mValueSet = true;
             persistString(value);
             if (changed) {
+                // The range line is the stored value written back out, so it has to be rebuilt
+                // wherever the value moves. A restore, a reset and an undo all arrive here and
+                // used to leave the row reading the range they replaced.
+                describeRange();
                 notifyDependencyChange(shouldDisableDependents());
                 notifyChanged();
             }
@@ -223,7 +227,6 @@ public class RangeValuePreference extends DialogPreference {
         }
         // Only digits are stored. Everything downstream reads a plain number and always has.
         setValue(min + "-" + max);
-        describeRange();
     }
 
     /** An empty field means "no bound at this end" rather than a value that cannot be read. */

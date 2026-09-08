@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The five Min and Max rows show the range they actually hold. Reset settings, restore a backup or undo one, and rows like "Views" kept the old "20K to 1.5M" under them while the stored value had already gone back to its default. Only closing the dialog rebuilt that line; every path that changes the value rebuilds it now.
+
 * "Hide comments with pictures" leaves your own alone. Your stickers and images disappeared from threads you were in, which reads as the comment having failed to send rather than as a filter doing its job. Other people's are hidden as before, and if nobody is signed in nothing changes.
 
 * Undo is greyed out until there is something to undo. On a clean install it was offered like any other row, and tapping it said the settings could not be restored, which reads as a breakage rather than as an empty drawer. If it does somehow run with nothing saved it now says there is nothing to undo yet.
