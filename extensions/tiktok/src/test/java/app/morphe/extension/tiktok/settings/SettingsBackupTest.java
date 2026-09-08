@@ -40,6 +40,14 @@ import org.robolectric.shadows.ShadowToast;
 public class SettingsBackupTest {
     @After public void tearDownStatus() {
         SettingsStatus.diagnosticsEnabled = false;
+        // Settings live in a static registry that outlives this class, and one test here saves a
+        // German app language. Utils.setContext reads that setting and, when it is not the
+        // default, hands back a createConfigurationContext copy instead of the context it was
+        // given. Any later test in the same JVM that installs a ContextWrapper to fail a file
+        // write then had its override quietly dropped, so the operation succeeded and the test
+        // failed asking where its exception went. Which class that hit depended on run order.
+        for (Setting<?> setting : Setting.allLoadedSettings()) setting.resetToDefault();
+        Utils.setContext(RuntimeEnvironment.getApplication());
     }
     @Before public void setup() throws Exception {
         Utils.setContext(RuntimeEnvironment.getApplication());
@@ -165,6 +173,75 @@ public class SettingsBackupTest {
         }
         assertEquals("two refusals share a sentence, so the user cannot tell them apart",
                 4, sentences.size());
+    }
+
+    @Test public void aFinishedRestoreFromAnotherTikTokVersionIsNotUndoneAtNextLaunch() throws Exception {
+        // A journal that outlives its own commit is ordinary: the delete after a commit is
+        // allowed to fail, on the reasoning that the after snapshot still describes the result.
+        // Reconciliation compares the live settings against that snapshot, and a snapshot that
+        // leaves the Lab alone carries no rules to compare, so the comparison threw, was caught
+        // as "does not match", and the startup path rolled a successful restore back.
+        var app = Utils.getContext();
+        Settings.BLOCKED_CREATORS.save("from the backup");
+        String backup = new JSONObject(SettingsBackup.create(false)).put("target", "40.0.0").toString();
+
+        Settings.BLOCKED_CREATORS.save("changed since");
+        String before = SettingsBackup.create(false);
+        SettingsBackup.restore(app, backup, true);
+        assertEquals("the restore itself did not take", "from the backup", Settings.BLOCKED_CREATORS.get());
+
+        writeJournal("settings", before, backup);
+        assertEquals("a finished restore was read as interrupted",
+                SettingsOperationJournal.Recovery.ALREADY_COMMITTED,
+                SettingsOperationJournal.initialize(app));
+        assertEquals("the settings the user restored were reverted at startup",
+                "from the backup", Settings.BLOCKED_CREATORS.get());
+    }
+
+    @Test public void aBackupThatStopsHalfwayThroughSaysSoRatherThanRefusingWithoutAReason()
+            throws Exception {
+        // Valid UTF-8, valid nothing else: exactly what a download that was cut off looks like.
+        String half = SettingsBackup.create(false);
+        half = half.substring(0, half.length() / 2);
+
+        assertEquals(SettingsBackup.Reason.DAMAGED, reasonFor(half));
+
+        // Its own sentence, not the one a photograph or a newer Hushfeed's backup gets.
+        String damaged = sentenceFor(half);
+        String wrongFormat = sentenceFor(
+                new JSONObject(SettingsBackup.create(false)).put("format", "something-else").toString());
+        String unknown = sentenceFor("{\"format\":\"hushfeed-settings\"}");
+        assertNotEquals("a cut-off download reads the same as a file that is not a backup",
+                wrongFormat, damaged);
+        assertNotEquals("a cut-off download still reads as the unexplained rejection",
+                unknown, damaged);
+    }
+
+    @Test public void aFileThatCannotEvenBeReadIsRefusedWithItsOwnReason() throws Exception {
+        var app = Utils.getContext();
+        // Bytes that are not UTF-8 at all, the shape of a file damaged in transit.
+        byte[] notText = {(byte) 0xC3, (byte) 0x28, (byte) 0xA0, (byte) 0xA1};
+        assertEquals("an unreadable file is still refused without a reason",
+                SettingsBackup.Reason.ENCODING,
+                reasonForStream(app, new java.io.ByteArrayInputStream(notText)));
+
+        byte[] tooBig = new byte[SettingsBackup.MAX_BYTES + 1024];
+        java.util.Arrays.fill(tooBig, (byte) 'x');
+        assertEquals("an oversized file is still refused without a reason",
+                SettingsBackup.Reason.SIZE,
+                reasonForStream(app, new java.io.ByteArrayInputStream(tooBig)));
+    }
+
+    private static SettingsBackup.Reason reasonForStream(android.content.Context app,
+            java.io.InputStream input) {
+        try {
+            SettingsBackup.restoreFrom(app, input, true);
+        } catch (SettingsBackup.RestoreException rejected) {
+            return rejected.getReason();
+        } catch (Exception other) {
+            throw new AssertionError("expected a RestoreException, got " + other, other);
+        }
+        throw new AssertionError("that input was accepted");
     }
 
     private static SettingsBackup.Reason reasonFor(String text) {

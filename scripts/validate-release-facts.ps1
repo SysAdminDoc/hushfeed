@@ -23,6 +23,30 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+function Resolve-DesktopCli {
+    <#
+    .SYNOPSIS
+        The Morphe desktop CLI jar, or $null when there is none to be found.
+    .DESCRIPTION
+        Taken in order from -DesktopJar, HUSHFEED_DESKTOP_JAR, HUSHFEED_WORKDIR and the repo's
+        own build/morphe-tools. The jar ships under its version, so the newest by write time is
+        taken rather than one filename that goes stale: sorting those as text puts 1.9.0 above
+        1.15.0.
+    #>
+    param([string]$Explicit, [string]$Root)
+
+    if ($Explicit) { return $Explicit }
+    if ($env:HUSHFEED_DESKTOP_JAR) { return $env:HUSHFEED_DESKTOP_JAR }
+    $searched = @($env:HUSHFEED_WORKDIR, (Join-Path $Root 'build/morphe-tools')) |
+        Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Container) }
+    foreach ($directory in $searched) {
+        $found = @(Get-ChildItem -LiteralPath $directory -Filter 'morphe-desktop*.jar' -File `
+            -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending)
+        if ($found.Count -gt 0) { return $found[0].FullName }
+    }
+    return $null
+}
+
 function Read-JsonFile {
     param([string]$Path)
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
@@ -253,11 +277,16 @@ if ($VerifyPublishedAsset) {
         # checkout just built. That moves the moment a patch is added; the file people download
         # does not. The index once advertised 70 patches while the published asset carried 68 and
         # nothing complained, because nothing had read the published asset. This does.
-        $countJar = if ($DesktopJar) { $DesktopJar } else { $env:HUSHFEED_DESKTOP_JAR }
+        # No caller passed -DesktopJar and nothing in the repo set the variable, so this check
+        # printed "NOT COUNTED" and passed on every run it has ever had. A switch named
+        # -VerifyPublishedAsset that quietly skips the only check reading the published asset is
+        # worse than no switch: look for the CLI, and say so plainly when there is none.
+        $countJar = Resolve-DesktopCli -Explicit $DesktopJar -Root $Root
         if (-not $countJar) {
-            Write-Host ('[release] NOT COUNTED: the published bundle was downloaded but its patches ' +
-                'were not counted, because no Morphe desktop CLI was given. Pass -DesktopJar or set ' +
-                'HUSHFEED_DESKTOP_JAR to compare it against the ' + $patchCount + ' the index describes.')
+            throw ('The published bundle was downloaded but its patches cannot be counted: no ' +
+                'Morphe desktop CLI was found. Pass -DesktopJar, set HUSHFEED_DESKTOP_JAR, or put ' +
+                'morphe-desktop*.jar under HUSHFEED_WORKDIR or build/morphe-tools, so the ' +
+                $patchCount + ' patches the index describes can be compared against the asset.')
         } elseif (-not (Test-Path -LiteralPath $countJar -PathType Leaf)) {
             throw "The Morphe desktop CLI is missing: $countJar"
         } else {

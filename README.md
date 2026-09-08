@@ -255,7 +255,9 @@ After uploading the bundle and a `SHA256SUMS.txt` file to the GitHub release, ve
 pwsh -File scripts/validate-release-facts.ps1 -VerifyPublishedAsset -ArtifactPath patches/build/libs/patches-<version>.mpp
 ```
 
-The check follows the indexed URL, compares its SHA-256 with the local artifact, and checks the matching entry in `SHA256SUMS.txt` before the source index is promoted.
+The check follows the indexed URL, compares its SHA-256 with the local artifact, checks the matching entry in `SHA256SUMS.txt`, and counts the patches inside the published bundle against the number the index advertises.
+
+That last one needs the Morphe desktop CLI. Set `HUSHFEED_DESKTOP_JAR` to the jar, or put `morphe-desktop-<version>-all.jar` under `HUSHFEED_WORKDIR` or `build/morphe-tools`, and it is found on its own. Without it the check stops rather than passing, because the count is the only part that reads what people actually download.
 
 ### Adding a language to the settings screen
 

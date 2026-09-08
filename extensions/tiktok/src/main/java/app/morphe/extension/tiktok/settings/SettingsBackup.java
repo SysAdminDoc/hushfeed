@@ -46,6 +46,8 @@ public final class SettingsBackup {
     public enum Reason {
         SIZE,
         ENCODING,
+        /** Readable text that is not JSON at all, which is what a part-finished download is. */
+        DAMAGED,
         FORMAT,
         SCHEMA,
         INCOMPLETE,
@@ -187,8 +189,13 @@ public final class SettingsBackup {
                 closed = true;
             } catch (Exception error) {
                 try { Setting.saveAll(previous.values); } catch (Exception rollback) { error.addSuppressed(rollback); }
-                try { FeatureGateLabStore.replaceSettings(previous.rules, previous.master, previous.acknowledged); }
-                catch (Exception rollback) { error.addSuppressed(rollback); }
+                // Only put the Lab back when the apply above could have changed it. Writing the
+                // same rules again is not free: it clears every triggered marker and raises a
+                // restart notice, for a store the failed restore never touched.
+                if (next.labIncluded) {
+                    try { FeatureGateLabStore.replaceSettings(previous.rules, previous.master, previous.acknowledged); }
+                    catch (Exception rollback) { error.addSuppressed(rollback); }
+                }
                 boolean rollbackComplete = ordinarySettingsMatch(previousPreferences)
                         && labSettingsMatch(previous);
                 boolean recoveryAvailable = hasVerifiedUndo(context);
@@ -204,7 +211,26 @@ public final class SettingsBackup {
         }
     }
 
-    public static void undo(Context context) throws Exception { restore(context, read(undoFile(context).openRead()), false); }
+    /** Restores the undo copy and returns its text, so the caller can report what it held. */
+    public static String undo(Context context) throws Exception {
+        return restoreFrom(context, undoFile(context).openRead(), false);
+    }
+
+    /**
+     * Reads and restores in one call, so a file that cannot be read is refused with a reason
+     * rather than as a bare {@link IOException} the caller cannot tell apart. Returns the text.
+     */
+    public static String restoreFrom(Context context, InputStream input, boolean saveUndo)
+            throws Exception {
+        String text;
+        try {
+            text = read(input);
+        } catch (Exception error) {
+            throw RestoreException.rejected(error);
+        }
+        restore(context, text, saveUndo);
+        return text;
+    }
     public static boolean hasUndo(Context context) { return undoFile(context).getBaseFile().isFile(); }
 
     private static boolean ordinarySettingsMatch(Map<String, ?> expected) {
@@ -217,6 +243,11 @@ public final class SettingsBackup {
 
     private static boolean labSettingsMatch(Snapshot expected) {
         try {
+            // A snapshot that leaves the Lab alone carries no rules to compare against, and its
+            // master and acknowledged flags are placeholders rather than anything that was
+            // applied. Reading them anyway threw on the null list, the catch below turned that
+            // into "does not match", and the journal then reverted a restore that had worked.
+            if (!expected.labIncluded) return true;
             if (expected.master != FeatureGateLabStore.masterEnabled()
                     || expected.acknowledged != FeatureGateLabStore.warningAcknowledged()) {
                 return false;
@@ -315,7 +346,17 @@ public final class SettingsBackup {
             throw new RejectedBackup(Reason.SIZE, "Invalid backup size");
         }
         Settings.REGION_SPOOF.get();
-        JSONObject root = SettingsJson.parseObject(text);
+        JSONObject root;
+        try {
+            root = SettingsJson.parseObject(text);
+        } catch (JSONException | IOException error) {
+            // A download that stopped halfway is valid UTF-8 and valid nothing else. Letting it
+            // out as a bare parse failure reported it as the same unexplained rejection as a
+            // photograph, which tells the person holding the file nothing about retrying. The
+            // reader reports a document that simply ends as an IOException, not a JSONException,
+            // so both are caught here. Oversized input was already refused as SIZE above.
+            throw new RejectedBackup(Reason.DAMAGED, "Settings backup is not readable as JSON");
+        }
         String format = root.optString("format");
         if (!(FORMAT.equals(format) || LEGACY_FORMAT.equals(format))) {
             throw new RejectedBackup(Reason.FORMAT, "Not a Hushfeed settings backup");

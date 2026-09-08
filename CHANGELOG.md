@@ -1,5 +1,11 @@
 ## Unreleased
 
+* A settings restore from a backup made for another TikTok version could be quietly undone the next time you opened TikTok. The restore worked, and then the startup check that exists to finish interrupted changes read it as unfinished and put the old settings back. It now leaves a finished restore alone.
+
+* A settings backup that only half downloaded says so. It used to come back as the same unexplained refusal as a photograph or a file from a newer Hushfeed. Files that are unreadable or too large reach you with their own wording too, which they never did before, because the check that produced the wording ran after the point where those files were already rejected.
+
+* Undoing a restore tells you when it left the Feature Gate Lab rules out, the same way importing already did.
+
 * Searching the settings finds the rows that do something, not just the switches. Back up, Restore, Reset, Undo, Hook status, Export diagnostic report, Clear diagnostic data, Included diagnostics, Clear the seen video history and Start today over all answered "No matching settings", which are exactly the rows people go looking for when something has gone wrong.
 
 * A settings backup keeps working when Hushfeed moves to a new TikTok version. The file carries a note of which TikTok build it was made for, and that note used to refuse the whole file, so on the day this project retargets every backup anyone held would have stopped restoring. Only the Feature Gate Lab rules in it depend on the TikTok build, so those are left out and the toast says so; your settings come back either way. And a refused file now says which way it was wrong, so a download that was cut short reads differently from a backup written by a newer Hushfeed, instead of both saying only that it was rejected.

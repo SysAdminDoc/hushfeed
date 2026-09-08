@@ -106,11 +106,18 @@ public final class SettingsBackupPreference extends Preference {
                         output.write(bytes);
                     }
                 } else if (action == IMPORT) {
-                    String text = SettingsBackup.read(context.getContentResolver().openInputStream(uri));
-                    SettingsBackup.restore(context, text, true);
+                    // Reading inside restoreFrom rather than here, so an unreadable or oversized
+                    // file is refused with a reason. Read separately, those two came out as a
+                    // bare IOException and reached the user as the generic rejection.
+                    String text = SettingsBackup.restoreFrom(
+                            context, context.getContentResolver().openInputStream(uri), true);
                     labRulesSkipped = SettingsBackup.labRulesWereSkipped(text);
                 } else if (action == RESET) SettingsBackup.reset(context);
-                else SettingsBackup.undo(context);
+                else {
+                    // An undo copy written before a retarget holds Lab rules for the older build,
+                    // and dropping them silently is the same surprise as on an import.
+                    labRulesSkipped = SettingsBackup.labRulesWereSkipped(SettingsBackup.undo(context));
+                }
                 // Each of these is one literal, because the translation gate reads the literal
                 // handed to L10n and a string built from two of them is two entries it cannot find.
                 Utils.showToastLong(L10n.t(action == EXPORT ? "Settings backup saved"
@@ -143,6 +150,9 @@ public final class SettingsBackupPreference extends Preference {
                     switch (restore.getReason()) {
                         case SIZE:
                             return "That file is too large to be a settings backup. Nothing was altered.";
+                        case DAMAGED:
+                            return "That settings backup is damaged or only partly downloaded. "
+                                    + "Nothing was altered.";
                         case ENCODING:
                             return "That file is not readable text, so it may have been damaged in "
                                     + "transit. Nothing was altered.";

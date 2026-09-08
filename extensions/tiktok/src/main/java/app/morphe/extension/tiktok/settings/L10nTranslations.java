@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1298);
+        Map<String, String> table = new HashMap<>(1300);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -1197,6 +1197,8 @@ public final class L10nTranslations {
                 "Das ist ein Video heute");
         table.put("That settings backup holds a value Hushfeed cannot read. Nothing was altered.",
                 "Diese Einstellungssicherung enthält einen Wert, den Hushfeed nicht lesen kann. Es wurde nichts geändert.");
+        table.put("That settings backup is damaged or only partly downloaded. Nothing was altered.",
+                "Diese Einstellungssicherung ist beschädigt oder nur teilweise heruntergeladen. Es wurde nichts geändert.");
         table.put("That settings backup is incomplete, so it may have been cut short. Nothing was altered.",
                 "Diese Einstellungssicherung ist unvollständig und wurde womöglich abgeschnitten. Es wurde nichts geändert.");
         table.put("That settings change did not go through. Nothing was altered.",
@@ -1285,11 +1287,11 @@ public final class L10nTranslations {
                 "Versuche einen Ländernamen oder ein Kürzel aus zwei Buchstaben");
         table.put("Try a different word or clear the search.",
                 "Versuche ein anderes Wort oder lösche die Suche.");
-        table.put("Two letters, like us, gb or jp.",
-                "Zwei Buchstaben, etwa us, gb oder jp.");
     }
 
     private static void fillDe10(Map<String, String> table) {
+        table.put("Two letters, like us, gb or jp.",
+                "Zwei Buchstaben, etwa us, gb oder jp.");
         table.put("Type to search settings",
                 "Tippe, um Einstellungen zu durchsuchen");
         table.put("Unblock this commenter",
@@ -1391,7 +1393,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1298);
+        Map<String, String> table = new HashMap<>(1300);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2544,6 +2546,8 @@ public final class L10nTranslations {
                 "Itu satu video hari ini");
         table.put("That settings backup holds a value Hushfeed cannot read. Nothing was altered.",
                 "Cadangan pengaturan itu memuat nilai yang tidak dapat dibaca Hushfeed. Tidak ada yang diubah.");
+        table.put("That settings backup is damaged or only partly downloaded. Nothing was altered.",
+                "Cadangan pengaturan itu rusak atau hanya terunduh sebagian. Tidak ada yang diubah.");
         table.put("That settings backup is incomplete, so it may have been cut short. Nothing was altered.",
                 "Cadangan pengaturan itu tidak lengkap, jadi mungkin terpotong. Tidak ada yang diubah.");
         table.put("That settings change did not go through. Nothing was altered.",
@@ -2632,11 +2636,11 @@ public final class L10nTranslations {
                 "Coba nama negara, atau kode dua huruf");
         table.put("Try a different word or clear the search.",
                 "Coba kata lain atau hapus pencarian.");
-        table.put("Two letters, like us, gb or jp.",
-                "Dua huruf, misalnya us, gb atau jp.");
     }
 
     private static void fillIn10(Map<String, String> table) {
+        table.put("Two letters, like us, gb or jp.",
+                "Dua huruf, misalnya us, gb atau jp.");
         table.put("Type to search settings",
                 "Ketik untuk mencari setelan");
         table.put("Unblock this commenter",
