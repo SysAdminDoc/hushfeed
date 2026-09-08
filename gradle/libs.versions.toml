@@ -4,9 +4,11 @@
 # Patcher-Version gate and it refuses the bundle.
 morphe-patcher = "1.12.0"
 # Read by the app.morphe.patches settings plugin, not by anything in this repo: remove it and
-# configuration fails with "Version with alias smali not found in version catalog". A mismatch
-# with the patcher makes R8 see two copies of dexlib2 and fail buildAndroid with
-# "Classpath type already present".
+# configuration fails with "Version with alias smali not found in version catalog". The commit
+# resolves as com.github.MorpheApp.smali through JitPack. It is not waiting on an official
+# release, which google/smali 3.0.10 delivered on 2026-08-20: the pin has to match whatever the
+# patcher above was built against, because a mismatch puts two copies of dexlib2 on the R8
+# classpath and buildAndroid fails with "Classpath type already present".
 #noinspection GradleDependency
 smali = "d92701d947"
 # The Android Gradle plugin and Kotlin come from the app.morphe.patches settings plugin

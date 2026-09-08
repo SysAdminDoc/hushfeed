@@ -53,7 +53,7 @@
 * Automatic video advance now also shows TikTok's own Auto scroll action in the video actions panel. That entry hangs off a second flag, so accounts outside TikTok's rollout never saw it however the feed gate answered.
 
 
-* Every patch in the bundle is now verified against a real TikTok 46.2.3 APK rather than a stripped fixture. All 68 apply, and the README records the exact build and its checksum so anyone can reproduce the same run.
+* Every patch in the bundle is now verified against a real TikTok 46.2.3 APK rather than a stripped fixture. All 70 apply, checked again on 8 September 2026, and the README records the exact build and its checksum so anyone can reproduce the same run.
 
 * A hold no longer argues with a phone call over the sound. It asks once as the panel goes up, and again only when you come back to the feed, instead of asking every second for as long as the hold lasts.
 

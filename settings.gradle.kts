@@ -20,8 +20,14 @@ pluginManagement {
                 password = providers.gradleProperty("gpr.key").getOrElse(System.getenv("GITHUB_TOKEN"))
             }
         }
-        // Obtain baksmali/smali from source builds - https://github.com/iBotPeaches/smali
-        // Remove when official smali releases come out again.
+        // baksmali and smali come from a source build, resolved as com.github.MorpheApp.smali
+        // rather than from Maven Central. The comment used to name iBotPeaches/smali, which the
+        // build stopped using when the patches plugin switched forks at 1.3.2.
+        //
+        // google/smali 3.0.10 shipped officially on 2026-08-20, so "until official releases come
+        // out again" is no longer the reason to keep this. The reason is that the pin has to be
+        // whatever the patcher was built against: two copies of dexlib2 on the R8 classpath fail
+        // buildAndroid with "Classpath type already present".
         maven { url = uri("https://jitpack.io") }
     }
 }
