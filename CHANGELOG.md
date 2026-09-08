@@ -4,6 +4,10 @@
 
 * An override profile written somewhere other than the Lab's own export applies on a Turkish phone. Turkish capitalises i to a dotted letter, so a lowercase `int` in the file folded to a different word than the catalogue's, and the rule was refused as a type mismatch on that phone and no other.
 
+* A video reached through TikTok's translated-video path now gets the same treatment as any other. The hook that prepares a video for download was installed on the last way out of the method and there are two, so one route returned a video this project had never seen. That is fixed, along with three more hooks that covered a single exit and would have missed the others on a build that returns from more than one place.
+
+* The download path redirect checks the four instructions it replaces before replacing them. It looked at two of them and deleted four, which on a build that lays that run out differently would have removed unrelated code with nothing said. Writing the check found that the five places it runs are not identical after all: four append "/Camera/" and the fifth appends "/Camera".
+
 * A patch that cannot apply to a future TikTok build now says what it was looking for. Fourteen checks threw an error naming nothing, so a failure read as a crash in the patcher rather than as the patch reporting a missing anchor. The telemetry description also promised to stop location uploads that the supported build does not contain.
 
 * Five more injections and eight register checks stop assuming the shape of TikTok's own methods. Every register is now read off the instruction it belongs to, and the settings row this project adds took three working registers on trust: one of them was still in use, which a check now catches. A parameter that holds a long or a double occupies two registers and was being counted as one, so eight checks meant to prove a spare register existed could pass on a method that had none.

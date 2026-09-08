@@ -11,13 +11,16 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLa
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.findInstructionIndicesReversedOrThrow
 import app.morphe.util.getFreeRegisterProvider
 import app.morphe.util.getReference
+import app.morphe.util.numberOfParameterRegisters
 import app.morphe.util.returnEarly
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
@@ -26,10 +29,54 @@ import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstructio
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/download/DownloadsPatch;"
 private const val STICKER_EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/download/StickerGallerySaver;"
 private const val FILENAME_FORMATTER_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/download/DownloadFilenameFormatter;"
+
+/**
+ * Checks the four instructions the download path redirect is about to delete.
+ *
+ * <p>They are the DCIM directory name, its append onto the path builder, the "/Camera/" literal
+ * and its append. Only the first two were ever looked at, so a build that lays this run out
+ * differently would have had four unrelated instructions removed and the patch would have said
+ * nothing about it.
+ */
+private fun MutableMethod.checkCameraPathRun(fieldIndex: Int) {
+    val instructions = implementation!!.instructions.toList()
+
+    fun at(offset: Int) = instructions.getOrNull(fieldIndex + offset) ?: throw PatchException(
+        "Downloads: $name ends before the download path run it was going to replace.",
+    )
+
+    fun isAppend(offset: Int) = at(offset).opcode == Opcode.INVOKE_VIRTUAL &&
+        at(offset).getReference<MethodReference>()?.let {
+            it.definingClass == "Ljava/lang/StringBuilder;" && it.name == "append"
+        } == true
+
+    if (!isAppend(1) || !isAppend(3)) {
+        throw PatchException(
+            "Downloads: the download path run in $name is not a pair of StringBuilder appends. " +
+                "Found ${at(1).opcode.name} and ${at(3).opcode.name} at $fieldIndex plus 1 and 3.",
+        )
+    }
+    val literal = at(2).takeIf { it.opcode == Opcode.CONST_STRING }
+        ?.getReference<StringReference>()?.string
+    // Written "/Camera/" at four of the five sites and "/Camera" at the fifth.
+    if (literal == null || !literal.trimEnd('/').endsWith("Camera")) {
+        throw PatchException(
+            "Downloads: the download path run in $name appends ${literal ?: at(2).opcode.name} " +
+                "where the camera folder was expected.",
+        )
+    }
+    val builder = (at(1) as FiveRegisterInstruction).registerC
+    if ((at(3) as FiveRegisterInstruction).registerC != builder) {
+        throw PatchException(
+            "Downloads: the two appends in $name are on different builders, so this is not one path.",
+        )
+    }
+}
 
 @Suppress("unused")
 val downloadsPatch = bytecodePatch(
@@ -65,15 +112,18 @@ val downloadsPatch = bytecodePatch(
         )
 
         AwemeGetVideoFingerprint.method.apply {
-            val returnIndex = findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN_OBJECT }.first()
-            val register = getInstruction<OneRegisterInstruction>(returnIndex).registerA
+            // Every return, not only the last one written. The indices come back highest first,
+            // so inserting at each in turn leaves the ones still to come where they were.
+            findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN_OBJECT }.forEach { returnIndex ->
+                val register = getInstruction<OneRegisterInstruction>(returnIndex).registerA
 
-            addInstructions(
-                returnIndex,
-                """
-                    invoke-static {v$register}, $EXTENSION_CLASS_DESCRIPTOR->patchVideoObject(Lcom/ss/android/ugc/aweme/feed/model/Video;)V
-                """,
-            )
+                addInstructions(
+                    returnIndex,
+                    """
+                        invoke-static {v$register}, $EXTENSION_CLASS_DESCRIPTOR->patchVideoObject(Lcom/ss/android/ugc/aweme/feed/model/Video;)V
+                    """,
+                )
+            }
         }
 
         // Download images without TikTok's drawn watermark.
@@ -112,13 +162,16 @@ val downloadsPatch = bytecodePatch(
 
         // Add local gallery saving to the comment sticker/image preview sheet.
         StickerPreviewBinderFingerprint.method.apply {
-            val returnIndex = findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN_VOID }.first()
-            addInstructions(
-                returnIndex,
-                """
-                    invoke-static/range {p0 .. p1}, $STICKER_EXTENSION_CLASS_DESCRIPTOR->attachSaveImageButton(Landroid/view/View;Ljava/lang/Object;)V
-                """,
-            )
+            // Every way out of the bind, not only the last one written. A build that returns
+            // early on any path would have shown a sheet with no save button and said nothing.
+            findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN_VOID }.forEach { returnIndex ->
+                addInstructions(
+                    returnIndex,
+                    """
+                        invoke-static/range {p0 .. p1}, $STICKER_EXTENSION_CLASS_DESCRIPTOR->attachSaveImageButton(Landroid/view/View;Ljava/lang/Object;)V
+                    """,
+                )
+            }
         }
 
         // Preserve the full StickerItem behind TikTok's reduced preview model for media detection.
@@ -172,15 +225,35 @@ val downloadsPatch = bytecodePatch(
 
         // Prepare the public filename without renaming TikTok's private staging file.
         DownloadSuccessCoroutineFingerprint.method.apply {
-            val fieldReferences = implementation!!.instructions.mapNotNull {
-                it.getReference<FieldReference>()
-            }
-            val pathField = fieldReferences.first {
-                it.definingClass == definingClass && it.type == "Ljava/lang/String;"
-            }
-            val awemeField = fieldReferences.first {
-                it.definingClass == definingClass &&
+            val fieldReferences = implementation!!.instructions.map { it.getReference<FieldReference>() }
+            val awemeIndex = fieldReferences.indexOfFirst {
+                it?.definingClass == definingClass &&
                     it.type == "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
+            }
+            if (awemeIndex < 0) {
+                throw PatchException("Downloads: $name never reads the video it downloaded.")
+            }
+            val awemeField = fieldReferences[awemeIndex]!!
+
+            // The path is prepared before the video is used, so the one String field of this
+            // class read before that point is it. Taking the first String field of any kind
+            // happened to be the same field on 46.2.3 and said nothing about the next build;
+            // this method also reads a second String field of its own, further down.
+            val pathFields = fieldReferences.take(awemeIndex).filterNotNull()
+                .filter { it.definingClass == definingClass && it.type == "Ljava/lang/String;" }
+                .distinctBy { it.toString() }
+            val pathField = pathFields.singleOrNull() ?: throw PatchException(
+                "Downloads: $name reads ${pathFields.size} of its own String fields before the " +
+                    "video, so which one holds the downloaded path is no longer obvious.",
+            )
+
+            // iget-object is format 22c, whose register fields are four bits wide, so p0 has to
+            // be a register this can name.
+            val thisRegister = implementation!!.registerCount - numberOfParameterRegisters
+            if (thisRegister > 15) {
+                throw PatchException(
+                    "Downloads: $name holds p0 in v$thisRegister, which an iget cannot name.",
+                )
             }
 
             addInstructions(
@@ -211,6 +284,7 @@ val downloadsPatch = bytecodePatch(
                 val builderRegister = getInstruction<FiveRegisterInstruction>(fieldIndex + 1).registerC
 
                 // Remove 'field load, append, "/Camera/", append' block.
+                checkCameraPathRun(fieldIndex)
                 removeInstructions(fieldIndex, 4)
 
                 addInstructions(
@@ -239,6 +313,7 @@ val downloadsPatch = bytecodePatch(
             }.forEach { fieldIndex ->
                 val pathRegister = getInstruction<OneRegisterInstruction>(fieldIndex).registerA
                 val builderRegister = getInstruction<FiveRegisterInstruction>(fieldIndex + 1).registerC
+                checkCameraPathRun(fieldIndex)
                 removeInstructions(fieldIndex, 4)
                 addInstructions(
                     fieldIndex,
@@ -266,6 +341,7 @@ val downloadsPatch = bytecodePatch(
             }.forEach { fieldIndex ->
                 val pathRegister = getInstruction<OneRegisterInstruction>(fieldIndex).registerA
                 val builderRegister = getInstruction<FiveRegisterInstruction>(fieldIndex + 1).registerC
+                checkCameraPathRun(fieldIndex)
                 removeInstructions(fieldIndex, 4)
                 addInstructions(
                     fieldIndex,
@@ -299,6 +375,7 @@ val downloadsPatch = bytecodePatch(
             }.forEach { fieldIndex ->
                 val pathRegister = getInstruction<OneRegisterInstruction>(fieldIndex).registerA
                 val builderRegister = getInstruction<FiveRegisterInstruction>(fieldIndex + 1).registerC
+                checkCameraPathRun(fieldIndex)
                 removeInstructions(fieldIndex, 4)
                 addInstructions(
                     fieldIndex,
@@ -351,6 +428,7 @@ val downloadsPatch = bytecodePatch(
             }.forEach { fieldIndex ->
                 val pathRegister = getInstruction<OneRegisterInstruction>(fieldIndex).registerA
                 val builderRegister = getInstruction<FiveRegisterInstruction>(fieldIndex + 1).registerC
+                checkCameraPathRun(fieldIndex)
                 removeInstructions(fieldIndex, 4)
                 addInstructions(
                     fieldIndex,

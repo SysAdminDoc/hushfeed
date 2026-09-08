@@ -234,17 +234,23 @@ private fun patchCommonFollowApi(method: MutableMethod) {
     val firstParameter = implementation.registerCount - method.numberOfParameterRegisters
     val lastParameter = implementation.registerCount - 1
 
-    val returnIndex = implementation.instructions.indexOfLast { it.opcode == Opcode.RETURN_OBJECT }
-    if (returnIndex < 0) {
+    // Every way the request can answer, not the last one written. A build that returns a cached
+    // status down one path would have had that follow go unreported.
+    val returnIndices = implementation.instructions.withIndex()
+        .filter { it.value.opcode == Opcode.RETURN_OBJECT }
+        .map { it.index }
+    if (returnIndices.isEmpty()) {
         throw PatchException("Follow diagnostics: CommonFollowApi.LIZ returns no object to read.")
     }
-    val returnRegister = (implementation.instructions.elementAt(returnIndex) as OneRegisterInstruction).registerA
-
-    method.addInstructions(
-        returnIndex,
-        "invoke-static/range {v$returnRegister .. v$returnRegister}, " +
-            "$EXTENSION_CLASS_DESCRIPTOR->logFollowResult(Ljava/lang/Object;)V",
-    )
+    returnIndices.asReversed().forEach { returnIndex ->
+        val returnRegister =
+            (implementation.instructions.elementAt(returnIndex) as OneRegisterInstruction).registerA
+        method.addInstructions(
+            returnIndex,
+            "invoke-static/range {v$returnRegister .. v$returnRegister}, " +
+                "$EXTENSION_CLASS_DESCRIPTOR->logFollowResult(Ljava/lang/Object;)V",
+        )
+    }
 
     method.addInstructions(
         0,

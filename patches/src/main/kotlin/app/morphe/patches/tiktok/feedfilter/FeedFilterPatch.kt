@@ -16,7 +16,10 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.patches.tiktok.shared.callThroughLocals
+import app.morphe.patches.tiktok.shared.objectIn
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.findInstructionIndicesReversedOrThrow
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode
@@ -407,15 +410,19 @@ val feedFilterPatch = bytecodePatch(
         )
 
         DramaBlockingAdFingerprint.method.apply {
-            val dramaReturnIndex = indexOfFirstInstructionOrThrow { opcode == Opcode.RETURN }
-            val dramaRegister = getInstruction<OneRegisterInstruction>(dramaReturnIndex).registerA
-            addInstructions(
-                dramaReturnIndex,
-                """
-                    invoke-static {v$dramaRegister}, $CARD_FILTERS_CLASS_DESCRIPTOR->shouldBlockForDramaAd(Z)Z
-                    move-result v$dramaRegister
-                """,
-            )
+            // Every return, not the first one. This fingerprint does not even name its method,
+            // so a build that answers false down one path and true down another would have had
+            // only one of them filtered, silently.
+            findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN }.forEach { dramaReturnIndex ->
+                val dramaRegister = getInstruction<OneRegisterInstruction>(dramaReturnIndex).registerA
+                addInstructions(
+                    dramaReturnIndex,
+                    """
+                        invoke-static {v$dramaRegister}, $CARD_FILTERS_CLASS_DESCRIPTOR->shouldBlockForDramaAd(Z)Z
+                        move-result v$dramaRegister
+                    """,
+                )
+            }
         }
 
         SpecActTouchpointAttachFingerprint.method.addInstructions(
@@ -532,11 +539,24 @@ private fun MutableMethod.filterLateInsertedAds(payloadType: String) {
         )
     }
 
+    // The register the store actually reads from, not p3. They are the same on 46.2.3 and the
+    // filtered list would have gone nowhere on a build that assembled the list somewhere else.
+    val listStoreIndex = listStoreIndices.single()
+    val listRegister = getInstruction<TwoRegisterInstruction>(listStoreIndex).registerA
+
+    val call = callThroughLocals(
+        "Feed filter",
+        "invoke-static",
+        "$EXTENSION_CLASS_DESCRIPTOR->filterLateInsertedAds(Ljava/lang/String;Ljava/util/List;)Ljava/util/List;",
+        objectIn("p2"),
+        objectIn("v$listRegister"),
+    )
+
     addInstructions(
-        listStoreIndices.single(),
+        listStoreIndex,
         """
-            invoke-static/range {p2 .. p3}, $EXTENSION_CLASS_DESCRIPTOR->filterLateInsertedAds(Ljava/lang/String;Ljava/util/List;)Ljava/util/List;
-            move-result-object p3
+            $call
+            move-result-object v$listRegister
         """,
     )
 }
