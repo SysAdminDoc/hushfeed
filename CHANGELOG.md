@@ -1,4 +1,4 @@
-## Unreleased
+## 0.25.0
 
 * A Lab change that fails halfway no longer erases what the Lab had recorded. Saving a set of overrides, resetting them, undoing that, or restoring a backup puts the previous configuration back when the write fails, and the record of which gates had actually fired was thrown away with it, so the detail screen reported "not triggered" for gates that were.
 
