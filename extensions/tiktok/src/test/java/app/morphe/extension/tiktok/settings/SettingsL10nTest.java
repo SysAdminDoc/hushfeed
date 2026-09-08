@@ -81,13 +81,16 @@ public class SettingsL10nTest {
      * English by choice, which the row that opens it says. The shared extension module is not
      * walked either: it is TikTok-independent code, and this table is TikTok's.
      */
-    @Test public void theGeneratedTableIsTheOneInTheTsvFiles() throws Exception {
+    @Test public void theGeneratedTableIsTheOneInTheTables() throws Exception {
         // Every other check here reads L10nTranslations, which is generated. A value edited in a
-        // .tsv without rerunning scripts/gen-l10n.py was invisible to all of them, and so was a
+        // table without rerunning scripts/gen-l10n.py was invisible to all of them, and so was a
         // generated file edited by hand, which its own header forbids.
+        //
+        // German is a tab table and Indonesian is the comma form Weblate hosts, so both readers
+        // are exercised on every run rather than one of them being a claim in the README.
         for (String language : new String[]{"de", "in"}) {
             java.util.Map<String, String> generated = L10nTranslations.of(language);
-            java.util.Map<String, String> table = readTsv(language);
+            java.util.Map<String, String> table = readTable(language);
 
             java.util.List<String> problems = new java.util.ArrayList<>();
             for (java.util.Map.Entry<String, String> row : table.entrySet()) {
@@ -101,18 +104,18 @@ public class SettingsL10nTest {
             }
             for (String key : generated.keySet()) {
                 if (!table.containsKey(key)) {
-                    problems.add(language + " generated a row the tsv does not have: " + key);
+                    problems.add(language + " generated a row the table does not have: " + key);
                 }
             }
-            assertEquals("the generated translations are not the ones in " + language
-                    + ".tsv, so run scripts/gen-l10n.py: " + problems, 0, problems.size());
-            assertTrue(language + ".tsv is empty", table.size() > 500);
+            assertEquals("the generated translations are not the ones in the " + language
+                    + " table, so run scripts/gen-l10n.py: " + problems, 0, problems.size());
+            assertTrue("the " + language + " table is empty", table.size() > 500);
         }
     }
 
-    @Test public void theTsvComparisonCanActuallyFail() throws Exception {
+    @Test public void theTableComparisonCanActuallyFail() throws Exception {
         // The comparison above only means something if a changed value is visible to it.
-        java.util.Map<String, String> table = readTsv("de");
+        java.util.Map<String, String> table = readTable("de");
         String key = table.keySet().iterator().next();
         java.util.Map<String, String> changed = new java.util.LinkedHashMap<>(table);
         changed.put(key, changed.get(key) + " x");
@@ -120,16 +123,32 @@ public class SettingsL10nTest {
         assertFalse("the tables compare equal after a change", table.equals(changed));
     }
 
-    /** The tsv format is one key, a tab, and the translation, with # for a comment. */
-    private static java.util.Map<String, String> readTsv(String language) throws Exception {
-        java.io.File file = new java.io.File("src/main/l10n/" + language + ".tsv");
-        if (!file.isFile()) file = new java.io.File(
-                "extensions/tiktok/src/main/l10n/" + language + ".tsv");
-        assertTrue("could not find " + file.getAbsolutePath(), file.isFile());
+    /**
+     * One language table, in whichever form it is kept.
+     *
+     * <p>Tab separated, one key then the translation with # for a comment, or the comma form
+     * Weblate hosts: a source,target header and one row per entry.
+     */
+    private static java.util.Map<String, String> readTable(String language) throws Exception {
+        java.io.File file = tableFile(language, ".tsv");
+        if (file == null) file = tableFile(language, ".csv");
+        assertNotNull("no .tsv or .csv table for " + language, file);
+        String body = new String(java.nio.file.Files.readAllBytes(file.toPath()),
+                java.nio.charset.StandardCharsets.UTF_8);
+        return file.getName().endsWith(".csv")
+                ? readCsvRows(language, body) : readTsvRows(language, body);
+    }
 
+    private static java.io.File tableFile(String language, String extension) {
+        java.io.File file = new java.io.File("src/main/l10n/" + language + extension);
+        if (!file.isFile()) file = new java.io.File(
+                "extensions/tiktok/src/main/l10n/" + language + extension);
+        return file.isFile() ? file : null;
+    }
+
+    private static java.util.Map<String, String> readTsvRows(String language, String body) {
         java.util.Map<String, String> rows = new java.util.LinkedHashMap<>();
-        for (String line : new String(java.nio.file.Files.readAllBytes(file.toPath()),
-                java.nio.charset.StandardCharsets.UTF_8).split("\\n")) {
+        for (String line : body.split("\\n")) {
             String text = line.replace("\r", "");
             if (text.isEmpty() || text.startsWith("#")) continue;
             int tab = text.indexOf('\t');
@@ -137,6 +156,79 @@ public class SettingsL10nTest {
             rows.put(text.substring(0, tab), text.substring(tab + 1));
         }
         return rows;
+    }
+
+    /** Enough of RFC 4180 for these tables: quoted fields, doubled quotes inside them. */
+    private static java.util.Map<String, String> readCsvRows(String language, String body) {
+        java.util.List<java.util.List<String>> records = new java.util.ArrayList<>();
+        java.util.List<String> record = new java.util.ArrayList<>();
+        StringBuilder field = new StringBuilder();
+        boolean quoted = false;
+        for (int index = 0; index < body.length(); index++) {
+            char character = body.charAt(index);
+            if (quoted) {
+                if (character != '"') {
+                    field.append(character);
+                } else if (index + 1 < body.length() && body.charAt(index + 1) == '"') {
+                    field.append('"');
+                    index++;
+                } else {
+                    quoted = false;
+                }
+                continue;
+            }
+            if (character == '"') {
+                quoted = true;
+            } else if (character == ',') {
+                record.add(field.toString());
+                field.setLength(0);
+            } else if (character == '\n') {
+                record.add(field.toString());
+                field.setLength(0);
+                records.add(record);
+                record = new java.util.ArrayList<>();
+            } else if (character != '\r') {
+                field.append(character);
+            }
+        }
+        if (field.length() > 0 || !record.isEmpty()) {
+            record.add(field.toString());
+            records.add(record);
+        }
+
+        assertFalse("the " + language + " table has no header", records.isEmpty());
+        java.util.List<String> header = records.get(0);
+        assertTrue("the " + language + " header has to start source,target, not " + header,
+                header.size() >= 2 && "source".equals(header.get(0).trim())
+                        && "target".equals(header.get(1).trim()));
+
+        java.util.Map<String, String> rows = new java.util.LinkedHashMap<>();
+        for (int index = 1; index < records.size(); index++) {
+            java.util.List<String> line = records.get(index);
+            if (line.isEmpty() || line.get(0).isEmpty() || line.get(0).startsWith("#")) continue;
+            assertTrue("a row with no target column in " + language + ".csv: " + line,
+                    line.size() >= 2);
+            rows.put(line.get(0), line.get(1));
+        }
+        return rows;
+    }
+
+    @Test public void theEnglishBaseListsEverySourceStringOnce() throws Exception {
+        // Weblate translates from a monolingual base rather than from a language table. It is
+        // generated, so it goes stale the same way L10nTranslations does if nobody reruns the
+        // script, and nothing else here would notice.
+        java.util.Map<String, String> base = readTable("en");
+        java.util.Map<String, String> german = readTable("de");
+        java.util.List<String> missing = new java.util.ArrayList<>();
+        for (String key : german.keySet()) {
+            if (!base.containsKey(key)) missing.add(key);
+        }
+        assertEquals("en.csv is missing source strings, so run scripts/gen-l10n.py: " + missing,
+                0, missing.size());
+        for (java.util.Map.Entry<String, String> row : base.entrySet()) {
+            assertEquals("the base translates a string instead of repeating it",
+                    row.getKey(), row.getValue());
+        }
     }
 
     @Test public void everyTranslationKeepsTheShapeOfItsKey() {

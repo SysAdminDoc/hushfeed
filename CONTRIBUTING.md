@@ -26,6 +26,11 @@ bundle and `SHA256SUMS.txt`, run it again with `-VerifyPublishedAsset` to check 
 the local artifact hash and the hosted checksum entry. The local release helpers are
 `scripts/gen-l10n.py`, `scripts/verify-all-patches.ps1` and
 `scripts/measure-patch-heap.ps1`; the latter two need a Morphe desktop jar and a fixture APK.
+
+Translations live in `extensions/tiktok/src/main/l10n/`, either as a tab separated `<code>.tsv`
+or as the `source,target` CSV a Weblate export gives you. `scripts/gen-l10n.py` reads both and
+writes `en.csv`, the base a Weblate project translates from. Rerun it after touching a table:
+the tests compare the tables against the generated class and fail if the two disagree.
 The release check also refuses results older than the sources, so rerun the tests after an edit
 rather than reusing the last run's XML.
 

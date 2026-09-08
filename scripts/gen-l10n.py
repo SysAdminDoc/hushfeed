@@ -1,7 +1,8 @@
 """Turn the settings translation tables into a Java class the extension carries.
 
 Reads every extensions/tiktok/src/main/l10n/<lang>.tsv (English TAB translation, one entry
-per line, # comments) and writes:
+per line, # comments) or <lang>.csv (a source,target header and one row per entry, which is
+the form Weblate hosts) and writes:
 
   extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/L10nTranslations.java
 
@@ -15,6 +16,7 @@ across several methods so no single one approaches the 64 KB bytecode limit.
 
 Run from the repository root: python scripts/gen-l10n.py
 """
+import csv
 import io
 import os
 import sys
@@ -34,8 +36,32 @@ CHUNK = 60
 # phone read different tables.
 ALIASES = {"in": "id", "id": "in", "iw": "he", "he": "iw", "ji": "yi", "yi": "ji"}
 
+# The keys are English, so there is no English translation table. This file is the list of what
+# there is to translate, which is what Weblate calls a monolingual base.
+ENGLISH_BASE = "en"
+
+
+# The header Weblate writes and expects. A third column is allowed and ignored: Weblate adds
+# "context" and the key here is the English text itself, so there is nothing for it to carry.
+CSV_HEADER = ["source", "target"]
+
 
 def read(path):
+    """One table, from either form. A newline is the two characters \\n in both."""
+    if path.endswith(".csv"):
+        return read_csv(path)
+    return read_tsv(path)
+
+
+def add(entries, english, translated, path, number):
+    english = english.replace("\\n", "\n")
+    translated = translated.replace("\\n", "\n")
+    if english in entries:
+        sys.exit("%s:%d: duplicate entry: %s" % (path, number, english))
+    entries[english] = translated
+
+
+def read_tsv(path):
     entries = {}
     with io.open(path, encoding="utf-8") as handle:
         for number, line in enumerate(handle, 1):
@@ -45,12 +71,50 @@ def read(path):
             if "\t" not in line:
                 sys.exit("%s:%d: no tab" % (path, number))
             english, translated = line.split("\t", 1)
-            english = english.replace("\\n", "\n")
-            translated = translated.replace("\\n", "\n")
-            if english in entries:
-                sys.exit("%s:%d: duplicate entry: %s" % (path, number, english))
-            entries[english] = translated
+            add(entries, english, translated, path, number)
     return entries
+
+
+def read_csv(path):
+    """The Weblate form: a source,target header, then one row per entry.
+
+    Comma delimited with a header on purpose. Weblate's own documentation calls its dialect
+    auto-detection unreliable, so the file says what it is rather than leaving it to be guessed.
+    """
+    entries = {}
+    with io.open(path, encoding="utf-8", newline="") as handle:
+        rows = csv.reader(handle)
+        header = next(rows, None)
+        if header is None:
+            sys.exit("%s: no header" % path)
+        if [column.strip().lower() for column in header[:2]] != CSV_HEADER:
+            sys.exit("%s:1: the header has to start source,target, not %s"
+                     % (path, ",".join(header)))
+        for number, row in enumerate(rows, 2):
+            if not row or not row[0] or row[0].startswith("#"):
+                continue
+            if len(row) < 2:
+                sys.exit("%s:%d: no target column" % (path, number))
+            add(entries, row[0], row[1], path, number)
+    return entries
+
+
+def write_english_base(tables, path):
+    """The monolingual base Weblate reads to know what there is to translate.
+
+    Every key any table carries, with itself as the target. The gate refuses a language table
+    that is missing a key or carries one nothing shows any more, so the union is the whole set.
+    """
+    keys = set()
+    for entries in tables.values():
+        keys.update(entries)
+    with io.open(path, "w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle, lineterminator="\n")
+        writer.writerow(CSV_HEADER)
+        for english in sorted(keys):
+            escaped = english.replace("\n", "\\n")
+            writer.writerow([escaped, escaped])
+    return len(keys)
 
 
 def literal(text):
@@ -65,11 +129,21 @@ def java_name(lang):
 
 def main():
     tables = {}
+    seen = {}
     for name in sorted(os.listdir(L10N)):
-        if name.endswith(".tsv"):
-            tables[name[:-4]] = read(os.path.join(L10N, name))
+        if not name.endswith(".tsv") and not name.endswith(".csv"):
+            continue
+        lang = name[:-4]
+        # en.csv is the base Weblate translates from, not a translation of anything.
+        if lang == ENGLISH_BASE:
+            continue
+        if lang in seen:
+            sys.exit("%s is in both %s and %s: keep one form per language"
+                     % (lang, seen[lang], name))
+        seen[lang] = name
+        tables[lang] = read(os.path.join(L10N, name))
     if not tables:
-        sys.exit("no .tsv tables in " + L10N)
+        sys.exit("no .tsv or .csv tables in " + L10N)
 
     lines = [
         "/*",
@@ -87,7 +161,7 @@ def main():
         " * The settings text in every language the bundle carries.",
         " *",
         " * Generated by scripts/gen-l10n.py from extensions/tiktok/src/main/l10n. Do not edit by",
-        " * hand: edit the .tsv table and run the script.",
+        " * hand: edit the table under src/main/l10n and run the script.",
         " *",
         " * The translations live here rather than in TikTok's resources because merging them into",
         " * a resource table of 74,765 strings costs more patching memory than Morphe Manager gives",
@@ -156,7 +230,9 @@ def main():
     os.makedirs(os.path.dirname(JAVA), exist_ok=True)
     with io.open(JAVA, "w", encoding="utf-8", newline="\n") as handle:
         handle.write("\n".join(lines) + "\n")
-    print("wrote %d translations for %s" % (total, ", ".join(languages)))
+    base = write_english_base(tables, os.path.join(L10N, ENGLISH_BASE + ".csv"))
+    print("wrote %d translations for %s, and %d source strings to %s.csv"
+          % (total, ", ".join(languages), base, ENGLISH_BASE))
 
 
 if __name__ == "__main__":

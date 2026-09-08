@@ -39,7 +39,7 @@ android {
             it.maxHeapSize = "1g"
             // The translation tables are read from disk at run time, by the test that compares
             // them against the generated table. Without this Gradle sees no input change when a
-            // .tsv is edited, calls the task up to date, and the comparison never runs.
+            // table is edited, calls the task up to date, and the comparison never runs.
             it.inputs.dir(layout.projectDirectory.dir("src/main/l10n"))
                 .withPropertyName("l10nTables")
                 .withPathSensitivity(PathSensitivity.RELATIVE)

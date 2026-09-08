@@ -264,14 +264,14 @@ That last one needs the Morphe desktop CLI. Set `HUSHFEED_DESKTOP_JAR` to the ja
 
 ### Adding a language to the settings screen
 
-The English text in the code is the key. Each language is one tab separated table under `extensions/tiktok/src/main/l10n/`, `de.tsv` for German and `in.tsv` for Indonesian, with the English on the left and the translation on the right. Copy one to `<language code>.tsv`, translate the right hand column, then run:
+The English text in the code is the key. Each language is one table under `extensions/tiktok/src/main/l10n/`, with the English on the left and the translation on the right. A language is kept in one of two forms, and the generator reads both. `de.tsv` is tab separated, one entry per line, `#` starting a comment. `in.csv` is the comma form Weblate hosts: a `source,target` header and a row per entry, quoting whatever needs it. Copy either one to `<language code>.tsv` or `<language code>.csv`, translate the right hand column, then run:
 
 ```bash
 python scripts/gen-l10n.py
 ./gradlew :extensions:tiktok:test
 ```
 
-The script writes `L10nTranslations.java`, which the extension carries with its own code, and the tests fail on any settings text that has no entry or that a language is missing, so a gap shows up before it ships. Name the file with the code Android reports, which for the three languages that have two is the older one: `in` rather than `id`. The generator makes the table answer to both. The translations used to go into TikTok's own resources, but merging a few hundred strings into a table of 74,765 pushed patching past the memory Morphe Manager allows by default.
+The script writes two generated files, neither of them meant to be edited by hand. `L10nTranslations.java` is what the extension carries with its own code. `en.csv` is the list of source strings, which is the monolingual base a Weblate project points at, so a translator can work in Weblate and the export drops straight into `l10n/` as `<language code>.csv`. The tests fail on any settings text that has no entry, on a language missing one, and on a table whose values are not the ones in the generated class, so both a gap and a stale run of the script show up before anything ships. Name the file with the code Android reports, which for the three languages that have two is the older one: `in` rather than `id`. The generator makes the table answer to both. The translations used to go into TikTok's own resources, but merging a few hundred strings into a table of 74,765 pushed patching past the memory Morphe Manager allows by default.
 
 <br>
 
