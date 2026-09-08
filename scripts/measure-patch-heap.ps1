@@ -11,9 +11,14 @@
     Cases are "<what>:<Xmx>", where <what> is "settings" (the Settings patch alone) or "all"
     (every patch in the list).
 
+    HUSHFEED_WORKDIR holds the desktop CLI jar and takes the scratch output. HUSHFEED_APK must
+    point at the TikTok build README.md records; there is no default, because a heap figure only
+    means something against a named APK. HUSHFEED_JAVA and HUSHFEED_DESKTOP_JAR are optional.
+
 .EXAMPLE
     $env:HUSHFEED_WORKDIR = "C:\scratch"
     $env:HUSHFEED_JAVA = "C:\jdk-21\bin\java.exe"
+    $env:HUSHFEED_APK = "C:\fixtures\com.zhiliaoapp.musically_46.2.3.apk"
     scripts/measure-patch-heap.ps1 settings:640m settings:768m all:768m
 #>
 [CmdletBinding()]
@@ -23,6 +28,10 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
+$expectedPackageName = 'com.zhiliaoapp.musically'
+$expectedPackageVersion = '46.2.3'
+
+. (Join-Path $PSScriptRoot 'patch-report.ps1')
 
 function Resolve-WithinRoot {
     param([string]$Path, [string]$Root)
@@ -44,103 +53,32 @@ function Remove-GeneratedPath {
     }
 }
 
-function Test-ApkFile {
-    param([string]$Path)
-    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return $false }
-    try {
-        Add-Type -AssemblyName System.IO.Compression.FileSystem
-        $archive = [System.IO.Compression.ZipFile]::OpenRead($Path)
-        try {
-            $dex = @($archive.Entries | Where-Object { $_.FullName -match '(^|/)classes\d*\.dex$' })
-            $manifest = @($archive.Entries | Where-Object { $_.FullName -eq 'AndroidManifest.xml' })
-            return $dex.Count -gt 0 -and $manifest.Count -gt 0
-        } finally {
-            $archive.Dispose()
-        }
-    } catch {
-        return $false
-    }
-}
-
-function Get-ReportPatchNames {
-    param([object]$Entries)
-    $names = New-Object System.Collections.Generic.List[string]
-    foreach ($entry in @($Entries)) {
-        if ($null -eq $entry) { continue }
-        if ($entry -is [string]) {
-            $names.Add([string]$entry)
-            continue
-        }
-        $name = $entry.PSObject.Properties['name']
-        if ($null -ne $name -and $null -ne $name.Value) { $names.Add([string]$name.Value) }
-    }
-    return $names.ToArray()
-}
-
-function Test-SameNames {
-    param([string[]]$Expected, [string[]]$Actual)
-    $expectedCounts = [System.Collections.Generic.Dictionary[string, int]]::new([System.StringComparer]::Ordinal)
-    foreach ($name in @($Expected)) {
-        if ($null -eq $name) { return $false }
-        if (-not $expectedCounts.ContainsKey($name)) { $expectedCounts[$name] = 0 }
-        $expectedCounts[$name]++
-    }
-    $actualCounts = [System.Collections.Generic.Dictionary[string, int]]::new([System.StringComparer]::Ordinal)
-    foreach ($name in @($Actual)) {
-        if ($null -eq $name) { return $false }
-        if (-not $actualCounts.ContainsKey($name)) { $actualCounts[$name] = 0 }
-        $actualCounts[$name]++
-    }
-    if ($expectedCounts.Count -ne $actualCounts.Count) { return $false }
-    foreach ($name in $expectedCounts.Keys) {
-        if (-not $actualCounts.ContainsKey($name) -or $actualCounts[$name] -ne $expectedCounts[$name]) { return $false }
-    }
-    return $true
-}
-
-function Test-TrueBoolean {
-    param([object]$Value)
-    return $Value -is [bool] -and [bool]$Value
-}
-
-function Test-PatchingReport {
-    param([object]$Report, [string[]]$ExpectedNames, [string]$OutputPath)
-    if ($null -eq $Report) { return [pscustomobject]@{ Valid = $false; Reason = 'missing or invalid result JSON' } }
-    $success = $Report.PSObject.Properties['success']
-    $steps = @($Report.patchingSteps)
-    $stepsOk = $steps.Count -gt 0 -and @($steps | Where-Object {
-        $property = $_.PSObject.Properties['success']
-        $null -eq $property -or -not (Test-TrueBoolean $property.Value)
-    }).Count -eq 0
-    $failed = @($Report.failedPatches)
-    $namesOk = Test-SameNames -Expected $ExpectedNames -Actual (Get-ReportPatchNames $Report.appliedPatches)
-    $targetOk = $null -ne $Report.PSObject.Properties['packageName'] -and
-        $null -ne $Report.PSObject.Properties['packageVersion'] -and
-        [string]::Equals([string]$Report.packageName, 'com.zhiliaoapp.musically', [System.StringComparison]::Ordinal) -and
-        [string]::Equals([string]$Report.packageVersion, '46.2.3', [System.StringComparison]::Ordinal)
-    $outputOk = Test-ApkFile $OutputPath
-    $valid = $null -ne $success -and (Test-TrueBoolean $success.Value) -and $stepsOk -and
-        $failed.Count -eq 0 -and $namesOk -and $targetOk -and $outputOk
-    $reason = if ($valid) { 'ok' } else {
-        $parts = New-Object System.Collections.Generic.List[string]
-        if ($null -eq $success -or -not (Test-TrueBoolean $success.Value)) { $parts.Add('report.success is false or not a boolean') }
-        if (-not $stepsOk) { $parts.Add('a patching step failed or is missing') }
-        if ($failed.Count -ne 0) { $parts.Add("$($failed.Count) failed patches") }
-        if (-not $namesOk) { $parts.Add('requested and applied patch names differ') }
-        if (-not $targetOk) { $parts.Add('unexpected package or version') }
-        if (-not $outputOk) { $parts.Add('saved APK is missing or invalid') }
-        $parts -join '; '
-    }
-    return [pscustomobject]@{ Valid = $valid; Reason = $reason }
-}
-
 $work = $env:HUSHFEED_WORKDIR
 if (-not $work) { throw 'Set HUSHFEED_WORKDIR to a directory holding morphe-desktop.jar and the fixture APK.' }
 New-Item -ItemType Directory -Force -Path $work | Out-Null
 $workRoot = (Resolve-Path -LiteralPath $work).Path
 $java = if ($env:HUSHFEED_JAVA) { $env:HUSHFEED_JAVA } else { 'java' }
-$jar = Join-Path $workRoot 'morphe-desktop.jar'
-$apk = if ($env:HUSHFEED_APK) { $env:HUSHFEED_APK } else { Join-Path $workRoot 'tt/native-fixture.apk' }
+
+# The CLI ships under its version, morphe-desktop-1.15.0-all.jar and so on, so the newest jar
+# matching the name is taken rather than one exact filename that goes stale on every release.
+$jar = if ($env:HUSHFEED_DESKTOP_JAR) { $env:HUSHFEED_DESKTOP_JAR } else {
+    $found = @(Get-ChildItem -LiteralPath $workRoot -Filter 'morphe-desktop*.jar' -File -ErrorAction SilentlyContinue |
+        Sort-Object Name -Descending)
+    if ($found.Count -eq 0) {
+        throw ("No morphe-desktop*.jar in $workRoot. Put the desktop CLI there, or set " +
+            'HUSHFEED_DESKTOP_JAR to it.')
+    }
+    $found[0].FullName
+}
+
+# There is no default APK. The one to measure against is the build README.md records with its
+# checksum, which lives outside the repo, and quietly patching some other file would report a
+# heap figure for a target nobody asked about.
+$apk = $env:HUSHFEED_APK
+if (-not $apk) {
+    throw ('Set HUSHFEED_APK to the TikTok build README.md records under "Supported target". ' +
+        'The heap a patch needs depends on the APK, so there is no sensible default.')
+}
 $bundle = Get-ChildItem (Join-Path $root 'patches/build/libs') -Filter '*.mpp' -ErrorAction SilentlyContinue |
     Where-Object { $_.Name -notmatch 'sources|javadoc' } |
     Sort-Object LastWriteTime -Descending | Select-Object -First 1
@@ -190,7 +128,10 @@ foreach ($case in @($Cases)) {
             try { $report = Get-Content -LiteralPath $result -Raw | ConvertFrom-Json }
             catch { Write-Warning "[$which @ -Xmx$mx] could not parse result JSON: $($_.Exception.Message)" }
         }
-        $validation = Test-PatchingReport -Report $report -ExpectedNames $(if ($which -eq 'settings') { @('Settings') } else { $all }) -OutputPath $out
+        $validation = Test-PatchingReport -Report $report `
+            -ExpectedNames $(if ($which -eq 'settings') { @('Settings') } else { $all }) `
+            -OutputPath $out `
+            -ExpectedPackageName $expectedPackageName -ExpectedPackageVersion $expectedPackageVersion
         if ($outOfMemory) {
             $verdict = 'OUT OF MEMORY'
             $invalidCases++
