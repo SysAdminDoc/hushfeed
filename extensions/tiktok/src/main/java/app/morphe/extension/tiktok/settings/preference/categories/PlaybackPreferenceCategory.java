@@ -74,6 +74,8 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
                 Settings.SESSION_BUDGET_RESET_HOUR));
 
         Preference clearBudget = new Preference(context);
+        // A key so the settings search can index this row.
+        clearBudget.setKey("action_start_today_over");
         clearBudget.setTitle(L10n.t(context, "Start today over"));
         clearBudget.setSummary(L10n.t(context,
                 "Forget what has been counted today and end any hold. The budgets themselves "

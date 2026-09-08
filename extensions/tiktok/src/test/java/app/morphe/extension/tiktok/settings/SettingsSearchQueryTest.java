@@ -1,6 +1,7 @@
 package app.morphe.extension.tiktok.settings;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
@@ -117,5 +118,47 @@ public class SettingsSearchQueryTest {
         activity.getFragmentManager().executePendingTransactions();
         Shadows.shadowOf(Looper.getMainLooper()).idle();
         return fragment;
+    }
+
+    @Test public void theSearchFindsTheRowsPeopleReachForWhenSomethingHasGoneWrong() throws Exception {
+        // The header promises a search of every title, description and category, and every row
+        // that acts rather than holds a value was missing from it: the four backup rows because
+        // they are added to the section screen rather than into its category, and the rest
+        // because a row with no key was skipped. Those are exactly the rows someone goes looking
+        // for when they need to undo, clear or report something.
+        TikTokPreferenceFragment search = attachSearch();
+        String[][] wanted = {
+                {"restore", "Restore settings"},
+                {"back up", "Back up settings"},
+                {"undo", "Undo last restore or reset"},
+                {"hook", "Hook status"},
+                {"diagnostic", "Export diagnostic report"},
+                {"seen", "Clear the seen video history"},
+        };
+        for (String[] pair : wanted) {
+            java.util.List<String> titles = search(search, pair[0]);
+            assertTrue("searching \"" + pair[0] + "\" did not find \"" + pair[1] + "\", it found "
+                    + titles, titles.contains(pair[1]));
+        }
+    }
+
+    @Test public void openingAFoundBackupRowLandsOnDiagnostics() throws Exception {
+        TikTokPreferenceFragment search = attachSearch();
+        java.lang.reflect.Field field = TikTokPreferenceFragment.class.getDeclaredField("searchIndex");
+        field.setAccessible(true);
+        Object found = null;
+        for (Object entry : (java.util.List<?>) field.get(search)) {
+            java.lang.reflect.Field title = entry.getClass().getDeclaredField("title");
+            title.setAccessible(true);
+            if ("Restore settings".equals(title.get(entry))) {
+                found = entry;
+                break;
+            }
+        }
+        assertNotNull("the Restore settings row is not in the index at all", found);
+        java.lang.reflect.Field section = found.getClass().getDeclaredField("section");
+        section.setAccessible(true);
+        assertEquals("opening it would not land on Diagnostics",
+                "DIAGNOSTICS", ((Enum<?>) section.get(found)).name());
     }
 }

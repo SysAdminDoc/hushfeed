@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Searching the settings finds the rows that do something, not just the switches. Back up, Restore, Reset, Undo, Hook status, Export diagnostic report, Clear diagnostic data, Included diagnostics, Clear the seen video history and Start today over all answered "No matching settings", which are exactly the rows people go looking for when something has gone wrong.
+
 * A settings backup keeps working when Hushfeed moves to a new TikTok version. The file carries a note of which TikTok build it was made for, and that note used to refuse the whole file, so on the day this project retargets every backup anyone held would have stopped restoring. Only the Feature Gate Lab rules in it depend on the TikTok build, so those are left out and the toast says so; your settings come back either way. And a refused file now says which way it was wrong, so a download that was cut short reads differently from a backup written by a newer Hushfeed, instead of both saying only that it was rejected.
 
 * A Feature Gate Lab rule saved at the wrong moment could do nothing at all. If TikTok happened to be reading its configuration on another thread while you saved, the rules it had already read were written back over your change, and the change stayed invisible until the next one. Reads made before TikTok has finished starting no longer queue up behind each other either.

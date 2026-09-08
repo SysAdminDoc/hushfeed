@@ -44,6 +44,9 @@ public class LogExportFilterPreference extends Preference {
     };
 
     {
+        // A key so the settings search can index this row. Nothing in the settings
+        // framework treats it as a setting: a key with no Setting behind it is skipped.
+        setKey("action_included_diagnostics");
         setOnPreferenceClickListener(pref -> {
             showPicker();
             return true;

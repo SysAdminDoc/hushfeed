@@ -31,6 +31,9 @@ import java.util.List;
 public class HookStatusPreference extends Preference {
     public HookStatusPreference(Context context) {
         super(context);
+        // A key so the settings search can index this row. A key with no Setting behind
+        // it is skipped by the settings framework, so nothing tries to persist it.
+        setKey("action_hook_status");
         setTitle(L10n.t(context, "Hook status"));
         setOnPreferenceClickListener(preference -> {
             showReport();

@@ -17,6 +17,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
+import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
 import android.provider.DocumentsContract;
 import android.view.View;
@@ -410,31 +411,45 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                 continue;
             }
             String categoryTitle = String.valueOf(category.getTitle());
-            for (int index = 0; index < category.getPreferenceCount(); index++) {
-                Preference preference = category.getPreference(index);
-                if (!preference.hasKey() || !preference.isSelectable()) {
-                    continue;
-                }
-                Setting<?> setting = Setting.getSettingFromPath(preference.getKey());
-                if (setting != null && !setting.isAvailable()) {
-                    continue;
-                }
-                CharSequence title = preference.getTitle();
-                if (title == null || title.length() == 0) {
-                    continue;
-                }
-                CharSequence summary = preference.getSummary();
-                results.add(new SearchResult(
-                        section,
-                        preference.getKey(),
-                        title.toString(),
-                        summary == null ? "" : summary.toString(),
-                        categoryTitle
-                ));
+            indexRows(results, category, section, categoryTitle);
+
+            // Back up, Restore, Reset and Undo are added straight to the section screen rather
+            // than into the category, so walking the category alone never saw them: searching
+            // "backup" or "restore" answered "No matching settings" for four rows one page away.
+            if (section == Section.DIAGNOSTICS) {
+                PreferenceScreen backupRows = getPreferenceManager().createPreferenceScreen(context);
+                SettingsBackupPreference.addTo(this, backupRows);
+                indexRows(results, backupRows, section, categoryTitle);
             }
             scratch.removePreference(category);
         }
         return results;
+    }
+
+    private void indexRows(List<SearchResult> results, PreferenceGroup group, Section section,
+            String categoryTitle) {
+        for (int index = 0; index < group.getPreferenceCount(); index++) {
+            Preference preference = group.getPreference(index);
+            if (!preference.hasKey() || !preference.isSelectable()) {
+                continue;
+            }
+            Setting<?> setting = Setting.getSettingFromPath(preference.getKey());
+            if (setting != null && !setting.isAvailable()) {
+                continue;
+            }
+            CharSequence title = preference.getTitle();
+            if (title == null || title.length() == 0) {
+                continue;
+            }
+            CharSequence summary = preference.getSummary();
+            results.add(new SearchResult(
+                    section,
+                    preference.getKey(),
+                    title.toString(),
+                    summary == null ? "" : summary.toString(),
+                    categoryTitle
+            ));
+        }
     }
 
     private static String normalizeSearchText(String value) {

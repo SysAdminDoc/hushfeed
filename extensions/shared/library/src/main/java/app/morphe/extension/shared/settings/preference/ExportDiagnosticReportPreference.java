@@ -13,6 +13,9 @@ import android.util.AttributeSet;
 @SuppressWarnings({"deprecation", "unused"})
 public class ExportDiagnosticReportPreference extends Preference {
     {
+        // A key so the settings search can index this row. Nothing in the settings
+        // framework treats it as a setting: a key with no Setting behind it is skipped.
+        setKey("action_export_diagnostic_report");
         setOnPreferenceClickListener(pref -> {
             AlertDialog shownDialog = new AlertDialog.Builder(getContext())
                     .setTitle("Export diagnostic report")
