@@ -368,8 +368,9 @@ public final class FeatureGateLabStore {
     /**
      * What a stored structured value may be. The depth is the one that matters: it is the only
      * bound between a backup file and a stack overflow, and 32 is far past anything a real gate
-     * config uses while staying nowhere near the worker thread's limit. The rest are subsumed by
-     * the 64 KB length check above and exist so no single bound carries the whole job.
+     * config uses while staying nowhere near the worker thread's limit. The others are a second
+     * line rather than a restatement of the 64 KB check above: that one counts characters, while
+     * maxBytes counts UTF-8 and maxNodes counts the whole document.
      */
     private static final SettingsJson.Limits STRUCTURED_VALUE_LIMITS =
             new SettingsJson.Limits(32, 16384, 64 * 1024, 4096, 64 * 1024);

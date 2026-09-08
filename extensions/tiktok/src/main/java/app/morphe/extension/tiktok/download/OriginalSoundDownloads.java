@@ -89,6 +89,8 @@ public final class OriginalSoundDownloads {
         switch (extension) {
             case "mp3":
                 return "audio/mpeg";
+            case "aac":
+                return "audio/aac";
             case "ogg":
                 return "audio/ogg";
             case "wav":

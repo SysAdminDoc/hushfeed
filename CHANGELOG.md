@@ -1,5 +1,7 @@
 ## Unreleased
 
+* An AAC sound is saved as AAC. It shares its frame sync with MP3, so the reader that tells containers apart called it an MP3, which left a file the gallery would not play. The two layer bits separate them.
+
 * Saving the original sound on Android 6 to 9 says what is wrong. Those versions write a real file, and without storage permission the save failed only after the sound had already been fetched, with nothing to act on. It is asked before anything is downloaded now, the way every other save here asks it.
 
 * The original sound and animated stickers are fetched over TLS only. Both read their addresses straight out of a server response and took whatever scheme was in them, while every other saver here already required https. A cleartext mirror is a body anyone on the network can choose, and the sticker one is handed to a decoder written in C.

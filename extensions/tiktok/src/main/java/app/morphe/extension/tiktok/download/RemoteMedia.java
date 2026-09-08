@@ -139,8 +139,13 @@ final class RemoteMedia {
     private static String audioExtension(byte[] header) {
         if (header.length < 12) return null;
         if (header[0] == 'I' && header[1] == 'D' && header[2] == '3') return "mp3";
-        // An MPEG frame sync is eleven set bits, so the second byte keeps its top three.
-        if ((header[0] & 255) == 255 && (header[1] & 0xE0) == 0xE0) return "mp3";
+        // An MPEG frame sync is eleven set bits, so the second byte keeps its top three. ADTS
+        // AAC shares that sync, and the two layer bits are what separate them: MPEG audio never
+        // leaves them at zero and ADTS always does. Without this an .aac body was saved as an
+        // .mp3 that nothing would play.
+        if ((header[0] & 255) == 255 && (header[1] & 0xE0) == 0xE0) {
+            return (header[1] & 0x06) == 0 ? "aac" : "mp3";
+        }
         String signature = new String(header, java.nio.charset.StandardCharsets.ISO_8859_1);
         if (signature.substring(4, 8).equals("ftyp")) return "m4a";
         if (signature.startsWith("OggS")) return "ogg";

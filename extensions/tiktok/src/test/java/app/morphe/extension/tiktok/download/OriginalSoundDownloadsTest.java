@@ -201,6 +201,14 @@ public class OriginalSoundDownloadsTest {
         assertEquals("mp3", fetchServed(padded(new byte[]{(byte) 0xFF, (byte) 0xFB, (byte) 0x90, 0}, 32)));
     }
 
+    @Test public void adtsAacIsNotMistakenForMpegAudio() throws Exception {
+        // Both start 0xFF and both satisfy the eleven-bit sync. Only the layer bits tell them
+        // apart, and calling an AAC body .mp3 gives the gallery a file it will not play.
+        assertEquals("aac", fetchServed(padded(new byte[]{(byte) 0xFF, (byte) 0xF1, 0x4C, (byte) 0x80}, 32)));
+        assertEquals("aac", fetchServed(padded(new byte[]{(byte) 0xFF, (byte) 0xF9, 0x4C, (byte) 0x80}, 32)));
+        assertEquals("audio/aac", OriginalSoundDownloads.mimeFor("aac"));
+    }
+
     @Test public void anMp4SoundIsStillRecognised() throws Exception {
         assertEquals("m4a", fetchServed(padded(
                 new byte[]{0, 0, 0, 0x20, 'f', 't', 'y', 'p', 'M', '4', 'A', ' '}, 32)));
