@@ -58,6 +58,9 @@ public final class BlockAuthorOverlay {
     private static WeakReference<View> localHideReference = new WeakReference<>(null);
     private static WeakReference<View> soundButtonReference = new WeakReference<>(null);
     private static WeakReference<View> notInterestedReference = new WeakReference<>(null);
+
+    /** Which banner a queued dismiss belongs to. Main thread only. */
+    private static int undoGeneration;
     private static WeakReference<ViewGroup> rootReference = new WeakReference<>(null);
     private static ViewTreeObserver.OnGlobalLayoutListener visibilityListener;
     private static WeakReference<View> undoReference = new WeakReference<>(null);
@@ -673,7 +676,14 @@ public final class BlockAuthorOverlay {
                 root.addView(banner);
                 undoReference = new WeakReference<>(banner);
 
-                Utils.runOnMainThreadDelayed(BlockAuthorOverlay::dismissUndo, UNDO_VISIBLE_MS);
+                // A second banner inside the six seconds replaced the first, and the first
+                // banner's dismiss was still queued: it took the new banner away early, with
+                // its Undo. Nothing here can cancel a posted runnable, so each dismiss checks
+                // whether it is still the one that was scheduled.
+                final int token = ++undoGeneration;
+                Utils.runOnMainThreadDelayed(() -> {
+                    if (token == undoGeneration) dismissUndo();
+                }, UNDO_VISIBLE_MS);
             } catch (Throwable ex) {
                 Logger.printException(() -> "Could not show the undo banner", ex);
                 Utils.showToastShort(message);
@@ -682,6 +692,7 @@ public final class BlockAuthorOverlay {
     }
 
     private static void dismissUndo() {
+        undoGeneration++;
         View banner = undoReference.get();
         if (banner != null && banner.getParent() instanceof ViewGroup) {
             ((ViewGroup) banner.getParent()).removeView(banner);

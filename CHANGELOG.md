@@ -1,5 +1,7 @@
 ## Unreleased
 
+* A second undo banner within six seconds of the first now gets its own six seconds. The first banner's timer was still queued and took the new one away early, along with its Undo.
+
 * The published patch list names what each patch actually depends on instead of saying "BytecodePatch" for all of them. Every patch that adds a setting now requires the Settings patch too, so the patcher cannot leave you with switches on a screen that was never built.
 
 * The Long-press controls description in the patcher now mentions saving the original sound, which it has done since 0.21.0 while the description still listed three actions.

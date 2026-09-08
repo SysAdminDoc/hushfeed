@@ -108,4 +108,32 @@ public class OverlayControlsTest {
 
         assertSame("the overlays would still be drawing on the old window", second, Utils.getActivity());
     }
+
+    @Test public void aSecondUndoBannerKeepsItsOwnSixSeconds() {
+        // Block an author and hide one locally inside six seconds: the second banner replaced the
+        // first, and the first banner's dismiss was still queued, so it took the second away
+        // early and the Undo went with it.
+        Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
+        Utils.setContext(activity);
+        Utils.setActivity(activity);
+        android.view.ViewGroup root = activity.findViewById(android.R.id.content);
+        var looper = org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper());
+
+        BlockAuthorOverlay.showUndoBanner("first", () -> { });
+        looper.idle();
+        int withOne = root.getChildCount();
+        assertTrue("the first banner was never shown", withOne > 0);
+
+        looper.idleFor(java.time.Duration.ofSeconds(3));
+        BlockAuthorOverlay.showUndoBanner("second", () -> { });
+        looper.idle();
+
+        looper.idleFor(java.time.Duration.ofSeconds(3));
+        assertEquals("the first banner's timer took the second one away", withOne,
+                root.getChildCount());
+
+        // And the second banner still goes away on its own time rather than staying forever.
+        looper.idleFor(java.time.Duration.ofSeconds(4));
+        assertTrue("the banner never went away", root.getChildCount() < withOne);
+    }
 }

@@ -25,6 +25,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 
 /**
@@ -240,6 +241,31 @@ public class SessionLockOverlayTest {
     private static boolean quietened() {
         return org.robolectric.util.ReflectionHelpers.getStaticField(
                 SessionLockOverlay.class, "quietened");
+    }
+
+    @Test public void aHoldRestoredFromDiskReattachesOnTheFirstPlayerReport() throws Exception {
+        // What makes a hold survive the app being killed: the player reports progress, that asks
+        // whether a hold is running, and the answer comes off the persisted record. Every other
+        // case here starts from a hold already in memory, so a break anywhere along this path
+        // passed the suite. The fast path in isLocked() is exactly the shape that would.
+        long until = now.get() + 5L * 60_000L;
+        Settings.SESSION_BUDGET_STATE.save(SessionBudget.dayOf(now.get())
+                + "|3|0|" + until + "|1");
+        SessionBudget.resetForTests();
+        assertTrue("the record did not carry the hold back", SessionBudget.isLocked());
+
+        try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setActivity(activity);
+            ViewGroup root = activity.findViewById(android.R.id.content);
+            int before = root.getChildCount();
+
+            SessionLockOverlay.ensureRunning();
+            Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+
+            assertTrue("a hold that survived the process being killed never came back",
+                    root.getChildCount() > before);
+        }
     }
 
     private static long at(int year, int month, int day, int hour, int minute) {
