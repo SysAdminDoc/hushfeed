@@ -1,5 +1,7 @@
 package app.morphe.extension.shared.settings.preference;
 
+import android.app.ActivityManager;
+import android.app.ApplicationExitInfo;
 import android.content.ContentValues;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -274,12 +276,86 @@ public final class LogBufferManager {
         if (hooks.length() > 0) {
             report.append("\n[HOOK STATUS]\n").append(hooks).append('\n');
         }
+        // Deliberately not part of worthReporting above. Every process has a last exit, most of
+        // them ordinary, so counting it would mean no report was ever empty and "No matching
+        // Morphe diagnostics found" would never be said again.
+        String lastExit = lastExitLine(includeAll, selected);
+        if (!lastExit.isEmpty()) {
+            report.append("\n[LAST EXIT]\n").append(lastExit).append('\n');
+        }
         if (events.length() > 0) {
             report.append("\n\n[SELECTED EVENTS]\n")
                     .append("category | timestamp | thread | source | level | message\n")
                     .append(events);
         }
         return report.toString();
+    }
+
+    /**
+     * Why the process went away last time. A Java crash handler sees none of the ways the system
+     * ends an app: Android 17 kills one that goes over a RAM-proportional limit and records it as
+     * a description like "MemoryLimiter:AnonSwap", and an ANR or a low-memory kill leaves nothing
+     * behind either. One line turns an unexplained restart into something a maintainer can act on.
+     *
+     * <p>Read only from API 30, where the history exists at all. It follows the same filter as
+     * the hook table, because it is the same kind of evidence.
+     */
+    private static String lastExitLine(boolean includeAll, Set<String> selected) {
+        if (Build.VERSION.SDK_INT < 30) return "";
+        if (!includeAll && !selected.contains(
+                app.morphe.extension.shared.diagnostics.DiagnosticCategory.PATCH_ERRORS.value)) {
+            return "";
+        }
+        try {
+            Context context = Utils.getContext();
+            if (context == null) return "";
+            ActivityManager manager =
+                    (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+            if (manager == null) return "";
+            List<ApplicationExitInfo> history = manager.getHistoricalProcessExitReasons(
+                    context.getPackageName(), 0, 1);
+            if (history == null || history.isEmpty()) return "";
+            ApplicationExitInfo exit = history.get(0);
+            StringBuilder line = new StringBuilder();
+            line.append("reason: ").append(exitReasonName(exit.getReason()))
+                    .append("\nat: ").append(utcOf(exit.getTimestamp()));
+            String description = exit.getDescription();
+            if (description != null && !description.isEmpty()) {
+                line.append("\ndescription: ").append(description);
+            }
+            return DiagnosticRedactor.redact(line.toString());
+        } catch (Throwable unavailable) {
+            // A build that cannot answer this is not a build that should fail to export.
+            return "";
+        }
+    }
+
+    private static String exitReasonName(int reason) {
+        switch (reason) {
+            case 1: return "EXIT_SELF";
+            case 2: return "SIGNALED";
+            case 3: return "LOW_MEMORY";
+            case 4: return "CRASH";
+            case 5: return "CRASH_NATIVE";
+            case 6: return "ANR";
+            case 7: return "INITIALIZATION_FAILURE";
+            case 8: return "PERMISSION_CHANGE";
+            case 9: return "EXCESSIVE_RESOURCE_USAGE";
+            case 10: return "USER_REQUESTED";
+            case 11: return "USER_STOPPED";
+            case 12: return "DEPENDENCY_DIED";
+            case 13: return "OTHER";
+            case 14: return "FREEZER";
+            case 15: return "PACKAGE_STATE_CHANGE";
+            case 16: return "PACKAGE_UPDATED";
+            default: return "UNKNOWN (" + reason + ")";
+        }
+    }
+
+    private static String utcOf(long epochMillis) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+        format.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return format.format(new Date(epochMillis));
     }
 
     public static String snapshotForCrash(int maxChars) {
