@@ -205,6 +205,28 @@ public class FeatureGateLabBoundaryTest {
     }
 
     @Test
+    public void aKeyReadWithoutADefaultIsOnlyWalkedOnce() {
+        // A key TikTok only ever reads through the no-default getter never lands in the
+        // default-wrapper set, so this path used to capture a full stack trace on every read of
+        // it, forever, on whatever thread the host reads settings from.
+        SettingsManagerObservationRecorder.clear();
+        SettingsManagerObservationRecorder.wrapperWalks = 0;
+
+        for (int read = 0; read < 500; read++) {
+            SettingsManagerObservationRecorder.observeWithoutDefault(
+                    "gate_read_without_default", Boolean.class, Boolean.TRUE);
+        }
+        assertEquals("the stack was walked on every read of one key",
+                1, SettingsManagerObservationRecorder.wrapperWalks);
+
+        // A second key is its own answer, so the cache is per key rather than a latch.
+        SettingsManagerObservationRecorder.observeWithoutDefault(
+                "another_gate_read", Boolean.class, Boolean.TRUE);
+        assertEquals("a different key reused the first key's answer",
+                2, SettingsManagerObservationRecorder.wrapperWalks);
+    }
+
+    @Test
     public void aRuleSavedWhileTheSnapshotIsBuildingIsNotLost() {
         // A gate thread reads the rules to build its snapshot; the UI thread saves a rule and
         // clears the snapshot; the gate thread then publishes the rules it read before the save,
