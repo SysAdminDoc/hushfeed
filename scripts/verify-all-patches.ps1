@@ -120,6 +120,11 @@ function Test-PatchingReport {
     )
     if ($null -eq $Report) { return [pscustomobject]@{ Valid = $false; Reason = 'missing or invalid result JSON' } }
 
+    # Morphe desktop 1.15.0 writes no top-level success field; each entry in patchingSteps
+    # carries its own instead. So it is checked when it is there and not demanded when it is
+    # not. The step check below is what actually catches the case this script exists for, a
+    # result file written from a finally block after a failed compile, because the step that
+    # failed reports success false.
     $success = $Report.PSObject.Properties['success']
     $steps = @($Report.patchingSteps)
     $stepsOk = $steps.Count -gt 0 -and @($steps | Where-Object {
@@ -134,11 +139,12 @@ function Test-PatchingReport {
         [string]::Equals([string]$Report.packageName, $expectedPackageName, [System.StringComparison]::Ordinal) -and
         [string]::Equals([string]$Report.packageVersion, $expectedPackageVersion, [System.StringComparison]::Ordinal)
     $outputOk = Test-ApkFile $OutputPath
-    $valid = $null -ne $success -and (Test-TrueBoolean $success.Value) -and $stepsOk -and
+    $successOk = $null -eq $success -or (Test-TrueBoolean $success.Value)
+    $valid = $successOk -and $stepsOk -and
         $failed.Count -eq 0 -and $namesOk -and $targetOk -and $outputOk
     $reason = if ($valid) { 'ok' } else {
         $parts = New-Object System.Collections.Generic.List[string]
-        if ($null -eq $success -or -not (Test-TrueBoolean $success.Value)) { $parts.Add('report.success is false or not a boolean') }
+        if (-not $successOk) { $parts.Add('report.success is present and is not true') }
         if (-not $stepsOk) { $parts.Add('a patching step failed or is missing') }
         if ($failed.Count -ne 0) { $parts.Add("$($failed.Count) failed patches") }
         if (-not $namesOk) { $parts.Add('requested and applied patch names differ') }

@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Every patch in the bundle is now verified against a real TikTok 46.2.3 APK rather than a stripped fixture. All 68 apply, and the README records the exact build and its checksum so anyone can reproduce the same run.
+
 * A hold no longer argues with a phone call over the sound. It asks once as the panel goes up, and again only when you come back to the feed, instead of asking every second for as long as the hold lasts.
 
 * The diagnostic report names the exit of the app itself rather than whichever of TikTok's background processes the system happened to reap last, and it carries the exit status and importance alongside the reason.

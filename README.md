@@ -274,6 +274,8 @@ The script writes `L10nTranslations.java`, which the extension carries with its 
 
 - App: TikTok, the global package `com.zhiliaoapp.musically`
 - Version: [46.2.3](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/), released 28 July 2026
+- Build: version code 2024602030, arm64-v8a and armeabi-v7a, nodpi, minSdk 23
+- SHA-256 of the APK every patch was verified against: `2fbe277a568e0e820cb51b09bcf0c0d788dc4fb070e66025f12d11cd3ec16936`
 
 ### Why you have to fetch that APK yourself
 
