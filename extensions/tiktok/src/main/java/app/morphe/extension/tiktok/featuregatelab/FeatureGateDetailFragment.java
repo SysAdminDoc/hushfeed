@@ -59,6 +59,8 @@ public final class FeatureGateDetailFragment extends Fragment {
     private TextView technicalToggle;
     private List<ValueOption> options;
     private final List<ObjectFieldEditor> objectEditors = new ArrayList<>();
+    /** Held so the window can be taken down with the view that opened it. */
+    private AlertDialog customValueDialog;
     private boolean suppress;
     private int lastConcreteSelection;
 
@@ -348,6 +350,43 @@ public final class FeatureGateDetailFragment extends Fragment {
         super.onPause();
     }
 
+    /**
+     * Lets go of the view this screen was built from.
+     *
+     * <p>The screen sits on a back stack, so its view is built again on a rotation, a font scale
+     * change, a theme change, or a return from anything deeper. Without this the editors from
+     * every earlier view stayed in the list, so the text collected on save came from fields
+     * nobody could see, and each of them pinned a destroyed hierarchy. A dialog left open when
+     * the activity goes is a leaked window whose buttons reach for those same dead views.
+     */
+    @Override
+    public void onDestroyView() {
+        if (customValueDialog != null) {
+            if (customValueDialog.isShowing()) customValueDialog.dismiss();
+            customValueDialog = null;
+        }
+        objectEditors.clear();
+        status = null;
+        effectiveValue = null;
+        values = null;
+        force = null;
+        booleanValue = null;
+        reset = null;
+        saveObject = null;
+        technicalDetails = null;
+        technicalToggle = null;
+        super.onDestroyView();
+    }
+
+    /** How many object field editors the current view is holding, so a test can see them stack. */
+    int objectEditorCountForTests() {
+        return objectEditors.size();
+    }
+
+    boolean customValueDialogShowingForTests() {
+        return customValueDialog != null && customValueDialog.isShowing();
+    }
+
     private void leaveDetail() {
         if (getFragmentManager() != null) getFragmentManager().popBackStack();
     }
@@ -447,7 +486,7 @@ public final class FeatureGateDetailFragment extends Fragment {
         input.setHint("Custom " + entry.type.toLowerCase(Locale.ROOT) + " value (unverified)");
         input.setText(rule == null ? "" : rule.value);
         SettingsUi.styleEditText(input);
-        AlertDialog dialog = new AlertDialog.Builder(getActivity())
+        AlertDialog dialog = customValueDialog = new AlertDialog.Builder(getActivity())
                 .setTitle("Custom value (unverified)")
                 .setView(input)
                 .setPositiveButton("Use value", null)
