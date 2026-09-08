@@ -35,7 +35,9 @@ public final class CaptionStyle {
         TextView text = root.findViewById(2131366636);
         if (text != null) {
             if (size() > 0) {
-                SIZES.putIfAbsent(text, text.getTextSize());
+                // Not putIfAbsent: that is an API 24 default method on the Map interface, and
+                // this runs on every caption render on a build whose floor is API 23.
+                if (!SIZES.containsKey(text)) SIZES.put(text, text.getTextSize());
                 text.setTextSize(TypedValue.COMPLEX_UNIT_SP, size());
             } else if (SIZES.containsKey(text)) text.setTextSize(TypedValue.COMPLEX_UNIT_PX, SIZES.remove(text));
         }

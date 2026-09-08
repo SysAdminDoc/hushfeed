@@ -1,5 +1,7 @@
 ## Unreleased
 
+* On Android 6 the app could go down where a caption was resized, where the feed filters emptied a batch and said so, and where a creator pattern ran too long to finish, and the Hook status row quietly recorded nothing at all. Several calls and three types in the code that ships inside TikTok only exist from Android 7 onward, and both the compiler and the tests run on a desktop Java where all of them exist, so nothing ever said so. They are replaced with equivalents that work on every version the app installs on, and the build now runs Android's own API level check over both payloads, so the next one of these stops the build here rather than on a phone.
+
 * Two more things a long press can do: copy the link to the video, or copy the link to the sound it was made with. The video link gets the same cleaning a shared link gets, so the parameters that say who sent it do not travel to the clipboard.
 
 * New patch, Enable voice comments. TikTok builds the recording and publishing entry points behind a gate that not every account is on. It ships off, so selecting it in the patcher is the switch, and nobody here has been able to try it on a real account yet. Ported from icysymmetra's Metra patches.

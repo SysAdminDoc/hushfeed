@@ -15,9 +15,15 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.function.Supplier;
 
 public final class AutoAdvance {
+    // Not Supplier: java.util.function arrived at API 24, and a type D8 cannot backport fails
+    // to resolve on Android 6, which the payload's own floor of API 23 still allows.
+    /** Reads the host's current auto scroll state, which is an enum this cannot name. */
+    interface StateReader {
+        Object read();
+    }
+
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
     private static final Map<Object, Control> CONTROLS = new WeakHashMap<>();
     private static boolean observing;
@@ -110,7 +116,7 @@ public final class AutoAdvance {
             return true;
         }
 
-        void update(Supplier<Object> state, Runnable start, Runnable stop) {
+        void update(StateReader state, Runnable start, Runnable stop) {
             if (!Settings.AUTO_ADVANCE.get()) {
                 if (owned) { stop.run(); owned = false; }
                 return;
@@ -129,9 +135,9 @@ public final class AutoAdvance {
             }
             View live = view.get();
             if (live == null || !live.isAttachedToWindow() || !live.isShown() || !live.hasWindowFocus()) return;
-            if (!named(state.get(), "AUTO_SCROLL_STATE_STOP")) return;
+            if (!named(state.read(), "AUTO_SCROLL_STATE_STOP")) return;
             start.run();
-            owned = !named(state.get(), "AUTO_SCROLL_STATE_STOP");
+            owned = !named(state.read(), "AUTO_SCROLL_STATE_STOP");
         }
     }
 

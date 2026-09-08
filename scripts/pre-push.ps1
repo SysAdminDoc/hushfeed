@@ -98,7 +98,7 @@ try {
     }).Count -gt 0
 
     if ($touchesCode) {
-        Write-Step 'extension or patch sources changed, running the runtime tests'
+        Write-Step 'extension or patch sources changed, running the runtime tests and the API level check'
 
         # The Morphe settings plugin resolves from GitHub Packages, which needs a reader token.
         # A hook runs with git's environment, not the shell's, so these are usually absent and
@@ -117,16 +117,26 @@ try {
             $env:GITHUB_TOKEN = $token
         }
 
+        # The lint runs alongside the tests because the tests cannot see this class of defect at
+        # all: they run on a desktop JVM, where every java.util method exists whatever the
+        # payload's floor says. Only the API level check reads minSdk, and it reads the SDK_INT
+        # guards with it, so a call that is properly guarded stays quiet.
+        $tasks = @(
+            ':extensions:tiktok:test',
+            ':extensions:shared:library:lint',
+            ':extensions:tiktok:lint'
+        )
         $governor = Join-Path $HOME '.claude/scripts/build-governor.ps1'
         $global:LASTEXITCODE = 0
         if (Test-Path -LiteralPath $governor) {
-            & $governor -ProjectDir $Root -MinFreeGb 2 -NoReap -Tasks ':extensions:tiktok:test'
+            & $governor -ProjectDir $Root -MinFreeGb 2 -NoReap -Tasks $tasks
         } else {
-            & (Join-Path $Root 'gradlew.bat') ':extensions:tiktok:test'
+            & (Join-Path $Root 'gradlew.bat') @tasks
         }
         if ($LASTEXITCODE -ne 0) {
             throw ('The runtime test build did not pass. Read the output above: it says whether a ' +
-                'test failed or the build could not start. Push anyway with HUSHFEED_SKIP_PRE_PUSH=1.')
+                'test failed, an API level above the payload floor was reached, or the build could ' +
+                'not start. Push anyway with HUSHFEED_SKIP_PRE_PUSH=1.')
         }
     }
 

@@ -16,7 +16,7 @@ import app.morphe.extension.tiktok.settings.TikTokActivityHook;
 import app.morphe.extension.tiktok.settings.preference.SettingsUi;
 
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,8 +106,13 @@ final class FeedFilterFeedback {
 
     private static String formatMessageLocked() {
         List<Map.Entry<String, Integer>> ordered = new ArrayList<>(reasons.entrySet());
-        ordered.sort(Comparator.<Map.Entry<String, Integer>>comparingInt(entry -> entry.getValue()).reversed()
-                .thenComparing(Map.Entry::getKey));
+        // Most matches first, then by label. List.sort, Comparator.comparingInt, reversed and
+        // thenComparing are all API 24 and D8 leaves them as stubs that throw, which would
+        // reach TikTok's own frame from here on Android 6.
+        Collections.sort(ordered, (left, right) -> {
+            int byCount = right.getValue().compareTo(left.getValue());
+            return byCount != 0 ? byCount : left.getKey().compareTo(right.getKey());
+        });
         StringBuilder summary = new StringBuilder();
         for (Map.Entry<String, Integer> entry : ordered) {
             if (summary.length() > 0) summary.append(", ");

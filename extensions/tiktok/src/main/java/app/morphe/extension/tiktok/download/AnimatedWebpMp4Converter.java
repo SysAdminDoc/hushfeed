@@ -23,6 +23,8 @@ import android.opengl.EGLSurface;
 import android.opengl.GLES20;
 import android.view.Surface;
 
+import androidx.annotation.RequiresApi;
+
 import java.io.FileDescriptor;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
@@ -49,6 +51,10 @@ final class AnimatedWebpMp4Converter {
     private AnimatedWebpMp4Converter() {
     }
 
+    // The muxer that writes to a file descriptor arrived in API 26, while the one that takes a
+    // path is API 18. Saying so here is what lets the API level check see that the only caller
+    // is behind a Q guard, rather than reporting a call it cannot follow.
+    @RequiresApi(26)
     static void convert(byte[] webpData, FileDescriptor output) throws Exception {
         convert(webpData, new MediaMuxer(output, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4));
     }

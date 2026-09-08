@@ -8,8 +8,8 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.settings.preference.LogBufferManager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -36,16 +36,21 @@ public final class HookStatus {
     private static final int MAX_ENTRIES_PER_FAMILY = 200;
 
     private static final class Family {
+        // newKeySet() is API 24 and D8 cannot backport it, so on Android 6 it throws where the
+        // callers catch Throwable and the diagnostics silently record nothing. This shape is
+        // the same concurrent set and resolves at API 1.
         /** Raw names, so the hot path compares what the caller already holds. */
-        final Set<String> bound = ConcurrentHashMap.newKeySet();
-        final Set<String> missed = ConcurrentHashMap.newKeySet();
+        final Set<String> bound = Collections.newSetFromMap(new ConcurrentHashMap<>());
+        final Set<String> missed = Collections.newSetFromMap(new ConcurrentHashMap<>());
         /** The same misses in the order they arrived, for the first-miss line. */
         final List<String> order = new CopyOnWriteArrayList<>();
         volatile boolean truncated;
         volatile boolean boundTruncated;
     }
 
-    private static final Map<String, Family> FAMILIES = new ConcurrentHashMap<>();
+    // Declared as the class rather than Map: putIfAbsent on the Map interface is an API 24
+    // default method, and ConcurrentHashMap has carried its own since API 1.
+    private static final ConcurrentHashMap<String, Family> FAMILIES = new ConcurrentHashMap<>();
     /** Families in the order the app first touched them; the map does not keep that. */
     private static final List<String> SEEN = new CopyOnWriteArrayList<>();
 

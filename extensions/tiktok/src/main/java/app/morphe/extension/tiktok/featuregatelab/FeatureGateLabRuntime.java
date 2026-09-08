@@ -25,7 +25,9 @@ public final class FeatureGateLabRuntime {
     private static final Map<String, String> firstCallers = new ConcurrentHashMap<>();
     private static final Map<String, String> originalValues = new ConcurrentHashMap<>();
     private static final Map<String, String> structuredFailures = new ConcurrentHashMap<>();
-    private static final Map<String, Object> observedPlayerValues = new ConcurrentHashMap<>();
+    // Declared as the class rather than Map: putIfAbsent on the Map interface is an API 24
+    // default method D8 cannot backport, and this is read on the host's own gate threads.
+    private static final ConcurrentHashMap<String, Object> observedPlayerValues = new ConcurrentHashMap<>();
 
     private FeatureGateLabRuntime() {
     }

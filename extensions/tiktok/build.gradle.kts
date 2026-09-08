@@ -23,6 +23,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+    // The payload is injected into TikTok, whose own floor is API 23. javac compiles against a
+    // modern JDK and Robolectric runs on one, so a library call or a type above that floor is
+    // green all the way to a phone, where D8 has left it as a stub that throws. NewApi is the
+    // only check here that reads the SDK_INT guards instead of flagging every guarded call.
+    lint {
+        checkOnly += "NewApi"
+        error += "NewApi"
+        abortOnError = true
+    }
     testOptions {
         unitTests.isIncludeAndroidResources = true
         unitTests.all {

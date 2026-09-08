@@ -11,10 +11,21 @@ import app.morphe.extension.shared.settings.Setting;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
 import app.morphe.extension.tiktok.settings.Settings;
 import java.lang.ref.WeakReference;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 
 public final class RememberClearDisplayPatch {
+    // Not BooleanSupplier and Consumer: java.util.function arrived at API 24 and D8 cannot
+    // supply a missing type, so a payload with a floor of API 23 fails to resolve this class
+    // on Android 6 before any of it runs.
+    /** Whether the video this was started for is still the one on screen. */
+    interface Condition {
+        boolean holds();
+    }
+
+    /** Where a clear display change is delivered. */
+    interface ClearEvent {
+        void accept(boolean clear);
+    }
+
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
     private static String currentId;
     private static Runnable pending;
@@ -90,7 +101,7 @@ public final class RememberClearDisplayPatch {
         return Reflect.string(readCurrentAweme(controller), "getAid", "aid");
     }
 
-    static void firstFrame(String id, BooleanSupplier stillCurrent, Consumer<Boolean> event) {
+    static void firstFrame(String id, Condition stillCurrent, ClearEvent event) {
         if (!observingPreferences) {
             Setting.preferences.preferences.registerOnSharedPreferenceChangeListener(PREFERENCES);
             observingPreferences = true;
@@ -108,7 +119,7 @@ public final class RememberClearDisplayPatch {
         emit(event, false);
         pending = () -> {
             pending = null;
-            if (Settings.AUTOMATIC_CLEAR_DISPLAY.get() && id.equals(currentId) && stillCurrent.getAsBoolean()) {
+            if (Settings.AUTOMATIC_CLEAR_DISPLAY.get() && id.equals(currentId) && stillCurrent.holds()) {
                 emit(event, true);
             }
         };
@@ -120,7 +131,7 @@ public final class RememberClearDisplayPatch {
         return clearNow;
     }
 
-    private static void emit(Consumer<Boolean> event, boolean clear) {
+    private static void emit(ClearEvent event, boolean clear) {
         clearNow = clear;
         posting = true;
         try { event.accept(clear); }

@@ -31,6 +31,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
+
 import app.morphe.extension.shared.Logger;
 
 import app.morphe.extension.tiktok.settings.L10n;
@@ -547,6 +549,8 @@ public final class StickerGallerySaver {
         return SaveResult.success(outputFile.getAbsolutePath(), outputFile.getAbsolutePath(), label);
     }
 
+    // Carries the converter's own API 26 floor up to the call site, which is behind a Q check.
+    @RequiresApi(26)
     private static Uri saveAnimatedWebpMp4WithMediaStore(
             Context context,
             byte[] animatedWebp,
