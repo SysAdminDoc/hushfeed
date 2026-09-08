@@ -4,6 +4,8 @@
 
 * An override profile written somewhere other than the Lab's own export applies on a Turkish phone. Turkish capitalises i to a dotted letter, so a lowercase `int` in the file folded to a different word than the catalogue's, and the rule was refused as a type mismatch on that phone and no other.
 
+* Comment translation stops doing work for batches it never asked for. The hook that notices a finished translation sits on TikTok's own completion path, so it ran for every batch in the app, and with the feature switched off it still walked the fields of two objects and took a lock on that thread each time. A request already in flight when the switch goes off is still finished properly.
+
 * Turning clear display on by itself no longer looks to TikTok like you asked for it. The patch stops the events its own code sends when clear display changes, and two of the three it was written to stop had not matched anything in this version of TikTok for some time. Both were looked up in a way that gave no sign when they were missing, so the patch reported success and sent the events anyway. The patched app now silences four of those events where it silenced one.
 
 * A video reached through TikTok's translated-video path now gets the same treatment as any other. The hook that prepares a video for download was installed on the last way out of the method and there are two, so one route returned a video this project had never seen. That is fixed, along with three more hooks that covered a single exit and would have missed the others on a build that returns from more than one place.

@@ -66,6 +66,37 @@ public class CommentBatchTranslatorTest {
         assertEquals(0, NativeManager.requests);
     }
 
+    @Test public void aBatchNobodyAskedForCostsNothingWhileTheFeatureIsOff() {
+        // This is injected at index 0 of TikTok's own completion method, so it runs for every
+        // native translation batch in the app, including the ones this feature never asked for.
+        // It used to walk the declared fields of two objects and take the global lock for all of
+        // them.
+        Settings.COMMENT_BATCH_TRANSLATION.save(false);
+        int handled = CommentBatchTranslator.completionsHandledForTests();
+
+        for (int batch = 0; batch < 50; batch++) {
+            CommentBatchTranslator.onNativeBatchComplete(
+                    new Runner(new Object(), new Comment("aid-idle", "cid-idle-" + batch)));
+        }
+
+        assertEquals("a batch this feature never asked for was walked anyway",
+                handled, CommentBatchTranslator.completionsHandledForTests());
+    }
+
+    @Test public void aRequestStillInFlightIsFinishedAfterTheSwitchGoesOff() {
+        // The other half: turning the switch off while a request is out must not strand it.
+        Anchor anchor = loadedAnchor("aid-inflight", "cid-inflight");
+        CommentBatchTranslator.registerCommentCell(new View(context), anchor);
+        assertEquals("the request never went out", 1, NativeManager.requests);
+
+        Settings.COMMENT_BATCH_TRANSLATION.save(false);
+        int handled = CommentBatchTranslator.completionsHandledForTests();
+        CommentBatchTranslator.onNativeBatchComplete(new Runner(new Object(), anchor.comment));
+
+        assertEquals("a request still in flight was dropped when the switch went off",
+                handled + 1, CommentBatchTranslator.completionsHandledForTests());
+    }
+
     @Test public void commentsAlreadyInTheCurrentLanguageAreNotDispatched() {
         android.content.res.Configuration configuration =
                 new android.content.res.Configuration(context.getResources().getConfiguration());
@@ -538,6 +569,11 @@ public class CommentBatchTranslatorTest {
                 Object value = field.get(null);
                 if (value instanceof Map) ((Map<?, ?>) value).clear();
                 else ((java.util.Collection<?>) value).clear();
+            }
+            for (String name : new String[]{"outstandingRequests", "completionsHandledForTests"}) {
+                Field counter = CommentBatchTranslator.class.getDeclaredField(name);
+                counter.setAccessible(true);
+                counter.set(null, 0);
             }
             Field latest = CommentBatchTranslator.class.getDeclaredField("latestLoadedBatch");
             latest.setAccessible(true);

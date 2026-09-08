@@ -53,6 +53,16 @@ public final class CommentBatchTranslator {
     private static final LinkedHashMap<String, LoadedBatch> loadedBatches = new LinkedHashMap<>();
     private static final LinkedHashSet<String> requestedLoadedBatchKeys = new LinkedHashSet<>();
     private static final LinkedHashMap<String, PendingRequest> pendingRequests = new LinkedHashMap<>();
+    /**
+     * How many requests are still waiting on an answer, published so {@link #onNativeBatchComplete}
+     * can tell whether it has anything to do without taking {@link #LOCK}. That hook runs on
+     * TikTok's own completion thread for every native batch, including every batch this feature
+     * never asked for, so the cheap answer is the one that matters. Every place that changes
+     * either map calls {@link #publishOutstandingLocked()} while holding the lock.
+     */
+    private static volatile int outstandingRequests;
+    /** How many completions got past the guard, so a test can show an idle one costs nothing. */
+    private static volatile int completionsHandledForTests;
     private static final LinkedHashMap<Long, PendingRequest> retiredRequests = new LinkedHashMap<>();
     private static final LinkedHashMap<String, RetryState> retryStates = new LinkedHashMap<>();
     /** Set when the host stops carrying a results field, which no amount of retrying will fix. */
@@ -197,6 +207,13 @@ public final class CommentBatchTranslator {
     }
 
     public static void onNativeBatchComplete(Object runner) {
+        // Injected at index 0 of TikTok's own completion method, so this runs for every native
+        // translation batch whether or not the feature asked for one. With the switch off and
+        // nothing outstanding there is nothing here to do, and everything below it walks the
+        // declared fields of two objects and takes the global lock on TikTok's thread.
+        if (!Settings.COMMENT_BATCH_TRANSLATION.get() && outstandingRequests == 0) return;
+        
+        completionsHandledForTests++;
         if (runner != null && findField(runner.getClass(), "l0") == null) {
             // The field holding the results is gone, which is what a host update looks like.
             // Every batch would read as a failure from here on, so the feature stands down for
@@ -271,6 +288,7 @@ public final class CommentBatchTranslator {
                     batch.comments,
                     ++nextRequestGeneration);
             pendingRequests.put(effectiveRequestKey, pending);
+            publishOutstandingLocked();
         }
 
         try {
@@ -436,6 +454,7 @@ public final class CommentBatchTranslator {
             } else if (expected != null && retiredRequests.get(expected.generation) == expected) {
                 retiredRequests.remove(expected.generation);
             }
+            publishOutstandingLocked();
         }
     }
 
@@ -443,13 +462,25 @@ public final class CommentBatchTranslator {
         if (expected == null) return false;
         if (pendingRequests.get(expected.key) == expected) {
             pendingRequests.remove(expected.key);
+            publishOutstandingLocked();
             return true;
         }
         if (retiredRequests.get(expected.generation) == expected) {
             retiredRequests.remove(expected.generation);
+            publishOutstandingLocked();
             return true;
         }
         return false;
+    }
+
+    /** How many completions got past the guard, so a test can show an idle one costs nothing. */
+    static int completionsHandledForTests() {
+        return completionsHandledForTests;
+    }
+
+    /** Call while holding {@link #LOCK}, after anything that changes either request map. */
+    private static void publishOutstandingLocked() {
+        outstandingRequests = pendingRequests.size() + retiredRequests.size();
     }
 
     /**
@@ -544,6 +575,7 @@ public final class CommentBatchTranslator {
         synchronized (LOCK) {
             pendingRequests.clear();
             retiredRequests.clear();
+            publishOutstandingLocked();
             retryStates.clear();
         }
         if (announce) {
@@ -655,6 +687,7 @@ public final class CommentBatchTranslator {
             retiredIterator.next();
             retiredIterator.remove();
         }
+        publishOutstandingLocked();
     }
 
     private static List<PendingRequest> allRequestsInGenerationOrder() {
