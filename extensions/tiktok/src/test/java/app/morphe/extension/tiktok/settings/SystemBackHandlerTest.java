@@ -93,16 +93,47 @@ public class SystemBackHandlerTest {
         assertTrue("nothing is listening for the screen leaving the window",
                 hasAttachListener(root));
 
-        // Back at the root of the settings screen closes it, which is what handleBackPressed does.
-        assertTrue(TikTokActivityHook.handleBackPressed((AdPersonalizationActivity) activity));
+        // Calling handleBackPressed from here would say nothing about what the system calls.
+        // The registered callback is what Back reaches, so Back is what the test presses.
+        Object callback = registeredCallback(root);
+        assertNotNull("the settings screen registered no back callback", callback);
+        invokeBack(callback);
         assertTrue("Back at the root did not close the settings screen", activity.isFinishing());
     }
 
     private static boolean hasAttachListener(View view) {
+        return !attachListeners(view).isEmpty();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static java.util.List<Object> attachListeners(View view) {
         Object info = ReflectionHelpers.getField(view, "mListenerInfo");
-        if (info == null) return false;
+        if (info == null) return java.util.List.of();
         Object listeners = ReflectionHelpers.getField(info, "mOnAttachStateChangeListeners");
-        return listeners != null;
+        return listeners == null ? java.util.List.of() : (java.util.List<Object>) listeners;
+    }
+
+    /**
+     * The back callback the screen registered, taken from the view it hung its unregister on.
+     *
+     * <p>Robolectric's back dispatcher drops what it is given, because the window it would
+     * forward to has no session, so the system's own copy cannot be read back. The listener
+     * {@code registerUntilDetached} leaves on the root belongs to the handler that registered,
+     * which is the same object and the only one still reachable.
+     */
+    private static Object registeredCallback(View root) {
+        for (Object listener : attachListeners(root)) {
+            for (java.lang.reflect.Field field : listener.getClass().getDeclaredFields()) {
+                if (!SystemBackHandler.class.equals(field.getType())) continue;
+                field.setAccessible(true);
+                try {
+                    return ((SystemBackHandler) field.get(listener)).callbackForTests();
+                } catch (IllegalAccessException closed) {
+                    throw new AssertionError("could not read the handler back", closed);
+                }
+            }
+        }
+        return null;
     }
 
     /** Calls onBackInvoked on the registered proxy, the way the system would. */

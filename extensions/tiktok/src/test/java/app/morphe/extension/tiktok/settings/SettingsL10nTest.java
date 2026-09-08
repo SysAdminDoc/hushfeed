@@ -88,7 +88,7 @@ public class SettingsL10nTest {
         //
         // German is a tab table and Indonesian is the comma form Weblate hosts, so both readers
         // are exercised on every run rather than one of them being a claim in the README.
-        for (String language : new String[]{"de", "in"}) {
+        for (String language : languages()) {
             java.util.Map<String, String> generated = L10nTranslations.of(language);
             java.util.Map<String, String> table = readTable(language);
 
@@ -135,15 +135,43 @@ public class SettingsL10nTest {
         assertNotNull("no .tsv or .csv table for " + language, file);
         String body = new String(java.nio.file.Files.readAllBytes(file.toPath()),
                 java.nio.charset.StandardCharsets.UTF_8);
+        // A spreadsheet round trip leaves a byte order mark, which the generator now skips.
+        if (body.startsWith("\ufeff")) body = body.substring(1);
         return file.getName().endsWith(".csv")
                 ? readCsvRows(language, body) : readTsvRows(language, body);
     }
 
+    private static java.io.File l10nDirectory() {
+        java.io.File directory = new java.io.File("src/main/l10n");
+        if (!directory.isDirectory()) directory = new java.io.File("extensions/tiktok/src/main/l10n");
+        assertTrue("could not find the l10n tables", directory.isDirectory());
+        return directory;
+    }
+
+    /** Every language with a table, in either form. Named so a new one is covered on sight. */
+    private static java.util.List<String> languages() {
+        java.util.List<String> found = new java.util.ArrayList<>();
+        for (String name : java.util.Objects.requireNonNull(l10nDirectory().list())) {
+            if (!name.endsWith(".tsv") && !name.endsWith(".csv")) continue;
+            String language = name.substring(0, name.length() - 4);
+            if (!ENGLISH_BASE.equals(language)) found.add(language);
+        }
+        java.util.Collections.sort(found);
+        assertTrue("no language tables at all", found.size() >= 2);
+        return found;
+    }
+
     private static java.io.File tableFile(String language, String extension) {
-        java.io.File file = new java.io.File("src/main/l10n/" + language + extension);
-        if (!file.isFile()) file = new java.io.File(
-                "extensions/tiktok/src/main/l10n/" + language + extension);
+        java.io.File file = new java.io.File(l10nDirectory(), language + extension);
         return file.isFile() ? file : null;
+    }
+
+    /** The keys are English text, so the base is a list of source strings, not a translation. */
+    private static final String ENGLISH_BASE = "en";
+
+    /** A newline is the two characters \n in a table, the same as the generator reads it. */
+    private static String unescapeTableNewlines(String text) {
+        return text.replace("\\n", "\n");
     }
 
     private static java.util.Map<String, String> readTsvRows(String language, String body) {
@@ -153,7 +181,8 @@ public class SettingsL10nTest {
             if (text.isEmpty() || text.startsWith("#")) continue;
             int tab = text.indexOf('\t');
             assertTrue("a row with no tab in " + language + ".tsv: " + text, tab > 0);
-            rows.put(text.substring(0, tab), text.substring(tab + 1));
+            rows.put(unescapeTableNewlines(text.substring(0, tab)),
+                    unescapeTableNewlines(text.substring(tab + 1)));
         }
         return rows;
     }
@@ -164,6 +193,7 @@ public class SettingsL10nTest {
         java.util.List<String> record = new java.util.ArrayList<>();
         StringBuilder field = new StringBuilder();
         boolean quoted = false;
+        boolean atFieldStart = true;
         for (int index = 0; index < body.length(); index++) {
             char character = body.charAt(index);
             if (quoted) {
@@ -177,18 +207,22 @@ public class SettingsL10nTest {
                 }
                 continue;
             }
-            if (character == '"') {
+            if (character == '"' && atFieldStart) {
                 quoted = true;
+                atFieldStart = false;
             } else if (character == ',') {
                 record.add(field.toString());
                 field.setLength(0);
+                atFieldStart = true;
             } else if (character == '\n') {
                 record.add(field.toString());
                 field.setLength(0);
                 records.add(record);
                 record = new java.util.ArrayList<>();
+                atFieldStart = true;
             } else if (character != '\r') {
                 field.append(character);
+                atFieldStart = false;
             }
         }
         if (field.length() > 0 || !record.isEmpty()) {
@@ -208,23 +242,31 @@ public class SettingsL10nTest {
             if (line.isEmpty() || line.get(0).isEmpty() || line.get(0).startsWith("#")) continue;
             assertTrue("a row with no target column in " + language + ".csv: " + line,
                     line.size() >= 2);
-            rows.put(line.get(0), line.get(1));
+            rows.put(unescapeTableNewlines(line.get(0)), unescapeTableNewlines(line.get(1)));
         }
         return rows;
     }
 
-    @Test public void theEnglishBaseListsEverySourceStringOnce() throws Exception {
+    @Test public void theEnglishBaseIsExactlyTheStringsTheTablesCarry() throws Exception {
         // Weblate translates from a monolingual base rather than from a language table. It is
         // generated, so it goes stale the same way L10nTranslations does if nobody reruns the
-        // script, and nothing else here would notice.
-        java.util.Map<String, String> base = readTable("en");
-        java.util.Map<String, String> german = readTable("de");
-        java.util.List<String> missing = new java.util.ArrayList<>();
-        for (String key : german.keySet()) {
-            if (!base.containsKey(key)) missing.add(key);
-        }
-        assertEquals("en.csv is missing source strings, so run scripts/gen-l10n.py: " + missing,
-                0, missing.size());
+        // script, and nothing else here would notice. Both directions matter: a string added to
+        // a table has to reach it, and a string deleted from every table has to leave it, or
+        // translators keep being asked for text nothing shows any more.
+        java.util.Map<String, String> base = readTable(ENGLISH_BASE);
+        java.util.Set<String> carried = new java.util.TreeSet<>();
+        for (String language : languages()) carried.addAll(readTable(language).keySet());
+
+        java.util.Set<String> missing = new java.util.TreeSet<>(carried);
+        missing.removeAll(base.keySet());
+        assertEquals(ENGLISH_BASE + ".csv is missing source strings, so run scripts/gen-l10n.py: "
+                + missing, 0, missing.size());
+
+        java.util.Set<String> extra = new java.util.TreeSet<>(base.keySet());
+        extra.removeAll(carried);
+        assertEquals(ENGLISH_BASE + ".csv still lists strings no table carries, so run "
+                + "scripts/gen-l10n.py: " + extra, 0, extra.size());
+
         for (java.util.Map.Entry<String, String> row : base.entrySet()) {
             assertEquals("the base translates a string instead of repeating it",
                     row.getKey(), row.getValue());

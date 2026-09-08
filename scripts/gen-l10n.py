@@ -63,7 +63,9 @@ def add(entries, english, translated, path, number):
 
 def read_tsv(path):
     entries = {}
-    with io.open(path, encoding="utf-8") as handle:
+    # utf-8-sig, not utf-8: Excel writes a byte order mark on any round trip, and it would
+    # otherwise become part of the first key.
+    with io.open(path, encoding="utf-8-sig") as handle:
         for number, line in enumerate(handle, 1):
             line = line.rstrip("\r\n")
             if not line or line.startswith("#"):
@@ -82,7 +84,7 @@ def read_csv(path):
     auto-detection unreliable, so the file says what it is rather than leaving it to be guessed.
     """
     entries = {}
-    with io.open(path, encoding="utf-8", newline="") as handle:
+    with io.open(path, encoding="utf-8-sig", newline="") as handle:
         rows = csv.reader(handle)
         header = next(rows, None)
         if header is None:
