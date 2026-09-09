@@ -99,12 +99,11 @@ public final class CaptchaGate {
         if (path == null) return null;
         String value = path.toLowerCase(Locale.ROOT);
 
-        // The relation route is the other shape a follow arrives on, which is why the follow
-        // probe accepts either "commit" or "relation" beside the word follow.
+        // Shared with follow diagnostics. These are the write families in TikTok 46.2.3;
+        // following/follower lists only read state and must not open a write window.
         if (value.contains("/commit/follow/")
                 || value.contains("/f2f/follow/")
-                || value.contains("/remove/follower/")
-                || (value.contains("follow") && value.contains("relation"))) {
+                || value.contains("/remove/follower/")) {
             return "follow";
         }
         if (value.contains("/commit/item/digg/")

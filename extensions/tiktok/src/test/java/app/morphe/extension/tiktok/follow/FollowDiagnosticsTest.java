@@ -252,24 +252,25 @@ public class FollowDiagnosticsTest {
         assertEquals(0, ShadowToast.shownToastCount());
     }
 
-    /** Both shapes the follow endpoint takes are follows, and a request with no path is not. */
+    /** The write routes in the 46.2.3 fixture all reach the refusal notice. */
     @Test
-    public void bothFollowEndpointShapesAreReadAndAPathlessRequestIsNot() {
+    public void everyVendorFollowWriteReachesTheRefusalNotice() {
         String refusal = "{\"status_code\":2098,\"status_msg\":\"Try again later.\"}";
-
-        ShadowToast.reset();
-        FollowDiagnostics.resetForTests();
-        FollowDiagnostics.logParsedResponse(
-                new CaptchaGateRequest("/aweme/v1/commit/follow/user/"), new ParsedResponse(refusal));
-        Shadows.shadowOf(Looper.getMainLooper()).idle();
-        assertEquals(1, ShadowToast.shownToastCount());
-
-        ShadowToast.reset();
-        FollowDiagnostics.resetForTests();
-        FollowDiagnostics.logParsedResponse(
-                new CaptchaGateRequest("/tiktok/v1/relation/follow/"), new ParsedResponse(refusal));
-        Shadows.shadowOf(Looper.getMainLooper()).idle();
-        assertEquals(1, ShadowToast.shownToastCount());
+        for (String path : new String[]{
+                "/aweme/v1/commit/follow/",
+                "/aweme/v1/commit/follow/user/",
+                "/aweme/v1/commit/follow/batchuser/",
+                "/aweme/v1/commit/follow/request/approve/",
+                "/aweme/v1/commit/follow/request/reject/",
+                "/aweme/v3/f2f/follow/",
+                "/aweme/v1/remove/follower/"}) {
+            ShadowToast.reset();
+            FollowDiagnostics.resetForTests();
+            FollowDiagnostics.logParsedResponse(new CaptchaGateRequest(path), new ParsedResponse(refusal));
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertEquals(path, 1, ShadowToast.shownToastCount());
+            assertTrue(path, ShadowToast.getTextOfLatestToast().contains("Try again later."));
+        }
 
         ShadowToast.reset();
         FollowDiagnostics.resetForTests();
@@ -285,19 +286,49 @@ public class FollowDiagnosticsTest {
      * quietly rather than throw into the network stack or invent a verdict.
      */
     @Test
-    public void anUnreadableResponseIsNeitherARefusalNorAnException() {
+    public void anUnreadableResponseIsNeitherARefusalNorAnException() throws Exception {
         ShadowToast.reset();
-        FollowDiagnostics.logParsedResponse(
-                new CaptchaGateRequest("/aweme/v1/commit/follow/user/"), new Object());
-        FollowDiagnostics.logParsedResponse(
-                new CaptchaGateRequest("/aweme/v1/commit/follow/user/"), null);
-        FollowDiagnostics.logParsedResponse(
-                new CaptchaGateRequest("/aweme/v1/commit/follow/user/"), new ParsedResponse(null));
-        FollowDiagnostics.logParsedResponse(
-                new CaptchaGateRequest("/aweme/v1/commit/follow/user/"), new ParsedResponse("not json"));
+        java.lang.reflect.Method read = FollowDiagnostics.class.getDeclaredMethod(
+                "readServerVerdict", Object.class, FollowDiagnostics.FollowRequestContext.class);
+        read.setAccessible(true);
+        for (Object response : new Object[]{new Object(), null,
+                new ParsedResponse(null), new ParsedResponse("not json")}) {
+            // Invoke below the network boundary's catch as well: a swallowed NPE is a
+            // broken reader even when the hook correctly protects TikTok from the exception.
+            FollowDiagnostics.FollowRequestContext verdict = context();
+            read.invoke(null, response, verdict);
+            assertEquals(FollowVerdict.UNKNOWN, verdict.statusCode);
+            assertFalse(FollowDiagnostics.followWasRefused(verdict));
+            FollowDiagnostics.logParsedResponse(
+                    new CaptchaGateRequest("/aweme/v1/commit/follow/user/"), response);
+        }
         Shadows.shadowOf(Looper.getMainLooper()).idle();
 
         assertEquals(0, ShadowToast.shownToastCount());
+    }
+
+    @Test
+    public void parsedResponsesStopRetainingRequestsAtTheLimitButStillReportRefusals() throws Exception {
+        BaseSettings.DEBUG.save(true);
+        ShadowToast.reset();
+        for (int index = 0; index < 240; index++) {
+            FollowDiagnostics.logParsedResponse(
+                    new CaptchaGateRequest("/aweme/v1/commit/follow/user/"),
+                    new ParsedResponse("{\"status_code\":0}"));
+        }
+        assertEquals(160, FollowDiagnostics.eventCountForTests());
+        java.lang.reflect.Field contexts = FollowDiagnostics.class.getDeclaredField("networkContexts");
+        contexts.setAccessible(true);
+        assertEquals(160, ((java.util.Map<?, ?>) contexts.get(null)).size());
+        assertEquals(0, ShadowToast.shownToastCount());
+
+        FollowDiagnostics.logParsedResponse(
+                new CaptchaGateRequest("/aweme/v1/commit/follow/user/"),
+                new ParsedResponse("{\"status_code\":2098,\"status_msg\":\"Try again later.\"}"));
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        assertTrue(ShadowToast.getTextOfLatestToast().contains("Try again later."));
+        assertEquals(160, FollowDiagnostics.eventCountForTests());
+        assertEquals(160, ((java.util.Map<?, ?>) contexts.get(null)).size());
     }
 
     public static final class CaptchaGateRequest {

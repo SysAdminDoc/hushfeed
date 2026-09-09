@@ -84,8 +84,7 @@ public class CaptchaGateTest {
     public void everyWriteActionIsRecognisedByItsPath() {
         assertEquals("follow", CaptchaGate.writeActionFor("/aweme/v1/commit/follow/user/"));
         assertEquals("follow", CaptchaGate.writeActionFor("/aweme/v3/f2f/follow/"));
-        // The follow probe accepts a relation route as a follow, so the gate has to as well.
-        assertEquals("follow", CaptchaGate.writeActionFor("/aweme/v1/relation/follow/commit/"));
+        assertEquals("follow", CaptchaGate.writeActionFor("/aweme/v1/commit/follow/batchuser/"));
         // A story like is a like on the story's own Aweme, so it uses the ordinary digg path.
         assertEquals("like", CaptchaGate.writeActionFor("/aweme/v1/commit/item/digg/"));
         assertEquals("comment", CaptchaGate.writeActionFor("/aweme/v1/comment/publish/"));
@@ -233,7 +232,7 @@ public class CaptchaGateTest {
                 {"/aweme/v1/commit/follow/user/", "follow"},
                 {"/aweme/v3/f2f/follow/", "follow"},
                 {"/aweme/v1/remove/follower/", "follow"},
-                {"/aweme/v1/relation/follow/commit/", "follow"},
+                {"/aweme/v1/commit/follow/batchuser/", "follow"},
                 {"/aweme/v1/commit/item/digg/", "like"},
                 {"/aweme/v1/commit/game/item/digg/", "like"},
                 {"/aweme/v1/comment/digg/", "like"},

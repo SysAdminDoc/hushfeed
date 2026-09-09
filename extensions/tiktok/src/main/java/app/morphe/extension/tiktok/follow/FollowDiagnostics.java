@@ -296,12 +296,12 @@ public final class FollowDiagnostics {
         String followPath = followPath(request);
         if (followPath != null) {
             final String finalPath = followPath;
-            boolean logging = loggingEnabled();
+            boolean logging = reserveNetworkEvent();
 
             // The verdict is read whether or not logging is on: a refused follow is the
             // thing users report, and it looks like nothing happened at all. With logging
-            // off the context stays local, because the map that keeps one per request is
-            // never emptied, and nothing here may throw into TikTok's network stack.
+            // off or exhausted the context stays local, so the retained request map stays
+            // bounded. Nothing here may throw into TikTok's network stack.
             FollowRequestContext context = logging
                     ? contextForRequest(request, finalPath)
                     : new FollowRequestContext(0, finalPath);
@@ -312,7 +312,7 @@ public final class FollowDiagnostics {
                 Logger.printDebug(() -> "[Morphe TikTok FollowProbe] verdict read failed: " + throwable);
             }
 
-            if (!logging || !reserveNetworkEvent()) return;
+            if (!logging) return;
             followReadbackWindowUntil = System.currentTimeMillis() + READBACK_WINDOW_MS;
             activeReadbackContext = context;
 
@@ -358,14 +358,6 @@ public final class FollowDiagnostics {
         }
     }
 
-    private static boolean loggingEnabled() {
-        try {
-            return BaseSettings.DEBUG.get();
-        } catch (Exception ignored) {
-            return false;
-        }
-    }
-
     /** Clears bounded diagnostics state between deterministic runtime tests. */
     static void resetForTests() {
         eventCount.set(0);
@@ -388,7 +380,11 @@ public final class FollowDiagnostics {
     private static boolean reserveNetworkEvent() {
         try {
             if (!BaseSettings.DEBUG.get()) return false;
-            return eventCount.incrementAndGet() <= MAX_EVENTS_PER_SESSION;
+            while (true) {
+                int current = eventCount.get();
+                if (current >= MAX_EVENTS_PER_SESSION) return false;
+                if (eventCount.compareAndSet(current, current + 1)) return true;
+            }
         } catch (Exception ignored) {
             return false;
         }
@@ -1084,11 +1080,7 @@ public final class FollowDiagnostics {
 
     private static String followPath(Object request) {
         String path = requestPath(request);
-        if (path == null) return null;
-
-        if (!path.contains("follow")) return null;
-        if (!path.contains("commit") && !path.contains("relation")) return null;
-        return safeShort(path);
+        return "follow".equals(CaptchaGate.writeActionFor(path)) ? safeShort(path) : null;
     }
 
     private static String followReadbackPath(Object request) {
