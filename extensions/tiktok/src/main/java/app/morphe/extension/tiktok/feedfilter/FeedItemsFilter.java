@@ -46,13 +46,7 @@ public final class FeedItemsFilter {
         new AdvancedFeedRules.PublicationAgeFilter(),
         new AdvancedFeedRules.QualityFilter()
     );
-    private static final List<IFilter> RANGE_FILTERS = List.of(
-        new ViewCountFilter(),
-        new LikeCountFilter(),
-        new CommentCountFilter(),
-        new FavouriteCountFilter(),
-        new ShareCountFilter()
-    );
+    private static volatile List<IFilter> RANGE_FILTERS = createRangeFilters();
     private static final List<IFilter> LATE_FOLLOW_FILTERS = List.of(ADS_FILTER);
     /** The card shapes TikTok uses for a bought search result. */
     private static final String[] SEARCH_AD_FIELDS = {"multiAdCard", "aiAdCard", "brandZoneCard"};
@@ -88,6 +82,16 @@ public final class FeedItemsFilter {
     private static ProbeSummary filterCallProbeSummary = new ProbeSummary(System.currentTimeMillis());
 
     private FeedItemsFilter() {}
+
+    private static List<IFilter> createRangeFilters() {
+        return List.of(new ViewCountFilter(), new LikeCountFilter(), new CommentCountFilter(),
+                new FavouriteCountFilter(), new ShareCountFilter());
+    }
+
+    /** Recreates the process-start snapshot after a test configures its range settings. */
+    static void rebuildRangeFiltersForTests() {
+        RANGE_FILTERS = createRangeFilters();
+    }
 
     /** Clears process-wide probe state between deterministic runtime tests. */
     static void resetDiagnosticsForTests() {

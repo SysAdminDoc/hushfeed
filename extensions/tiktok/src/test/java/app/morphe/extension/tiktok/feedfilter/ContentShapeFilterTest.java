@@ -7,12 +7,11 @@
 package app.morphe.extension.tiktok.feedfilter;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.shared.settings.BooleanSetting;
+import app.morphe.extension.shared.settings.StringSetting;
 import app.morphe.extension.tiktok.seen.SeenVideoHistory;
 import app.morphe.extension.tiktok.settings.Settings;
 
@@ -25,6 +24,7 @@ import com.ss.android.ugc.aweme.feed.model.PhotoModeTextInfo;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.After;
 import org.junit.Before;
@@ -36,8 +36,8 @@ import org.robolectric.annotation.Config;
 
 /**
  * The filters that read the shape of a feed item rather than a count or a rule: a story, a
- * photo post, a shop placeholder, an inserted card, a video already watched, and the two
- * count ranges that had no test of their own.
+ * photo post, a shop placeholder, an inserted card, a video already watched, and every
+ * count range as reached through a feed response.
  *
  * <p>Every case here goes in through {@link FeedItemsFilter#filter(FeedItemList)}, the way
  * TikTok's response reaches the filter, rather than calling the filter on its own. A filter
@@ -72,10 +72,15 @@ public class ContentShapeFilterTest {
         Item photoText() { photoText = new PhotoModeTextInfo(); return this; }
         Item shareUrl(String url) { shareUrl = url; return this; }
         Item type(int awemeType) { type = awemeType; return this; }
-        Item counts(long plays, long likes) {
+        Item count(int index, long value) {
+            long[] counts = {30, 30, 30, 30, 30};
+            counts[index] = value;
             statistics = new AwemeStatistics() {
-                @Override public long getPlayCount() { return plays; }
-                @Override public long getDiggCount() { return likes; }
+                @Override public long getPlayCount() { return counts[0]; }
+                @Override public long getDiggCount() { return counts[1]; }
+                @Override public long getCommentCount() { return counts[2]; }
+                @Override public long getCollectCount() { return counts[3]; }
+                @Override public long getShareCount() { return counts[4]; }
             };
             return this;
         }
@@ -99,6 +104,14 @@ public class ContentShapeFilterTest {
     /** The aids left on a page after the filter, in order. */
     private static List<String> survivors(FeedItemList list) {
         FeedItemsFilter.filter(list);
+        try {
+            java.lang.reflect.Field errors = FeedItemsFilter.class.getDeclaredField("filterExceptionLogCount");
+            errors.setAccessible(true);
+            assertEquals("a filter swallowed an unstubbed getter or another runtime failure", 0,
+                    ((AtomicInteger) errors.get(null)).get());
+        } catch (ReflectiveOperationException exception) {
+            throw new AssertionError(exception);
+        }
         List<String> aids = new ArrayList<>();
         for (Object item : list.items) aids.add(((Aweme) item).getAid());
         return aids;
@@ -112,13 +125,19 @@ public class ContentShapeFilterTest {
         };
     }
 
+    private static StringSetting[] rangeSettings() {
+        return new StringSetting[]{Settings.MIN_MAX_VIEWS, Settings.MIN_MAX_LIKES,
+                Settings.MIN_MAX_COMMENTS, Settings.MIN_MAX_FAVOURITES, Settings.MIN_MAX_SHARES};
+    }
+
     @Before
     public void setUp() {
         Utils.setContext(RuntimeEnvironment.getApplication());
         BaseSettings.DEBUG.save(false);
+        Settings.REMOVE_ADS.save(false);
         for (BooleanSetting setting : shapeSwitches()) setting.save(false);
-        Settings.MIN_MAX_VIEWS.save(UNSET_RANGE);
-        Settings.MIN_MAX_LIKES.save(UNSET_RANGE);
+        for (StringSetting setting : rangeSettings()) setting.save(UNSET_RANGE);
+        FeedItemsFilter.rebuildRangeFiltersForTests();
         SeenVideoHistory.clear();
         FeedItemsFilter.resetDiagnosticsForTests();
     }
@@ -126,8 +145,9 @@ public class ContentShapeFilterTest {
     @After
     public void tearDown() {
         for (BooleanSetting setting : shapeSwitches()) setting.resetToDefault();
-        Settings.MIN_MAX_VIEWS.resetToDefault();
-        Settings.MIN_MAX_LIKES.resetToDefault();
+        Settings.REMOVE_ADS.resetToDefault();
+        for (StringSetting setting : rangeSettings()) setting.resetToDefault();
+        FeedItemsFilter.rebuildRangeFiltersForTests();
         SeenVideoHistory.clear();
         FeedItemsFilter.resetDiagnosticsForTests();
     }
@@ -211,68 +231,35 @@ public class ContentShapeFilterTest {
     }
 
     @Test
-    public void theViewAndLikeRangesFilterOnTheirOwnCount() {
-        // The range filters read their setting once, when the filter list is built, so the
-        // ones on the list cannot be reconfigured here. The classes are exercised directly,
-        // and CountRangeFilterTest.everyRangeIsWiredIntoTheFeedFilter pins that these two
-        // are on the list.
-        Settings.MIN_MAX_VIEWS.save("1000-5000");
-        Settings.MIN_MAX_LIKES.save("10-50");
-        ViewCountFilter views = new ViewCountFilter();
-        LikeCountFilter likes = new LikeCountFilter();
-        assertTrue(views.getEnabled());
-        assertTrue(likes.getEnabled());
-
-        Item inside = new Item("inside").counts(3000, 30);
-        assertFalse(views.getFiltered(inside));
-        assertFalse(likes.getFiltered(inside));
-
-        Item fewViews = new Item("fewViews").counts(999, 30);
-        assertTrue(views.getFiltered(fewViews));
-        assertFalse("likes answered for views", likes.getFiltered(fewViews));
-
-        Item manyLikes = new Item("manyLikes").counts(3000, 51);
-        assertTrue(likes.getFiltered(manyLikes));
-        assertFalse("views answered for likes", views.getFiltered(manyLikes));
-
-        // Both ends inclusive, the same as the other three ranges.
-        assertFalse(views.getFiltered(new Item("low").counts(1000, 30)));
-        assertFalse(views.getFiltered(new Item("high").counts(5000, 30)));
-        assertTrue(views.getFiltered(new Item("past").counts(5001, 30)));
-    }
+    public void viewRangeFiltersTheFeedResponse() { assertRange(0); }
 
     @Test
-    public void anUnsetViewOrLikeRangeIsOffAndAnItemWithoutCountsIsKept() {
-        assertFalse(new ViewCountFilter().getEnabled());
-        assertFalse(new LikeCountFilter().getEnabled());
-
-        Settings.MIN_MAX_VIEWS.save("1000-5000");
-        Settings.MIN_MAX_LIKES.save("10-50");
-        assertFalse(new ViewCountFilter().getFiltered(new Item("noCounts")));
-        assertFalse(new LikeCountFilter().getFiltered(new Item("noCounts")));
-    }
+    public void likeRangeFiltersTheFeedResponse() { assertRange(1); }
 
     @Test
-    public void theViewAndLikeRangesAreOnTheList() throws Exception {
-        java.lang.reflect.Field field = FeedItemsFilter.class.getDeclaredField("RANGE_FILTERS");
-        field.setAccessible(true);
-        List<Class<?>> classes = new ArrayList<>();
-        for (Object filter : (List<?>) field.get(null)) classes.add(filter.getClass());
-        assertTrue("views", classes.contains(ViewCountFilter.class));
-        assertTrue("likes", classes.contains(LikeCountFilter.class));
-    }
+    public void commentRangeFiltersTheFeedResponse() { assertRange(2); }
 
     @Test
-    public void everyShapeFilterIsOnTheContentList() throws Exception {
-        java.lang.reflect.Field field = FeedItemsFilter.class.getDeclaredField("CONTENT_FILTERS");
-        field.setAccessible(true);
-        List<Class<?>> classes = new ArrayList<>();
-        for (Object filter : (List<?>) field.get(null)) classes.add(filter.getClass());
-        for (Class<?> expected : new Class<?>[]{
-                StoryFilter.class, ImageVideoFilter.class, ShopFilter.class,
-                CardFilters.InsertedCardFilter.class, SeenVideoFilter.class}) {
-            assertTrue(expected.getSimpleName() + " is not on the list",
-                    classes.contains(expected));
-        }
+    public void favouriteRangeFiltersTheFeedResponse() { assertRange(3); }
+
+    @Test
+    public void shareRangeFiltersTheFeedResponse() { assertRange(4); }
+
+    private static void assertRange(int index) {
+        rangeSettings()[index].save("10-50");
+        // Production snapshots ranges at process start. Use that same constructor path
+        // after arranging each test's settings; keep the actual feed entry point below.
+        FeedItemsFilter.rebuildRangeFiltersForTests();
+        assertEquals(Arrays.asList("lower", "inside", "upper", "noCounts"),
+                survivors(page(new Item("below").count(index, 9),
+                        new Item("lower").count(index, 10),
+                        new Item("inside").count(index, 30),
+                        new Item("upper").count(index, 50),
+                        new Item("above").count(index, 51), new Item("noCounts"))));
+
+        rangeSettings()[index].save(UNSET_RANGE);
+        FeedItemsFilter.rebuildRangeFiltersForTests();
+        assertEquals(Arrays.asList("below", "above"),
+                survivors(page(new Item("below").count(index, 9), new Item("above").count(index, 51))));
     }
 }

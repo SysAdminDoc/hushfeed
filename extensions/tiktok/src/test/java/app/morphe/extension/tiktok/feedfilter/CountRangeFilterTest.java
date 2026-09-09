@@ -78,20 +78,6 @@ public class CountRangeFilterTest {
     }
 
     @Test
-    public void everyRangeIsWiredIntoTheFeedFilter() throws Exception {
-        // A filter nobody registered does nothing, however well it works on its own.
-        java.lang.reflect.Field field = FeedItemsFilter.class.getDeclaredField("RANGE_FILTERS");
-        field.setAccessible(true);
-        java.util.List<?> registered = (java.util.List<?>) field.get(null);
-
-        java.util.Set<Class<?>> classes = new java.util.HashSet<>();
-        for (Object filter : registered) classes.add(filter.getClass());
-        assertTrue("comments", classes.contains(CommentCountFilter.class));
-        assertTrue("favourites", classes.contains(FavouriteCountFilter.class));
-        assertTrue("shares", classes.contains(ShareCountFilter.class));
-    }
-
-    @Test
     public void aRangeThatWasNeverSetFiltersNothing() {
         assertFalse(new CommentCountFilter().getEnabled());
         assertFalse(new FavouriteCountFilter().getEnabled());
