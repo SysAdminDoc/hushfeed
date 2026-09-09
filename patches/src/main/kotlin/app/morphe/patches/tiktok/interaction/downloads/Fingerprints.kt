@@ -31,9 +31,17 @@ internal object AclCommonShare3Fingerprint : Fingerprint(
     returnType = "I",
 )
 
+// The five below name their class and not their method. An obfuscated method name is a
+// counter-assigned label that the next TikTok build is free to reshuffle, and it was the only
+// thing here that would have moved. Each is unique on 46.2.3 without it, checked method by method
+// over the whole class on 2026-09-09: of the three (Context, String) methods returning a Uri, one
+// holds "video/mp4" and one "video/*" and the third neither; of the two (Context, String, String)
+// ones, one holds "/Camera" and the other "image/*"; and the six-parameter copy is the only
+// method of its shape on its class at all. What stays is the class, the signature and the strings,
+// which is what every other fingerprint in this tree is anchored on.
+
 internal object VideoDownloadUriFingerprint : Fingerprint(
     definingClass = "/0L4Q;",
-    name = "LIZLLL",
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
     returnType = "Landroid/net/Uri;",
     parameters = listOf("Landroid/content/Context;", "Ljava/lang/String;"),
@@ -108,7 +116,6 @@ internal object StickerPreviewBinderFingerprint : Fingerprint(
 
 internal object PhotoDownloadUriFingerprint : Fingerprint(
     definingClass = "/0L4Q;",
-    name = "LIZIZ",
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
     returnType = "Landroid/net/Uri;",
     parameters = listOf("Landroid/content/Context;", "Ljava/lang/String;", "Ljava/lang/String;"),
@@ -117,7 +124,6 @@ internal object PhotoDownloadUriFingerprint : Fingerprint(
 
 internal object VideoLookupUriFingerprint : Fingerprint(
     definingClass = "/0L4Q;",
-    name = "LJIIIIZZ",
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
     returnType = "Landroid/net/Uri;",
     parameters = listOf("Landroid/content/Context;", "Ljava/lang/String;"),
@@ -126,7 +132,6 @@ internal object VideoLookupUriFingerprint : Fingerprint(
 
 internal object PhotoLookupUriFingerprint : Fingerprint(
     definingClass = "/0L4Q;",
-    name = "LJFF",
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
     returnType = "Landroid/net/Uri;",
     parameters = listOf("Landroid/content/Context;", "Ljava/lang/String;", "Ljava/lang/String;"),
@@ -175,7 +180,6 @@ internal object PhotoMediaStoreInsertFingerprint : Fingerprint(
 
 internal object ImagePostMediaCopyFingerprint : Fingerprint(
     definingClass = "/0L4G;",
-    name = "LJJIJIIJI",
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
     returnType = "Landroid/net/Uri;",
     parameters = listOf(
