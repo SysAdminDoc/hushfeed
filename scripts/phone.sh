@@ -19,9 +19,13 @@
 #   scripts/phone.sh gfx                          frame stats for the perf device check
 #
 # PHONE_SERIAL selects the device; it must be the test phone, never the owner's own.
-set -u
-ADB="${ADB:-$(command -v adb || ls "$LOCALAPPDATA"/Microsoft/WinGet/Packages/Google.PlatformTools*/platform-tools/adb 2>/dev/null | head -1)}"
-S="${PHONE_SERIAL:?set PHONE_SERIAL to the test phone's serial}"
+set -eu
+S="${PHONE_SERIAL:?set PHONE_SERIAL to the test phone serial}"
+if [[ "$S" != "R5CT139QJ5F" ]]; then
+    echo "REFUSED: device $S is not the S22 test phone" >&2
+    exit 2
+fi
+ADB="${ADB:-$(command -v adb || ls "$LOCALAPPDATA"/Microsoft/WinGet/Packages/Google.PlatformTools*/platform-tools/adb.exe 2>/dev/null | head -1)}"
 SP="${PHONE_SHOTS:-$TEMP/hushfeed-device/shots}"
 PKG=com.zhiliaoapp.musically
 SCALE="${PHONE_SCALE:-1.15756}"
