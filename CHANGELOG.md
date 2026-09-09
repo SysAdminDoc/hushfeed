@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Enabling or saving a Feature Gate Lab override keeps populated arrays intact, including arrays loaded from TikTok. An empty default no longer replaces the edited value.
+
 * Native graphics tests serialize font initialization across Android sandboxes. Graphics errors still fail the run, and every tested Android version remains enabled.
 
 * Feed tests now run all five count ranges through real responses, with lower and upper boundaries, missing counts and disabled settings. The content fixtures also fail if the runtime catches an unstubbed getter, so an incomplete fixture can't quietly pass.

@@ -723,7 +723,9 @@ public final class FeatureGateDetailFragment extends Fragment {
         if (result == null) {
             result = new JSONObject();
         }
-        if (result.length() <= 2) {
+        // A root array is wrapped in one $value field, even when it contains many entries.
+        // The small-object fallback is for unavailable configuration metadata, not arrays.
+        if (!rootArray && result.length() <= 2) {
             JSONObject generatedDefault = StructuredConfigController.defaultValue(entry.requestedClass);
             if (generatedDefault != null) {
                 result = generatedDefault;

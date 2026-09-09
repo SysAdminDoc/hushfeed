@@ -261,6 +261,89 @@ public class FeatureGatePagesTest {
         }
     }
 
+    @Test public void enablingAnArrayOverrideKeepsItsGeneratedValues() throws Exception {
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            FeatureGateDetailFragment detail = arrayDetail(owner.get(), false, null);
+            EditText editor = find(detail.getView(), EditText.class);
+            assertNotNull(editor);
+            assertEquals("analytics.us.tiktok.com", editor.getText().toString());
+
+            Switch force = find(detail.getView(), Switch.class);
+            assertFalse(force.isChecked());
+            force.performClick();
+            Utils.awaitBackgroundTasksForTests();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+            FeatureGateLabStore.Rule saved = FeatureGateLabStore.rule(
+                    FeatureGateLabStore.MANAGER_SETTINGS_MANAGER, "ad_gaid_whitelist", "OBJECT");
+            assertNotNull(saved);
+            assertTrue(saved.enabled);
+            org.json.JSONArray values = new org.json.JSONObject(saved.value).getJSONArray("$value");
+            assertEquals(1, values.length());
+            assertEquals("analytics.us.tiktok.com", values.getString(0));
+        }
+    }
+
+    @Test public void savingAnArrayOverrideKeepsTheLoadedValuesAheadOfItsDefaults() throws Exception {
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            FeatureGateDetailFragment detail = arrayDetail(owner.get(), true,
+                    "[\"account.one\",\"account.two\"]");
+            EditText editor = find(detail.getView(), EditText.class);
+            assertNotNull(editor);
+            assertEquals("account.one\naccount.two", editor.getText().toString());
+
+            TextView save = findText(detail.getView(), "Save field values");
+            assertNotNull(save);
+            save.performClick();
+            Utils.awaitBackgroundTasksForTests();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+            FeatureGateLabStore.Rule saved = FeatureGateLabStore.rule(
+                    FeatureGateLabStore.MANAGER_SETTINGS_MANAGER, "ad_gaid_whitelist", "OBJECT");
+            assertNotNull(saved);
+            assertFalse("saving fields must not enable the override", saved.enabled);
+            org.json.JSONArray values = new org.json.JSONObject(saved.value).getJSONArray("$value");
+            assertEquals(2, values.length());
+            assertEquals("account.one", values.getString(0));
+            assertEquals("account.two", values.getString(1));
+        }
+    }
+
+    private static FeatureGateDetailFragment arrayDetail(Activity activity, boolean loaded,
+                                                         String currentValue) throws Exception {
+        Utils.setContext(activity);
+        FeatureGateLabStore.resetAllLabData();
+        FeatureGateLabSession.begin();
+        FeatureGateLabStore.setMasterEnabled(true);
+        // The generated 46.2.3 catalogue declares this real gate as a String[] with this default.
+        var entry = new FeatureGateCatalog.Entry("ad_gaid_whitelist", "Ad Gaid Whitelist",
+                FeatureGateLabStore.MANAGER_SETTINGS_MANAGER, "OBJECT", true, true,
+                List.of("[\"analytics.us.tiktok.com\"]"), List.of(), List.of(), "", "",
+                loaded, currentValue, loaded ? "JSON" : null, String[].class.getName());
+        var cached = FeatureGateCatalog.class.getDeclaredField("cachedSnapshot");
+        cached.setAccessible(true);
+        cached.set(null, new FeatureGateCatalog.Snapshot(
+                List.of(entry), Map.of(entry.identity(), entry), 0, 0, true));
+        FeatureGateDetailFragment detail = FeatureGateDetailFragment.forEntry(
+                entry.manager, entry.key, entry.type);
+        attach(activity, detail);
+        return detail;
+    }
+
+    private static TextView findText(View view, String text) {
+        if (view instanceof TextView && text.contentEquals(((TextView) view).getText())) {
+            return (TextView) view;
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int index = 0; index < group.getChildCount(); index++) {
+                TextView found = findText(group.getChildAt(index), text);
+                if (found != null) return found;
+            }
+        }
+        return null;
+    }
+
     /**
      * The chevron on the value spinner is a compound drawable, and a compound drawable is only
      * turned round when the view it hangs off resolves its own layout direction. An adapter
