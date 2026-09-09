@@ -62,6 +62,63 @@ final class FeatureGateLabUndo {
                 FeatureGateLabStore.warningAcknowledged(), false);
     }
 
+    /**
+     * Forces a whole selection to one boolean value, in one operation.
+     *
+     * <p>Every gate in {@code gates} that the Lab can force a boolean on gets a rule saying so,
+     * replacing whatever rule it had. One journal entry covers all of them and one undo puts them
+     * all back, which is the point: a selection half applied is worse than one not applied, and
+     * the single-gate path repeated N times gives N of each.
+     *
+     * @return how many gates were written. Anything in the selection the Lab cannot force a
+     *         boolean on is skipped, so a caller can say so.
+     */
+    static synchronized int forceBoolean(List<FeatureGateCatalog.Entry> gates, boolean value)
+            throws Exception {
+        var merged = new LinkedHashMap<String, FeatureGateLabStore.Rule>();
+        for (var rule : FeatureGateLabStore.rules()) merged.put(rule.id, rule);
+        int written = 0;
+        long now = System.currentTimeMillis();
+        for (FeatureGateCatalog.Entry gate : gates) {
+            String type = FeatureGateLabStore.normalizeType(gate.type);
+            if (!"BOOLEAN".equals(type)
+                    || !FeatureGateLabStore.supportsOverride(gate.manager, gate.type)) {
+                continue;
+            }
+            String id = FeatureGateLabStore.idFor(gate.manager, gate.key, type);
+            merged.put(id, new FeatureGateLabStore.Rule(id, gate.manager, gate.key, type,
+                    String.valueOf(value), true, now));
+            written++;
+        }
+        if (written == 0) return 0;
+        replace(new ArrayList<>(merged.values()), FeatureGateLabStore.masterEnabled(),
+                FeatureGateLabStore.warningAcknowledged(), false);
+        return written;
+    }
+
+    /**
+     * Drops the rules for a whole selection, in one operation.
+     *
+     * @return how many rules were there to drop.
+     */
+    static synchronized int resetAll(List<FeatureGateCatalog.Entry> gates) throws Exception {
+        var wanted = new LinkedHashMap<String, Boolean>();
+        for (FeatureGateCatalog.Entry gate : gates) {
+            wanted.put(FeatureGateLabStore.idFor(gate.manager, gate.key,
+                    FeatureGateLabStore.normalizeType(gate.type)), Boolean.TRUE);
+        }
+        List<FeatureGateLabStore.Rule> next = new ArrayList<>();
+        int dropped = 0;
+        for (FeatureGateLabStore.Rule rule : FeatureGateLabStore.rules()) {
+            if (wanted.containsKey(rule.id)) dropped++;
+            else next.add(rule);
+        }
+        if (dropped == 0) return 0;
+        replace(next, FeatureGateLabStore.masterEnabled(),
+                FeatureGateLabStore.warningAcknowledged(), false);
+        return dropped;
+    }
+
     static synchronized void deleteRule(String manager, String key, String type) throws Exception {
         String id = FeatureGateLabStore.idFor(manager, key, type);
         List<FeatureGateLabStore.Rule> next = new ArrayList<>();

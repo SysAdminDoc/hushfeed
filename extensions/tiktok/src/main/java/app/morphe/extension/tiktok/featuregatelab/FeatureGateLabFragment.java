@@ -107,6 +107,15 @@ public final class FeatureGateLabFragment extends Fragment {
     private final app.morphe.extension.tiktok.settings.SystemBackHandler systemBack =
             new app.morphe.extension.tiktok.settings.SystemBackHandler("FeatureGateLabBackCallback");
     private final List<FeatureGateCatalog.Entry> visible = new ArrayList<>();
+    /**
+     * The gates a long press has gathered, by identity, in the order they were chosen.
+     *
+     * <p>Empty means the list is behaving as it always did: a tap opens the gate. Held by
+     * identity rather than by index because the search and the filters rebuild {@link #visible}
+     * underneath a selection.
+     */
+    private final java.util.LinkedHashMap<String, FeatureGateCatalog.Entry> selection =
+            new java.util.LinkedHashMap<>();
 
     private FeatureGateCatalog.Snapshot snapshot;
     private GateAdapter adapter;
@@ -122,6 +131,8 @@ public final class FeatureGateLabFragment extends Fragment {
     private TextView filterButton;
     private Switch master;
     private ListView list;
+    private LinearLayout selectionBar;
+    private TextView selectionCount;
     private boolean exitPromptScheduled;
     private String searchQuery = "";
     private int selectedView;
@@ -374,7 +385,24 @@ public final class FeatureGateLabFragment extends Fragment {
         list.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_OVERLAY);
         adapter = new GateAdapter(context, visible);
         list.setAdapter(adapter);
-        list.setOnItemClickListener((parent, view, position, id) -> openDetail(visible.get(position)));
+        list.setOnItemClickListener((parent, view, position, id) -> {
+            FeatureGateCatalog.Entry gate = visible.get(position);
+            // While a selection is up a tap adds and removes rather than opening, which is what
+            // every list that does this does: entering the mode changes what a tap means.
+            if (selection.isEmpty()) {
+                openDetail(gate);
+                return;
+            }
+            String identity = gate.identity();
+            if (selection.remove(identity) == null) selection.put(identity, gate);
+            onSelectionChanged();
+        });
+        list.setOnItemLongClickListener((parent, view, position, id) -> {
+            FeatureGateCatalog.Entry gate = visible.get(position);
+            selection.put(gate.identity(), gate);
+            onSelectionChanged();
+            return true;
+        });
         listContainer.addView(list, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
@@ -393,6 +421,8 @@ public final class FeatureGateLabFragment extends Fragment {
         ));
         list.setEmptyView(empty);
         root.addView(listContainer, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+
+        root.addView(buildSelectionBar(context), FeatureGateLabUi.matchWrap());
 
         master.setOnCheckedChangeListener((button, checked) -> onMasterChanged(checked));
         search.addTextChangedListener(new SimpleTextWatcher(() -> {
@@ -461,6 +491,8 @@ public final class FeatureGateLabFragment extends Fragment {
         filterButton = null;
         master = null;
         list = null;
+        selectionBar = null;
+        selectionCount = null;
         for (int i = 0; i < viewTabLabels.length; i++) viewTabLabels[i] = null;
         for (int i = 0; i < sourceTabLabels.length; i++) {
             sourceTabLabels[i] = null;
@@ -705,6 +737,112 @@ public final class FeatureGateLabFragment extends Fragment {
         runLabChange(() -> FeatureGateLabUndo.setMasterEnabled(checked),
                 checked ? "Overrides enabled. Restart TikTok to apply saved values."
                         : "Overrides disabled. Restart TikTok to restore native values.");
+    }
+
+    /**
+     * The row of actions that appears once a long press has gathered a selection.
+     *
+     * <p>Built with the screen and hidden, rather than added and removed, so nothing about the
+     * layout moves when a selection starts.
+     */
+    private LinearLayout buildSelectionBar(Context context) {
+        selectionBar = new LinearLayout(context);
+        selectionBar.setOrientation(LinearLayout.VERTICAL);
+        selectionBar.setVisibility(View.GONE);
+        int padding = FeatureGateLabUi.dp(context, 16);
+        selectionBar.setPadding(padding, FeatureGateLabUi.dp(context, 12), padding,
+                FeatureGateLabUi.dp(context, 12));
+        selectionBar.setBackground(SettingsUi.roundedSurface(context, 0, false));
+
+        selectionCount = FeatureGateLabUi.label(context, "");
+        selectionBar.addView(selectionCount, FeatureGateLabUi.matchWrap());
+
+        LinearLayout actions = new LinearLayout(context);
+        actions.setOrientation(LinearLayout.HORIZONTAL);
+        actions.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+        actions.addView(selectionAction(context, "Reset", this::resetSelection));
+        actions.addView(selectionAction(context, "Disable", () -> forceSelection(false)));
+        actions.addView(selectionAction(context, "Enable", () -> forceSelection(true)));
+        actions.addView(selectionAction(context, "Cancel", () -> {
+            selection.clear();
+            onSelectionChanged();
+        }));
+        selectionBar.addView(actions, FeatureGateLabUi.matchWrap());
+        return selectionBar;
+    }
+
+    private TextView selectionAction(Context context, String label, Runnable action) {
+        TextView button = FeatureGateLabUi.text(context, label, 14, SettingsUi.accent(), Typeface.BOLD);
+        button.setMinimumHeight(FeatureGateLabUi.dp(context, 48));
+        button.setMinimumWidth(FeatureGateLabUi.dp(context, 48));
+        button.setGravity(Gravity.CENTER);
+        int side = FeatureGateLabUi.dp(context, 12);
+        button.setPadding(side, 0, side, 0);
+        button.setContentDescription(label);
+        // A TextView with a click listener is read as text, and these are the whole of what a
+        // selection can do.
+        button.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            @Override public void onInitializeAccessibilityNodeInfo(
+                    View host, android.view.accessibility.AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                info.setClassName(android.widget.Button.class.getName());
+            }
+        });
+        button.setOnClickListener(view -> action.run());
+        return button;
+    }
+
+    /** Shows or hides the bar and repaints the rows, which draw their own chosen state. */
+    private void onSelectionChanged() {
+        if (selectionBar != null) {
+            selectionBar.setVisibility(selection.isEmpty() ? View.GONE : View.VISIBLE);
+        }
+        if (selectionCount != null) {
+            selectionCount.setText(selection.size() == 1
+                    ? "1 gate selected"
+                    : selection.size() + " gates selected");
+        }
+        if (adapter != null) adapter.notifyDataSetChanged();
+    }
+
+    private void forceSelection(boolean value) {
+        List<FeatureGateCatalog.Entry> gates = new ArrayList<>(selection.values());
+        int total = gates.size();
+        runLabChange(() -> {
+            int written = FeatureGateLabUndo.forceBoolean(gates, value);
+            if (written == 0) {
+                throw new IllegalStateException(
+                        "None of these gates takes a true or false value.");
+            }
+            if (written < total) {
+                // Said rather than silently dropped: the ones that were skipped are gates whose
+                // own catalogue says they are not booleans.
+                throw new SkippedSome(written, total, value);
+            }
+        }, (value ? "Forced " : "Turned off ") + total
+                + (total == 1 ? " gate. " : " gates. ") + "Restart TikTok to apply this.");
+        selection.clear();
+        onSelectionChanged();
+    }
+
+    private void resetSelection() {
+        List<FeatureGateCatalog.Entry> gates = new ArrayList<>(selection.values());
+        runLabChange(() -> {
+            if (FeatureGateLabUndo.resetAll(gates) == 0) {
+                throw new IllegalStateException("None of these gates had an override to reset.");
+            }
+        }, "Reset " + gates.size() + (gates.size() == 1 ? " gate. " : " gates. ")
+                + "Restart TikTok to apply this.");
+        selection.clear();
+        onSelectionChanged();
+    }
+
+    /** Carried as a failure so runLabChange reports it, though the write itself went through. */
+    private static final class SkippedSome extends Exception {
+        SkippedSome(int written, int total, boolean value) {
+            super((value ? "Forced " : "Turned off ") + written + " of " + total
+                    + "; the rest do not take a true or false value.");
+        }
     }
 
     private void openDetail(FeatureGateCatalog.Entry entry) {
@@ -1279,6 +1417,11 @@ public final class FeatureGateLabFragment extends Fragment {
             holder.value.setText(shownValue);
             holder.value.setVisibility(entry.loaded || rule != null ? View.VISIBLE : View.GONE);
             convertView.setBackground(SettingsUi.groupedRow(context, position == 0, position == entries.size() - 1));
+            // A chosen row is drawn as chosen, and says so to a screen reader further down: a
+            // selection you cannot see is a selection you act on by accident.
+            boolean chosen = selection.containsKey(entry.identity());
+            convertView.setActivated(chosen);
+            convertView.setAlpha(!selection.isEmpty() && !chosen ? 0.55f : 1f);
 
             String state;
             int stateColor;
@@ -1297,7 +1440,8 @@ public final class FeatureGateLabFragment extends Fragment {
             }
             holder.state.setText(state);
             holder.state.setTextColor(stateColor);
-            convertView.setContentDescription(entry.title + ", " + entry.key + ", " + entry.type + ", " + shownValue + ", " + state);
+            convertView.setContentDescription(entry.title + ", " + entry.key + ", " + entry.type
+                    + ", " + shownValue + ", " + state + (chosen ? ", selected" : ""));
             return convertView;
         }
     }

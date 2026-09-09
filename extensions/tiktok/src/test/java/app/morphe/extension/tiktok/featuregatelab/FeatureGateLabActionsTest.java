@@ -397,6 +397,79 @@ public class FeatureGateLabActionsTest {
     }
 
     /** Lets a Lab change finish: the storage half, then the part that puts the screen back. */
+    @Test public void aLongPressGathersASelectionAndTheActionsActOnAllOfIt() throws Exception {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup().visible()) {
+            var activity = controller.get();
+            var fragment = attach(activity);
+            settle();
+
+            android.widget.ListView list = listOf(fragment);
+            assertEquals("the fixture catalogue is not on the screen", 2, list.getCount());
+            android.view.View bar = selectionBar(fragment);
+            assertEquals("the actions were offered before anything was chosen",
+                    android.view.View.GONE, bar.getVisibility());
+
+            // A long press gathers, a tap adds, and a tap on a chosen row takes it back out.
+            assertTrue(list.performItemClick(null, 0, list.getItemIdAtPosition(0)));
+            assertEquals("a plain tap started a selection",
+                    android.view.View.GONE, bar.getVisibility());
+
+            assertTrue(list.getOnItemLongClickListener()
+                    .onItemLongClick(list, null, 0, list.getItemIdAtPosition(0)));
+            assertEquals(android.view.View.VISIBLE, bar.getVisibility());
+            assertEquals("1 gate selected", selectionCountText(fragment));
+
+            assertTrue(list.performItemClick(null, 1, list.getItemIdAtPosition(1)));
+            assertEquals("2 gates selected", selectionCountText(fragment));
+            assertTrue(list.performItemClick(null, 1, list.getItemIdAtPosition(1)));
+            assertEquals("1 gate selected", selectionCountText(fragment));
+            assertTrue(list.performItemClick(null, 1, list.getItemIdAtPosition(1)));
+
+            // Disable acts on both, in one operation, and leaves the selection behind it.
+            selectionAction(fragment, "Disable").performClick();
+            settle();
+            var rules = FeatureGateLabStore.rules();
+            assertEquals("both gates were not written", 2, rules.size());
+            for (var rule : rules) assertEquals("false", rule.value);
+            assertEquals("the selection outlived the action it ran",
+                    android.view.View.GONE, bar.getVisibility());
+
+            // And one Undo takes both back, which is the whole reason for one operation.
+            FeatureGateLabUndo.undo();
+            assertTrue(FeatureGateLabStore.rules().isEmpty());
+        }
+    }
+
+    private static android.widget.ListView listOf(FeatureGateLabFragment fragment) throws Exception {
+        var field = FeatureGateLabFragment.class.getDeclaredField("list");
+        field.setAccessible(true);
+        return (android.widget.ListView) field.get(fragment);
+    }
+
+    private static android.view.View selectionBar(FeatureGateLabFragment fragment) throws Exception {
+        var field = FeatureGateLabFragment.class.getDeclaredField("selectionBar");
+        field.setAccessible(true);
+        return (android.view.View) field.get(fragment);
+    }
+
+    private static String selectionCountText(FeatureGateLabFragment fragment) throws Exception {
+        var field = FeatureGateLabFragment.class.getDeclaredField("selectionCount");
+        field.setAccessible(true);
+        return ((android.widget.TextView) field.get(fragment)).getText().toString();
+    }
+
+    /** The action with this label, found by the description it gives a screen reader. */
+    private static android.view.View selectionAction(FeatureGateLabFragment fragment, String label)
+            throws Exception {
+        android.view.ViewGroup bar = (android.view.ViewGroup) selectionBar(fragment);
+        android.view.ViewGroup actions = (android.view.ViewGroup) bar.getChildAt(1);
+        for (int index = 0; index < actions.getChildCount(); index++) {
+            android.view.View child = actions.getChildAt(index);
+            if (label.contentEquals(String.valueOf(child.getContentDescription()))) return child;
+        }
+        throw new AssertionError("no selection action called " + label);
+    }
+
     private static void settle() throws Exception {
         FeatureGateLabFragment.awaitFileIoForTests();
         Utils.awaitBackgroundTasksForTests();
@@ -436,6 +509,67 @@ public class FeatureGateLabActionsTest {
         }
         return null;
     }
+    @Test public void awholeSelectionIsForcedInOneOperationAndUndoneInOne() throws Exception {
+        // Three gates chosen together. The point of doing it in one operation rather than three
+        // is that a selection half applied is worse than one not applied, and that Undo puts the
+        // whole thing back rather than the last gate of it.
+        var gates = List.of(entry("alpha"), entry("beta"), entry("gamma"));
+
+        assertEquals(3, FeatureGateLabUndo.forceBoolean(gates, false));
+        var rules = FeatureGateLabStore.rules();
+        assertEquals(3, rules.size());
+        for (var rule : rules) {
+            assertEquals("a gate in the selection was not forced", "false", rule.value);
+            assertTrue("a forced gate was left switched off", rule.enabled);
+        }
+
+        FeatureGateLabUndo.undo();
+        assertTrue("undo left part of the selection behind",
+                FeatureGateLabStore.rules().isEmpty());
+
+        // And the other direction, over rules that already exist, so this is a replacement
+        // rather than three fresh writes.
+        save("alpha", "false", true);
+        assertEquals(3, FeatureGateLabUndo.forceBoolean(gates, true));
+        assertEquals(3, FeatureGateLabStore.rules().size());
+        for (var rule : FeatureGateLabStore.rules()) {
+            assertEquals("true", rule.value);
+        }
+
+        FeatureGateLabUndo.undo();
+        var afterUndo = FeatureGateLabStore.rules();
+        assertEquals("undo did not go back to the one rule there was", 1, afterUndo.size());
+        assertEquals("alpha", afterUndo.get(0).key);
+        assertEquals("false", afterUndo.get(0).value);
+    }
+
+    @Test public void resettingASelectionDropsOnlyItsRulesAndUndoBringsThemBack() throws Exception {
+        save("alpha", "true", true);
+        save("beta", "true", true);
+        save("kept", "true", true);
+
+        assertEquals(2, FeatureGateLabUndo.resetAll(List.of(entry("alpha"), entry("beta"))));
+        var rules = FeatureGateLabStore.rules();
+        assertEquals(1, rules.size());
+        assertEquals("a rule outside the selection was dropped", "kept", rules.get(0).key);
+
+        FeatureGateLabUndo.undo();
+        assertEquals(3, FeatureGateLabStore.rules().size());
+    }
+
+    @Test public void aSelectionWithNothingToDoIsNotAnOperationAtAll() throws Exception {
+        // Nothing to force means no journal entry and no undo point, so an Undo after it still
+        // means whatever it meant before. A gate whose type the Lab cannot force a boolean on is
+        // skipped rather than written with a value its own catalogue disagrees with.
+        var text = new FeatureGateCatalog.Entry("worded", "worded", "abmock", "STRING", true, true,
+                List.of(""), List.of(), List.of(), "", "", true, "", "STRING");
+        assertEquals(0, FeatureGateLabUndo.forceBoolean(List.of(text), false));
+        assertTrue(FeatureGateLabStore.rules().isEmpty());
+
+        assertEquals(0, FeatureGateLabUndo.resetAll(List.of(entry("never_saved"))));
+        assertTrue(FeatureGateLabStore.rules().isEmpty());
+    }
+
     private static FeatureGateCatalog.Entry entry(String key) {
         return new FeatureGateCatalog.Entry(key, key, "abmock", "BOOLEAN", true, true,
                 List.of("false"), List.of(), List.of(), "", "", true, "false", "BOOLEAN");
