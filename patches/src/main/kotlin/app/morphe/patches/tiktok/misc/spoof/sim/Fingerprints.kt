@@ -14,9 +14,14 @@ import app.morphe.patcher.Fingerprint
  * is all it does: nothing else in the app reads `last_sim_info`, so the task can be skipped
  * whole.
  *
- * <p>The country and carrier it reports come from `LX/1AbB;->LLIIZ` and `LLILII`, which wrap
- * `TelephonyManager.getSimCountryIso` and `getSimOperatorName`, so the spoof already reaches them.
- * The subscription count does not go through TikTok's telephony wrappers at all.
+ * <p>"Differ" means the first field of `LX/0Nie;` only, which its own `toString` names
+ * `subscriptionId` and which comes from `SubscriptionManager.getDefaultDataSubscriptionId` or
+ * `getActiveDataSubscriptionId`. The country and carrier are the second and third fields and take
+ * no part in the comparison: they come from `LX/1AbB;->LLIIZ` and `LLILII`, which wrap
+ * `TelephonyManager.getSimCountryIso` and `getSimOperatorName`, so the spoof already reaches them
+ * and both halves of the event read as the preset. Neither the subscription id nor the
+ * subscription count goes through TikTok's telephony wrappers at all, so what the event still
+ * carries is the phone's real SIM count and the fact that its hardware changed.
  */
 internal object CheckSimChangeTaskFingerprint : Fingerprint(
     returnType = "V",

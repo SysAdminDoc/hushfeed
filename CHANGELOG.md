@@ -1,6 +1,6 @@
 ## Unreleased
 
-* With a SIM preset on, TikTok no longer reports that your SIM changed. Its startup check sends one event naming the carrier and country before and after, how many SIMs the phone has and how long since it last looked, so the first one after you pick a preset announces the preset itself. The SIM count in that event came from a part of Android the preset never covered. With a preset on, the check is skipped; nothing else in the app reads what it stored.
+* With a SIM preset on, TikTok no longer reports your SIM changing. Swap a SIM, or change which one carries data, and a startup check sends one event: how many SIMs the phone has, how long since it last looked, and the country and carrier before and after. The preset covers the country and the carrier, so both halves read as the preset, but the SIM count comes from a part of Android the preset never reached, and the event still says the hardware changed. With a preset on the check is skipped. Nothing else in the app reads what it stored.
 
 * "Resume videos after scrolling" works on the Following and Friends tabs. TikTok kept a position for every feed it played, then handed one back only for a short list of places it built into the app, and the Following tab is not on that list. The switch looked broken there while the position was being stored all along. With the switch on, any feed that has a stored position now uses it.
 

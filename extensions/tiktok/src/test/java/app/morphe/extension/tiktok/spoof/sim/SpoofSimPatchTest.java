@@ -83,9 +83,10 @@ public class SpoofSimPatchTest {
     }
 
     @Test public void theSimChangeReportIsSkippedOnlyWhileThePresetIsOn() {
-        // The report names the carrier before and after, so the first one after the preset goes
-        // on says the carrier changed to the preset. It carries the phone's SIM count too, which
-        // comes from SubscriptionManager and so is the one value in it the spoof cannot reach.
+        // The report fires when the subscription id changes, which the preset does not touch, so
+        // it is a real SIM swap that sends it. The country and carrier in it read as the preset;
+        // the phone's SIM count does not, because that comes from SubscriptionManager, and the
+        // event still says the hardware moved.
         assertTrue(SpoofSimPatch.shouldSkipSimChangeReport());
 
         Settings.SIM_SPOOF.save(false);

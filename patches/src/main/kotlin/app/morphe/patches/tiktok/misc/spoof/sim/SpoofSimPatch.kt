@@ -97,12 +97,12 @@ val simSpoofPatch = bytecodePatch(
 
         // TikTok's startup SIM check reports a change to its own telemetry: which way the SIM
         // went, how long since the last check, how many SIMs the phone has, and the country and
-        // carrier before and after. With the preset on, the before is the phone's real carrier
-        // and the after is the preset, so the one event this task exists to send announces that
-        // the preset was switched on. The count of SIMs is the one value here the spoof cannot
-        // reach, since it comes from SubscriptionManager rather than from TelephonyManager.
-        // Nothing else in the app reads what the task stores, so with the preset on it does not
-        // run.
+        // carrier before and after. What decides that something changed is the subscription id,
+        // an int the spoof does not touch, so the event fires on a real SIM swap or a change of
+        // which SIM carries data. The country and carrier in it read as the preset, but the SIM
+        // count does not: it comes from SubscriptionManager rather than TelephonyManager, and
+        // the event still says the hardware moved. Nothing else in the app reads what the task
+        // stores, so with the preset on it does not run.
         CheckSimChangeTaskFingerprint.method.apply {
             addInstructionsWithLabels(
                 0,
