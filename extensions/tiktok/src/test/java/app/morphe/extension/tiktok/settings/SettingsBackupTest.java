@@ -94,6 +94,47 @@ public class SettingsBackupTest {
         assertEquals("true", rule.value);
     }
 
+    @Test public void aBackupFromBeforeTheDownloadPathSplitFillsInTheThreeDestinations()
+            throws Exception {
+        // The one shot down_path migration cannot help here: its flag is already true on the
+        // device and was never in a backup, so the three destinations took their default and a
+        // custom folder went with them.
+        Settings.DOWNLOAD_PATH.save("Pictures/Saved");
+        String legacy = withoutKeys(
+                new JSONObject(SettingsBackup.create(false)).put("format", "metra-settings").toString(),
+                Settings.DOWNLOAD_VIDEO_PATH.key,
+                Settings.DOWNLOAD_PHOTO_PATH.key,
+                Settings.DOWNLOAD_STICKER_PATH.key);
+        Settings.DOWNLOAD_PATH.resetToDefault();
+        Settings.DOWNLOAD_VIDEO_PATH.save("DCIM/Somewhere");
+
+        // The three are accounted for by the migration, so they are not reported as left alone.
+        assertEquals(0, SettingsBackup.settingsNotInFile(legacy));
+        SettingsBackup.restore(Utils.getContext(), legacy, true);
+
+        assertEquals("Pictures/Saved", Settings.DOWNLOAD_VIDEO_PATH.get());
+        assertEquals("Pictures/Saved", Settings.DOWNLOAD_PHOTO_PATH.get());
+        assertEquals("Pictures/Saved", Settings.DOWNLOAD_STICKER_PATH.get());
+    }
+
+    /** The same file with those keys taken out of both the values and the declared inventory. */
+    private static String withoutKeys(String backup, String... keys) throws Exception {
+        JSONObject root = new JSONObject(backup);
+        JSONObject values = root.getJSONObject("settings");
+        java.util.List<String> dropped = java.util.Arrays.asList(keys);
+        for (String key : keys) {
+            assertTrue(key + " is not in the backup to begin with", values.has(key));
+            values.remove(key);
+        }
+        org.json.JSONArray kept = new org.json.JSONArray();
+        org.json.JSONArray declared = root.getJSONArray("setting_keys");
+        for (int i = 0; i < declared.length(); i++) {
+            String key = declared.getString(i);
+            if (!dropped.contains(key)) kept.put(key);
+        }
+        return root.put("setting_keys", kept).toString();
+    }
+
     @Test public void malformedLateValuesNeverPartiallyApplyOrReplaceUndo() throws Exception {
         Settings.MAX_VIDEO_SECONDS.save(42);
         SettingsBackup.reset(Utils.getContext());
@@ -668,19 +709,26 @@ public class SettingsBackupTest {
         }
     }
 
-    @Test public void anOlderCompleteInventoryUsesDefaultsForNewerSettings() throws Exception {
+/**
+     * A file written before a setting existed says nothing about that setting.
+     *
+     * <p>This used to assert the opposite, that the missing key took its default. Read on its
+     * own that is a defensible rule, and it is what a restore does if a backup is a picture of
+     * the whole app. It is the wrong rule for what this file actually is, which is a set of
+     * values to apply: it meant restoring any backup silently undid every setting added since
+     * it was taken, and a file from before the download destinations were split put a custom
+     * folder back to DCIM/TikTok with nothing said.
+     */
+    @Test public void anOlderCompleteInventoryLeavesNewerSettingsAsTheDeviceHasThem() throws Exception {
         Settings.MAX_VIDEO_SECONDS.save(75);
-        JSONObject root = new JSONObject(SettingsBackup.create(false));
-        org.json.JSONArray original = root.getJSONArray("setting_keys"), older = new org.json.JSONArray();
-        for (int i = 0; i < original.length(); i++) {
-            if (!original.getString(i).equals(Settings.REGION_SPOOF.key)) older.put(original.get(i));
-        }
-        root.put("setting_keys", older);
-        root.getJSONObject("settings").remove(Settings.REGION_SPOOF.key);
+        String older = withoutKeys(SettingsBackup.create(false), Settings.REGION_SPOOF.key);
         Settings.REGION_SPOOF.save(true);
         Settings.MAX_VIDEO_SECONDS.save(0);
-        SettingsBackup.restore(Utils.getContext(), root.toString(), true);
-        assertFalse(Settings.REGION_SPOOF.get());
+
+        assertEquals(1, SettingsBackup.settingsNotInFile(older));
+        SettingsBackup.restore(Utils.getContext(), older, true);
+
+        assertTrue(Settings.REGION_SPOOF.get());
         assertEquals(75, (int) Settings.MAX_VIDEO_SECONDS.get());
     }
 

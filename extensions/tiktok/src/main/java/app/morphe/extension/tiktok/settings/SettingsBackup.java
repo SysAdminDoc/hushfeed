@@ -328,6 +328,15 @@ public final class SettingsBackup {
         }
     }
 
+    /** How many included settings that file did not carry, which were left as the device had them. */
+    public static int settingsNotInFile(String text) {
+        try {
+            return parseForJournal(text).absent;
+        } catch (Exception ignored) {
+            return 0;
+        }
+    }
+
     /** True when the file restored its settings but its Lab rules were for another TikTok build. */
     public static boolean labRulesWereSkipped(String text) {
         try {
@@ -414,18 +423,52 @@ public final class SettingsBackup {
             }
         }
         Map<Setting<?>, Object> updates = new LinkedHashMap<>();
+        int absent = 0;
         for (Setting<?> setting : Setting.allLoadedSettings()) {
             if (!included(setting)) continue;
-            updates.put(setting, values.has(setting.key)
-                    ? convert(setting.defaultValue, values.get(setting.key), setting.key) : setting.defaultValue);
+            if (values.has(setting.key)) {
+                updates.put(setting, convert(setting.defaultValue, values.get(setting.key), setting.key));
+                continue;
+            }
+            // A backup is a set of values to apply, not a picture of the whole app. A file
+            // written before a setting existed says nothing about that setting, and taking the
+            // silence as "put it back to its default" quietly undid whatever the device held.
+            updates.put(setting, setting.get());
+            absent++;
         }
+        absent -= migrateDownloadPath(values, updates);
         if (!labApplies) {
             // Leaving the Lab exactly as it is, rather than clearing it: the backup says nothing
             // about this TikTok build, so it is not evidence that the user wanted no rules.
-            return new Snapshot(updates, null, false, false, false);
+            return new Snapshot(updates, null, false, false, false, absent);
         }
         return new Snapshot(updates, FeatureGateLabStore.parseSettings(lab),
-                lab.getBoolean("master"), lab.getBoolean("acknowledged"), true);
+                lab.getBoolean("master"), lab.getBoolean("acknowledged"), true, absent);
+    }
+
+    /**
+     * Applies the one download folder a pre-split backup carries to the three that replaced it.
+     *
+     * <p>A file from before the split holds {@code down_path} and none of the three keys. The
+     * one-shot migration in {@link Settings} cannot help: its flag is already true on the device
+     * and was never in a backup, so the three would take their default and a custom folder would
+     * be lost with nothing said.
+     *
+     * @return how many of the three this filled in, so they are not also counted as missing.
+     */
+    private static int migrateDownloadPath(JSONObject values, Map<Setting<?>, Object> updates) {
+        if (!values.has(Settings.DOWNLOAD_PATH.key)) return 0;
+        Object legacy = updates.get(Settings.DOWNLOAD_PATH);
+        if (!(legacy instanceof String)) return 0;
+        int filled = 0;
+        for (Setting<?> destination : new Setting<?>[] {
+                Settings.DOWNLOAD_VIDEO_PATH, Settings.DOWNLOAD_PHOTO_PATH,
+                Settings.DOWNLOAD_STICKER_PATH }) {
+            if (values.has(destination.key) || !updates.containsKey(destination)) continue;
+            updates.put(destination, legacy);
+            filled++;
+        }
+        return filled;
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -454,15 +497,22 @@ public final class SettingsBackup {
         final boolean master, acknowledged;
         /** False when the backup was written against another TikTok build, so the Lab is left alone. */
         final boolean labIncluded;
+        /** Included settings the file did not carry, kept at whatever the device already held. */
+        final int absent;
+
+        Snapshot(Map<Setting<?>, Object> values, List<FeatureGateLabStore.Rule> rules,
+                boolean master, boolean acknowledged, boolean labIncluded, int absent) {
+            this.values = values; this.rules = rules; this.master = master;
+            this.acknowledged = acknowledged; this.labIncluded = labIncluded; this.absent = absent;
+        }
 
         Snapshot(Map<Setting<?>, Object> values, List<FeatureGateLabStore.Rule> rules,
                 boolean master, boolean acknowledged, boolean labIncluded) {
-            this.values = values; this.rules = rules; this.master = master;
-            this.acknowledged = acknowledged; this.labIncluded = labIncluded;
+            this(values, rules, master, acknowledged, labIncluded, 0);
         }
 
         Snapshot(Map<Setting<?>, Object> values, List<FeatureGateLabStore.Rule> rules, boolean master, boolean acknowledged) {
-            this(values, rules, master, acknowledged, true);
+            this(values, rules, master, acknowledged, true, 0);
         }
     }
 }

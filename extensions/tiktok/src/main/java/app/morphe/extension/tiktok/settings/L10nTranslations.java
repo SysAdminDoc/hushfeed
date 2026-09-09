@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1320);
+        Map<String, String> table = new HashMap<>(1324);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -56,12 +56,17 @@ public final class L10nTranslations {
         fillDe8(table);
         fillDe9(table);
         fillDe10(table);
+        fillDe11(table);
         return table;
     }
 
     private static void fillDe0(Map<String, String> table) {
         table.put("%1$d minutes left",
                 "Noch %1$d Minuten");
+        table.put("%1$d setting was not in that file and was left as it is.",
+                "%1$d Einstellung stand nicht in dieser Datei und bleibt unverändert.");
+        table.put("%1$d settings were not in that file and were left as they are.",
+                "%1$d Einstellungen standen nicht in dieser Datei und bleiben unverändert.");
         table.put("%1$s and above",
                 "Ab %1$s");
         table.put("%1$s destinations must start with %2$s",
@@ -176,13 +181,13 @@ public final class L10nTranslations {
                 "Gesperrte Wörter in Kommentaren");
         table.put("Blocked creators",
                 "Gesperrte Creator");
+    }
+
+    private static void fillDe1(Map<String, String> table) {
         table.put("Blocked sound ids",
                 "Gesperrte Sound-IDs");
         table.put("Blocked sound names",
                 "Gesperrte Sound-Namen");
-    }
-
-    private static void fillDe1(Map<String, String> table) {
         table.put("Blocked sounds",
                 "Blockierte Sounds");
         table.put("Browse",
@@ -299,13 +304,13 @@ public final class L10nTranslations {
                 "Einstellungsbereich konnte nicht geöffnet werden");
         table.put("Could not put back the seen video history. Try again.",
                 "Der Verlauf gesehener Videos konnte nicht zurückgeholt werden. Versuche es erneut.");
+    }
+
+    private static void fillDe2(Map<String, String> table) {
         table.put("Could not read who posted this comment",
                 "Konnte nicht lesen, wer diesen Kommentar geschrieben hat");
         table.put("Could not restore settings.",
                 "Einstellungen konnten nicht wiederhergestellt werden.");
-    }
-
-    private static void fillDe2(Map<String, String> table) {
         table.put("Could not save settings backup.",
                 "Sicherung der Einstellungen konnte nicht gespeichert werden.");
         table.put("Could not tell which folder to update. Choose it again.",
@@ -422,13 +427,13 @@ public final class L10nTranslations {
                 "Ordnerauswahl ist nicht verfügbar");
         table.put("Folder picker is not available on this device",
                 "Ordnerauswahl ist auf diesem Gerät nicht verfügbar");
+    }
+
+    private static void fillDe3(Map<String, String> table) {
         table.put("For You",
                 "Für dich");
         table.put("For com.deniscerri.ytdl only. Ask YTDLnis for audio or video when the save button hands it a link.",
                 "Nur für com.deniscerri.ytdl. Beim Übergeben eines Links kann die Speichertaste YTDLnis um Audio oder Video bitten.");
-    }
-
-    private static void fillDe3(Map<String, String> table) {
         table.put("For com.deniscerri.ytdl only. Hide its download card and start the handoff in the background.",
                 "Nur für com.deniscerri.ytdl. Die Downloadkarte wird ausgeblendet und die Übergabe im Hintergrund gestartet.");
         table.put("Forget seen videos after",
@@ -545,13 +550,13 @@ public final class L10nTranslations {
                 "Story-Leiste ausblenden");
         table.put("Hide story",
                 "Storys ausblenden");
+    }
+
+    private static void fillDe4(Map<String, String> table) {
         table.put("Hide story from feed.",
                 "Storys aus dem Feed ausblenden.");
         table.put("Hide suggested account rows.",
                 "Zeilen mit vorgeschlagenen Konten ausblenden.");
-    }
-
-    private static void fillDe4(Map<String, String> table) {
         table.put("Hide suggested accounts",
                 "Vorgeschlagene Konten ausblenden");
         table.put("Hide surveys",
@@ -668,13 +673,13 @@ public final class L10nTranslations {
                 "Bereits gesehene Videos ausblenden");
         table.put("Hide visual search prompt",
                 "Bildersuche-Hinweis ausblenden");
+    }
+
+    private static void fillDe5(Map<String, String> table) {
         table.put("Highest",
                 "Höchste");
         table.put("Hold the feed after the budget",
                 "Feed nach dem Budget anhalten");
-    }
-
-    private static void fillDe5(Map<String, String> table) {
         table.put("Home",
                 "Startseite");
         table.put("Hook status",
@@ -791,13 +796,13 @@ public final class L10nTranslations {
                 "Keine Vorgabe gewählt");
         table.put("No share actions have been observed yet",
                 "Noch keine Share-Aktionen beobachtet");
+    }
+
+    private static void fillDe6(Map<String, String> table) {
         table.put("No share actions match this search",
                 "Keine Share-Aktionen passen zu dieser Suche");
         table.put("No sound to block on this video",
                 "Bei diesem Video gibt es keinen Sound zum Blockieren");
-    }
-
-    private static void fillDe6(Map<String, String> table) {
         table.put("No suggested accounts to clear",
                 "Es gibt keine Kontovorschläge zum Entfernen");
         table.put("No surface has looked anything up yet, so there is nothing to report.",
@@ -914,13 +919,13 @@ public final class L10nTranslations {
                 "Eine unterbrochene Einstellungsänderung wurde wiederhergestellt. Starte TikTok neu, um sie anzuwenden.");
         table.put("Region rules",
                 "Regionsregeln");
+    }
+
+    private static void fillDe7(Map<String, String> table) {
         table.put("Region settings",
                 "Regionseinstellungen");
         table.put("Remove",
                 "Entfernen");
-    }
-
-    private static void fillDe7(Map<String, String> table) {
         table.put("Remove %1$s",
                 "%1$s entfernen");
         table.put("Remove feed ads",
@@ -1037,13 +1042,13 @@ public final class L10nTranslations {
                 "Verlauf gesehener Videos zurückgeholt");
         table.put("Seen videos",
                 "Bereits gesehene Videos");
+    }
+
+    private static void fillDe8(Map<String, String> table) {
         table.put("Send links to another app",
                 "Links an eine andere App senden");
         table.put("Sending feedback",
                 "Rückmeldung wird gesendet");
-    }
-
-    private static void fillDe8(Map<String, String> table) {
         table.put("Series posts",
                 "Serienbeiträge");
         table.put("Settings",
@@ -1160,13 +1165,13 @@ public final class L10nTranslations {
                 "Zum Speichern einer Story wird die Speicherberechtigung gebraucht");
         table.put("Stories",
                 "Storys");
+    }
+
+    private static void fillDe9(Map<String, String> table) {
         table.put("Story saved to %1$s",
                 "Story gespeichert unter %1$s");
         table.put("Subtitle language",
                 "Untertitelsprache");
-    }
-
-    private static void fillDe9(Map<String, String> table) {
         table.put("Take away the streak button in a chat and the reminder message that goes with it.",
                 "Entfernt die Serien-Schaltfläche in einem Chat und die zugehörige Erinnerung.");
         table.put("Tap %1$s again to send",
@@ -1283,13 +1288,13 @@ public final class L10nTranslations {
                 "Der Tag ist weitergezogen, es gibt nichts zurückzuholen");
         table.put("Today is back where it was",
                 "Der heutige Tag ist wieder wie zuvor");
+    }
+
+    private static void fillDe10(Map<String, String> table) {
         table.put("Today starts again",
                 "Heute beginnt neu");
         table.put("Today's budget is locked. The day starts over at %1$s.",
                 "Das heutige Budget ist gesperrt. Der Tag beginnt um %1$s von vorn.");
-    }
-
-    private static void fillDe10(Map<String, String> table) {
         table.put("Today's budget is locked. The feed opens again at %1$s. Messages, profiles and search still work.",
                 "Das heutige Budget ist gesperrt. Der Feed öffnet wieder um %1$s. Nachrichten, Profile und Suche funktionieren weiterhin.");
         table.put("Today's budget is locked. This can be changed again at %1$s.",
@@ -1406,6 +1411,9 @@ public final class L10nTranslations {
                 "sp");
         table.put("videos",
                 "Videos");
+    }
+
+    private static void fillDe11(Map<String, String> table) {
         table.put("view per like",
                 "Aufruf pro Like");
         table.put("views per like",
@@ -1413,7 +1421,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1320);
+        Map<String, String> table = new HashMap<>(1324);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1425,12 +1433,17 @@ public final class L10nTranslations {
         fillIn8(table);
         fillIn9(table);
         fillIn10(table);
+        fillIn11(table);
         return table;
     }
 
     private static void fillIn0(Map<String, String> table) {
         table.put("%1$d minutes left",
                 "%1$d menit lagi");
+        table.put("%1$d setting was not in that file and was left as it is.",
+                "%1$d pengaturan tidak ada di berkas itu dan dibiarkan apa adanya.");
+        table.put("%1$d settings were not in that file and were left as they are.",
+                "%1$d pengaturan tidak ada di berkas itu dan dibiarkan apa adanya.");
         table.put("%1$s and above",
                 "%1$s ke atas");
         table.put("%1$s destinations must start with %2$s",
@@ -1545,13 +1558,13 @@ public final class L10nTranslations {
                 "Kata komentar yang diblokir");
         table.put("Blocked creators",
                 "Kreator yang diblokir");
+    }
+
+    private static void fillIn1(Map<String, String> table) {
         table.put("Blocked sound ids",
                 "Id suara yang diblokir");
         table.put("Blocked sound names",
                 "Nama suara yang diblokir");
-    }
-
-    private static void fillIn1(Map<String, String> table) {
         table.put("Blocked sounds",
                 "Suara yang diblokir");
         table.put("Browse",
@@ -1668,13 +1681,13 @@ public final class L10nTranslations {
                 "Bagian pengaturan tidak bisa dibuka");
         table.put("Could not put back the seen video history. Try again.",
                 "Riwayat video yang sudah ditonton tidak dapat dikembalikan. Coba lagi.");
+    }
+
+    private static void fillIn2(Map<String, String> table) {
         table.put("Could not read who posted this comment",
                 "Tidak bisa membaca siapa yang menulis komentar ini");
         table.put("Could not restore settings.",
                 "Pengaturan tidak dapat dipulihkan.");
-    }
-
-    private static void fillIn2(Map<String, String> table) {
         table.put("Could not save settings backup.",
                 "Cadangan pengaturan tidak dapat disimpan.");
         table.put("Could not tell which folder to update. Choose it again.",
@@ -1791,13 +1804,13 @@ public final class L10nTranslations {
                 "Pemilih folder tidak tersedia");
         table.put("Folder picker is not available on this device",
                 "Pemilih folder tidak tersedia di perangkat ini");
+    }
+
+    private static void fillIn3(Map<String, String> table) {
         table.put("For You",
                 "Untuk Kamu");
         table.put("For com.deniscerri.ytdl only. Ask YTDLnis for audio or video when the save button hands it a link.",
                 "Hanya untuk com.deniscerri.ytdl. Saat tombol simpan meneruskan tautan, minta YTDLnis mengunduh audio atau video.");
-    }
-
-    private static void fillIn3(Map<String, String> table) {
         table.put("For com.deniscerri.ytdl only. Hide its download card and start the handoff in the background.",
                 "Hanya untuk com.deniscerri.ytdl. Sembunyikan kartu unduhan dan mulai penerusan di latar belakang.");
         table.put("Forget seen videos after",
@@ -1914,13 +1927,13 @@ public final class L10nTranslations {
                 "Sembunyikan deret Story");
         table.put("Hide story",
                 "Sembunyikan Story");
+    }
+
+    private static void fillIn4(Map<String, String> table) {
         table.put("Hide story from feed.",
                 "Sembunyikan Story dari feed.");
         table.put("Hide suggested account rows.",
                 "Sembunyikan baris akun yang disarankan.");
-    }
-
-    private static void fillIn4(Map<String, String> table) {
         table.put("Hide suggested accounts",
                 "Sembunyikan akun yang disarankan");
         table.put("Hide surveys",
@@ -2037,13 +2050,13 @@ public final class L10nTranslations {
                 "Sembunyikan video yang sudah kamu tonton");
         table.put("Hide visual search prompt",
                 "Sembunyikan ajakan pencarian visual");
+    }
+
+    private static void fillIn5(Map<String, String> table) {
         table.put("Highest",
                 "Tertinggi");
         table.put("Hold the feed after the budget",
                 "Tahan feed setelah anggaran habis");
-    }
-
-    private static void fillIn5(Map<String, String> table) {
         table.put("Home",
                 "Beranda");
         table.put("Hook status",
@@ -2160,13 +2173,13 @@ public final class L10nTranslations {
                 "Tidak ada praset yang dipilih");
         table.put("No share actions have been observed yet",
                 "Belum ada tindakan berbagi yang diamati");
+    }
+
+    private static void fillIn6(Map<String, String> table) {
         table.put("No share actions match this search",
                 "Tidak ada tindakan berbagi yang cocok dengan pencarian ini");
         table.put("No sound to block on this video",
                 "Tidak ada suara untuk diblokir di video ini");
-    }
-
-    private static void fillIn6(Map<String, String> table) {
         table.put("No suggested accounts to clear",
                 "Tidak ada akun saran yang bisa dihapus");
         table.put("No surface has looked anything up yet, so there is nothing to report.",
@@ -2283,13 +2296,13 @@ public final class L10nTranslations {
                 "Perubahan pengaturan yang terhenti telah dipulihkan. Mulai ulang TikTok untuk menerapkannya.");
         table.put("Region rules",
                 "Aturan wilayah");
+    }
+
+    private static void fillIn7(Map<String, String> table) {
         table.put("Region settings",
                 "Pengaturan wilayah");
         table.put("Remove",
                 "Hapus");
-    }
-
-    private static void fillIn7(Map<String, String> table) {
         table.put("Remove %1$s",
                 "Hapus %1$s");
         table.put("Remove feed ads",
@@ -2406,13 +2419,13 @@ public final class L10nTranslations {
                 "Riwayat video yang sudah ditonton dikembalikan");
         table.put("Seen videos",
                 "Video yang sudah dilihat");
+    }
+
+    private static void fillIn8(Map<String, String> table) {
         table.put("Send links to another app",
                 "Kirim tautan ke aplikasi lain");
         table.put("Sending feedback",
                 "Mengirim masukan");
-    }
-
-    private static void fillIn8(Map<String, String> table) {
         table.put("Series posts",
                 "Kiriman serial");
         table.put("Settings",
@@ -2529,13 +2542,13 @@ public final class L10nTranslations {
                 "Izin penyimpanan dibutuhkan untuk menyimpan Story");
         table.put("Stories",
                 "Cerita");
+    }
+
+    private static void fillIn9(Map<String, String> table) {
         table.put("Story saved to %1$s",
                 "Story disimpan ke %1$s");
         table.put("Subtitle language",
                 "Bahasa subtitle");
-    }
-
-    private static void fillIn9(Map<String, String> table) {
         table.put("Take away the streak button in a chat and the reminder message that goes with it.",
                 "Hilangkan tombol rentetan di obrolan beserta pesan pengingatnya.");
         table.put("Tap %1$s again to send",
@@ -2652,13 +2665,13 @@ public final class L10nTranslations {
                 "Hari sudah berganti, jadi tidak ada yang bisa dikembalikan");
         table.put("Today is back where it was",
                 "Hari ini kembali seperti semula");
+    }
+
+    private static void fillIn10(Map<String, String> table) {
         table.put("Today starts again",
                 "Hari ini dimulai lagi");
         table.put("Today's budget is locked. The day starts over at %1$s.",
                 "Anggaran hari ini terkunci. Hari dimulai ulang pada %1$s.");
-    }
-
-    private static void fillIn10(Map<String, String> table) {
         table.put("Today's budget is locked. The feed opens again at %1$s. Messages, profiles and search still work.",
                 "Anggaran hari ini terkunci. Feed terbuka lagi pada %1$s. Pesan, profil dan pencarian tetap berfungsi.");
         table.put("Today's budget is locked. This can be changed again at %1$s.",
@@ -2775,6 +2788,9 @@ public final class L10nTranslations {
                 "sp");
         table.put("videos",
                 "video");
+    }
+
+    private static void fillIn11(Map<String, String> table) {
         table.put("view per like",
                 "tayangan per like");
         table.put("views per like",

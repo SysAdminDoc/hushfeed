@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Restoring an older backup keeps the settings it predates. Anything added since the file was written went back to its default, so a backup taken before the download destinations were split put your video, photo and sticker folders back to DCIM/TikTok without a word, and so did every other setting added since. A backup is a set of values to apply now, not a picture of the whole app: what the file does not mention stays as you have it, the restore says how many that was, and a file carrying only the old single download folder fills in all three.
+
 * The cached-feed filter stops working in a register TikTok owns. It read its answer into the register holding the cache payload and then jumped back into TikTok's own code at two points, both of which are also reached with a reference in that register. On this build each of those points overwrites it before anything looks at it, so the app was never wrong; on a build that reads it first the feed would have refused to load. The filter has a register of its own now.
 
 * The comment image watermark keeps the position TikTok gave it. The patch read its own on/off answer into the register holding the watermark's x coordinate, then wrote a zero back before drawing. That is the same picture on this build, because TikTok moves the canvas first and draws at nothing but zero, and it would have pinned the watermark to the left edge on a build that draws anywhere else. The switch has a register of its own now.

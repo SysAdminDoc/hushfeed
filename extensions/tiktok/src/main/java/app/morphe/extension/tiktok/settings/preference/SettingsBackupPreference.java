@@ -108,6 +108,7 @@ public final class SettingsBackupPreference extends Preference
                 ? "Saving settings backup" : "Updating settings"));
         Utils.runOnBackgroundThread(() -> {
             boolean labRulesSkipped = false;
+            int keptAsTheyWere = 0;
             try {
                 if (action == EXPORT) {
                     byte[] bytes = SettingsBackup.create(false).getBytes(StandardCharsets.UTF_8);
@@ -122,11 +123,23 @@ public final class SettingsBackupPreference extends Preference
                     String text = SettingsBackup.restoreFrom(
                             context, context.getContentResolver().openInputStream(uri), true);
                     labRulesSkipped = SettingsBackup.labRulesWereSkipped(text);
+                    keptAsTheyWere = SettingsBackup.settingsNotInFile(text);
                 } else if (action == RESET) SettingsBackup.reset(context);
                 else {
                     // An undo copy written before a retarget holds Lab rules for the older build,
                     // and dropping them silently is the same surprise as on an import.
                     labRulesSkipped = SettingsBackup.labRulesWereSkipped(SettingsBackup.undo(context));
+                }
+                // Said before the success line, so the success line is the one left on screen.
+                // Anything the file did not carry stayed as the device had it, which is worth
+                // saying: an older backup used to put every setting added since back to its
+                // default, download folders included, without a word.
+                if (keptAsTheyWere == 1) {
+                    Utils.showToastLong(L10n.f(
+                            "%1$d setting was not in that file and was left as it is.", keptAsTheyWere));
+                } else if (keptAsTheyWere > 1) {
+                    Utils.showToastLong(L10n.f(
+                            "%1$d settings were not in that file and were left as they are.", keptAsTheyWere));
                 }
                 // Each of these is one literal, because the translation gate reads the literal
                 // handed to L10n and a string built from two of them is two entries it cannot find.

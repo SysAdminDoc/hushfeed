@@ -1,5 +1,7 @@
 source,target
 %1$d minutes left,%1$d minutes left
+%1$d setting was not in that file and was left as it is.,%1$d setting was not in that file and was left as it is.
+%1$d settings were not in that file and were left as they are.,%1$d settings were not in that file and were left as they are.
 %1$s and above,%1$s and above
 %1$s destinations must start with %2$s,%1$s destinations must start with %2$s
 %1$s isn't installed or doesn't take links,%1$s isn't installed or doesn't take links
