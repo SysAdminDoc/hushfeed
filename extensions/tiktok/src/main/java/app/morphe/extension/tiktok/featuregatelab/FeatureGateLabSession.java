@@ -5,6 +5,7 @@
 package app.morphe.extension.tiktok.featuregatelab;
 
 import android.app.Activity;
+import app.morphe.extension.tiktok.settings.L10n;
 import app.morphe.extension.shared.Utils;
 
 public final class FeatureGateLabSession {
@@ -34,7 +35,8 @@ public final class FeatureGateLabSession {
     public static void showRestartDialog(Activity activity) {
         if (activity == null || !restartNeeded || noticeShown) return;
         noticeShown = true;
-        Utils.showToastLong("Restart TikTok to apply the Feature Gate Lab changes.");
+        Utils.showToastLong(L10n.t(activity,
+                "Restart TikTok to apply the Feature Gate Lab changes."));
     }
 
     public static void showAfterHostExit(Activity host) {

@@ -804,3 +804,22 @@ Turned off 1 gate. Restart TikTok to apply this.,1 gate dimatikan. Mulai ulang T
 Turned off %1$d gates. Restart TikTok to apply this.,%1$d gate dimatikan. Mulai ulang TikTok agar berlaku.
 Turned off 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.,1 dari %1$d gate dimatikan; sisanya tidak menerima nilai true atau false. Mulai ulang TikTok agar berlaku.
 Turned off %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.,%1$d dari %2$d gate dimatikan; sisanya tidak menerima nilai true atau false. Mulai ulang TikTok agar berlaku.
+Feature gate override reset,Penggantian gate diatur ulang
+Invalid field value: %1$s,Nilai bidang tidak valid: %1$s
+Could not save this override.,Penggantian ini tidak bisa disimpan.
+Could not reset this override.,Penggantian ini tidak bisa diatur ulang.
+Feature Gate Lab could not find the settings container,Feature Gate Lab tidak menemukan wadah pengaturan
+Older overrides were kept disabled. Review their values before enabling them on TikTok %1$s.,Penggantian lama dibiarkan nonaktif. Periksa nilainya sebelum mengaktifkannya di TikTok %1$s.
+A Lab change is already running,Perubahan Lab sedang berjalan
+Could not open the export file picker,Pemilih berkas untuk ekspor tidak bisa dibuka
+Could not open the import file picker,Pemilih berkas untuk impor tidak bisa dibuka
+Exported 1 loaded value,1 nilai yang dimuat diekspor
+Exported %1$d loaded values,%1$d nilai yang dimuat diekspor
+Loaded-value file export failed,Ekspor berkas nilai yang dimuat gagal
+Loaded-value file export failed; cleanup also failed,Ekspor berkas nilai yang dimuat gagal; pembersihannya juga gagal
+Loaded-value file is invalid or too large,Berkas nilai yang dimuat tidak valid atau terlalu besar
+"Imported %1$d disabled values. %2$d already matched, %3$d unavailable, %4$d rejected. Undo last Lab change is in the menu.","%1$d nilai nonaktif diimpor. %2$d sudah cocok, %3$d tidak tersedia, %4$d ditolak. Batalkan perubahan Lab terakhir ada di menu."
+Could not change Lab settings.,Pengaturan Lab tidak bisa diubah.
+None of these gates had an override to reset.,Tidak satu pun gate ini punya penggantian untuk diatur ulang.
+None of these gates takes a true or false value.,Tidak satu pun gate ini menerima nilai true atau false.
+Restart TikTok to apply the Feature Gate Lab changes.,Mulai ulang TikTok agar perubahan Feature Gate Lab berlaku.

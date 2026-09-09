@@ -164,7 +164,8 @@ public final class FeatureGateLabFragment extends Fragment {
     public static void open(Activity activity) {
         int containerId = findFragmentContainer(activity);
         if (containerId == View.NO_ID) {
-            Utils.showToastLong("Feature Gate Lab could not find the settings container");
+            Utils.showToastLong(L10n.t(Utils.getContext(),
+                    "Feature Gate Lab could not find the settings container"));
             return;
         }
         FeatureGateLabSession.begin();
@@ -467,7 +468,9 @@ public final class FeatureGateLabFragment extends Fragment {
         if (activity == null || activity.isFinishing() || !FeatureGateLabStore.consumeMigrationNotice()) {
             return;
         }
-        Utils.showToastLong("Older overrides were kept disabled. Review their values before enabling them on TikTok 46.2.3.");
+        Utils.showToastLong(L10n.f(Utils.getContext(),
+                "Older overrides were kept disabled. Review their values before enabling them on TikTok %1$s.",
+                FeatureGateLabStore.TARGET_VERSION));
     }
 
     @Override
@@ -765,7 +768,8 @@ public final class FeatureGateLabFragment extends Fragment {
         if (FeatureGateLabStore.masterEnabled() == checked) return;
         if (CHANGING.get()) {
             syncMasterSwitch();
-            Utils.showToastLong("A Lab change is already running");
+            Utils.showToastLong(L10n.t(Utils.getContext(),
+                    "A Lab change is already running"));
             return;
         }
         // This is storage, not a flag: the journal lock, two write-and-verify cycles and a
@@ -851,8 +855,8 @@ public final class FeatureGateLabFragment extends Fragment {
         boolean started = runLabChange(() -> {
             int written = FeatureGateLabUndo.forceBoolean(gates, value);
             if (written == 0) {
-                throw new IllegalStateException(
-                        "None of these gates takes a true or false value.");
+                throw new IllegalStateException(L10n.t(Utils.getContext(),
+                        "None of these gates takes a true or false value."));
             }
             // The message says what happened rather than what was asked for. Reported as a
             // failure, which is what throwing here did, it said nothing went through on a run
@@ -895,7 +899,8 @@ public final class FeatureGateLabFragment extends Fragment {
         boolean started = runLabChange(() -> {
             int dropped = FeatureGateLabUndo.resetAll(gates);
             if (dropped == 0) {
-                throw new IllegalStateException("None of these gates had an override to reset.");
+                throw new IllegalStateException(L10n.t(Utils.getContext(),
+                        "None of these gates had an override to reset."));
             }
             // Dropped, not selected: choosing five gates of which two had an override resets two.
             // One whole sentence per shape. Built from a count and three fragments it was four
@@ -982,7 +987,8 @@ public final class FeatureGateLabFragment extends Fragment {
                             "tiktok-46.2.3-loaded-feature-gates-" + timestamp + ".json.gz");
             startActivityForResult(intent, REQUEST_EXPORT_LOADED);
         } catch (Throwable throwable) {
-            Utils.showToastLong("Could not open the export file picker");
+            Utils.showToastLong(L10n.t(Utils.getContext(),
+                    "Could not open the export file picker"));
         }
     }
 
@@ -995,7 +1001,8 @@ public final class FeatureGateLabFragment extends Fragment {
                             new String[]{"application/gzip", "application/json", "application/octet-stream"});
             startActivityForResult(intent, REQUEST_IMPORT_LOADED);
         } catch (Throwable throwable) {
-            Utils.showToastLong("Could not open the import file picker");
+            Utils.showToastLong(L10n.t(Utils.getContext(),
+                    "Could not open the import file picker"));
         }
     }
 
@@ -1010,12 +1017,15 @@ public final class FeatureGateLabFragment extends Fragment {
                     if (output == null) throw new IllegalStateException("Document provider returned no output stream");
                     output.write(payload.gzipBytes);
                 }
-                postToast("Exported " + payload.count + " loaded values");
+                postToast(payload.count == 1
+                        ? L10n.t(Utils.getContext(), "Exported 1 loaded value")
+                        : L10n.f(Utils.getContext(), "Exported %1$d loaded values",
+                                payload.count));
             } catch (Throwable throwable) {
                 Logger.printException(() -> "Loaded-value file export failed", throwable);
-                postToast(deleteCreatedDocument(resolver, uri)
+                postToast(L10n.t(Utils.getContext(), deleteCreatedDocument(resolver, uri)
                         ? "Loaded-value file export failed"
-                        : "Loaded-value file export failed; cleanup also failed");
+                        : "Loaded-value file export failed; cleanup also failed"));
             }
         });
     }
@@ -1033,7 +1043,8 @@ public final class FeatureGateLabFragment extends Fragment {
                 reviewLoadedImport(readLoadedJson(encoded));
             } catch (Throwable throwable) {
                 Logger.printException(() -> "Loaded-value file import failed", throwable);
-                postToast("Loaded-value file is invalid or too large");
+                postToast(L10n.t(Utils.getContext(),
+                        "Loaded-value file is invalid or too large"));
             }
         });
     }
@@ -1102,9 +1113,9 @@ public final class FeatureGateLabFragment extends Fragment {
         FeatureGateLabStore.ImportReview review = FeatureGateLabStore.reviewProfile(
                 profile.toString(), currentSnapshot.byIdentity);
 
-        String message = "Imported " + review.accepted.size() + " disabled values. " + same
-                + " already matched, " + unavailable + " unavailable, " + (review.rejected.size() + malformed)
-                + " rejected. Undo last Lab change is in the menu.";
+        String message = L10n.f(Utils.getContext(),
+                "Imported %1$d disabled values. %2$d already matched, %3$d unavailable, %4$d rejected. Undo last Lab change is in the menu.",
+                review.accepted.size(), same, unavailable, review.rejected.size() + malformed);
         runLabChange(() -> FeatureGateLabUndo.importRules(review), message);
     }
 
@@ -1247,7 +1258,7 @@ public final class FeatureGateLabFragment extends Fragment {
      */
     private boolean runLabChange(ReportingLabChange change) {
         if (!CHANGING.compareAndSet(false, true)) {
-            postToast("A Lab change is already running");
+            postToast(L10n.t(Utils.getContext(), "A Lab change is already running"));
             return false;
         }
         Utils.runOnBackgroundThread(() -> {
@@ -1257,7 +1268,10 @@ public final class FeatureGateLabFragment extends Fragment {
                 result = change.run();
             } catch (Exception error) {
                 Logger.printException(() -> "Lab change failed", error);
-                result = "Could not change Lab settings. " + error.getMessage();
+                // The sentence is translated; what the failure itself said is not ours
+                // to translate, and dropping it would take the only clue with it.
+                result = L10n.t(Utils.getContext(), "Could not change Lab settings.")
+                        + " " + error.getMessage();
             }
             String notice = result;
             new Handler(Looper.getMainLooper()).post(() -> {

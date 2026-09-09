@@ -806,3 +806,22 @@ Turned off 1 gate. Restart TikTok to apply this.	1 Schalter ausgeschaltet. TikTo
 Turned off %1$d gates. Restart TikTok to apply this.	%1$d Schalter ausgeschaltet. TikTok neu starten, damit das gilt.
 Turned off 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.	1 von %1$d Schaltern ausgeschaltet; die übrigen nehmen kein true oder false. TikTok neu starten, damit das gilt.
 Turned off %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.	%1$d von %2$d Schaltern ausgeschaltet; die übrigen nehmen kein true oder false. TikTok neu starten, damit das gilt.
+Feature gate override reset	Überschreibung des Schalters zurückgesetzt
+Invalid field value: %1$s	Ungültiger Feldwert: %1$s
+Could not save this override.	Diese Überschreibung konnte nicht gespeichert werden.
+Could not reset this override.	Diese Überschreibung konnte nicht zurückgesetzt werden.
+Feature Gate Lab could not find the settings container	Das Feature Gate Lab hat den Einstellungsbereich nicht gefunden
+Older overrides were kept disabled. Review their values before enabling them on TikTok %1$s.	Ältere Überschreibungen bleiben abgeschaltet. Prüfen Sie ihre Werte, bevor Sie sie unter TikTok %1$s einschalten.
+A Lab change is already running	Eine Lab-Änderung läuft bereits
+Could not open the export file picker	Die Dateiauswahl zum Exportieren ließ sich nicht öffnen
+Could not open the import file picker	Die Dateiauswahl zum Importieren ließ sich nicht öffnen
+Exported 1 loaded value	1 geladener Wert exportiert
+Exported %1$d loaded values	%1$d geladene Werte exportiert
+Loaded-value file export failed	Der Export der geladenen Werte ist fehlgeschlagen
+Loaded-value file export failed; cleanup also failed	Der Export der geladenen Werte ist fehlgeschlagen; auch das Aufräumen ist fehlgeschlagen
+Loaded-value file is invalid or too large	Die Datei mit den geladenen Werten ist ungültig oder zu groß
+Imported %1$d disabled values. %2$d already matched, %3$d unavailable, %4$d rejected. Undo last Lab change is in the menu.	%1$d abgeschaltete Werte importiert. %2$d stimmten bereits überein, %3$d sind nicht verfügbar, %4$d wurden abgelehnt. Letzte Lab-Änderung rückgängig machen steht im Menü.
+Could not change Lab settings.	Die Lab-Einstellungen ließen sich nicht ändern.
+None of these gates had an override to reset.	Keiner dieser Schalter hatte eine Überschreibung zum Zurücksetzen.
+None of these gates takes a true or false value.	Keiner dieser Schalter nimmt einen true- oder false-Wert.
+Restart TikTok to apply the Feature Gate Lab changes.	TikTok neu starten, damit die Änderungen des Feature Gate Lab gelten.

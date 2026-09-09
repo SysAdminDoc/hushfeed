@@ -405,7 +405,6 @@ public class SettingsL10nTest {
                      java.nio.file.Files.walk(base)) {
             for (java.nio.file.Path file : files.filter(p -> p.toString().endsWith(".java"))
                     .collect(java.util.stream.Collectors.toList())) {
-                if (file.toString().replace('\\', '/').contains("/featuregatelab/")) continue;
                 String text = new String(java.nio.file.Files.readAllBytes(file),
                         java.nio.charset.StandardCharsets.UTF_8);
                 scanned++;

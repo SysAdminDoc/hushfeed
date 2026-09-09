@@ -803,3 +803,22 @@ Turned off 1 gate. Restart TikTok to apply this.	1 gate desligado. Reinicie o Ti
 Turned off %1$d gates. Restart TikTok to apply this.	%1$d gates desligados. Reinicie o TikTok para aplicar.
 Turned off 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.	1 de %1$d gates desligado; os demais não aceitam um valor true ou false. Reinicie o TikTok para aplicar.
 Turned off %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.	%1$d de %2$d gates desligados; os demais não aceitam um valor true ou false. Reinicie o TikTok para aplicar.
+Feature gate override reset	Substituição do gate redefinida
+Invalid field value: %1$s	Valor de campo inválido: %1$s
+Could not save this override.	Não foi possível salvar esta substituição.
+Could not reset this override.	Não foi possível redefinir esta substituição.
+Feature Gate Lab could not find the settings container	O Feature Gate Lab não encontrou o contêiner das configurações
+Older overrides were kept disabled. Review their values before enabling them on TikTok %1$s.	As substituições antigas ficaram desligadas. Confira os valores antes de ligá-las no TikTok %1$s.
+A Lab change is already running	Já há uma mudança do Lab em andamento
+Could not open the export file picker	Não foi possível abrir o seletor de arquivos para exportar
+Could not open the import file picker	Não foi possível abrir o seletor de arquivos para importar
+Exported 1 loaded value	1 valor carregado exportado
+Exported %1$d loaded values	%1$d valores carregados exportados
+Loaded-value file export failed	A exportação do arquivo de valores carregados falhou
+Loaded-value file export failed; cleanup also failed	A exportação do arquivo de valores carregados falhou e a limpeza também
+Loaded-value file is invalid or too large	O arquivo de valores carregados é inválido ou grande demais
+Imported %1$d disabled values. %2$d already matched, %3$d unavailable, %4$d rejected. Undo last Lab change is in the menu.	%1$d valores desligados importados. %2$d já coincidiam, %3$d não estão disponíveis e %4$d foram recusados. Desfazer a última mudança do Lab está no menu.
+Could not change Lab settings.	Não foi possível alterar as configurações do Lab.
+None of these gates had an override to reset.	Nenhum destes gates tinha uma substituição para redefinir.
+None of these gates takes a true or false value.	Nenhum destes gates aceita um valor true ou false.
+Restart TikTok to apply the Feature Gate Lab changes.	Reinicie o TikTok para aplicar as mudanças do Feature Gate Lab.

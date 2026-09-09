@@ -16,6 +16,7 @@ source,target
 "%1$s: %2$d found, %3$d missing, and more it stopped counting. First missing: %4$s","%1$s: %2$d found, %3$d missing, and more it stopped counting. First missing: %4$s"
 "%1$s: %2$d found, %3$d missing. First missing: %4$s","%1$s: %2$d found, %3$d missing. First missing: %4$s"
 1 gate selected,1 gate selected
+A Lab change is already running,A Lab change is already running
 A creator pattern is taking too long and was switched off: %1$s,A creator pattern is taking too long and was switched off: %1$s
 "A good place to stop, if you want one.","A good place to stop, if you want one."
 A hidden puzzle may be the cause.,A hidden puzzle may be the cause.
@@ -133,15 +134,20 @@ Copy the sound link,Copy the sound link
 Copy the video link,Copy the video link
 Could not block %1$s,Could not block %1$s
 Could not block %1$s: %2$s,Could not block %1$s: %2$s
+Could not change Lab settings.,Could not change Lab settings.
 Could not confirm block for %1$s,Could not confirm block for %1$s
 Could not confirm unblock for %1$s,Could not confirm unblock for %1$s
 Could not copy report. Use Save JSON.,Could not copy report. Use Save JSON.
 Could not open settings search,Could not open settings search
 Could not open settings section,Could not open settings section
+Could not open the export file picker,Could not open the export file picker
+Could not open the import file picker,Could not open the import file picker
 Could not put back the seen video history. Try again.,Could not put back the seen video history. Try again.
 Could not read who posted this comment,Could not read who posted this comment
+Could not reset this override.,Could not reset this override.
 Could not restore settings.,Could not restore settings.
 Could not save settings backup.,Could not save settings backup.
+Could not save this override.,Could not save this override.
 Could not tell which folder to update. Choose it again.,Could not tell which folder to update. Choose it again.
 Could not unblock %1$s,Could not unblock %1$s
 Could not unblock %1$s: %2$s,Could not unblock %1$s: %2$s
@@ -197,8 +203,12 @@ Errors,Errors
 Expand activity list,Expand activity list
 Export diagnostic report,Export diagnostic report
 Export loaded values,Export loaded values
+Exported %1$d loaded values,Exported %1$d loaded values
+Exported 1 loaded value,Exported 1 loaded value
 Fade the feed out before the hold,Fade the feed out before the hold
 Feature Gate Lab,Feature Gate Lab
+Feature Gate Lab could not find the settings container,Feature Gate Lab could not find the settings container
+Feature gate override reset,Feature gate override reset
 Feed and navigation,Feed and navigation
 Feed filter,Feed filter
 Feed navigation,Feed navigation
@@ -356,6 +366,7 @@ Hushfeed filtered this batch,Hushfeed filtered this batch
 Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working.,Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working.
 "Ignore the creator's choice so the Duet and Stitch entries appear. Everything else the app checks still applies, and whether the upload is accepted is the server's decision.","Ignore the creator's choice so the Duet and Stitch entries appear. Everything else the app checks still applies, and whether the upload is accepted is the server's decision."
 Import loaded values,Import loaded values
+"Imported %1$d disabled values. %2$d already matched, %3$d unavailable, %4$d rejected. Undo last Lab change is in the menu.","Imported %1$d disabled values. %2$d already matched, %3$d unavailable, %4$d rejected. Undo last Lab change is in the menu."
 Inbox,Inbox
 Include diagnostic events,Include diagnostic events
 Included diagnostics,Included diagnostics
@@ -364,6 +375,7 @@ Includes all diagnostic events.,Includes all diagnostic events.
 Inserted cards,Inserted cards
 Interface,Interface
 Invalid SIM preset,Invalid SIM preset
+Invalid field value: %1$s,Invalid field value: %1$s
 Keep a local record of what you have watched and drop those videos from later feed pages.,Keep a local record of what you have watched and drop those videos from later feed pages.
 "Keep automatic advance enabled, and show TikTok's own Auto scroll action in the video panel even if your account never had it. Pauses and open dialogs still stop scrolling. Restart TikTok to apply this, then use this switch to turn it off.","Keep automatic advance enabled, and show TikTok's own Auto scroll action in the video panel even if your account never had it. Pauses and open dialogs still stop scrolling. Restart TikTok to apply this, then use this switch to turn it off."
 Keep captions in clear display,Keep captions in clear display
@@ -384,6 +396,9 @@ Link copied,Link copied
 "Links, privacy and player tools","Links, privacy and player tools"
 Loaded current values. Loading all known gates...,Loaded current values. Loading all known gates...
 Loaded for this account,Loaded for this account
+Loaded-value file export failed,Loaded-value file export failed
+Loaded-value file export failed; cleanup also failed,Loaded-value file export failed; cleanup also failed
+Loaded-value file is invalid or too large,Loaded-value file is invalid or too large
 Loading gates...,Loading gates...
 Loading local catalog and current TikTok cache...,Loading local catalog and current TikTok cache...
 Locally hidden creators,Locally hidden creators
@@ -426,6 +441,8 @@ No suggested accounts to clear,No suggested accounts to clear
 No video selected,No video selected
 No videos remained after Hushfeed applied your feed filters to %1$d batches. Most matches: %2$s.,No videos remained after Hushfeed applied your feed filters to %1$d batches. Most matches: %2$s.
 No videos remained after Hushfeed applied your feed filters to one batch. Most matches: %1$s.,No videos remained after Hushfeed applied your feed filters to one batch. Most matches: %1$s.
+None of these gates had an override to reset.,None of these gates had an override to reset.
+None of these gates takes a true or false value.,None of these gates takes a true or false value.
 None recorded,None recorded
 Not blocked,Not blocked
 Not interested in this video,Not interested in this video
@@ -441,6 +458,7 @@ Off,Off
 "Off by default. TikTok plays again by itself every time you come back to the app. Switched on, the feed waits for one tap first. The tab bar is left alone, so messages, a profile and search are still one tap away.","Off by default. TikTok plays again by itself every time you come back to the app. Switched on, the feed waits for one tap first. The tab bar is left alone, so messages, a profile and search are still one tap away."
 Off forces false; on forces true. Reset returns control to TikTok,Off forces false; on forces true. Reset returns control to TikTok
 Offline videos limit,Offline videos limit
+Older overrides were kept disabled. Review their values before enabling them on TikTok %1$s.,Older overrides were kept disabled. Review their values before enabling them on TikTok %1$s.
 On mobile data,On mobile data
 One area was checked and everything it needs is here.,One area was checked and everything it needs is here.
 One minute left,One minute left
@@ -530,6 +548,7 @@ Reset all overrides,Reset all overrides
 Reset override,Reset override
 Reset settings,Reset settings
 Reset to loaded,Reset to loaded
+Restart TikTok to apply the Feature Gate Lab changes.,Restart TikTok to apply the Feature Gate Lab changes.
 Restore defaults immediately. Your current settings are kept for Undo.,Restore defaults immediately. Your current settings are kept for Undo.
 Restore failed. Some settings may still be changed.,Restore failed. Some settings may still be changed.
 Restore failed. Some settings may still be changed. Use Undo to recover.,Restore failed. Some settings may still be changed. Use Undo to recover.

@@ -429,7 +429,7 @@ public final class FeatureGateDetailFragment extends Fragment {
                     reset.setVisibility(View.VISIBLE);
                     updateStatus();
                 },
-                "Could not save this override.");
+                L10n.t(Utils.getContext(), "Could not save this override."));
     }
 
     private void resetRule() {
@@ -447,9 +447,9 @@ public final class FeatureGateDetailFragment extends Fragment {
                     suppress = false;
                     reset.setVisibility(View.GONE);
                     updateStatus();
-                    Utils.showToastShort("Feature gate override reset");
+                    Utils.showToastShort(L10n.t(Utils.getContext(), "Feature gate override reset"));
                 },
-                "Could not reset this override.");
+                L10n.t(Utils.getContext(), "Could not reset this override."));
     }
 
     /** A change that touches storage, so it does not belong on the thread drawing the screen. */
@@ -464,13 +464,14 @@ public final class FeatureGateDetailFragment extends Fragment {
      * meantime. A failure is reported either way: the user pressed a button and is owed an
      * answer even if they have already left.
      */
-    private void runDetailChange(DetailChange change, Runnable onDone, String failurePrefix) {
+    private void runDetailChange(DetailChange change, Runnable onDone,
+                                 String translatedFailurePrefix) {
         Utils.runOnBackgroundThread(() -> {
             String failure = null;
             try {
                 change.run();
             } catch (Exception error) {
-                failure = failurePrefix + " " + error.getMessage();
+                failure = translatedFailurePrefix + " " + error.getMessage();
             }
             String notice = failure;
             new Handler(Looper.getMainLooper()).post(() -> {
@@ -765,7 +766,8 @@ public final class FeatureGateDetailFragment extends Fragment {
                 result.put(editor.name, editor.value());
             }
         } catch (Throwable throwable) {
-            Utils.showToastLong("Invalid field value: " + String.valueOf(throwable.getMessage()));
+            Utils.showToastLong(L10n.f(Utils.getContext(), "Invalid field value: %1$s",
+                    String.valueOf(throwable.getMessage())));
             return "{}";
         }
         return result.toString();
