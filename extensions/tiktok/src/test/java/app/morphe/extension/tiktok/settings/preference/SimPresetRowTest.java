@@ -1,6 +1,7 @@
 package app.morphe.extension.tiktok.settings.preference;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -180,6 +181,45 @@ public class SimPresetRowTest {
                             .toString());
         } finally {
             app.morphe.extension.tiktok.settings.SettingsStatus.diagnosticsEnabled = false;
+        }
+    }
+
+    /**
+     * The sentence under the diagnostics picker on a German phone.
+     *
+     * <p>The shared library lower-cased each kind before joining it into the sentence, which is
+     * right for English and wrong for a language that capitalises its nouns: Einstellungen came
+     * out as einstellungen. The labels became translatable and the lower-casing ran over the
+     * translations with them.
+     */
+    @Test
+    @Config(sdk = 28, qualifiers = "de-rDE")
+    public void theDiagnosticsSummaryKeepsTheCapitalsGermanNounsHave() throws Exception {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            Utils.setContext(controller.get());
+            app.morphe.extension.tiktok.settings.SettingsStatus.diagnosticsEnabled = true;
+            app.morphe.extension.shared.settings.BaseSettings.DEBUG_LOG_FILTERS.save(
+                    "settings,errors");
+            android.preference.PreferenceScreen screen =
+                    controller.get().getPreferenceManager().createPreferenceScreen(
+                            controller.get());
+            new app.morphe.extension.tiktok.settings.preference.categories
+                    .DebugPreferenceCategory(controller.get(), screen);
+
+            android.preference.Preference row = screen.findPreference("action_included_diagnostics");
+            assertNotNull("the diagnostics picker is not on the page", row);
+            String summary = String.valueOf(row.getSummary());
+
+            for (String english : new String[]{"Settings", "Errors"}) {
+                String german = germanFor(english);
+                assertTrue("the kind is missing from the sentence: " + summary,
+                        summary.contains(german));
+                assertFalse("the kind was lower-cased on its way into the sentence: " + summary,
+                        summary.contains(german.toLowerCase(java.util.Locale.ROOT)));
+            }
+        } finally {
+            app.morphe.extension.tiktok.settings.SettingsStatus.diagnosticsEnabled = false;
+            app.morphe.extension.shared.settings.BaseSettings.DEBUG_LOG_FILTERS.resetToDefault();
         }
     }
 

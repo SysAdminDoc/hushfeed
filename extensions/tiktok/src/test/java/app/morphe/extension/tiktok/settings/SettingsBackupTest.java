@@ -837,6 +837,49 @@ public class SettingsBackupTest {
         }
     }
 
+    /**
+     * An undo of a copy written before a retarget still says it is an undo.
+     *
+     * <p>The success line tested whether Lab rules had been dropped before it tested which
+     * action had run, so any undo that dropped them said settings had been restored. An undo
+     * copy is written from the settings as they were, so it carries the Lab rules of whatever
+     * build wrote it, and the day this project retargets every one of them is such a copy.
+     */
+    @Test public void anUndoThatDropsLabRulesStillSaysItIsAnUndo() throws Exception {
+        try (var owner = Robolectric.buildActivity(
+                app.morphe.extension.tiktok.captions.CaptionToolsTest.CaptionActivity.class)
+                .setup().visible()) {
+            var activity = owner.get();
+            Utils.setContext(activity);
+            SettingsStatus.diagnosticsEnabled = false;
+
+            Settings.MAX_VIDEO_SECONDS.save(73);
+            String undoCopy = new JSONObject(SettingsBackup.create(false))
+                    .put("target", "40.0.0").toString();
+            File undoFile = new File(activity.getApplicationContext().getFilesDir(),
+                    "hushfeed-settings-undo.json");
+            try (FileOutputStream output = new FileOutputStream(undoFile)) {
+                output.write(undoCopy.getBytes(StandardCharsets.UTF_8));
+            }
+            Settings.MAX_VIDEO_SECONDS.save(11);
+
+            var fragment = new TikTokPreferenceFragment();
+            Bundle arguments = new Bundle();
+            arguments.putString("morphe_settings_section", "DIAGNOSTICS");
+            fragment.setArguments(arguments);
+            activity.getFragmentManager().beginTransaction()
+                    .replace(android.R.id.content, fragment).commit();
+            activity.getFragmentManager().executePendingTransactions();
+
+            var undo = fragment.findPreference("settings_backup_7314");
+            assertNotNull(undo);
+            undo.getOnPreferenceClickListener().onPreferenceClick(undo);
+            waitFor("The last change is undone. The Feature Gate Lab rules were for another "
+                    + "TikTok version and were left out. Restart TikTok to apply all changes.");
+            assertEquals(73, (int) Settings.MAX_VIDEO_SECONDS.get());
+        }
+    }
+
     private static void waitFor(String message) throws Exception {
         Utils.awaitBackgroundTasksForTests();
         Shadows.shadowOf(Looper.getMainLooper()).idle();

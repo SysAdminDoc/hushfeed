@@ -31,7 +31,7 @@ Already marked as not interested	Já marcado como não tenho interesse
 Also apply these filters to downloaded videos TikTok uses when the feed cannot load enough new items.	Aplicar esses filtros também aos vídeos baixados que o TikTok usa quando o feed não consegue carregar itens novos suficientes.
 Also change the region TikTok reports internally. Keeps your interface language. Needs Override SIM details and a restart; your IP address and your account's own rules still apply.	Também muda a região que o TikTok informa internamente. Mantém o idioma da interface. Precisa de Substituir os dados do SIM e de reiniciar; seu endereço IP e as regras da sua conta continuam valendo.
 Always show publish date	Sempre mostrar a data de publicação
-Always show the publish date in video author information. Restart TikTok to apply this.	Sempre mostrar a data de publicação nas informações do autor do vídeo. Reinicie o TikTok para valer.
+Always show the publish date in video author information. Restart TikTok to apply this.	Sempre mostrar a data de publicação nas informações do autor do vídeo. Reinicie o TikTok para aplicar.
 An app's package name, like com.dv.adm. The save button sends the video's link there instead of saving it here. Leave it empty to save here.	O nome de pacote de um app, como com.dv.adm. O botão de salvar manda o link do vídeo para lá em vez de salvar aqui. Deixe vazio para salvar aqui.
 An operator code is five or six digits, like 310260	Um código de operadora tem cinco ou seis dígitos, como 310260
 Animated sticker format	Formato dos stickers animados
@@ -68,7 +68,7 @@ Caption background	Fundo das legendas
 Caption text size	Tamanho do texto das legendas
 Captions, gestures and on-screen controls	Legendas, gestos e controles na tela
 Capture crash reports locally	Guardar os relatórios de falha no aparelho
-Choose 1-1000 videos. Values outside this range use the nearest valid limit. Restart TikTok to apply this.	Escolha entre 1 e 1000 vídeos. Valores fora dessa faixa usam o limite válido mais próximo. Reinicie o TikTok para valer.
+Choose 1-1000 videos. Values outside this range use the nearest valid limit. Restart TikTok to apply this.	Escolha entre 1 e 1000 vídeos. Valores fora dessa faixa usam o limite válido mais próximo. Reinicie o TikTok para aplicar.
 Choose a backup file. Your current settings are kept for Undo.	Escolha um arquivo de backup. Suas configurações atuais ficam guardadas para Desfazer.
 Choose a subfolder under %1$s.	Escolha uma subpasta dentro de %1$s.
 Choose observed share actions to hide. The stable identifier is shown below each label; unknown saved identifiers stay in the manual list.	Escolha quais ações de compartilhamento observadas quer esconder. O identificador estável aparece embaixo de cada rótulo; identificadores salvos desconhecidos ficam na lista manual.
@@ -316,7 +316,7 @@ Inserted cards	Cards inseridos
 Interface	Interface
 Invalid SIM preset	Predefinição de SIM inválida
 Keep a local record of what you have watched and drop those videos from later feed pages.	Guardar no aparelho um registro do que você viu e tirar esses vídeos das próximas páginas do feed.
-Keep automatic advance enabled, and show TikTok's own Auto scroll action in the video panel even if your account never had it. Pauses and open dialogs still stop scrolling. Restart TikTok to apply this, then use this switch to turn it off.	Manter o avanço automático ligado e mostrar a ação Rolagem automática do TikTok no painel do vídeo mesmo que sua conta nunca tenha tido. Pausas e diálogos abertos continuam parando a rolagem. Reinicie o TikTok para valer e depois use esta chave para desligar.
+Keep automatic advance enabled, and show TikTok's own Auto scroll action in the video panel even if your account never had it. Pauses and open dialogs still stop scrolling. Restart TikTok to apply this, then use this switch to turn it off.	Manter o avanço automático ligado e mostrar a ação Rolagem automática do TikTok no painel do vídeo mesmo que sua conta nunca tenha tido. Pausas e diálogos abertos continuam parando a rolagem. Reinicie o TikTok para aplicar e depois use esta chave para desligar.
 Keep captions in clear display	Manter as legendas com a tela limpa
 Keep pressing and holding Like from opening TikTok's repost action.	Evita que segurar Curtir abra a ação de repost do TikTok.
 Keep pressing and holding Share from opening TikTok's quick share action.	Evita que segurar Compartilhar abra o compartilhamento rápido do TikTok.
@@ -328,8 +328,8 @@ LIVE videos	Vídeos LIVE
 Leave maximum empty to keep it unlimited.	Deixe o máximo vazio para ficar sem limite.
 Leave the sound out of the saved video. Save the sound as well still writes the .m4a beside it if you want both.	Deixar o som fora do vídeo salvo. Salvar o som também continua escrevendo o .m4a ao lado se você quiser os dois.
 Less than a minute left	Resta menos de um minuto
-Let screenshots, screen recording and Circle to Search work on TikTok again. Restart TikTok to apply this.	Deixar as capturas de tela, a gravação de tela e o Círculo para pesquisar voltarem a funcionar no TikTok. Reinicie o TikTok para valer.
-Let the Offline videos menu use your own limit instead of TikTok's fixed one. Restart TikTok to apply this.	Deixar o menu de Vídeos offline usar o seu próprio limite em vez do fixo do TikTok. Reinicie o TikTok para valer.
+Let screenshots, screen recording and Circle to Search work on TikTok again. Restart TikTok to apply this.	Deixar as capturas de tela, a gravação de tela e o Círculo para pesquisar voltarem a funcionar no TikTok. Reinicie o TikTok para aplicar.
+Let the Offline videos menu use your own limit instead of TikTok's fixed one. Restart TikTok to apply this.	Deixar o menu de Vídeos offline usar o seu próprio limite em vez do fixo do TikTok. Reinicie o TikTok para aplicar.
 Link copied	Link copiado
 Links, privacy and player tools	Links, privacidade e ferramentas do player
 Locally hidden creators	Criadores escondidos no aparelho
@@ -345,11 +345,11 @@ Maximum video length	Duração máxima do vídeo
 Maximum views per like	Visualizações máximas por curtida
 Media	Mídia
 Messages, profiles and search still work.	As mensagens, os perfis e a busca continuam funcionando.
-Min/Max comments	Comentários mín./máx.
+Min/Max comments	Comentários mín./máx
 Min/Max favorites	Favoritos mín./máx
-Min/Max likes	Curtidas mín./máx.
-Min/Max shares	Compartilhamentos mín./máx.
-Min/Max views	Visualizações mín./máx.
+Min/Max likes	Curtidas mín./máx
+Min/Max shares	Compartilhamentos mín./máx
+Min/Max views	Visualizações mín./máx
 Minimum	Mínimo
 Never from these countries	Nunca destes países
 No account to block on this video	Não há conta para bloquear neste vídeo
@@ -490,7 +490,7 @@ Follow probe	Verificação de seguir
 Feed and navigation	Feed e navegação
 Errors	Erros
 Other	Outros
-Saved. Restart TikTok to apply this.	Salvo. Reinicie o TikTok para valer.
+Saved. Restart TikTok to apply this.	Salvo. Reinicie o TikTok para aplicar.
 Diagnostic data cleared.	Dados de diagnóstico apagados.
 Includes %1$s events.	Inclui eventos de %1$s.
 Gate details	Detalhes do gate
@@ -566,6 +566,7 @@ Settings recovery could not finish. Use Undo or restore your backup.	A recupera�
 Settings recovery needs attention. Use Undo or restore your backup.	A recuperação das configurações precisa da sua atenção. Use Desfazer ou restaure o seu backup.
 Settings restored. Restart TikTok to apply all changes.	Configurações restauradas. Reinicie o TikTok para aplicar todas as mudanças.
 Settings restored. The Feature Gate Lab rules were for another TikTok version and were left out. Restart TikTok to apply all changes.	Configurações restauradas. As regras do Laboratório de gates eram de outra versão do TikTok e ficaram de fora. Reinicie o TikTok para aplicar todas as mudanças.
+The last change is undone. The Feature Gate Lab rules were for another TikTok version and were left out. Restart TikTok to apply all changes.	A última mudança foi desfeita. As regras do Laboratório de gates eram de outra versão do TikTok e ficaram de fora. Reinicie o TikTok para aplicar todas as mudanças.
 Share action checklist	Lista de ações de compartilhamento
 Share links through another host	Compartilhar os links por outro host
 Share sheet	Folha de compartilhamento
@@ -573,7 +574,7 @@ Shop posts	Publicações da loja
 Show @username beside a video instead of the display name the creator chose.	Mostrar @usuário ao lado do vídeo em vez do nome de exibição que o criador escolheu.
 Show LIVE search	Mostrar a busca do LIVE
 Show TikTok's own progress bar on videos where it is normally hidden.	Mostrar a barra de progresso do TikTok nos vídeos onde ela normalmente fica escondida.
-Show TikTok's own sort sheet on every post, with its hot, newest, media and creator options, instead of whichever cut-down row your account was given. Restart TikTok to apply this: it reads the style once per run and remembers it.	Mostrar a folha de ordenação do TikTok em todas as publicações, com as opções de populares, mais recentes, mídia e criador, em vez da linha reduzida que a sua conta recebeu. Reinicie o TikTok para valer: ele lê o estilo uma vez por execução e guarda.
+Show TikTok's own sort sheet on every post, with its hot, newest, media and creator options, instead of whichever cut-down row your account was given. Restart TikTok to apply this: it reads the style once per run and remembers it.	Mostrar a folha de ordenação do TikTok em todas as publicações, com as opções de populares, mais recentes, mídia e criador, em vez da linha reduzida que a sua conta recebeu. Reinicie o TikTok para aplicar: ele lê o estilo uma vez por execução e guarda.
 Show TikTok's search entry in the LIVE drawer where supported.	Mostrar a entrada de busca do TikTok na gaveta do LIVE onde houver suporte.
 Show a video preview thumbnail while dragging the progress bar.	Mostrar uma miniatura do vídeo enquanto você arrasta a barra de progresso.
 Show block button on videos	Mostrar o botão de bloquear nos vídeos
@@ -702,16 +703,16 @@ Unblock this commenter	Desbloquear quem comentou
 Unblocked %1$s	%1$s desbloqueado
 Undo	Desfazer
 Undo last restore or reset	Desfazer a última restauração ou redefinição
-Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart TikTok to apply this.	Até 8 velocidades de 0.5 a 3, separadas por vírgula. Por exemplo: 0.5, 1, 1.5, 2, 2.5, 3. Deixe vazio para a lista do TikTok. Reinicie o TikTok para valer.
+Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart TikTok to apply this.	Até 8 velocidades de 0.5 a 3, separadas por vírgula. Por exemplo: 0.5, 1, 1.5, 2, 2.5, 3. Deixe vazio para a lista do TikTok. Reinicie o TikTok para aplicar.
 Use 0 for TikTok's size, or 12 to 48. Applies to the next caption.	Use 0 para o tamanho do TikTok, ou de 12 a 48. Vale para a próxima legenda.
 Use Save JSON for this large report	Use Salvar JSON para este relatório grande
 Use TikTok's native hold, slide down, and release gesture to lock 2x speed.	Usar o gesto nativo do TikTok de segurar, deslizar para baixo e soltar para travar a velocidade 2x.
 Use a default playback speed	Usar uma velocidade de reprodução padrão
 Use non-personalized search	Usar a busca sem personalização
 Use the preset for the region TikTok reports for your account and its shop too. May affect search. Needs the language option and a restart.	Usar a predefinição também para a região que o TikTok informa da sua conta e da loja dela. Pode afetar a busca. Precisa da opção de idioma e de reiniciar.
-Use the selected country and operator values. Restart TikTok to apply this.	Usar o país e os valores de operadora selecionados. Reinicie o TikTok para valer.
-Use the selected country. Restart TikTok to apply this.	Usar o país selecionado. Reinicie o TikTok para valer.
-Use the split layout on wider screens. Restart TikTok to apply this, or unfold again if the old layout is still there.	Usar o layout dividido em telas mais largas. Reinicie o TikTok para valer, ou desdobre de novo se o layout antigo ainda estiver lá.
+Use the selected country and operator values. Restart TikTok to apply this.	Usar o país e os valores de operadora selecionados. Reinicie o TikTok para aplicar.
+Use the selected country. Restart TikTok to apply this.	Usar o país selecionado. Reinicie o TikTok para aplicar.
+Use the split layout on wider screens. Restart TikTok to apply this, or unfold again if the old layout is still there.	Usar o layout dividido em telas mais largas. Reinicie o TikTok para aplicar, ou desdobre de novo se o layout antigo ainda estiver lá.
 Verified creators	Criadores verificados
 Video	Vídeo
 Video (MP4)	Vídeo (MP4)
@@ -725,7 +726,7 @@ Video saved in %1$s, but only %2$s of %3$s subtitles came with it	Vídeo salvo e
 Video saved with %1$s subtitles in %2$s	Vídeo salvo com %1$s legendas em %2$s
 Wait before hiding the controls.	Esperar antes de limpar a tela.
 WebP, exactly as TikTok sent it	WebP, exatamente como o TikTok mandou
-Window width needed to enable the layout. Restart TikTok to apply this.	Largura de janela necessária para ligar o layout. Reinicie o TikTok para valer.
+Window width needed to enable the layout. Restart TikTok to apply this.	Largura de janela necessária para ligar o layout. Reinicie o TikTok para aplicar.
 Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.	Escrever o som do vídeo ao lado dele como um .m4a. O Android 10 e posteriores arquivam o áudio à parte, então ele vai para Music, numa pasta com o mesmo nome da dos seus vídeos.
 YOUR EXPERIENCE	SUA EXPERIÊNCIA
 YTDLnis background mode	Modo em segundo plano do YTDLnis

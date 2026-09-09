@@ -102,6 +102,17 @@ public class LogExportFilterPreference extends Preference {
     }
 
     /**
+     * One kind as it reads inside the sentence.
+     *
+     * <p>Lower case in English, where "Includes downloads, errors events." is how it reads. A
+     * language that capitalises its nouns keeps them: this ran over the translated labels the
+     * moment they could be translated, and turned Einstellungen into einstellungen.
+     */
+    protected String summaryLabel(String label) {
+        return label.toLowerCase(java.util.Locale.ROOT);
+    }
+
+    /**
      * The whole sentence, with the kinds already joined into it.
      *
      * <p>One sentence rather than a prefix and a suffix around a list: a table row holds a
@@ -186,7 +197,7 @@ public class LogExportFilterPreference extends Preference {
             if (!selected.contains(VALUES[i])) continue;
 
             if (labelCount > 0) builder.append(", ");
-            builder.append(labels()[i].toLowerCase());
+            builder.append(summaryLabel(labels()[i]));
             labelCount++;
         }
 

@@ -1,3 +1,13 @@
+## Unreleased
+
+* An undo of a settings backup says it is an undo. If the copy it put back held Feature Gate Lab rules for another TikTok build, the line on screen said your settings had been restored, and that's a different thing from putting the last change back.
+
+* The sentence under the diagnostics picker keeps its capitals. German writes its nouns with a capital letter, and every kind was lower-cased on its way into that sentence, so Einstellungen came out as einstellungen.
+
+* Nine wrong translations. Brazilian Portuguese said to restart TikTok "para valer", which means for real rather than to take effect. German and Indonesian pointed at two settings by names those settings don't have, and both called a video's caption a subtitle, which is the other thing on the screen. Five Spanish rows ended in a full stop their English does not have.
+
+* A patch-time helper that overrides the result of a call refuses one more case rather than guessing. A wide instruction names only the low half of the register pair it writes, so a write into the register below the literal was invisible to it. Nothing in the bundle reaches that case today.
+
 ## 0.26.0
 
 * The last English left on the settings screen is translated. The diagnostics picker with its eight kinds of event, the line you see after saving any of the fifty settings that ask for a restart, the message when diagnostic data is cleared, and every line of the hook status report. These live in code shared with other bundles that carry no translations at all, so they could not simply be wrapped: the shared classes ask this bundle for the words and fall back to English for anyone else. The report line was five pieces glued together, which no translation can hold, and is one sentence now.

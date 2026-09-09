@@ -152,6 +152,13 @@ public class DebugPreferenceCategory extends ConditionalPreferenceCategory {
             return L10n.t(getContext(), "Includes all diagnostic events.");
         }
 
+        // German capitalises its nouns and Indonesian leaves a product name alone, so the
+        // kinds go into the sentence as the table wrote them.
+        @Override
+        protected String summaryLabel(String label) {
+            return label;
+        }
+
         @Override
         protected CharSequence includesSummary(String kinds) {
             return L10n.f(getContext(), "Includes %1$s events.", kinds);

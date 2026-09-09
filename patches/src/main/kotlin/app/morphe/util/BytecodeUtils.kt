@@ -681,8 +681,13 @@ private fun MutableMethod.indexOfLiteralCallResult(literalIndex: Int): Int {
             break
         }
         // Anything that writes the register again ends the literal's life. An invoke past
-        // that point reads whatever was written last, which is not what was loaded here.
-        if (instruction.writeRegister == literalRegister) break
+        // that point reads whatever was written last, which is not what was loaded here. A wide
+        // write names only its low half, so one into the register below covers this one too.
+        val written = instruction.writeRegister
+        if (written == literalRegister) break
+        if (written != null && instruction.touchesWideRegisters && written + 1 == literalRegister) {
+            break
+        }
     }
     check(invokeIndex >= 0) {
         "No call reads the literal loaded at index $literalIndex"

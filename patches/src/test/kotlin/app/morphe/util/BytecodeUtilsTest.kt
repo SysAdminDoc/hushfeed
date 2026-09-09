@@ -218,4 +218,26 @@ class BytecodeUtilsTest {
             body.insertLiteralOverride(0, true)
         }
     }
+
+    @Test
+    fun `a literal buried under a wide write is refused`() {
+        // A wide instruction names only the low half of the pair it writes, so a write into v0
+        // lands on v1 as well. The walk read the named register alone, so the literal in v1
+        // looked untouched and the call below it looked like the literal's own.
+        val other = ImmutableMethodReference(
+            "Lcom/example/Other;", "take", listOf("I"), "I",
+        )
+        val body = method(
+            "I",
+            ImmutableInstruction21s(Opcode.CONST_16, 1, 1234),
+            ImmutableInstruction21s(Opcode.CONST_WIDE_16, 0, 5678),
+            ImmutableInstruction35c(Opcode.INVOKE_STATIC, 1, 1, 0, 0, 0, 0, other),
+            ImmutableInstruction11x(Opcode.MOVE_RESULT, 1),
+            ImmutableInstruction11x(Opcode.RETURN, 1),
+        )
+
+        assertThrows(IllegalStateException::class.java) {
+            body.insertLiteralOverride(0, true)
+        }
+    }
 }
