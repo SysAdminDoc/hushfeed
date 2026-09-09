@@ -43,7 +43,7 @@ public final class SettingsMenuPreference extends Preference {
     }
 
     private static final int ACCESSORY_TAG = 0x4D4D454E;
-    private final int activeCount;
+    private int activeCount;
 
     public SettingsMenuPreference(
             Context context,
@@ -59,6 +59,25 @@ public final class SettingsMenuPreference extends Preference {
         setSummary(summary);
         setIcon(new MenuIconDrawable(context, icon));
         setOnPreferenceClickListener(listener);
+    }
+
+    /**
+     * How many settings on the page behind this row are away from their default.
+     *
+     * <p>Not final any more. The master menu builds its rows once and keeps them across every
+     * trip into a section and back, so a count fixed at build time was the count from whenever
+     * the screen was first opened. Changing three switches and pressing back left the old
+     * number sitting there for the rest of the session.
+     */
+    public void setActiveCount(int count) {
+        if (activeCount == count) return;
+        activeCount = count;
+        notifyChanged();
+    }
+
+    /** What the badge is showing, or zero for no badge. */
+    public int activeCount() {
+        return activeCount;
     }
 
     @Override

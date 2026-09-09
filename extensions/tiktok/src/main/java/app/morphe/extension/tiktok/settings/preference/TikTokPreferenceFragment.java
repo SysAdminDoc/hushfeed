@@ -403,6 +403,80 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         searchScreen.addPreference(state);
     }
 
+    /**
+     * How many settings on one section are away from their default.
+     *
+     * <p>Each badge used to read a list of settings kept by hand beside the page it described.
+     * The Feed filter list named 17 of the 34 settings that page binds, so nine of its switches
+     * moved nothing, and every list counted a switch that is on by default as "on", which is
+     * why a stock install showed "Comments and translation, 3 on". Building the section is what
+     * the search index already does two methods down, so the count and the page can no longer
+     * disagree about what is on the page.
+     */
+    private int countChangedSettings(Context context, Section section) {
+        PreferenceScreen scratch = getPreferenceManager().createPreferenceScreen(context);
+        PreferenceCategory category = createCategory(context, scratch, section);
+        if (category == null) {
+            return 0;
+        }
+        int count = countChangedRows(category, new java.util.HashSet<>());
+        scratch.removePreference(category);
+        return count;
+    }
+
+    private static int countChangedRows(PreferenceGroup group, java.util.Set<String> seen) {
+        int count = 0;
+        for (int index = 0; index < group.getPreferenceCount(); index++) {
+            Preference preference = group.getPreference(index);
+            if (preference instanceof PreferenceGroup) {
+                count += countChangedRows((PreferenceGroup) preference, seen);
+                continue;
+            }
+            if (!preference.hasKey()) {
+                continue;
+            }
+            Setting<?> setting = Setting.getSettingFromPath(preference.getKey());
+            // A row with no setting behind it is an action, and a setting this build cannot
+            // reach is not on the page. Neither is something the reader has turned on.
+            if (setting == null || !setting.isAvailable()) {
+                continue;
+            }
+            // Two rows can share one setting, and a page can bind the same row twice.
+            if (!seen.add(setting.key)) {
+                continue;
+            }
+            if (!java.util.Objects.equals(setting.get(), setting.defaultValue)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Whether App behavior has anything in it. Every row on that page belongs to a patch, so
+     * with none of them installed the row would open a page with nothing but its heading.
+     */
+    private static boolean hasBehaviorSettings() {
+        return SettingsStatus.foldableSplitViewEnabled
+                || SettingsStatus.sanitizeShareUrlsEnabled
+                || SettingsStatus.externalBrowserEnabled
+                || SettingsStatus.showSeekbarEnabled
+                || SettingsStatus.seekbarThumbnailEnabled
+                || SettingsStatus.stopVideoLoopingEnabled
+                || SettingsStatus.resumeVideoAfterScrollEnabled
+                || SettingsStatus.longPressSpeedLockEnabled
+                || SettingsStatus.disableLongPressQuickShareEnabled
+                || SettingsStatus.disableLongPressRepostEnabled
+                || SettingsStatus.disableTelemetryEnabled
+                || SettingsStatus.ghostModeEnabled
+                || SettingsStatus.blockAuthorEnabled
+                || SettingsStatus.notInterestedEnabled
+                || SettingsStatus.nonPersonalizedSearchEnabled
+                || SettingsStatus.liveSearchEnabled
+                || SettingsStatus.duetStitchEnabled
+                || SettingsStatus.refreshRateEnabled;
+    }
+
     private List<SearchResult> buildSearchIndex(Context context) {
         List<SearchResult> results = new ArrayList<>();
         PreferenceScreen scratch = getPreferenceManager().createPreferenceScreen(context);
@@ -518,152 +592,31 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         ));
 
         if (FeedFilterPreferenceCategory.isAvailable()) {
-            addMenu(screen, Section.FEED_FILTER, SettingsMenuPreference.Icon.FILTER, countEnabled(
-                    !Settings.BLOCKED_CAPTION_WORDS.get().trim().isEmpty(),
-                    !Settings.BLOCKED_CREATORS.get().trim().isEmpty(),
-                    !Settings.LOCAL_HIDDEN_CREATORS.get().trim().isEmpty(),
-                    Settings.MAX_VIDEO_SECONDS.get() > 0,
-                    Settings.MAX_PUBLICATION_AGE_DAYS.get() > 0,
-                    Settings.MAX_VIEWS_PER_LIKE.get() > 0,
-                    Settings.HIDE_PROMOTIONAL_MUSIC.get(),
-                    Settings.HIDE_LIVE_REPLAYS.get(),
-                    Settings.REMOVE_ADS.get(),
-                    Settings.HIDE_SHOP.get(),
-                    Settings.HIDE_LIVE.get(),
-                    Settings.HIDE_STORY.get(),
-                    Settings.HIDE_IMAGE.get(),
-                    Settings.HIDE_PLAYLIST_BAR.get(),
-                    Settings.HIDE_EVENT_BADGE.get(),
-                    Settings.HIDE_INSERTED_CARDS.get(),
-                    SettingsStatus.seenVideoFilterEnabled && Settings.HIDE_SEEN_VIDEOS.get()
-            ));
+            addMenu(screen, Section.FEED_FILTER, SettingsMenuPreference.Icon.FILTER);
         }
         if (FeedNavigationPreferenceCategory.isAvailable()) {
-            addMenu(screen, Section.FEED_NAVIGATION, SettingsMenuPreference.Icon.TABS, countEnabled(
-                    Settings.FEED_NAVIGATION.get(),
-                    Settings.FEED_NAVIGATION_BLOCK_NEW_TABS.get(),
-                    Settings.BOTTOM_NAVIGATION.get(),
-                    Settings.BOTTOM_NAVIGATION_BLOCK_NEW_TABS.get(),
-                    Settings.HIDE_TAKO_AI.get()
-            ));
+            addMenu(screen, Section.FEED_NAVIGATION, SettingsMenuPreference.Icon.TABS);
         }
         if (InterfacePreferenceCategory.isAvailable()) {
-            addMenu(screen, Section.INTERFACE, SettingsMenuPreference.Icon.LAYOUT, countEnabled(
-                    SettingsStatus.subtitleToolsEnabled && Settings.CAPTION_TEXT_SIZE.get() > 0,
-                    SettingsStatus.subtitleToolsEnabled && !"default".equals(Settings.CAPTION_BACKGROUND.get()),
-                    SettingsStatus.subtitleToolsEnabled && Settings.KEEP_CAPTIONS_CLEAR_DISPLAY.get(),
-                    SettingsStatus.screenCaptureEnabled && Settings.ALLOW_SCREEN_CAPTURE.get(),
-                    SettingsStatus.automaticClearDisplayEnabled && Settings.AUTOMATIC_CLEAR_DISPLAY.get(),
-                    SettingsStatus.doubleTapEnabled && !"default".equals(Settings.DOUBLE_TAP_ACTION.get()),
-                    SettingsStatus.longPressEnabled && !"default".equals(Settings.LONG_PRESS_ACTION.get()),
-                    SettingsStatus.longPressEnabled && Settings.EDGE_SEEK.get(),
-                    SettingsStatus.confirmInteractionsEnabled && Settings.CONFIRM_FOLLOW.get(),
-                    SettingsStatus.confirmInteractionsEnabled && Settings.CONFIRM_LIKE.get(),
-                    SettingsStatus.sensitiveWarningsEnabled && Settings.HIDE_SENSITIVE_WARNINGS.get(),
-                    SettingsStatus.authorRegionEnabled && Settings.SHOW_AUTHOR_REGION.get(),
-                    SettingsStatus.authorRegionEnabled && Settings.SHOW_AUTHOR_HANDLE.get(),
-                    SettingsStatus.videoOverlaysEnabled && Settings.HIDE_FEED_CAPTION.get(),
-                    SettingsStatus.videoOverlaysEnabled && Settings.HIDE_FEED_MUSIC.get(),
-                    SettingsStatus.videoOverlaysEnabled && Settings.HIDE_FEED_ACTION_BAR.get(),
-                    SettingsStatus.videoOverlaysEnabled && Settings.HIDE_FEED_SURVEYS.get(),
-                    SettingsStatus.videoOverlaysEnabled && Settings.HIDE_RAIL_FOLLOW.get(),
-                    SettingsStatus.videoOverlaysEnabled && Settings.HIDE_RAIL_LIKE.get(),
-                    SettingsStatus.videoOverlaysEnabled && Settings.HIDE_RAIL_COMMENTS.get(),
-                    SettingsStatus.videoOverlaysEnabled && Settings.HIDE_RAIL_FAVOURITE.get(),
-                    SettingsStatus.videoOverlaysEnabled && Settings.HIDE_RAIL_MUSIC.get(),
-                    SettingsStatus.videoOverlaysEnabled && Settings.HIDE_RAIL_SHARE.get(),
-                    SettingsStatus.hideSearchSuggestionsEnabled && Settings.HIDE_SEARCH_SUGGESTIONS.get(),
-                    SettingsStatus.videoOverlaysEnabled && Settings.HIDE_RAIL_COUNTS.get(),
-                    SettingsStatus.videoOverlaysEnabled && Settings.HIDE_STATUS_BAR.get(),
-                    SettingsStatus.videoOverlaysEnabled && Settings.HIDE_VISUAL_SEARCH.get(),
-                    (SettingsStatus.videoOverlaysEnabled || SettingsStatus.hideFeedLiveButtonEnabled)
-                            && Settings.HIDE_LIVE_ENTRANCE.get(),
-                    SettingsStatus.hideFeedSearchButtonEnabled && Settings.HIDE_FEED_SEARCH_BUTTON.get(),
-                    SettingsStatus.hideFeedFollowButtonEnabled && Settings.HIDE_FEED_FOLLOW_BUTTON.get(),
-                    SettingsStatus.hideFeedSaveButtonEnabled && Settings.HIDE_FEED_SAVE_BUTTON.get(),
-                    SettingsStatus.promotionalBannersEnabled && Settings.HIDE_HOMEPAGE_COIN.get(),
-                    SettingsStatus.captchaPopupSuppressionEnabled && Settings.HIDE_CAPTCHA_POPUPS.get(),
-                    SettingsStatus.alwaysShowPublishDateEnabled && Settings.ALWAYS_SHOW_PUBLISH_DATE.get()
-            ));
+            addMenu(screen, Section.INTERFACE, SettingsMenuPreference.Icon.LAYOUT);
         }
         if (CommentsPreferenceCategory.isAvailable()) {
-            addMenu(screen, Section.COMMENTS, SettingsMenuPreference.Icon.COMMENTS, countEnabled(
-                    SettingsStatus.commentToolsEnabled && Settings.COMMENT_KEYWORD_FILTER.get(),
-                    SettingsStatus.commentToolsEnabled && Settings.COMMENT_SEARCH.get(),
-                    SettingsStatus.commentToolsEnabled && Settings.BLOCK_FROM_COMMENT.get(),
-                    SettingsStatus.commentToolsEnabled && Settings.HIDE_COMMENT_MEDIA.get(),
-                    SettingsStatus.hideCommentEggsEnabled && Settings.HIDE_COMMENT_EGGS.get(),
-                    SettingsStatus.commentTranslationEnabled && Settings.COMMENT_BATCH_TRANSLATION.get(),
-                    SettingsStatus.hideCommentQuickReactionsEnabled && Settings.HIDE_COMMENT_QUICK_REACTIONS.get(),
-                    SettingsStatus.copyCommentsWithoutUsernameEnabled && Settings.COPY_COMMENTS_WITHOUT_USERNAME.get()
-            ));
+            addMenu(screen, Section.COMMENTS, SettingsMenuPreference.Icon.COMMENTS);
         }
         if (DownloadsPreferenceCategory.isAvailable()) {
-            addMenu(screen, Section.DOWNLOADS, SettingsMenuPreference.Icon.DOWNLOADS, countEnabled(
-                    SettingsStatus.subtitleToolsEnabled && Settings.DOWNLOAD_SUBTITLES.get(),
-                    SettingsStatus.advancedDownloadsEnabled && !"auto".equals(Settings.DOWNLOAD_VIDEO_QUALITY.get()),
-                    SettingsStatus.advancedDownloadsEnabled && Settings.DOWNLOAD_ORIGINAL_PHOTOS.get(),
-                    SettingsStatus.advancedDownloadsEnabled && Settings.DOWNLOAD_AUDIO_TRACK.get(),
-                    SettingsStatus.advancedDownloadsEnabled && Settings.DOWNLOAD_WITHOUT_SOUND.get(),
-                    SettingsStatus.advancedDownloadsEnabled
-                            && !Settings.EXTERNAL_DOWNLOADER_PACKAGE.get().trim().isEmpty(),
-                    SettingsStatus.advancedDownloadsEnabled && Settings.SAVE_PROFILE_PICTURE.get(),
-                    SettingsStatus.advancedDownloadsEnabled && Settings.SAVE_STORY.get(),
-                    SettingsStatus.downloadEnabled && Settings.DOWNLOAD_WATERMARK.get(),
-                    SettingsStatus.customOfflineVideosEnabled && Settings.CUSTOM_OFFLINE_VIDEOS.get(),
-                    SettingsStatus.downloadEnabled && !"mp4".equals(Settings.DOWNLOAD_STICKER_FORMAT.get())
-            ));
+            addMenu(screen, Section.DOWNLOADS, SettingsMenuPreference.Icon.DOWNLOADS);
         }
         if (PlaybackPreferenceCategory.isAvailable()) {
-            addMenu(screen, Section.PLAYBACK, SettingsMenuPreference.Icon.PLAYBACK,
-                    countEnabled(SettingsStatus.playbackQualityEnabled && !"auto".equals(Settings.PLAYBACK_QUALITY.get()),
-                            SettingsStatus.playbackQualityEnabled
-                                    && !"off".equals(Settings.PLAYBACK_QUALITY_METERED.get()),
-                            SettingsStatus.playbackSpeedEnabled && Settings.DEFAULT_SPEED_ENABLED.get(),
-                            SettingsStatus.playbackSpeedEnabled && !Settings.CUSTOM_SPEEDS.get().trim().isEmpty(),
-                            SettingsStatus.autoAdvanceEnabled && Settings.AUTO_ADVANCE.get(),
-                            SettingsStatus.autoAdvanceEnabled && Settings.AUTO_ADVANCE_LIMIT.get() > 0,
-                            SettingsStatus.videoFitEnabled && Settings.FIT_VIDEO_TO_SCREEN.get(),
-                            SettingsStatus.blockAuthorEnabled && Settings.SESSION_BUDGET_VIDEOS.get() > 0,
-                            SettingsStatus.blockAuthorEnabled && Settings.SESSION_BUDGET_MINUTES.get() > 0,
-                            SettingsStatus.blockAuthorEnabled && Settings.SESSION_BUDGET_LOCK_MINUTES.get() > 0));
+            addMenu(screen, Section.PLAYBACK, SettingsMenuPreference.Icon.PLAYBACK);
         }
         if (InboxPreferenceCategory.isAvailable()) {
-            addMenu(screen, Section.INBOX, SettingsMenuPreference.Icon.INBOX, countEnabled(
-                    (SettingsStatus.inboxFilterEnabled || SettingsStatus.hideInboxStoriesEnabled)
-                            && Settings.HIDE_INBOX_STORIES.get(),
-                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_NEW_FOLLOWERS.get(),
-                    SettingsStatus.notificationControlsEnabled && Settings.HIDE_FOLLOWER_NOTIFICATIONS.get(),
-                    SettingsStatus.notificationControlsEnabled && Settings.HIDE_MESSAGE_STREAKS.get(),
-                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_ACTIVITY.get(),
-                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_ARCHIVE.get(),
-                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_TAKO.get(),
-                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_SHOP.get(),
-                    (SettingsStatus.inboxFilterEnabled || SettingsStatus.hideSuggestedAccountsEnabled)
-                            && Settings.HIDE_INBOX_SUGGESTED_ACCOUNTS.get(),
-                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_MESSAGE_REQUESTS.get(),
-                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_CONVERSATIONS.get(),
-                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_ADD_PEOPLE.get(),
-                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_SEARCH.get(),
-                    SettingsStatus.inboxFilterEnabled && Settings.HIDE_INBOX_ACTIVITY_STATUS.get(),
-                    SettingsStatus.expandActivityListEnabled && Settings.EXPAND_ACTIVITY_LIST.get()
-            ));
+            addMenu(screen, Section.INBOX, SettingsMenuPreference.Icon.INBOX);
         }
         if (SharePreferenceCategory.isAvailable()) {
-            addMenu(screen, Section.SHARE, SettingsMenuPreference.Icon.SHARE, countEnabled(
-                    Settings.SHARE_CONFIRM_SEND.get(),
-                    Settings.HIDE_SHARE_CONTACTS.get(),
-                    Settings.HIDE_SHARE_CHANNELS.get(),
-                    Settings.HIDE_SHARE_ACTIONS.get(),
-                    !Settings.SHARE_HIDDEN_ITEMS.get().trim().isEmpty()
-            ));
+            addMenu(screen, Section.SHARE, SettingsMenuPreference.Icon.SHARE);
         }
         if (SimSpoofPreferenceCategory.isAvailable()) {
-            addMenu(screen, Section.REGION, SettingsMenuPreference.Icon.REGION, countEnabled(
-                    Settings.SIM_SPOOF.get(),
-                    SettingsStatus.regionSpoofEnabled && Settings.SIM_SPOOF.get() && Settings.REGION_SPOOF.get(),
-                    SettingsStatus.regionSpoofEnabled && Settings.SIM_SPOOF.get() && Settings.REGION_SPOOF.get() && Settings.REGION_STORE_SPOOF.get()
-            ));
+            addMenu(screen, Section.REGION, SettingsMenuPreference.Icon.REGION);
         }
 
         // App behavior and Diagnostics keep their own conditions on purpose. The App
@@ -672,8 +625,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         // because settings backup and restore live on that page whether or not the
         // diagnostics patch is in the bundle.
         if (hasBehaviorSettings()) {
-            addMenu(screen, Section.BEHAVIOR, SettingsMenuPreference.Icon.BEHAVIOR,
-                    countBehaviorSettings());
+            addMenu(screen, Section.BEHAVIOR, SettingsMenuPreference.Icon.BEHAVIOR);
         }
 
         if (FeatureGateLabRuntime.isInstalled()) {
@@ -694,35 +646,37 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             screen.addPreference(new FeatureGateRecorderPreference(context));
         }
 
-        addMenu(screen, Section.DIAGNOSTICS, SettingsMenuPreference.Icon.DIAGNOSTICS, countEnabled(
-                SettingsStatus.diagnosticsEnabled && BaseSettings.DEBUG.get(),
-                SettingsStatus.diagnosticsEnabled && BaseSettings.CAPTURE_JAVA_CRASHES.get()
-        ));
+        addMenu(screen, Section.DIAGNOSTICS, SettingsMenuPreference.Icon.DIAGNOSTICS);
 
         screen.addPreference(new MorpheTikTokAboutPreference(context));
     }
 
+    /** The master menu's rows and the section each one opens, for the badge refresh. */
+    private final java.util.Map<SettingsMenuPreference, Section> menuSections =
+            new java.util.LinkedHashMap<>();
+
     private void addMenu(
             PreferenceScreen screen,
             Section section,
-            SettingsMenuPreference.Icon icon,
-            int activeCount
+            SettingsMenuPreference.Icon icon
     ) {
         String description = L10n.t(getActivity(), section.description);
         if (description.endsWith(".")) {
             description = description.substring(0, description.length() - 1);
         }
-        screen.addPreference(new SettingsMenuPreference(
+        SettingsMenuPreference row = new SettingsMenuPreference(
                 getActivity(),
                 section.title,
                 description,
                 icon,
-                activeCount,
+                countChangedSettings(getActivity(), section),
                 preference -> {
                     openSection(section);
                     return true;
                 }
-        ));
+        );
+        screen.addPreference(row);
+        menuSections.put(row, section);
     }
 
     private void createSectionMenu(Context context, PreferenceScreen screen, Section section) {
@@ -824,86 +778,30 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         }
     }
 
-    /**
-     * Whether App behavior has anything in it. Every row on that page belongs to a patch, so
-     * with none of them installed the row would open a page with nothing but its heading.
-     */
-    private static boolean hasBehaviorSettings() {
-        return SettingsStatus.foldableSplitViewEnabled
-                || SettingsStatus.sanitizeShareUrlsEnabled
-                || SettingsStatus.externalBrowserEnabled
-                || SettingsStatus.showSeekbarEnabled
-                || SettingsStatus.seekbarThumbnailEnabled
-                || SettingsStatus.stopVideoLoopingEnabled
-                || SettingsStatus.resumeVideoAfterScrollEnabled
-                || SettingsStatus.longPressSpeedLockEnabled
-                || SettingsStatus.disableLongPressQuickShareEnabled
-                || SettingsStatus.disableLongPressRepostEnabled
-                || SettingsStatus.disableTelemetryEnabled
-                || SettingsStatus.ghostModeEnabled
-                || SettingsStatus.blockAuthorEnabled
-                || SettingsStatus.notInterestedEnabled
-                || SettingsStatus.nonPersonalizedSearchEnabled
-                || SettingsStatus.liveSearchEnabled
-                || SettingsStatus.duetStitchEnabled
-                || SettingsStatus.refreshRateEnabled;
-    }
-
-    private int countBehaviorSettings() {
-        int count = countEnabled(
-                SettingsStatus.refreshRateEnabled && Settings.UNCAP_REFRESH_RATE.get(),
-                SettingsStatus.duetStitchEnabled && Settings.ALLOW_DUET_AND_STITCH.get(),
-                SettingsStatus.foldableSplitViewEnabled && Settings.FOLDABLE_SPLIT_VIEW.get(),
-                SettingsStatus.blockAuthorEnabled && Settings.BLOCK_AUTHOR_BUTTON.get(),
-                SettingsStatus.notInterestedEnabled && Settings.NOT_INTERESTED_BUTTON.get(),
-                SettingsStatus.sanitizeShareUrlsEnabled && BaseSettings.SANITIZE_SHARING_LINKS.get(),
-                SettingsStatus.sanitizeShareUrlsEnabled
-                        && !ShareUrlSanitizer.domain(Settings.CUSTOM_SHARE_DOMAIN.get()).isEmpty(),
-                SettingsStatus.showSeekbarEnabled && Settings.SHOW_SEEKBAR.get()
-        );
-        if (SettingsStatus.externalBrowserEnabled && Settings.OPEN_EXTERNAL_LINKS.get()) {
-            count++;
-        }
-        if (SettingsStatus.stopVideoLoopingEnabled && Settings.STOP_VIDEO_LOOPING.get()) {
-            count++;
-        }
-        if (SettingsStatus.resumeVideoAfterScrollEnabled && Settings.RESUME_VIDEO_AFTER_SCROLL.get()) {
-            count++;
-        }
-        if (SettingsStatus.longPressSpeedLockEnabled && Settings.ENABLE_LONG_PRESS_SPEED_LOCK.get()) {
-            count++;
-        }
-        if (SettingsStatus.disableLongPressQuickShareEnabled
-                && Settings.DISABLE_LONG_PRESS_QUICK_SHARE.get()) {
-            count++;
-        }
-        if (SettingsStatus.disableLongPressRepostEnabled
-                && Settings.DISABLE_LONG_PRESS_REPOST.get()) {
-            count++;
-        }
-        if (SettingsStatus.disableTelemetryEnabled && Settings.DISABLE_ANALYTICS.get()) {
-            count++;
-        }
-        if (SettingsStatus.ghostModeEnabled && Settings.GHOST_MODE.get()) {
-            count++;
-        }
-        return count;
-    }
-
-    private static int countEnabled(boolean... values) {
-        int count = 0;
-        for (boolean value : values) {
-            if (value) {
-                count++;
-            }
-        }
-        return count;
-    }
-
     @Override
     public void onResume() {
         super.onResume();
         activeFragment = this;
+        refreshMenuBadges();
+    }
+
+    /**
+     * Brings every badge on the master menu up to date.
+     *
+     * <p>openSection replaces this fragment and puts it on the back stack, so the master screen
+     * and every one of its rows survives a trip into a section and back. Nothing rebuilt them on
+     * the way back, which is why the numbers were the ones from whenever the screen was first
+     * opened: turning on three filters and pressing back left the old count in place.
+     */
+    private void refreshMenuBadges() {
+        Context context = getActivity();
+        PreferenceScreen screen = getPreferenceScreen();
+        if (context == null || screen == null || menuSections.isEmpty()) {
+            return;
+        }
+        for (java.util.Map.Entry<SettingsMenuPreference, Section> entry : menuSections.entrySet()) {
+            entry.getKey().setActiveCount(countChangedSettings(context, entry.getValue()));
+        }
     }
 
     @Override

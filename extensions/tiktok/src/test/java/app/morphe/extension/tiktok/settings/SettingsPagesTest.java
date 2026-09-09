@@ -992,6 +992,96 @@ assertEquals(View.LAYOUT_DIRECTION_RTL, configuration.getLayoutDirection());
     private static final String[] MAIN_PAGES = {"FEED_FILTER", "INTERFACE", "COMMENTS",
             "DOWNLOADS", "PLAYBACK", "INBOX", "SHARE", "BEHAVIOR", "DIAGNOSTICS"};
 
+    /**
+     * A badge on the master menu says how many settings on the page behind it are away from
+     * their default. It used to read a list of settings kept by hand beside the page: the Feed
+     * filter list named 17 of the 34 settings that page binds, and every list counted a switch
+     * that is on by default as being on, so a stock install claimed "Comments and translation,
+     * 3 on" before anyone had touched anything.
+     */
+    @Test public void aStockInstallShowsNoNumbersAndTurningSomethingOnMovesOne() throws Exception {
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            // What "stock" means, rather than whatever the test before this one left behind:
+            // capturePages turns the default speed on for its screenshots and never puts it
+            // back, so without this the Playback badge starts at one.
+            for (var setting : app.morphe.extension.shared.settings.Setting.allLoadedSettings()) {
+                setting.resetToDefault();
+            }
+
+            TikTokPreferenceFragment home = attachHome(activity);
+            for (var row : menuRows(home)) {
+                assertEquals("\"" + row.getTitle() + "\" claims settings are on in a stock"
+                                + " install", 0, row.activeCount());
+            }
+
+            // A setting on the Feed filter page that the hand-kept list of 17 never named.
+            Settings.HIDE_AI_GENERATED.save(true);
+            home = attachHome(activity);
+            assertEquals("the Feed filter badge did not count a setting that was turned on",
+                    1, badgeFor(home, "Feed filter"));
+            assertEquals("turning on a Feed filter setting moved another page's badge",
+                    0, badgeFor(home, "Downloads"));
+            Settings.HIDE_AI_GENERATED.resetToDefault();
+        }
+    }
+
+    /**
+     * And the number follows the page while the screen is open. openSection replaces this
+     * fragment and puts it on the back stack, so the master screen and its rows survive the
+     * trip; nothing rebuilt them on the way back, and the old number stayed for the session.
+     */
+    @Test public void aBadgeIsUpToDateAfterComingBackFromTheSection() throws Exception {
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            for (var setting : app.morphe.extension.shared.settings.Setting.allLoadedSettings()) {
+                setting.resetToDefault();
+            }
+            TikTokPreferenceFragment home = attachHome(activity);
+            assertEquals(0, badgeFor(home, "Feed filter"));
+
+            // What the reader does inside the section, without going through its rows.
+            Settings.HIDE_AI_GENERATED.save(true);
+            Settings.HIDE_LIVE_REPLAYS.save(true);
+
+            // And the way back: the fragment is resumed rather than built again.
+            home.onResume();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+            assertEquals("the badge still shows the count from when the screen was opened",
+                    2, badgeFor(home, "Feed filter"));
+            Settings.HIDE_AI_GENERATED.resetToDefault();
+            Settings.HIDE_LIVE_REPLAYS.resetToDefault();
+        }
+    }
+
+    private static java.util.List<app.morphe.extension.tiktok.settings.preference
+            .SettingsMenuPreference> menuRows(TikTokPreferenceFragment fragment) {
+        var found = new java.util.ArrayList<app.morphe.extension.tiktok.settings.preference
+                .SettingsMenuPreference>();
+        var screen = fragment.getPreferenceScreen();
+        assertNotNull("the master menu was never built", screen);
+        for (int index = 0; index < screen.getPreferenceCount(); index++) {
+            Preference row = screen.getPreference(index);
+            if (row instanceof app.morphe.extension.tiktok.settings.preference
+                    .SettingsMenuPreference) {
+                found.add((app.morphe.extension.tiktok.settings.preference
+                        .SettingsMenuPreference) row);
+            }
+        }
+        assertTrue("the master menu has no rows, so this proves nothing", found.size() > 3);
+        return found;
+    }
+
+    private static int badgeFor(TikTokPreferenceFragment fragment, String title) {
+        for (var row : menuRows(fragment)) {
+            if (title.contentEquals(row.getTitle())) return row.activeCount();
+        }
+        throw new AssertionError("no row called " + title);
+    }
+
     private static TikTokPreferenceFragment attachSection(Activity activity, String section) {
         TikTokPreferenceFragment fragment = new TikTokPreferenceFragment();
         Bundle arguments = new Bundle();
