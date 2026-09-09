@@ -48,7 +48,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1374);
+        Map<String, String> table = new HashMap<>(1376);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -1329,6 +1329,8 @@ public final class L10nTranslations {
                 "Der Tag ist weitergezogen, es gibt nichts zurückzuholen");
         table.put("Today is back where it was",
                 "Der heutige Tag ist wieder wie zuvor");
+        table.put("Today started over. Tap again to put the counts back.",
+                "Heute wurde neu gestartet. Zum Zurücksetzen der Zähler erneut tippen.");
         table.put("Today starts again",
                 "Heute beginnt neu");
         table.put("Today's budget is locked. The day starts over at %1$s.",
@@ -1413,11 +1415,11 @@ public final class L10nTranslations {
                 "Videoqualität");
         table.put("Video saved",
                 "Video gespeichert");
-        table.put("Video saved in %1$s, but only %2$s of %3$s subtitles came with it",
-                "Video in %1$s gespeichert, aber nur %2$s von %3$s Untertiteln sind mitgekommen");
     }
 
     private static void fillDe11(Map<String, String> table) {
+        table.put("Video saved in %1$s, but only %2$s of %3$s subtitles came with it",
+                "Video in %1$s gespeichert, aber nur %2$s von %3$s Untertiteln sind mitgekommen");
         table.put("Video saved with %1$s subtitles in %2$s",
                 "Video mit %1$s Untertiteln in %2$s gespeichert");
         table.put("Wait before hiding the controls.",
@@ -1475,7 +1477,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(1374);
+        Map<String, String> table = new HashMap<>(1376);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -2756,6 +2758,8 @@ public final class L10nTranslations {
                 "El día ha avanzado, así que no hay nada que recuperar");
         table.put("Today is back where it was",
                 "Hoy está como estaba");
+        table.put("Today started over. Tap again to put the counts back.",
+                "Hoy ha empezado de nuevo. Toca otra vez para recuperar las cuentas.");
         table.put("Today starts again",
                 "Hoy empieza otra vez");
         table.put("Today's budget is locked. The day starts over at %1$s.",
@@ -2840,11 +2844,11 @@ public final class L10nTranslations {
                 "Calidad del vídeo");
         table.put("Video saved",
                 "Vídeo guardado");
-        table.put("Video saved in %1$s, but only %2$s of %3$s subtitles came with it",
-                "Vídeo guardado en %1$s, pero solo llegaron %2$s de %3$s subtítulos");
     }
 
     private static void fillEs11(Map<String, String> table) {
+        table.put("Video saved in %1$s, but only %2$s of %3$s subtitles came with it",
+                "Vídeo guardado en %1$s, pero solo llegaron %2$s de %3$s subtítulos");
         table.put("Video saved with %1$s subtitles in %2$s",
                 "Vídeo guardado con %1$s subtítulos en %2$s");
         table.put("Wait before hiding the controls.",
@@ -2902,7 +2906,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1374);
+        Map<String, String> table = new HashMap<>(1376);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -4183,6 +4187,8 @@ public final class L10nTranslations {
                 "Hari sudah berganti, jadi tidak ada yang bisa dikembalikan");
         table.put("Today is back where it was",
                 "Hari ini kembali seperti semula");
+        table.put("Today started over. Tap again to put the counts back.",
+                "Hari ini dimulai ulang. Ketuk lagi untuk mengembalikan hitungannya.");
         table.put("Today starts again",
                 "Hari ini dimulai lagi");
         table.put("Today's budget is locked. The day starts over at %1$s.",
@@ -4267,11 +4273,11 @@ public final class L10nTranslations {
                 "Kualitas video");
         table.put("Video saved",
                 "Video disimpan");
-        table.put("Video saved in %1$s, but only %2$s of %3$s subtitles came with it",
-                "Video disimpan di %1$s, tapi cuma %2$s dari %3$s subtitel yang ikut");
     }
 
     private static void fillIn11(Map<String, String> table) {
+        table.put("Video saved in %1$s, but only %2$s of %3$s subtitles came with it",
+                "Video disimpan di %1$s, tapi cuma %2$s dari %3$s subtitel yang ikut");
         table.put("Video saved with %1$s subtitles in %2$s",
                 "Video disimpan dengan %1$s subtitel di %2$s");
         table.put("Wait before hiding the controls.",
@@ -4329,7 +4335,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rbr() {
-        Map<String, String> table = new HashMap<>(1374);
+        Map<String, String> table = new HashMap<>(1376);
         fillPt_rbr0(table);
         fillPt_rbr1(table);
         fillPt_rbr2(table);
@@ -5610,6 +5616,8 @@ public final class L10nTranslations {
                 "O dia já andou, então não há nada para trazer de volta");
         table.put("Today is back where it was",
                 "Hoje está como estava");
+        table.put("Today started over. Tap again to put the counts back.",
+                "Hoje recomeçou. Toque de novo para trazer as contagens de volta.");
         table.put("Today starts again",
                 "Hoje começa de novo");
         table.put("Today's budget is locked. The day starts over at %1$s.",
@@ -5694,11 +5702,11 @@ public final class L10nTranslations {
                 "Qualidade do vídeo");
         table.put("Video saved",
                 "Vídeo salvo");
-        table.put("Video saved in %1$s, but only %2$s of %3$s subtitles came with it",
-                "Vídeo salvo em %1$s, mas só vieram %2$s de %3$s legendas");
     }
 
     private static void fillPt_rbr11(Map<String, String> table) {
+        table.put("Video saved in %1$s, but only %2$s of %3$s subtitles came with it",
+                "Vídeo salvo em %1$s, mas só vieram %2$s de %3$s legendas");
         table.put("Video saved with %1$s subtitles in %2$s",
                 "Vídeo salvo com %1$s legendas em %2$s");
         table.put("Wait before hiding the controls.",

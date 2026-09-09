@@ -1,5 +1,9 @@
 ## Unreleased
 
+* The daily budget costs less to keep. Working out which day it is used to read the device's timezone on every frame the player reported, and on Android that hands back a copy each time. It now listens for the timezone changing instead, which is the one moment the answer can be wrong, so the check on the hot path is two comparisons.
+
+* One line of the settings screen was still in English on a translated phone: the summary under "Start today over" after you have tapped it. It is translated in all four languages now, and the check that catches this kind of gap taps the row itself rather than waiting for it to be found by accident.
+
 * Hook status catches the other way the caption settings can go quiet. It already reported an id this build does not have. Now it also reports an id the build does have that has been handed to some other view, which is the likelier of the two, and which used to leave the caption size and background doing nothing while the row said everything was fine. It takes five renders of a container that has something in it before that is called a problem, because TikTok's own render method returns early often and an empty container is not a broken build.
 
 * The little "2 on" numbers on the settings menu mean what they say now. Each one counts the settings on the page behind it that you have moved off their default, worked out from the page itself rather than from a list kept beside it. That list had drifted: it named 17 of the 34 settings on the Feed filter page, so nine switches there changed nothing, and it counted switches that ship on as things you had turned on, which is why a fresh install showed "Comments and translation, 3 on" before you had touched anything. The numbers also move while you use the screen. Turn three filters on, press back, and the count is three; it used to be whatever it was when you opened settings.

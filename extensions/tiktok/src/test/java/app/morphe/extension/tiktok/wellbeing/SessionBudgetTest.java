@@ -754,6 +754,95 @@ public class SessionBudgetTest {
         assertTrue("raising the budget unlocked the day", SessionBudget.lockedToday());
     }
 
+    /**
+     * Moves the device to another zone the way the device does it: the zone changes and the
+     * system says so. The memo is told rather than asked, because asking means a TimeZone clone
+     * on every player callback, so a test that changed the zone in silence would be testing a
+     * memo nobody had told.
+     */
+    private static void moveTo(String zone) {
+        java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone(zone));
+        app.morphe.extension.shared.Utils.getContext().sendBroadcast(
+                new android.content.Intent(android.content.Intent.ACTION_TIMEZONE_CHANGED));
+        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+    }
+
+    /**
+     * A TimeZone that counts what it costs to ask for it.
+     *
+     * <p>TimeZone.getDefault() hands back a clone of the stored zone, so a subclass sitting
+     * there is asked to clone itself every time anything reads the default.
+     */
+    private static final class CountingZone extends java.util.SimpleTimeZone {
+        static final java.util.concurrent.atomic.AtomicInteger CLONES =
+                new java.util.concurrent.atomic.AtomicInteger();
+
+        CountingZone(java.util.TimeZone copied) {
+            super(copied.getRawOffset(), copied.getID());
+        }
+
+        @Override
+        public Object clone() {
+            CLONES.incrementAndGet();
+            return super.clone();
+        }
+    }
+
+    /**
+     * What the memo costs on the path it sits on. It used to read the default zone before it
+     * looked at anything, and on Android that is a clone and a string compare on every
+     * noteVideo and noteWatching for as long as a budget is set.
+     */
+    @Test public void theMemoTakesNoTimezoneCloneAcrossAWholeDayOfCallbacks() {
+        java.util.TimeZone original = java.util.TimeZone.getDefault();
+        try {
+            Settings.SESSION_BUDGET_MINUTES.save(600);
+            java.util.TimeZone.setDefault(new CountingZone(original));
+            SessionBudget.resetForTests();
+            SessionBudget.noteWatching();
+            SessionBudget.dayOf(now.get());
+            // The first answer is worked out rather than remembered, and that one does read
+            // the zone. Everything after it is the memo.
+            CountingZone.CLONES.set(0);
+
+            for (int callback = 0; callback < 500; callback++) {
+                now.addAndGet(1_000L);
+                SessionBudget.noteWatching();
+            }
+
+            assertEquals("the memo read the device timezone on the player's callback",
+                    0, CountingZone.CLONES.get());
+            assertTrue("nothing was counted, so this proves nothing",
+                    SessionBudget.watchedMs() > 0);
+        } finally {
+            java.util.TimeZone.setDefault(original);
+            SessionBudget.resetForTests();
+        }
+    }
+
+    /**
+     * The positive control the two tests below need. They both assert that something does not
+     * happen when the device moves zone, and that is worth nothing unless the move reaches the
+     * memo at all: the memo no longer reads the zone, it is told, so a move sent in silence
+     * would leave both of them green whatever the code did.
+     */
+    @Test public void movingTheDeviceZoneMovesTheDayTheMemoAnswers() {
+        java.util.TimeZone original = java.util.TimeZone.getDefault();
+        try {
+            java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("America/Los_Angeles"));
+            SessionBudget.resetForTests();
+            now.set(at(2026, Calendar.SEPTEMBER, 7, 12, 0));
+            long before = SessionBudget.dayOf(now.get());
+            moveTo("Pacific/Kiritimati");
+            long after = SessionBudget.dayOf(now.get());
+            assertEquals("the device moved zone and the memo did not notice",
+                    before + 1, after);
+        } finally {
+            java.util.TimeZone.setDefault(original);
+            SessionBudget.resetForTests();
+        }
+    }
+
     @Test public void movingTheDeviceTimezoneForwardDoesNotEndALockedDay() {
         // The day only ever moving forward is not enough on its own. A forward zone change makes
         // the day counter jump, which used to clear the lock, the hold and the counts together:
@@ -768,7 +857,7 @@ public class SessionBudgetTest {
             assertTrue("the day did not lock", SessionBudget.lockedToday());
             long until = SessionBudget.lockedUntilMs();
 
-            java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Pacific/Kiritimati"));
+            moveTo("Pacific/Kiritimati");
             assertTrue("a timezone change ended the locked day", SessionBudget.lockedToday());
             assertTrue("a timezone change lifted the hold", SessionBudget.isLocked());
             assertEquals("a timezone change cleared the counts", 1, SessionBudget.videosSeen());
@@ -828,7 +917,7 @@ public class SessionBudgetTest {
             long until = SessionBudget.lockedUntilMs();
             assertTrue("the switch locked no day at all", until > now.get());
 
-            java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Pacific/Kiritimati"));
+            moveTo("Pacific/Kiritimati");
             assertTrue("a timezone change ended the day the switch locked",
                     SessionBudget.lockedToday());
             assertEquals("the locked day moved when the zone did", until,

@@ -46,6 +46,12 @@ public class PausePlaybackTest {
         Settings.SESSION_BUDGET_VIDEOS.resetToDefault();
         Settings.SESSION_BUDGET_MINUTES.resetToDefault();
         Settings.SESSION_BUDGET_STATE.resetToDefault();
+        // Both switches stand down under a hold, and the budget's state is static and shared
+        // with every other suite in this sandbox, so without this the class passes or fails on
+        // whichever suite happened to run before it. Not clear(): that arms the undo, and the
+        // Playback page then says something different, which is another suite's business.
+        org.robolectric.util.ReflectionHelpers.callStaticMethod(
+                app.morphe.extension.tiktok.wellbeing.SessionBudget.class, "resetForTests");
         PausePlayback.resetForTests();
     }
 

@@ -5,6 +5,7 @@
 package app.morphe.extension.tiktok.wellbeing;
 
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
 
 import java.util.Calendar;
@@ -122,7 +123,16 @@ public final class SessionBudget {
     private static long cachedWindowStart;
     private static long cachedWindowEnd;
     private static int cachedResetHour = -1;
-    private static String cachedZoneId = "";
+    /**
+     * Registered once, and the reason the memo does not have to read the zone.
+     *
+     * <p>TimeZone.getDefault() hands back a clone on Android, so asking it on every player
+     * callback was an allocation and a string compare several times a second for the whole
+     * time a budget was set. There is no allocation-free way to read it: getDefaultRef is
+     * package private in java.util and ZoneId.systemDefault goes through the same clone. So
+     * the memo is told instead.
+     */
+    private static android.content.Context watchedContext;
     private static int dayComputations;
     private static int lockChecksUnderTheMonitor;
 
@@ -529,16 +539,67 @@ public final class SessionBudget {
      * Which day a moment belongs to, counting the day as starting at the chosen hour. The
      * device's own zone is what the reader lives in, so that is the one used.
      */
+    /**
+     * Listens for the device's zone changing, once, and drops the memo when it does.
+     *
+     * <p>Registered lazily rather than at startup: the budget costs nothing at all until
+     * somebody sets one, and this is on the path that only runs once one is set. A receiver
+     * that cannot be registered leaves the memo as it is, which is the behaviour a device that
+     * never changes zone has anyway.
+     */
+    private static void watchTheZone() {
+        synchronized (LOCK) {
+            android.content.Context context = Utils.getContext();
+            // Keyed on the context rather than on a flag. A flag registered against whichever
+            // application was current the first time this ran, and a test runner builds a new
+            // one for every case, so the broadcast then arrived at a receiver on a context
+            // nobody was using and the memo was never told.
+            if (context == null || context == watchedContext) return;
+            watchedContext = context;
+            try {
+                android.content.BroadcastReceiver receiver =
+                        new android.content.BroadcastReceiver() {
+                            @Override
+                            public void onReceive(
+                                    android.content.Context ignored, android.content.Intent sent) {
+                                forgetTheDay();
+                            }
+                        };
+                android.content.IntentFilter filter = new android.content.IntentFilter(
+                        android.content.Intent.ACTION_TIMEZONE_CHANGED);
+                // A protected system broadcast is delivered to a receiver nobody else can
+                // reach, and from API 33 a receiver has to say which it is.
+                if (android.os.Build.VERSION.SDK_INT >= 33) {
+                    context.registerReceiver(receiver, filter,
+                            android.content.Context.RECEIVER_NOT_EXPORTED);
+                } else {
+                    context.registerReceiver(receiver, filter);
+                }
+            } catch (Throwable refused) {
+                Logger.printDebug(() -> "The budget could not follow the device timezone");
+            }
+        }
+    }
+
+    /** Drops the memo, so the next question is worked out from the zone the device is in now. */
+    static void forgetTheDay() {
+        synchronized (LOCK) {
+            cachedResetHour = -1;
+        }
+    }
+
     static long dayOf(long now) {
         int resetHour = Settings.SESSION_BUDGET_RESET_HOUR.get();
-        TimeZone zone = TimeZone.getDefault();
+        watchTheZone();
         synchronized (LOCK) {
-            if (resetHour == cachedResetHour && zone.getID().equals(cachedZoneId)
+            if (resetHour == cachedResetHour
                     && now >= cachedWindowStart && now < cachedWindowEnd) {
                 return cachedDay;
             }
             dayComputations++;
-            Calendar calendar = Calendar.getInstance(zone);
+            // The one place the zone is read, which is what makes this a miss rather than a
+            // question asked several times a second.
+            Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
             calendar.setTimeInMillis(now);
             if (calendar.get(Calendar.HOUR_OF_DAY) < resetHour) {
                 calendar.add(Calendar.DAY_OF_YEAR, -1);
@@ -560,7 +621,6 @@ public final class SessionBudget {
                 cachedWindowStart = start;
                 cachedWindowEnd = end;
                 cachedResetHour = resetHour;
-                cachedZoneId = zone.getID();
             } else {
                 // An hour that does not exist on the day the clocks go forward lands outside its
                 // own window. Better to work it out again than to answer from a window that does
@@ -709,7 +769,6 @@ public final class SessionBudget {
     static void resetForTests() {
         synchronized (LOCK) {
             cachedResetHour = -1;
-            cachedZoneId = "";
             cachedWindowStart = 0;
             cachedWindowEnd = 0;
             cachedDay = 0;

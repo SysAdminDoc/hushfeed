@@ -909,6 +909,14 @@ public class SettingsL10nTest {
             new CommentsPreferenceCategory(activity, screen);
             new DownloadsPreferenceCategory(activity, screen);
             new PlaybackPreferenceCategory(activity, screen);
+            // "Start today over" says something different once it has been tapped, and that
+            // sentence shipped in English on every translated phone because nothing here had
+            // ever tapped it. The page is built a second time with the undo armed.
+            app.morphe.extension.tiktok.wellbeing.SessionBudget.clear();
+            PreferenceScreen afterStartingOver =
+                    activity.getPreferenceManager().createPreferenceScreen(activity);
+            new PlaybackPreferenceCategory(activity, afterStartingOver);
+            collect(afterStartingOver, strings);
             new InboxPreferenceCategory(activity, screen);
             new SharePreferenceCategory(activity, screen);
             new SimSpoofPreferenceCategory(activity, screen);
