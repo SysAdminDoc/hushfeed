@@ -219,11 +219,13 @@ public final class SettingsMenuPreference extends Preference {
         private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         public ChevronDrawable(Context context) {
-            // A view resolves its own direction when it is attached, and passes that on to
-            // a compound drawable. A spinner row comes back from an adapter unattached, so
-            // the chevron went out pointing away from the text an Arabic reader was
-            // reading. Starting from the configuration costs nothing where a view does
-            // resolve, because resolving sets it again.
+            // For the one call site that hands this to a TextView rather than an ImageView:
+            // FeatureGateDetailFragment builds a spinner row and hangs the chevron off it as a
+            // compound drawable, and an adapter's row is unattached, so it has no direction of
+            // its own to pass on and the arrow went out pointing away from the text an Arabic
+            // reader was reading. An ImageView is a different story: setImageDrawable sets the
+            // direction from the view there and then, so for those sites this line is
+            // overwritten immediately and the direction arrives when the view resolves.
             setLayoutDirection(context.getResources().getConfiguration().getLayoutDirection());
             paint.setColor(SettingsUi.textSecondary());
             paint.setStyle(Paint.Style.STROKE);

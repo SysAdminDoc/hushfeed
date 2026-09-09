@@ -32,6 +32,8 @@ public class DownloadPathPreference extends DialogPreference {
 
     private boolean mValueSet;
     private String downloadPathValue;
+    /** The box the dialog is showing, so a refused path can be said under it. */
+    private EditText pathField;
     private final DownloadDestination.Kind kind;
 
     public DownloadPathPreference(
@@ -125,6 +127,7 @@ public class DownloadPathPreference extends DialogPreference {
         downloadPath.setHint("DCIM/TikTok");
         downloadPath.setText(downloadPathValue);
         SettingsUi.styleEditText(downloadPath);
+        pathField = downloadPath;
         downloadPath.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -164,12 +167,16 @@ public class DownloadPathPreference extends DialogPreference {
 
     @Override
     protected void onDialogClosed(boolean positiveResult) {
-        if (positiveResult) {
-            try {
-                setValue(DownloadDestination.validate(downloadPathValue, kind));
-            } catch (IllegalArgumentException ex) {
-                app.morphe.extension.shared.Utils.showToastLong(ex.getMessage());
-            }
+        if (positiveResult) saveTypedPath();
+    }
+
+    /** Null when the path saved, otherwise what is wrong with it. */
+    private String saveTypedPath() {
+        try {
+            setValue(DownloadDestination.validate(downloadPathValue, kind));
+            return null;
+        } catch (IllegalArgumentException refused) {
+            return refused.getMessage();
         }
     }
 
@@ -177,6 +184,26 @@ public class DownloadPathPreference extends DialogPreference {
     protected void showDialog(Bundle state) {
         super.showDialog(state);
         SettingsUi.styleFramedDialog(getDialog());
+        // The fourth row of the same shape as the three the item named: it validated after the
+        // dialog had gone and then said what was wrong over whatever was behind it.
+        SettingsUi.keepOpenOnInvalidInput(getDialog(), new SettingsUi.DialogCheck() {
+            @Override public String problem() {
+                try {
+                    DownloadDestination.validate(downloadPathValue, kind);
+                    return null;
+                } catch (IllegalArgumentException refused) {
+                    return refused.getMessage();
+                }
+            }
+
+            @Override public void report(String problem) {
+                if (pathField != null) pathField.setError(problem);
+            }
+
+            @Override public boolean accept() {
+                return saveTypedPath() == null;
+            }
+        });
         AlertDialog dialog = (AlertDialog) getDialog();
         TextView browseButton = dialog.getButton(DialogInterface.BUTTON_NEUTRAL);
         if (browseButton != null) {

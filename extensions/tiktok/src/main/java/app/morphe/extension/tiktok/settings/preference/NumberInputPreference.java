@@ -197,13 +197,7 @@ public class NumberInputPreference extends EditTextPreference {
             }
 
             @Override public boolean accept() {
-                String typed = getEditText().getText().toString();
-                int value = parseAndClamp(typed);
-                String text = String.valueOf(value);
-                sayIfPulledIntoRange(typed, value);
-                if (!callChangeListener(text)) return false;
-                setValue(text);
-                return true;
+                return saveTypedValue();
             }
         });
     }
@@ -217,15 +211,28 @@ public class NumberInputPreference extends EditTextPreference {
 
     @Override
     protected void onDialogClosed(boolean positiveResult) {
-        if (positiveResult) {
-            String typed = getEditText().getText().toString();
-            int value = parseAndClamp(typed);
-            String text = String.valueOf(value);
-            sayIfPulledIntoRange(typed, value);
-            if (callChangeListener(text)) {
-                setValue(text);
-            }
-        }
+        if (positiveResult) saveTypedValue();
+    }
+
+    /**
+     * Saves what is in the box, answering false when something refused it.
+     *
+     * <p>One method rather than a copy in each place. Save no longer reaches the method above:
+     * keeping the dialog open replaces the button's own click listener, which is what used to
+     * run it, so the platform now only calls it for the dismiss it does not act on. A second
+     * copy of the save would be the one the reader really uses and the one nothing exercises.
+     */
+    private boolean saveTypedValue() {
+        String typed = getEditText().getText().toString();
+        int value = parseAndClamp(typed);
+        String text = String.valueOf(value);
+        if (!callChangeListener(text)) return false;
+        // Only once the row has taken it. Saying "kept to 600" and then refusing the change
+        // describes something that did not happen, and with the dialog staying open it said it
+        // again on every press.
+        sayIfPulledIntoRange(typed, value);
+        setValue(text);
+        return true;
     }
 
     /**

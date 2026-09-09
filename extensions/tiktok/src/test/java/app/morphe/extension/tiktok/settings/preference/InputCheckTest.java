@@ -56,6 +56,7 @@ public class InputCheckTest {
         Settings.SIMSPOOF_MCCMNC.save(Settings.SIMSPOOF_MCCMNC.defaultValue);
         Settings.EXTERNAL_DOWNLOADER_PACKAGE.save("");
         Settings.MIN_MAX_VIEWS.resetToDefault();
+        Settings.DOWNLOAD_VIDEO_PATH.resetToDefault();
     }
 
     /** The field as the settings screen really builds it, not one made up for the test. */
@@ -123,6 +124,50 @@ public class InputCheckTest {
             assertFalse("the dialog stayed open on a range it took", dialog.isShowing());
             assertEquals("900-9000", Settings.MIN_MAX_VIEWS.get());
         });
+    }
+
+    /**
+     * The download folder is a fourth row of the same shape, found by the refutation pass over
+     * the first three: it validated the path after the dialog had gone and then said what was
+     * wrong over whatever screen was behind it.
+     */
+    @Test public void ARefusedDownloadFolderLeavesTheDialogOpenWithTheReasonUnderTheField()
+            throws Exception {
+        onScreenRaw("DOWNLOADS", "download_video_path", found -> {
+            assertTrue("download_video_path is a " + found.getClass().getSimpleName(),
+                    found instanceof DownloadPathPreference);
+            String before = Settings.DOWNLOAD_VIDEO_PATH.get();
+            openDialog(found);
+            android.app.AlertDialog dialog =
+                    (android.app.AlertDialog) ((android.preference.DialogPreference) found)
+                            .getDialog();
+            assertNotNull("the dialog did not open", dialog);
+            android.widget.EditText box = pathBox(dialog);
+            box.setText("/data/local/tmp/anywhere");
+
+            dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).performClick();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+            assertTrue("the dialog closed on a folder it refused", dialog.isShowing());
+            assertNotNull("nothing was said under the field", box.getError());
+            assertEquals("what was typed was thrown away",
+                    "/data/local/tmp/anywhere", box.getText().toString());
+            assertEquals("a refused folder was saved anyway", before,
+                    Settings.DOWNLOAD_VIDEO_PATH.get());
+
+            box.setText("DCIM/Hushfeed");
+            dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).performClick();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertFalse("the dialog stayed open on a folder it took", dialog.isShowing());
+            assertEquals("DCIM/Hushfeed", Settings.DOWNLOAD_VIDEO_PATH.get());
+        });
+    }
+
+    private static android.widget.EditText pathBox(android.app.AlertDialog dialog) {
+        java.util.List<android.widget.EditText> found = new java.util.ArrayList<>();
+        collectEditTexts(dialog.getWindow().getDecorView(), found);
+        assertEquals("the folder dialog does not have one box", 1, found.size());
+        return found.get(0);
     }
 
     private interface WithRange {

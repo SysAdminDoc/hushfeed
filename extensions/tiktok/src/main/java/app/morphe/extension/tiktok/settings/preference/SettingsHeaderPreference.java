@@ -170,8 +170,6 @@ public final class SettingsHeaderPreference extends Preference {
         private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         public BackDrawable(Context context) {
-            // Same reason as the chevron: the drawable is right before anything hangs it.
-            setLayoutDirection(context.getResources().getConfiguration().getLayoutDirection());
             paint.setColor(SettingsUi.textPrimary());
             paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeWidth(SettingsUi.strokePx(context, 2.1f));

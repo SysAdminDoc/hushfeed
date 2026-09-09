@@ -160,15 +160,25 @@ public class InputTextPreference extends EditTextPreference {
             }
 
             @Override public boolean accept() {
-                // What EditTextPreference.onDialogClosed(true) does, with the listener's
-                // answer kept rather than thrown away: a row refused while the day is locked
-                // has already said so, and the dialog stays where the reader left it.
-                String typed = String.valueOf(getEditText().getText());
-                if (!callChangeListener(typed)) return false;
-                setText(typed);
-                return true;
+                return saveTypedValue();
             }
         });
+    }
+
+    /**
+     * What EditTextPreference.onDialogClosed(true) does, with the listener's answer kept rather
+     * than thrown away, and reached from both the Save button and the platform's own dismiss.
+     */
+    private boolean saveTypedValue() {
+        String typed = String.valueOf(getEditText().getText());
+        if (!callChangeListener(typed)) return false;
+        setText(typed);
+        return true;
+    }
+
+    @Override
+    protected void onDialogClosed(boolean positiveResult) {
+        if (positiveResult) saveTypedValue();
     }
 
     @Override

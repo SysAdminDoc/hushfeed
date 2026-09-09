@@ -226,7 +226,10 @@ public class RangeValuePreference extends DialogPreference {
     @Override
     protected void onDialogClosed(boolean positiveResult) {
         if (!positiveResult) return;
+        saveTypedRange();
+    }
 
+    private void saveTypedRange() {
         long min = readField(minValue, 0L);
         long max = readField(maxValue, Long.MAX_VALUE);
         if (min < 0 || max < 0) {
@@ -287,7 +290,10 @@ public class RangeValuePreference extends DialogPreference {
             }
 
             @Override public boolean accept() {
-                onDialogClosed(true);
+                // Not onDialogClosed: dismissing runs that a second time, for the button the
+                // platform still thinks was pressed, and only the early return on false kept
+                // that from saving twice.
+                saveTypedRange();
                 return true;
             }
         });
