@@ -31,14 +31,14 @@ PKG=com.zhiliaoapp.musically
 SCALE="${PHONE_SCALE:-1.15756}"
 mkdir -p "$SP"
 
-top() { timeout 30 "$ADB" -s "$S" shell dumpsys activity activities 2>/dev/null | grep -m1 -o "topResumedActivity=ActivityRecord{[^}]*}" | sed 's/.*u0 //;s/ t[0-9]*}//'; }
-shot() { timeout 60 "$ADB" -s "$S" exec-out screencap -p > "$SP/$1.png" 2>/dev/null; echo "shot $SP/$1.png top=$(top)"; }
+top() { local result; result=$(timeout 30 "$ADB" -s "$S" shell dumpsys activity activities 2>/dev/null) || return $?; printf '%s\n' "$result" | grep -m1 -o "topResumedActivity=ActivityRecord{[^}]*}" | sed 's/.*u0 //;s/ t[0-9]*}//'; }
+shot() { local activity; timeout 60 "$ADB" -s "$S" exec-out screencap -p > "$SP/$1.png" 2>/dev/null || return $?; activity=$(top) || return $?; echo "shot $SP/$1.png top=$activity"; }
 guard() { local t; t=$(top); case "$t" in $PKG/*) ;; *) echo "REFUSED: foreground is $t"; exit 2;; esac; }
 px() { awk "BEGIN{printf \"%d\", $1*$SCALE}"; }
 tap() { guard; timeout 30 "$ADB" -s "$S" shell input tap "$(px "$1")" "$(px "$2")"; sleep "${3:-2}"; }
 swipe() { guard; timeout 30 "$ADB" -s "$S" shell input swipe "$(px "$1")" "$(px "$2")" "$(px "$3")" "$(px "$4")" "${5:-300}"; sleep "${6:-2}"; }
 key() { guard; timeout 30 "$ADB" -s "$S" shell input keyevent "$1"; sleep "${2:-2}"; }
 text() { guard; timeout 30 "$ADB" -s "$S" shell input text "$1"; sleep 1; }
-logcat() { timeout 60 "$ADB" -s "$S" logcat -d 2>/dev/null | grep -iE "$1" | tail -"${2:-20}"; }
-gfx() { timeout 60 "$ADB" -s "$S" shell dumpsys gfxinfo $PKG "${1:-}" 2>/dev/null | grep -E "Total frames|Janky|50th|90th|99th|Number Frame|Uptime" | head -12; }
+logcat() { local result; result=$(timeout 60 "$ADB" -s "$S" logcat -d 2>/dev/null) || return $?; printf '%s\n' "$result" | grep -iE "$1" | tail -"${2:-20}"; }
+gfx() { local result; result=$(timeout 60 "$ADB" -s "$S" shell dumpsys gfxinfo $PKG "${1:-}" 2>/dev/null) || return $?; printf '%s\n' "$result" | grep -E "Total frames|Janky|50th|90th|99th|Number Frame|Uptime" | head -12; }
 "$@"

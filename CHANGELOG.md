@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The phone helper reports failed activity, log and frame-stat queries instead of hiding their exit status behind output filters. A screenshot no longer claims success when its foreground check fails.
+
 * Changing font size or navigation mode keeps the Hushfeed settings page you were using. The restored page reuses its original container, and Back still returns through the pages you opened.
 
 * Follow diagnostics no longer injects a String logger over integer arguments in TikTok's detailed follow caller. Both direct follow methods are covered inside their shared native API; the separate stream path keeps its own hook. Skipped and failed requests can't inherit an earlier diagnostic ID. Account pseudonyms now use keyed SHA-256 instead of a reversible short hash.
