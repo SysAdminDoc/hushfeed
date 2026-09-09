@@ -10,6 +10,7 @@ import android.app.Activity;
 import android.view.View;
 
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.ResourceIdCache;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
@@ -35,6 +36,15 @@ public final class FeedVisibility {
 
     private static WeakReference<View> homeTabReference = new WeakReference<>(null);
     private static WeakReference<View> inboxTabReference = new WeakReference<>(null);
+
+    /**
+     * Names resolved once each. The view lookup below has to run again whenever the cached view
+     * is gone, and for a tab that is genuinely absent, which is what a reader who hid Inbox in
+     * Feed navigation has, that is every call. Resolving the name each time is a string search
+     * through TikTok's resource table, and the hold's panel asks once a second for as long as it
+     * is up. InboxFilter made the same fix for the same id.
+     */
+    private static final ResourceIdCache IDS = new ResourceIdCache();
     private static volatile boolean warnedMissing;
 
     // Fragment instances are weak keys, and values never retain the fragment or its view.
@@ -140,8 +150,8 @@ public final class FeedVisibility {
         }
 
         try {
-            int id = activity.getResources().getIdentifier(
-                    resourceName, "id", activity.getPackageName());
+            int id = IDS.resolve(activity.getResources(), activity.getPackageName(),
+                    resourceName, false);
             if (id == 0) {
                 if (HOME_TAB_RESOURCE_NAME.equals(resourceName)) warnMissing();
                 return null;

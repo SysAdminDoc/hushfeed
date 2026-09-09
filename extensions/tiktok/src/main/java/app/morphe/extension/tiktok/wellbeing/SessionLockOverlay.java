@@ -146,12 +146,31 @@ public final class SessionLockOverlay {
             overlay.setVisibility(View.VISIBLE);
             if (goingUp) hideBehind(parentOf(overlay), overlay, true);
             if (goingUp) requestQuiet();
+            // Only as the panel goes up. Whether there is an Inbox tab changes when TikTok
+            // rebuilds its tab bar, not second by second, and for a reader who has hidden Inbox
+            // the answer is a failed lookup every time: asking on every tick would be a walk of
+            // the whole view tree once a second for the length of the hold.
+            if (goingUp) applyMessagesAction(activity);
             TextView remaining = remainingReference.get();
             if (remaining != null) remaining.setText(remainingLabel());
             applyLockedState();
         } catch (Throwable error) {
             Logger.printException(() -> "Could not update the session lock overlay", error);
         }
+    }
+
+    /**
+     * Offers the way to messages only while there is an Inbox tab to open.
+     *
+     * <p>Absent when this build renames the tab and when the reader has hidden Inbox in Feed
+     * navigation, which is the same thing as far as the panel is concerned: the filter drops the
+     * tab from the model, so no view is ever built and there is nothing to offer.
+     */
+    private static void applyMessagesAction(Activity activity) {
+        TextView messages = messagesReference.get();
+        if (messages == null) return;
+        boolean reachable = activity != null && FeedVisibility.inboxTabView(activity) != null;
+        messages.setVisibility(reachable ? View.VISIBLE : View.GONE);
     }
 
     /**
@@ -170,15 +189,6 @@ public final class SessionLockOverlay {
             release.setVisibility(locked || left == 0 ? View.GONE : View.VISIBLE);
             release.setText(releaseLabel(left));
             release.setContentDescription(release.getText());
-        }
-        // Absent when this build renames the tab and when the reader has hidden Inbox in Feed
-        // navigation, which is the same thing as far as the panel is concerned: there is no
-        // Inbox to open, so there is nothing to offer.
-        TextView messages = messagesReference.get();
-        if (messages != null) {
-            Activity activity = Utils.getActivity();
-            boolean reachable = activity != null && FeedVisibility.inboxTabView(activity) != null;
-            messages.setVisibility(reachable ? View.VISIBLE : View.GONE);
         }
         TextView hint = hintReference.get();
         if (hint == null) return;
@@ -356,6 +366,7 @@ public final class SessionLockOverlay {
         });
         panel.addView(messages);
         messagesReference = new WeakReference<>(messages);
+        applyMessagesAction(activity);
 
         applyLockedState();
 

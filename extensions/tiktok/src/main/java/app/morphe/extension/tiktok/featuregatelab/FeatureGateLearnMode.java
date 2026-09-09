@@ -36,6 +36,27 @@ public final class FeatureGateLearnMode {
     static synchronized void setClockForTests(Clock replacement) {
         clock = replacement == null ? System::currentTimeMillis : replacement;
     }
+
+    /**
+     * Empties what the recorder remembers between runs.
+     *
+     * <p>{@link #latest} is what a recording takes its baseline from, and nothing in a test's
+     * lifecycle empties it, so a gate another test read first turns up in this one's baseline
+     * and the report says "read, was false" where a fresh process would say "new". The
+     * screenshot of that report is a published file, so a class-order change or running one
+     * case on its own moved it. It also saturates at {@value #LIMIT}, after which a new key is
+     * refused, so seeding a baseline without clearing first is not enough.
+     */
+    static synchronized void resetForTests() {
+        recording = false;
+        latest.clear();
+        baseline.clear();
+        reads.clear();
+        dropped = 0;
+        lastReport = "";
+        lastCount = 0;
+        sessionState = false;
+    }
     private static int dropped;
     private static String lastReport = "";
     private static int lastCount;

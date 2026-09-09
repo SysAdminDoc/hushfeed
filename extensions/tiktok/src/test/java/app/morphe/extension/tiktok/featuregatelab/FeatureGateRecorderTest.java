@@ -101,10 +101,15 @@ public class FeatureGateRecorderTest {
     public void reportRemainsReadableInLightTheme() throws Exception { captureReport(false); }
 
     private void captureReport(boolean dark) throws Exception {
-        // The report carries the times the recording started and stopped, and those are drawn
-        // into the picture. Left on the wall clock, no two captures of an unchanged tree match
-        // and refreshScreenshots cannot hold this one.
+        // Two things in this report are drawn into the picture and neither is about this test.
+        // The times it started and stopped come off the wall clock, so no two captures of an
+        // unchanged tree match. And whether the gate reads as new or as changed comes from what
+        // the recorder remembers from every earlier test in the sandbox, so the class order and
+        // running one case alone both moved it. Frozen and emptied, the picture says what this
+        // case did.
         FeatureGateLearnMode.setClockForTests(() -> 1_757_000_000_000L);
+        FeatureGateLearnMode.resetForTests();
+        FeatureGateLearnMode.observe("abmock", "circle_search_block", "BOOLEAN", false);
         try (var owner = Robolectric.buildActivity(
                 app.morphe.extension.tiktok.settings.SettingsPagesTest.PageActivity.class).setup().visible()) {
             var activity = owner.get();

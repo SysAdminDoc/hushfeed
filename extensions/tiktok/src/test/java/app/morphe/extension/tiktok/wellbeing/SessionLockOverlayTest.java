@@ -58,6 +58,9 @@ public class SessionLockOverlayTest {
     }
 
     @After public void tearDown() throws Exception {
+        // Robolectric reuses its sandbox classloader across test classes, so a seeded tab view
+        // would answer for every later test that asks whether there is an Inbox.
+        seedInboxTab(null);
         // The override is a static Boolean on the shared library and Robolectric reuses its
         // sandbox classloader across test classes, so leaving it set answers for every later
         // test that expects the system configuration.
@@ -317,7 +320,20 @@ public class SessionLockOverlayTest {
             inbox.setOnClickListener(view -> taps.incrementAndGet());
             root.addView(inbox, 0);
             seedInboxTab(inbox);
+
+            // Asked as the panel goes up rather than on every tick, so the answer moves when
+            // the hold does. Ending this one and taking the next is what a reader who changed
+            // the setting and came back to the feed does.
+            SessionBudget.releaseLock();
             SessionLockOverlay.sync();
+            Settings.SESSION_BUDGET_VIDEOS.save(2);
+            SessionBudget.claimNotice();
+            SessionBudget.noteVideo("b");
+            assertTrue(SessionBudget.claimNotice());
+            SessionLockOverlay.sync();
+
+            panel = (ViewGroup) root.getChildAt(root.getChildCount() - 1);
+            messages = (android.widget.TextView) panel.getChildAt(4);
             assertEquals(View.VISIBLE, messages.getVisibility());
             assertEquals("Open messages", messages.getText().toString());
             assertEquals("a screen reader would not hear it as a button",
