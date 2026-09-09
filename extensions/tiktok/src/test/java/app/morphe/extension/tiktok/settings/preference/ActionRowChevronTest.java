@@ -80,7 +80,7 @@ public class ActionRowChevronTest {
 
     private static View chevron(View row) {
         ViewGroup widget = row.findViewById(android.R.id.widget_frame);
-        return widget == null ? null : widget.findViewWithTag("metra_chevron");
+        return widget == null ? null : widget.findViewWithTag("hushfeed_chevron");
     }
 
     private View chevronOf(PreferenceScreen screen, int position) {

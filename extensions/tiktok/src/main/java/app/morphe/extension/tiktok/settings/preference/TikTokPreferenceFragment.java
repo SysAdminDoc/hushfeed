@@ -133,7 +133,8 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
 
     public static void openDownloadPathFolderPicker(DownloadPathPreference preference) {
         if (activeFragment == null) {
-            app.morphe.extension.shared.Utils.showToastShort(L10n.t("Folder picker is not available"));
+            app.morphe.extension.shared.Utils.showToastLong(L10n.t(
+                    "This phone has no folder picker. Type the folder into the row instead."));
             return;
         }
 
@@ -146,7 +147,8 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             activeFragment.startActivityForResult(intent, REQUEST_DOWNLOAD_PATH_FOLDER);
         } catch (ActivityNotFoundException exception) {
             pendingDownloadPathKey = null;
-            app.morphe.extension.shared.Utils.showToastLong(L10n.t("Folder picker is not available on this device"));
+            app.morphe.extension.shared.Utils.showToastLong(L10n.t(
+                    "This phone has no folder picker. Type the folder into the row instead."));
         }
     }
 
@@ -222,7 +224,11 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         final var context = getActivity();
         activeFragment = this;
 
-        confirmDialogTitle = L10n.t(getActivity(), "Do you wish to proceed?");
+        // Nothing sets one. The framework only raises that dialog for a setting carrying a
+        // userDialogMessage, and no setting in this bundle has one, so this was a translated
+        // string for a screen nobody could reach. The safety net Reset and Undo do want is its
+        // own item on the roadmap.
+        confirmDialogTitle = null;
 
         Utils.setIsDarkModeEnabled(isDarkModeEnabled(context));
 

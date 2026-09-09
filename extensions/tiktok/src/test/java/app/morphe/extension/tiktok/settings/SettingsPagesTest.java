@@ -699,7 +699,7 @@ public class SettingsPagesTest {
             Shadows.shadowOf(Looper.getMainLooper()).idle();
             assertEquals("", input.getText().toString());
             assertNotNull(findPreference(page.getPreferenceScreen(), "Tippe, um Einstellungen zu durchsuchen"));
-            View toolbar = page.getView().findViewWithTag("metra_toolbar");
+            View toolbar = page.getView().findViewWithTag("hushfeed_toolbar");
             assertNotNull(toolbar);
             assertTrue(((android.view.ViewGroup) toolbar).getChildAt(0).performClick());
             activity.getFragmentManager().executePendingTransactions();
@@ -802,7 +802,7 @@ public class SettingsPagesTest {
             layout(page.getView(), 360, 800);
             Shadows.shadowOf(Looper.getMainLooper()).idle();
             UiCapture.save(page.getView(), "pages/dark/comments-german-large.png", 360, 800);
-            android.widget.TextView heading = page.getView().findViewWithTag("metra_page_title");
+            android.widget.TextView heading = page.getView().findViewWithTag("hushfeed_page_title");
             assertNotNull(heading);
             assertTrue(heading.getLineCount() > 1);
             assertEquals(0, heading.getLayout().getEllipsisCount(heading.getLineCount() - 1));
@@ -833,7 +833,7 @@ public class SettingsPagesTest {
             layout(page.getView(), 320, 800);
             Shadows.shadowOf(Looper.getMainLooper()).idle();
 
-            TextView heading = page.getView().findViewWithTag("metra_page_title");
+            TextView heading = page.getView().findViewWithTag("hushfeed_page_title");
             assertNotNull(heading);
             assertEquals("the page title is not in Spanish, so this proves nothing",
                     "Comentarios y traducción", heading.getText().toString());
@@ -894,7 +894,7 @@ public class SettingsPagesTest {
                 TikTokPreferenceFragment page = attachSection(activity, section);
                 layout(page.getView(), 320, 800);
                 Shadows.shadowOf(Looper.getMainLooper()).idle();
-                TextView heading = page.getView().findViewWithTag("metra_page_title");
+                TextView heading = page.getView().findViewWithTag("hushfeed_page_title");
                 assertNotNull(section, heading);
                 assertTextFits(heading);
                 assertRowsReadable(page.getView().findViewById(android.R.id.list), 48);
@@ -929,7 +929,7 @@ public class SettingsPagesTest {
 assertEquals(View.LAYOUT_DIRECTION_RTL, configuration.getLayoutDirection());
             assertBackArrowPointsTheWayTheReaderReads(page.getView());
             assertRowsReadable(page.getView().findViewById(android.R.id.list), 48);
-            TextView heading = page.getView().findViewWithTag("metra_page_title");
+            TextView heading = page.getView().findViewWithTag("hushfeed_page_title");
             assertNotNull(heading);
             assertTextFits(heading);
             UiCapture.save(page.getView(), "pages/dark/rtl-large.png", 320, 800);
@@ -942,7 +942,7 @@ assertEquals(View.LAYOUT_DIRECTION_RTL, configuration.getLayoutDirection());
                 layout(other.getView(), 320, 800);
                 Shadows.shadowOf(Looper.getMainLooper()).idle();
                 forceRtl(other.getView());
-                TextView title = other.getView().findViewWithTag("metra_page_title");
+                TextView title = other.getView().findViewWithTag("hushfeed_page_title");
                 assertNotNull(section, title);
                 assertTextFits(title);
                 assertRowsReadable(other.getView().findViewById(android.R.id.list), 48);
@@ -976,7 +976,7 @@ assertEquals(View.LAYOUT_DIRECTION_RTL, configuration.getLayoutDirection());
             layout(page.getView(), 320, 800);
 assertEquals(View.LAYOUT_DIRECTION_RTL, configuration.getLayoutDirection());
             assertBackArrowPointsTheWayTheReaderReads(page.getView());
-            TextView heading = page.getView().findViewWithTag("metra_page_title");
+            TextView heading = page.getView().findViewWithTag("hushfeed_page_title");
             assertNotNull(heading);
             assertTextFits(heading);
             assertRowsReadable(page.getView().findViewById(android.R.id.list), 48);
@@ -1237,7 +1237,7 @@ assertEquals(View.LAYOUT_DIRECTION_RTL, configuration.getLayoutDirection());
      * nothing.
      */
     private static void assertBackArrowPointsTheWayTheReaderReads(View root) {
-        View toolbar = root.findViewWithTag("metra_toolbar");
+        View toolbar = root.findViewWithTag("hushfeed_toolbar");
         assertNotNull("the page has no toolbar, so this proves nothing", toolbar);
         View back = ((android.view.ViewGroup) toolbar).getChildAt(0);
         assertTrue("the first thing in the toolbar is not the back button",

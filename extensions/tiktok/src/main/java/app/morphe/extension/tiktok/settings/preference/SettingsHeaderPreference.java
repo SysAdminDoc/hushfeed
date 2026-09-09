@@ -102,12 +102,12 @@ public final class SettingsHeaderPreference extends Preference {
     /** Shared app-owned heading used by settings and the Lab. Parent supplies the 16 dp gutter. */
     public static LinearLayout createHeader(Context context, String title, Runnable onBack) {
         LinearLayout header = new LinearLayout(context);
-        header.setTag("metra_page_header");
+        header.setTag("hushfeed_page_header");
         header.setOrientation(LinearLayout.VERTICAL);
         header.setPadding(SettingsUi.dp(context, 8), SettingsUi.dp(context, 8), SettingsUi.dp(context, 8), 0);
         header.setBackgroundColor(SettingsUi.background());
         LinearLayout toolbar = new LinearLayout(context);
-        toolbar.setTag("metra_toolbar");
+        toolbar.setTag("hushfeed_toolbar");
         toolbar.setGravity(Gravity.CENTER_VERTICAL);
         ImageView back = new ImageView(context);
         back.setContentDescription(L10n.t(context, "Back"));
@@ -134,7 +134,7 @@ public final class SettingsHeaderPreference extends Preference {
         header.addView(toolbar, new LinearLayout.LayoutParams(-1, -2));
         TextView heading = SettingsUi.text(
                 context, title, headingSizeSp(context), SettingsUi.textPrimary(), 1);
-        heading.setTag("metra_page_title");
+        heading.setTag("hushfeed_page_title");
         if (android.os.Build.VERSION.SDK_INT >= 28) heading.setAccessibilityHeading(true);
         LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(-1, -2);
         titleParams.topMargin = SettingsUi.dp(context, 24);

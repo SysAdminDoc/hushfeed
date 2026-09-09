@@ -124,7 +124,7 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
             addPreference(new TogglePreference(
                     context,
                     "Ghost mode",
-                    "Stop TikTok reporting that you viewed a story or a profile, that you are "
+                    "Stop TikTok reporting that you viewed a story or a profile, or that you are "
                             + "typing. Online status is unchanged. It cannot undo what the server has "
                             + "already recorded.",
                     Settings.GHOST_MODE

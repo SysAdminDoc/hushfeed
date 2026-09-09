@@ -822,15 +822,15 @@ public class SettingsBackupTest {
             Settings.MAX_VIDEO_SECONDS.save(73);
             Shadows.shadowOf(activity.getContentResolver()).registerInputStream(uri, new ByteArrayInputStream(output.toByteArray()));
             fragment.onActivityResult(7312, android.app.Activity.RESULT_OK, new Intent().setData(uri));
-            waitFor("Settings saved. Restart TikTok to apply all changes.");
+            waitFor("Settings restored. Restart TikTok to apply all changes.");
             assertEquals(0, (int) Settings.MAX_VIDEO_SECONDS.get());
             var undo = fragment.findPreference("settings_backup_7314");
             undo.getOnPreferenceClickListener().onPreferenceClick(undo);
-            waitFor("Settings saved. Restart TikTok to apply all changes.");
+            waitFor("The last change is undone. Restart TikTok to apply all changes.");
             assertEquals(73, (int) Settings.MAX_VIDEO_SECONDS.get());
             var reset = fragment.findPreference("settings_backup_7313");
             reset.getOnPreferenceClickListener().onPreferenceClick(reset);
-            waitFor("Settings saved. Restart TikTok to apply all changes.");
+            waitFor("Settings are back to their defaults. Restart TikTok to apply all changes.");
             assertEquals(0, (int) Settings.MAX_VIDEO_SECONDS.get());
             fragment.onActivityResult(7312, android.app.Activity.RESULT_CANCELED, null);
             assertNull(org.robolectric.shadows.ShadowAlertDialog.getLatestAlertDialog());

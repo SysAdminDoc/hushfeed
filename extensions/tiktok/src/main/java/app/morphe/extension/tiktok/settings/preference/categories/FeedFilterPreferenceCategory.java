@@ -85,12 +85,12 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
         ));
         addPreference(new TogglePreference(
                 context,
-                "Hide story", "Hide story from feed.",
+                "Hide story", "Hide the stories from the feed.",
                 Settings.HIDE_STORY
         ));
         addPreference(new TogglePreference(
                 context,
-                "Hide image video", "Hide image video from feed.",
+                "Hide photo posts", "Hide the photo posts from the feed.",
                 Settings.HIDE_IMAGE
         ));
         addPreference(new RangeValuePreference(

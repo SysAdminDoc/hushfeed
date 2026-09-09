@@ -29,7 +29,7 @@ Allowed bottom tabs	Abas inferiores permitidas
 Allowed loaded tabs	Abas carregadas permitidas
 Already marked as not interested	Já marcado como não tenho interesse
 Also apply these filters to downloaded videos TikTok uses when the feed cannot load enough new items.	Aplicar esses filtros também aos vídeos baixados que o TikTok usa quando o feed não consegue carregar itens novos suficientes.
-Also override TikTok's region getters. Keeps your interface language. Requires Override SIM details and a restart; IP address and account rules still apply.	Substituir também os leitores de região do TikTok. Mantém o idioma da interface. Precisa de Substituir dados do SIM e de reiniciar; o endereço IP e as regras da conta continuam valendo.
+Also change the region TikTok reports internally. Keeps your interface language. Needs Override SIM details and a restart; your IP address and your account's own rules still apply.	Também muda a região que o TikTok informa internamente. Mantém o idioma da interface. Precisa de Substituir os dados do SIM e de reiniciar; seu endereço IP e as regras da sua conta continuam valendo.
 Always show publish date	Sempre mostrar a data de publicação
 Always show the publish date in video author information. Requires restart.	Sempre mostrar a data de publicação nas informações do autor do vídeo. Precisa reiniciar.
 An app's package name, like com.dv.adm. The save button sends the video's link there instead of saving it here. Leave it empty to save here.	O nome de pacote de um app, como com.dv.adm. O botão de salvar manda o link do vídeo para lá em vez de salvar aqui. Deixe vazio para salvar aqui.
@@ -151,21 +151,20 @@ Dismissed %1$s suggested accounts	%1$s contas sugeridas dispensadas
 Dismissed one suggested account	Uma conta sugerida dispensada
 Do not start the feed on returning	Não iniciar o feed ao voltar
 Do nothing	Não fazer nada
-Do you wish to proceed?	Você quer continuar?
 Double tap	Toque duplo
 Download original photos	Baixar as fotos originais
 Download path updated	Pasta de download atualizada
 Downloads	Downloads
 Drag to move, release to place	Arraste para mover, solte para posicionar
 Drop the notification saying somebody new followed you before it reaches the drawer. Every other notification is left alone, and the follower still appears in the Inbox.	Descarta a notificação que diz que alguém novo passou a seguir você antes de ela chegar à gaveta. As outras notificações ficam como estão, e o seguidor continua aparecendo na caixa de entrada.
-Each surface, how many of the things it looks for are in this build, and how many are not.	Cada superfície, quantas das coisas que ela procura estão nesta build e quantas não estão.
+Each area, how many of the things it looks for are in this build and how many are not.	Cada área, quantas das coisas que ela procura estão nesta build e quantas não estão.
 Enable diagnostic logging	Ligar o registro de diagnóstico
 Enable hold-and-slide 2x lock	Ligar a trava de 2x segurando e deslizando
 Enter a creator handle or id	Digite um nome de usuário ou id de criador
 Enter a valid two-letter country code	Digite um código de país válido de duas letras
 Enter a whole number, or one like 20K, 1.5M or 2B	Digite um número inteiro, ou um como 20K, 1.5M ou 2B
 Enter up to 8 comma-separated speeds from 0.5 to 3	Digite até 8 velocidades separadas por vírgula, de 0.5 a 3
-Every hook found what it needed across %1$d surfaces.	Todos os ganchos acharam o que precisavam em %1$d superfícies.
+%1$d areas were checked and everything they need is here.	%1$d áreas foram verificadas e tudo de que precisam está aqui.
 Expand activity list	Expandir a lista de atividades
 Export diagnostic report	Exportar o relatório de diagnóstico
 Fade the feed out before the hold	Escurecer o feed antes da pausa
@@ -180,8 +179,7 @@ Filter the list	Filtrar a lista
 Filters, translation and copy options	Filtros, tradução e opções de cópia
 Find a setting by title or description	Ache uma configuração por título ou descrição
 Fit the video to the screen	Ajustar o vídeo à tela
-Folder picker is not available	O seletor de pastas não está disponível
-Folder picker is not available on this device	O seletor de pastas não está disponível neste aparelho
+This phone has no folder picker. Type the folder into the row instead.	Este celular não tem seletor de pastas. Digite a pasta na linha.
 For You	Para você
 For com.deniscerri.ytdl only. Ask YTDLnis for audio or video when the save button hands it a link.	Só para com.deniscerri.ytdl. Pedir áudio ou vídeo ao YTDLnis quando o botão de salvar passar um link.
 For com.deniscerri.ytdl only. Hide its download card and start the handoff in the background.	Só para com.deniscerri.ytdl. Esconder o card de download dele e começar a passagem em segundo plano.
@@ -221,8 +219,8 @@ Hide feed save button	Esconder o botão de salvar do feed
 Hide feed search button	Esconder o botão de busca do feed
 Hide floating promotion badges, coins, and timer banners on the homepage.	Esconder os selos promocionais flutuantes, as moedas e os banners com contagem regressiva da página inicial.
 Hide floating promotions	Esconder as promoções flutuantes
-Hide image video	Esconder os vídeos de imagens
-Hide image video from feed.	Esconder do feed os vídeos feitos de imagens.
+Hide photo posts	Esconder as publicações de fotos
+Hide the photo posts from the feed.	Esconder as publicações de fotos do feed.
 Hide inserted cards	Esconder os cards inseridos
 Hide livestreams	Esconder as transmissões ao vivo
 Hide livestreams from the feed.	Esconder as transmissões ao vivo do feed.
@@ -242,7 +240,7 @@ Hide search suggestions	Esconder as sugestões de busca
 Hide sharing apps	Esconder os apps de compartilhamento
 Hide stories tray	Esconder a bandeja de stories
 Hide story	Esconder os stories
-Hide story from feed.	Esconder os stories do feed.
+Hide the stories from the feed.	Esconder os stories do feed.
 Hide suggested account rows.	Esconder as linhas de contas sugeridas.
 Hide suggested accounts	Esconder as contas sugeridas
 Hide surveys	Esconder as enquetes
@@ -305,7 +303,7 @@ Hide visual search prompt	Esconder o aviso de busca visual
 Highest	A mais alta
 Hold the feed after the budget	Pausar o feed depois do limite
 Home	Início
-Hook status	Status dos ganchos
+Hook status	Verificação de recursos
 How far each edge press moves the video.	Quanto o vídeo anda a cada toque na borda.
 Hushfeed cannot read the creator pattern %1$s	O Hushfeed não consegue ler o padrão de criador %1$s
 Hushfeed filtered this batch	O Hushfeed filtrou este lote
@@ -366,7 +364,7 @@ No share actions have been observed yet	Nenhuma ação de compartilhamento foi v
 No share actions match this search	Nenhuma ação de compartilhamento combina com esta busca
 No sound to block on this video	Não há som para bloquear neste vídeo
 No suggested accounts to clear	Não há contas sugeridas para limpar
-No surface has looked anything up yet, so there is nothing to report.	Nenhuma superfície procurou nada ainda, então não há o que contar.
+Nothing has been checked yet, so there is nothing to report.	Nada foi verificado ainda, então não há o que contar.
 No video selected	Nenhum vídeo selecionado
 No videos remained after Hushfeed applied your feed filters to %1$d batches. Most matches: %2$s.	Não sobrou nenhum vídeo depois que o Hushfeed aplicou seus filtros do feed a %1$d lotes. A maioria combinou por: %2$s.
 No videos remained after Hushfeed applied your feed filters to one batch. Most matches: %1$s.	Não sobrou nenhum vídeo depois que o Hushfeed aplicou seus filtros do feed a um lote. A maioria combinou por: %1$s.
@@ -384,7 +382,7 @@ Offline videos limit	Limite de vídeos offline
 On mobile data	Nos dados móveis
 One minute left	Resta um minuto
 One of the quote marks in that list has nothing to close it, so the rest of the line reads as one phrase. Add the missing quote or take the stray one out.	Uma das aspas dessa lista não tem com o que fechar, então o resto da linha é lido como uma frase só. Adicione a aspa que falta ou tire a que sobrou.
-One surface was checked and found everything it needed.	Uma superfície foi verificada e achou tudo de que precisava.
+One area was checked and everything it needs is here.	Uma área foi verificada e tudo de que ela precisa está aqui.
 Only enable when recording logs to report an issue. Leaving it on for too long can make TikTok feel laggy and may lead to crashes.	Ligue só quando estiver gravando registros para relatar um problema. Deixar ligado por muito tempo pode deixar o TikTok lento e causar falhas.
 Only from these countries	Só destes países
 Only internal storage folders are supported	Só há suporte para pastas do armazenamento interno
@@ -481,6 +479,11 @@ Search a title, description or category.	Busque um título, uma descrição ou u
 Search and override gate flags	Buscar e substituir marcas de gates
 Search hidden creators	Buscar criadores escondidos
 Search settings	Buscar nas configurações
+Restoring your settings	Restaurando suas configurações
+Putting the settings back to their defaults	Voltando as configurações para os padrões
+Undoing the last change	Desfazendo a última mudança
+Settings are back to their defaults. Restart TikTok to apply all changes.	As configurações voltaram para os padrões. Reinicie o TikTok para aplicar todas as mudanças.
+The last change is undone. Restart TikTok to apply all changes.	A última mudança foi desfeita. Reinicie o TikTok para aplicar todas as mudanças.
 Value to return	Valor devolvido
 Enable overrides	Ativar as substituições
 Applies saved rules at supported getters	Aplica as regras salvas onde dá
@@ -534,8 +537,8 @@ Settings	Configurações
 Settings backup saved	Backup das configurações salvo
 Settings recovery could not finish. Use Undo or restore your backup.	A recuperação das configurações não conseguiu terminar. Use Desfazer ou restaure o seu backup.
 Settings recovery needs attention. Use Undo or restore your backup.	A recuperação das configurações precisa da sua atenção. Use Desfazer ou restaure o seu backup.
-Settings saved. Restart TikTok to apply all changes.	Configurações salvas. Reinicie o TikTok para aplicar todas as mudanças.
-Settings saved. The Feature Gate Lab rules were for another TikTok version and were left out. Restart TikTok to apply all changes.	Configurações salvas. As regras do Laboratório de gates eram de outra versão do TikTok e ficaram de fora. Reinicie o TikTok para aplicar todas as mudanças.
+Settings restored. Restart TikTok to apply all changes.	Configurações restauradas. Reinicie o TikTok para aplicar todas as mudanças.
+Settings restored. The Feature Gate Lab rules were for another TikTok version and were left out. Restart TikTok to apply all changes.	Configurações restauradas. As regras do Laboratório de gates eram de outra versão do TikTok e ficaram de fora. Reinicie o TikTok para aplicar todas as mudanças.
 Share action checklist	Lista de ações de compartilhamento
 Share links through another host	Compartilhar os links por outro host
 Share sheet	Folha de compartilhamento
@@ -580,7 +583,7 @@ Still reading the record. Tap again in a moment.	O registro ainda está sendo li
 Still saving the last one	O anterior ainda está sendo salvo
 Stop ByteDance AppLog events, AppsFlyer attribution, explicit Firebase screen reports and crash reporting from being sent. TikTok's own diagnostics go quiet with them.	Impedir o envio dos eventos AppLog da ByteDance, da atribuição do AppsFlyer, dos relatórios explícitos de tela do Firebase e dos relatórios de falha. Os diagnósticos do próprio TikTok se calam junto.
 Stop TikTok asking the screen to run at the frame rate of the video it is playing. On a 90 or 120 Hz phone that ask slows the whole app down to the video's rate, scrolling included.	Impedir que o TikTok peça à tela para rodar na taxa de quadros do vídeo que está tocando. Num celular de 90 ou 120 Hz esse pedido derruba o app inteiro para a taxa do vídeo, inclusive a rolagem.
-Stop TikTok reporting that you viewed a story or a profile, that you are typing. Online status is unchanged. It cannot undo what the server has already recorded.	Impedir que o TikTok informe que você viu um story ou um perfil, ou que está digitando. O status on-line não muda. Não dá para desfazer o que o servidor já registrou.
+Stop TikTok reporting that you viewed a story or a profile, or that you are typing. Online status is unchanged. It cannot undo what the server has already recorded.	Impede que o TikTok informe que você viu um story ou um perfil, ou que está digitando. O status on-line não muda. Não dá para desfazer o que o servidor já registrou.
 Stop feature gate recording	Parar de gravar os gates
 Stop the brand animation that plays over the comments when what someone typed matches an advertiser's trigger.	Parar a animação de marca que aparece sobre os comentários quando o que alguém escreveu bate com o gatilho de um anunciante.
 Stop video looping	Parar a repetição dos vídeos
@@ -600,7 +603,6 @@ Tap to start the feed	Toque para iniciar o feed
 That backup was written by a newer Hushfeed than this one. Nothing was altered.	Esse backup foi escrito por um Hushfeed mais novo que este. Nada foi alterado.
 That creator is already in the list	Esse criador já está na lista
 That creator pattern is too long to use, so it was skipped: %1$s	Esse padrão de criador é longo demais para usar, então foi pulado: %1$s
-That creator pattern is too long to use: %1$s	Esse padrão de criador é longo demais para usar: %1$s
 That file is not readable text, so it may have been damaged in transit. Nothing was altered.	Esse arquivo não é texto legível, então pode ter se danificado no caminho. Nada foi alterado.
 That file is too large to be a settings backup. Nothing was altered.	Esse arquivo é grande demais para ser um backup de configurações. Nada foi alterado.
 That is %1$d minutes today	Isso dá %1$d minutos hoje
@@ -617,7 +619,7 @@ That sticker is in a format Hushfeed cannot read	Esse sticker está num formato 
 The destination contains an invalid folder name	O destino tem um nome de pasta inválido
 The feed does not end. This is a fine time to leave it.	O feed não acaba. Esta é uma boa hora para largá-lo.
 The feed is open again	O feed está aberto de novo
-The file picker is not available on this device.	O seletor de arquivos não está disponível neste aparelho.
+This phone has no file picker, so there is no way to choose a file here.	Este celular não tem seletor de arquivos, então não dá para escolher um aqui.
 The minimum or maximum comments on a video to show.	O mínimo ou o máximo de comentários que um vídeo precisa ter para aparecer.
 The minimum or maximum favourites of a video to show.	O mínimo ou o máximo de favoritos que um vídeo precisa ter para aparecer.
 The minimum or maximum likes of a video to show.	O mínimo ou o máximo de curtidas que um vídeo precisa ter para aparecer.
@@ -659,7 +661,7 @@ Today: %1$d minute	Hoje: %1$d minuto
 Today: %1$d minutes	Hoje: %1$d minutos
 Today: %1$d video	Hoje: %1$d vídeo
 Today: %1$d videos	Hoje: %1$d vídeos
-Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Save original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.	Curingas: {creator}, {date}, {video_id}, {index}. {index} numera as fotos de uma apresentação salva com Baixar as fotos originais; o que for salvo pelo botão do próprio TikTok é numerado pela pasta. A extensão do arquivo é mantida automaticamente.
+Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Download original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.	Curingas: {creator}, {date}, {video_id}, {index}. {index} numera as fotos de uma apresentação salva com Baixar as fotos originais; o que for salvo pelo botão do próprio TikTok é numerado pela pasta. A extensão do arquivo é mantida automaticamente.
 Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.	Curingas: {creator}, {date}, {video_id}. A extensão do arquivo é mantida automaticamente.
 Tokens: {date}, {media_id}. Works for image and video stickers.	Curingas: {date}, {media_id}. Serve para os stickers de imagem e de vídeo.
 Too many media saves are already running. Try again shortly.	Muitos salvamentos de mídia já estão em andamento. Tente daqui a pouco.
@@ -674,13 +676,12 @@ Unblocked %1$s	%1$s desbloqueado
 Undo	Desfazer
 Undo last restore or reset	Desfazer a última restauração ou redefinição
 Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.	Até 8 velocidades de 0.5 a 3, separadas por vírgula. Por exemplo: 0.5, 1, 1.5, 2, 2.5, 3. Deixe vazio para a lista do TikTok. Reinicie depois de mudar esta lista.
-Updating settings	Atualizando as configurações
 Use 0 for TikTok's size, or 12 to 48. Applies to the next caption.	Use 0 para o tamanho do TikTok, ou de 12 a 48. Vale para a próxima legenda.
 Use Save JSON for this large report	Use Salvar JSON para este relatório grande
 Use TikTok's native hold, slide down, and release gesture to lock 2x speed.	Usar o gesto nativo do TikTok de segurar, deslizar para baixo e soltar para travar a velocidade 2x.
 Use a default playback speed	Usar uma velocidade de reprodução padrão
 Use non-personalized search	Usar a busca sem personalização
-Use the preset for TikTok's account and store region getters too. May affect search. Requires the locale option and a restart.	Usar a predefinição também para os leitores de região da conta e da loja do TikTok. Pode afetar a busca. Precisa da opção de idioma e de reiniciar.
+Use the preset for the region TikTok reports for your account and its shop too. May affect search. Needs the language option and a restart.	Usar a predefinição também para a região que o TikTok informa da sua conta e da loja dela. Pode afetar a busca. Precisa da opção de idioma e de reiniciar.
 Use the selected country and operator values. Restart TikTok after changing region settings.	Usar o país e os valores de operadora selecionados. Reinicie o TikTok depois de mudar as configurações de região.
 Use the selected country. Restart TikTok after changing region settings.	Usar o país selecionado. Reinicie o TikTok depois de mudar as configurações de região.
 Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.	Usar o layout dividido em telas mais largas. Reinicie o TikTok depois de mudar esta opção ou de desdobrar, se o layout antigo continuar.
@@ -704,7 +705,7 @@ YTDLnis background mode	Modo em segundo plano do YTDLnis
 YTDLnis download type	Tipo de download do YTDLnis
 Your operator's name, like T-Mobile.	O nome da sua operadora, como T-Mobile.
 Your operator's numeric code, like 310260.	O código numérico da sua operadora, como 310260.
-Zero keeps auto-advance unlimited. Count only videos that finish while Hushfeed started automatic advance; prefetches, manual swipes and native-only advance do not count. The count resets when the feed component is recreated and stays stopped across backgrounding until it is recreated or the limit changes.	Zero deixa o avanço automático sem limite. Conta só os vídeos que terminam enquanto o Hushfeed começou o avanço automático; pré-carregamentos, deslizes manuais e o avanço nativo não contam. A contagem zera quando o componente do feed é recriado e continua parada em segundo plano até ser recriado ou o limite mudar.
+Zero means no limit. Counts the videos Hushfeed advanced past for you, not the ones you swiped yourself, and starts again when the feed is rebuilt or you change this number.	Zero quer dizer sem limite. Conta os vídeos que o Hushfeed passou por você, não os que você deslizou, e começa de novo quando o feed é reconstruído ou você muda este número.
 code %1$s	código %1$s
 day	dia
 days	dias

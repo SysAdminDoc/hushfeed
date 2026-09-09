@@ -119,7 +119,7 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
                     context,
                     "Photo filename",
                     "Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a "
-                            + "slideshow you save with Save original photos; anything saved through "
+                            + "slideshow you save with Download original photos; anything saved through "
                             + "TikTok's own button is numbered by the folder instead. The file "
                             + "extension is kept automatically.",
                     Settings.DOWNLOAD_PHOTO_FILENAME_TEMPLATE

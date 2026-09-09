@@ -960,36 +960,6 @@
       "options": []
     },
     {
-      "name": "Hide BdTuring CAPTCHA popups",
-      "description": "Hides TikTok's risk control CAPTCHA dialog, which the browsing CAPTCHA patch does not cover. Answers the Hide CAPTCHA popups setting, never touches SMS or two factor verification, and never hides a check the server raised over a follow, like, comment or repost. Off by default.",
-      "use": false,
-      "dependencies": [
-        "BytecodePatch",
-        "BytecodePatch",
-        "Hide CAPTCHA popups"
-      ],
-      "compatiblePackages": {
-        "com.zhiliaoapp.musically": [
-          "46.2.3"
-        ]
-      },
-      "compatibility": [
-        {
-          "name": "TikTok",
-          "packageName": "com.zhiliaoapp.musically",
-          "description": null,
-          "appIconColor": 16657493,
-          "targets": [
-            {
-              "version": "46.2.3",
-              "experimental": false
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
       "name": "Hide CAPTCHA popups",
       "description": "Adds a default-off setting to hide browsing and LIVE puzzle dialogs. Login and account verification stay visible, and so does any puzzle the server raised over a follow, like, comment or repost, because hiding one of those makes the action fail with no message.",
       "use": true,
@@ -1375,6 +1345,36 @@
       "dependencies": [
         "Settings",
         "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Hide the risk control CAPTCHA",
+      "description": "Hides TikTok's risk control CAPTCHA dialog, raised by its BdTuring service, which the browsing CAPTCHA patch does not cover. Answers the Hide CAPTCHA popups setting, never touches SMS or two factor verification, and never hides a check the server raised over a follow, like, comment or repost. Off by default.",
+      "use": false,
+      "dependencies": [
+        "BytecodePatch",
+        "BytecodePatch",
+        "Hide CAPTCHA popups"
       ],
       "compatiblePackages": {
         "com.zhiliaoapp.musically": [

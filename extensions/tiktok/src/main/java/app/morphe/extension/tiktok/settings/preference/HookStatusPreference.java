@@ -34,6 +34,9 @@ public class HookStatusPreference extends Preference {
         // A key so the settings search can index this row. A key with no Setting behind
         // it is skipped by the settings framework, so nothing tries to persist it.
         setKey("action_hook_status");
+        // Still "Hook status". The item asked for a plainer name, and the search test says why
+        // not: people reach this row after being told to look at the hook status by name, and
+        // searching "hook" has to find it. The jargon worth removing was inside, not here.
         setTitle(L10n.t(context, "Hook status"));
         setOnPreferenceClickListener(preference -> {
             showReport();
@@ -58,8 +61,8 @@ public class HookStatusPreference extends Preference {
         List<String> broken = HookStatus.familiesMissingSomething();
         if (broken.isEmpty()) {
             return report.size() == 1
-                    ? L10n.t(context, "One surface was checked and found everything it needed.")
-                    : L10n.f(context, "Every hook found what it needed across %1$d surfaces.",
+                    ? L10n.t(context, "One area was checked and everything it needs is here.")
+                    : L10n.f(context, "%1$d areas were checked and everything they need is here.",
                             report.size());
         }
         // Joined before the call, so the separator is not collected as text to translate.
@@ -74,11 +77,10 @@ public class HookStatusPreference extends Preference {
         StringBuilder message = new StringBuilder();
         if (report.isEmpty()) {
             message.append(L10n.t(context,
-                    "No surface has looked anything up yet, so there is nothing to report."));
+                    "Nothing has been checked yet, so there is nothing to report."));
         } else {
             message.append(L10n.t(context,
-                    "Each surface, how many of the things it looks for are in this build, and "
-                            + "how many are not."));
+                    "Each area, how many of the things it looks for are in this build and how many are not."));
             for (String line : report) message.append("\n\n").append(line);
         }
 

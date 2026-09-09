@@ -87,7 +87,7 @@ The Settings patch adds the entry point and is selected by default. Deselect it 
 | `Fix Google login` | Restores Google account sign-in after patching. |
 | `Hide already seen videos` | Keeps a local record of what you have watched and drops those videos from later feed pages. |
 | `Ghost mode` | Stops TikTok reporting that you viewed a story or a profile, or that you are typing. Online status is unchanged. |
-| `Hide BdTuring CAPTCHA popups` | Hides TikTok's risk control CAPTCHA dialog, which the browsing CAPTCHA patch does not cover. Off by default. |
+| `Hide the risk control CAPTCHA` | Hides TikTok's risk control CAPTCHA dialog, raised by its BdTuring service, which the browsing CAPTCHA patch does not cover. Off by default. |
 | `Hide comment popup ads` | Stops the brand animation that plays over the comment sheet when a comment matches an advertiser's trigger word or emoji. |
 | `Comment sort controls` | Shows TikTok's own comment sort sheet on every post, with its hot, newest, media and creator options, rather than the cut-down row an account outside that rollout is given. |
 | `Enable voice comments` | Turns on TikTok's own voice comment recording and publishing entry points for accounts that do not have them. Off by default, and selecting the patch is the switch. |

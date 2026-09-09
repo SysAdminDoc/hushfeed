@@ -70,9 +70,9 @@ final class SettingsListAdapter extends BaseAdapter implements WrapperListAdapte
                 && ((app.morphe.extension.shared.settings.preference.ImmediateAction) preference).actsOnTap();
         if (widget != null && !acts && !(preference instanceof SwitchPreference) && preference.isSelectable()) {
             widget.setVisibility(View.VISIBLE);
-            if (widget.findViewWithTag("metra_chevron") == null) {
+            if (widget.findViewWithTag("hushfeed_chevron") == null) {
                 ImageView arrow = new ImageView(row.getContext());
-                arrow.setTag("metra_chevron");
+                arrow.setTag("hushfeed_chevron");
                 arrow.setImageDrawable(new SettingsMenuPreference.ChevronDrawable(row.getContext()));
                 arrow.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
                 android.widget.LinearLayout.LayoutParams params = new android.widget.LinearLayout.LayoutParams(
@@ -86,7 +86,7 @@ final class SettingsListAdapter extends BaseAdapter implements WrapperListAdapte
             // file picker and keep the chevron, Reset and Undo act and do not. Adding one and
             // never taking it away meant "Reset settings" wore a chevron as soon as "Back up
             // settings" had scrolled past it, which is the promise this exists to stop making.
-            View stale = widget.findViewWithTag("metra_chevron");
+            View stale = widget.findViewWithTag("hushfeed_chevron");
             if (stale != null) {
                 widget.removeView(stale);
                 // The frame is here for the chevron on these rows, and an empty one still takes

@@ -49,11 +49,10 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
                             + "this switch to turn it off.",
                     Settings.AUTO_ADVANCE));
             addPreference(new NumberInputPreference(context, "Auto-advance session limit",
-                    "Zero keeps auto-advance unlimited. Count only videos that finish while Hushfeed "
-                            + "started automatic advance; prefetches, manual swipes and native-only "
-                            + "advance do not count. The count resets when the feed component is "
-                            + "recreated and stays stopped across backgrounding until it is recreated "
-                            + "or the limit changes.", Settings.AUTO_ADVANCE_LIMIT, "video", "videos").zeroMeansOff());
+                    "Zero means no limit. Counts the videos Hushfeed advanced past for you, "
+                            + "not the ones you swiped yourself, and starts again when the feed "
+                            + "is rebuilt or you change this number.",
+                    Settings.AUTO_ADVANCE_LIMIT, "video", "videos").zeroMeansOff());
         }
         // The counting hangs off the hook that tracks which video is on screen, which the
         // block author patch installs. Without it these would take a number and count nothing.
