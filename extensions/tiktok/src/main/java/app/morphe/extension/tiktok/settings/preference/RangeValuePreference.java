@@ -32,6 +32,10 @@ public class RangeValuePreference extends DialogPreference {
     private String minValue;
 
     private String maxValue;
+    /** The two boxes the dialog is showing, so a refusal can be said under the right one. */
+    private EditText minField;
+    private EditText maxField;
+    private EditText offending;
 
     private String mValue;
 
@@ -170,6 +174,9 @@ public class RangeValuePreference extends DialogPreference {
                 ViewGroup.LayoutParams.WRAP_CONTENT
         ));
 
+        minField = minEditText;
+        maxField = maxEditText;
+
         minEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -255,6 +262,35 @@ public class RangeValuePreference extends DialogPreference {
     protected void showDialog(Bundle state) {
         super.showDialog(state);
         SettingsUi.styleFramedDialog(getDialog());
+        // Same as the text rows: a rejected pair used to close the dialog and then say what was
+        // wrong, so both numbers had to be typed again.
+        SettingsUi.keepOpenOnInvalidInput(getDialog(), new SettingsUi.DialogCheck() {
+            @Override public String problem() {
+                long min = readField(minValue, 0L);
+                long max = readField(maxValue, Long.MAX_VALUE);
+                if (min < 0 || max < 0) {
+                    offending = min < 0 ? minField : maxField;
+                    return L10n.t(getContext(),
+                            "Enter a whole number, or one like 20K, 1.5M or 2B");
+                }
+                if (min > max) {
+                    // The pair is wrong, not either number on its own. It is said at the top
+                    // of the pair, where the reader starts reading.
+                    offending = minField;
+                    return L10n.t(getContext(), "The smallest value is above the largest");
+                }
+                return null;
+            }
+
+            @Override public void report(String problem) {
+                if (offending != null) offending.setError(problem);
+            }
+
+            @Override public boolean accept() {
+                onDialogClosed(true);
+                return true;
+            }
+        });
     }
 
     @Override

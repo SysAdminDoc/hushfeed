@@ -1,5 +1,7 @@
 ## Unreleased
 
+* A value a settings dialog will not take no longer closes the dialog first. Type a creator pattern that will not compile, a smallest larger than the largest, or a budget while today's budget is locked, and the dialog stays where it is with what you typed still in it and the reason under the box. Before this all three closed, threw the text away and put the reason in a toast over whatever was behind, so you reopened the row and typed it again.
+
 * Small things across the settings screens. "Add" in the hidden creators dialog is flat like the Cancel and Save below it, instead of the one raised button in the app, and an empty list says so where the list is rather than under a blank band of it. "Reset to loaded" in the tab pickers ticks every row and leaves the dialog open, so pressing it to see what it does no longer saves and closes. Rows say milliseconds, pixels and points instead of ms, dp and sp. Clearing diagnostics says that it also resets the hook status. The SIM switch stops promising operator fields on a build that does not have them. And blocking a creator twice says the same thing from both places it can be said.
 
 * At a large text size the settings page shows the page, not just its title. A page called "Kommentare und Ubersetzung" took five lines and most of the screen at 2x text, and the first row of the page was below the fold. The title still grows with your text size, just not without limit. The Feature Gate Lab's search box grows with it too, instead of clipping the letters in a fixed height.

@@ -487,6 +487,46 @@ public final class SettingsUi {
         });
     }
 
+    /** What a dialog's Save has to satisfy before the dialog is allowed to close. */
+    public interface DialogCheck {
+        /** Null when the value is fine, otherwise what is wrong with it, in the reader's words. */
+        String problem();
+
+        /** Puts the reason where the reader is looking, under the field it is about. */
+        void report(String problem);
+
+        /**
+         * Saves what the dialog holds. Runs only when {@link #problem()} answered null, and
+         * answers false when something further down refused the value and has already said
+         * why, which keeps the dialog open without a second message on top of the first.
+         */
+        boolean accept();
+    }
+
+    /**
+     * Keeps a preference dialog open when Save is pressed on something it will not take.
+     *
+     * <p>A DialogPreference dismisses on the positive button before it is told what was typed, so
+     * every one of these rejected a value by closing the dialog and then toasting the reason, and
+     * the reader had to reopen the row and type it again. Replacing the button's own listener
+     * after the dialog is showing is the only way in: the dialog closes when the value is
+     * accepted and stays put, with the text still in the box, when it is not.
+     */
+    public static void keepOpenOnInvalidInput(Dialog dialog, DialogCheck check) {
+        if (!(dialog instanceof AlertDialog)) return;
+        Button save = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
+        if (save == null) return;
+        save.setOnClickListener(view -> {
+            String problem = check.problem();
+            if (problem != null) {
+                check.report(problem);
+                return;
+            }
+            if (!check.accept()) return;
+            dialog.dismiss();
+        });
+    }
+
     public static void styleEditText(EditText editText) {
         editText.setTextColor(textPrimary());
         editText.setHintTextColor(textSecondary());

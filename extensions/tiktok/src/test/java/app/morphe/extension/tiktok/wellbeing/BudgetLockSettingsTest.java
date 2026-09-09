@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
+import android.os.Looper;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
 
@@ -26,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
@@ -182,6 +184,33 @@ public class BudgetLockSettingsTest {
         assertFalse("yesterday's counts were still on offer", SessionBudget.canUndoClear());
         assertFalse("yesterday's counts came back onto a new day", SessionBudget.undoClear());
         assertEquals("the new day did not start empty", 0, SessionBudget.videosSeen());
+    }
+
+    /**
+     * A budget row refused while the day is locked used to accept the tap, close the dialog and
+     * then say no over the settings screen. Nothing was saved, so the reader had to work out
+     * from a toast that the number they had just typed had gone.
+     */
+    @Test public void aBudgetRowRefusedWhileTheDayIsLockedKeepsItsDialogOpen() throws Exception {
+        lockTodayOut();
+        PreferenceScreen screen = playbackRows();
+        Preference row = screen.findPreference(Settings.SESSION_BUDGET_MINUTES.key);
+        assertNotNull("the minutes row is not on the screen", row);
+
+        app.morphe.extension.tiktok.settings.preference.InputCheckTest.openDialog(row);
+        android.app.AlertDialog dialog =
+                (android.app.AlertDialog) ((android.preference.DialogPreference) row).getDialog();
+        assertNotNull("the dialog did not open", dialog);
+        android.widget.EditText box =
+                ((android.preference.EditTextPreference) row).getEditText();
+        box.setText("45");
+
+        dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).performClick();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+        assertTrue("the dialog closed on a change the locked day refused", dialog.isShowing());
+        assertEquals("what was typed was thrown away", "45", box.getText().toString());
+        assertTrue("a locked row saved anyway", Settings.SESSION_BUDGET_MINUTES.get() != 45);
     }
 
     /** Spends a one video budget with the lock on, which commits the day. */

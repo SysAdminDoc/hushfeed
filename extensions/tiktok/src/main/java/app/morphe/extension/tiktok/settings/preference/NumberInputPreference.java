@@ -181,6 +181,34 @@ public class NumberInputPreference extends EditTextPreference {
     }
 
     @Override
+    protected void showDialog(Bundle state) {
+        super.showDialog(state);
+        SettingsUi.styleFramedDialog(getDialog());
+        // Nothing typed here is rejected outright, because a number outside the range is
+        // pulled into it and said so. What does get refused is the whole row, while the day's
+        // budget is locked, and that refusal used to arrive after the dialog had closed.
+        SettingsUi.keepOpenOnInvalidInput(getDialog(), new SettingsUi.DialogCheck() {
+            @Override public String problem() {
+                return null;
+            }
+
+            @Override public void report(String problem) {
+                getEditText().setError(problem);
+            }
+
+            @Override public boolean accept() {
+                String typed = getEditText().getText().toString();
+                int value = parseAndClamp(typed);
+                String text = String.valueOf(value);
+                sayIfPulledIntoRange(typed, value);
+                if (!callChangeListener(text)) return false;
+                setValue(text);
+                return true;
+            }
+        });
+    }
+
+    @Override
     protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
         builder.setPositiveButton(L10n.t(getContext(), "Save"), (dialog, which)
                 -> this.onClick(dialog, DialogInterface.BUTTON_POSITIVE));
@@ -218,12 +246,6 @@ public class NumberInputPreference extends EditTextPreference {
         if (asked == stored) return;
         app.morphe.extension.shared.Utils.showToastShort(L10n.f(getContext(),
                 "Kept to %1$s, the nearest value this row allows", displayValue(stored)));
-    }
-
-    @Override
-    protected void showDialog(Bundle state) {
-        super.showDialog(state);
-        SettingsUi.styleFramedDialog(getDialog());
     }
 
     private int parseAndClamp(String value) {

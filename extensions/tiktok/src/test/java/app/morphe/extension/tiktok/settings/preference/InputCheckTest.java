@@ -55,6 +55,7 @@ public class InputCheckTest {
         Settings.BLOCKED_CREATORS.save("");
         Settings.SIMSPOOF_MCCMNC.save(Settings.SIMSPOOF_MCCMNC.defaultValue);
         Settings.EXTERNAL_DOWNLOADER_PACKAGE.save("");
+        Settings.MIN_MAX_VIEWS.resetToDefault();
     }
 
     /** The field as the settings screen really builds it, not one made up for the test. */
@@ -62,7 +63,122 @@ public class InputCheckTest {
         void check(InputTextPreference field) throws Exception;
     }
 
-    private void onScreen(String section, String key, WithField body) throws Exception {
+
+    /**
+     * Refusing a value used to close the dialog first and say why afterwards, over whatever
+     * screen the reader was left looking at, with the box emptied. Saying no is only useful
+     * next to the thing being said no about.
+     */
+    @Test public void aRefusedPatternLeavesTheDialogOpenWithTheReasonUnderTheField()
+            throws Exception {
+        onScreen("FEED_FILTER", "blocked_creators", field -> {
+            openDialog(field);
+            android.app.AlertDialog dialog = (android.app.AlertDialog) field.getDialog();
+            assertNotNull("the dialog did not open", dialog);
+            field.getEditText().setText("/^news_/, /([bad/");
+
+            dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).performClick();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+            assertTrue("the dialog closed on a value it refused", dialog.isShowing());
+            assertNotNull("nothing was said under the field",
+                    field.getEditText().getError());
+            assertEquals("what was typed was thrown away",
+                    "/^news_/, /([bad/", field.getEditText().getText().toString());
+            assertEquals("a refused pattern was saved anyway", "",
+                    Settings.BLOCKED_CREATORS.get());
+
+            // And a value it will take closes it, which is the half that would still pass if
+            // the button simply stopped working.
+            field.getEditText().setText("news_uk, @someone");
+            dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).performClick();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertFalse("the dialog stayed open on a value it took", dialog.isShowing());
+            assertEquals("news_uk, @someone", Settings.BLOCKED_CREATORS.get());
+        });
+    }
+
+    /** The same for the two-box rows, where retyping meant retyping both numbers. */
+    @Test public void aBackwardsRangeLeavesTheDialogOpenWithBothNumbersStillThere()
+            throws Exception {
+        onRangeScreen("min_max_views", field -> {
+            openDialog(field);
+            android.app.AlertDialog dialog = (android.app.AlertDialog) field.getDialog();
+            assertNotNull("the dialog did not open", dialog);
+            android.widget.EditText[] boxes = rangeBoxes(dialog);
+            boxes[0].setText("900");
+            boxes[1].setText("100");
+
+            dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).performClick();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+            assertTrue("the dialog closed on a range it refused", dialog.isShowing());
+            assertNotNull("nothing was said under the first box", boxes[0].getError());
+            assertEquals("the smallest was thrown away", "900", boxes[0].getText().toString());
+            assertEquals("the largest was thrown away", "100", boxes[1].getText().toString());
+
+            boxes[1].setText("9000");
+            dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).performClick();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertFalse("the dialog stayed open on a range it took", dialog.isShowing());
+            assertEquals("900-9000", Settings.MIN_MAX_VIEWS.get());
+        });
+    }
+
+    private interface WithRange {
+        void check(RangeValuePreference field) throws Exception;
+    }
+
+    private void onRangeScreen(String key, WithRange body) throws Exception {
+        onScreenRaw("FEED_FILTER", key, found -> {
+            assertTrue(key + " is a " + found.getClass().getSimpleName(),
+                    found instanceof RangeValuePreference);
+            body.check((RangeValuePreference) found);
+        });
+    }
+
+    /** The two boxes in the order the dialog shows them, smallest first. */
+    private static android.widget.EditText[] rangeBoxes(android.app.AlertDialog dialog) {
+        java.util.List<android.widget.EditText> found = new java.util.ArrayList<>();
+        collectEditTexts(dialog.getWindow().getDecorView(), found);
+        assertEquals("the range dialog does not have two boxes", 2, found.size());
+        return new android.widget.EditText[]{found.get(0), found.get(1)};
+    }
+
+    private static void collectEditTexts(
+            android.view.View view, java.util.List<android.widget.EditText> found) {
+        if (view instanceof android.widget.EditText) {
+            found.add((android.widget.EditText) view);
+        } else if (view instanceof android.view.ViewGroup) {
+            android.view.ViewGroup group = (android.view.ViewGroup) view;
+            for (int index = 0; index < group.getChildCount(); index++) {
+                collectEditTexts(group.getChildAt(index), found);
+            }
+        }
+    }
+
+    /** DialogPreference.showDialog is protected, and the row is reached through the screen. */
+    public static void openDialog(Preference row) throws Exception {
+        java.lang.reflect.Method show = null;
+        for (Class<?> type = row.getClass(); type != null; type = type.getSuperclass()) {
+            try {
+                show = type.getDeclaredMethod("showDialog", Bundle.class);
+                break;
+            } catch (NoSuchMethodException keepLooking) {
+                // The override lives further up.
+            }
+        }
+        assertNotNull("this row has no dialog", show);
+        show.setAccessible(true);
+        show.invoke(row, (Bundle) null);
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+    }
+
+    private interface WithPreference {
+        void check(Preference found) throws Exception;
+    }
+
+    private void onScreenRaw(String section, String key, WithPreference body) throws Exception {
         try (var owner = Robolectric.buildActivity(
                 app.morphe.extension.tiktok.captions.CaptionToolsTest.CaptionActivity.class)
                 .setup().visible()) {
@@ -85,11 +201,17 @@ public class InputCheckTest {
 
             Preference found = fragment.findPreference(key);
             assertNotNull(key + " is not on the " + section + " screen", found);
+            ShadowToast.reset();
+            body.check(found);
+        }
+    }
+
+    private void onScreen(String section, String key, WithField body) throws Exception {
+        onScreenRaw(section, key, found -> {
             assertTrue(key + " is a " + found.getClass().getSimpleName(),
                     found instanceof InputTextPreference);
-            ShadowToast.reset();
             body.check((InputTextPreference) found);
-        }
+        });
     }
 
     @Test public void aCreatorPatternThatWillNotCompileIsRefusedInTheDialog() throws Exception {
