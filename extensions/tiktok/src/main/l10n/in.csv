@@ -751,3 +751,33 @@ Today is back where it was,Hari ini kembali seperti semula
 Choose a subfolder under %1$s.,Pilih subfolder di %1$s.
 Off,Mati
 "Kept to %1$s, the nearest value this row allows","Disetel ke %1$s, nilai terdekat yang diizinkan baris ini"
+Current state,Kondisi saat ini
+Loaded for this account,Dimuat untuk akun ini
+Yes,Ya
+No,Tidak
+TikTok cached value,Nilai yang di-cache TikTok
+Structured value observed,Nilai terstruktur teramati
+Not requested in this process yet,Belum diminta dalam proses ini
+Not present in the current cache,Tidak ada di cache saat ini
+Effective getter result,Hasil efektif dari getter
+Override,Penggantian
+Override this configuration,Ganti konfigurasi ini
+Return a copied object with the selected fields changed,Kembalikan salinan objek dengan bidang terpilih yang diubah
+Forced result,Hasil yang dipaksakan
+Off forces false; on forces true. Reset returns control to TikTok,"Mati memaksa false, hidup memaksa true. Atur ulang mengembalikan kendali ke TikTok"
+Override this gate,Ganti gate ini
+"When TikTok requests this key, return the selected value below","Saat TikTok meminta kunci ini, kembalikan nilai yang dipilih di bawah"
+Manager,Manajer
+Type,Tipe
+Source,Sumber
+Generated defaults,Nilai bawaan yang dihasilkan
+Historical values,Nilai historis
+Researched values,Nilai hasil riset
+Proof,Bukti
+Last original value,Nilai asli terakhir
+First caller,Pemanggil pertama
+Reset,Atur ulang
+Disable,Matikan
+Enable,Hidupkan
+More options,Opsi lainnya
+Reset to loaded,Kembalikan ke yang dimuat

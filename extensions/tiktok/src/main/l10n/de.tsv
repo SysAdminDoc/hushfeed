@@ -753,3 +753,33 @@ One of the quote marks in that list has nothing to close it, so the rest of the 
 Choose a subfolder under %1$s.	Wähle einen Unterordner in %1$s.
 Off	Aus
 Kept to %1$s, the nearest value this row allows	Auf %1$s gesetzt, den nächsten Wert, den diese Zeile zulässt
+Current state	Aktueller Zustand
+Loaded for this account	Für dieses Konto geladen
+Yes	Ja
+No	Nein
+TikTok cached value	Von TikTok zwischengespeicherter Wert
+Structured value observed	Strukturierter Wert beobachtet
+Not requested in this process yet	In diesem Prozess noch nicht angefordert
+Not present in the current cache	Nicht im aktuellen Zwischenspeicher
+Effective getter result	Tatsächliches Ergebnis des Getters
+Override	Überschreibung
+Override this configuration	Diese Konfiguration überschreiben
+Return a copied object with the selected fields changed	Ein kopiertes Objekt mit den geänderten Feldern zurückgeben
+Forced result	Erzwungenes Ergebnis
+Off forces false; on forces true. Reset returns control to TikTok	Aus erzwingt false, an erzwingt true. Zurücksetzen gibt TikTok die Kontrolle zurück
+Override this gate	Diesen Schalter überschreiben
+When TikTok requests this key, return the selected value below	Wenn TikTok diesen Schlüssel abfragt, den unten gewählten Wert zurückgeben
+Manager	Manager
+Type	Typ
+Source	Quelle
+Generated defaults	Erzeugte Standardwerte
+Historical values	Frühere Werte
+Researched values	Recherchierte Werte
+Proof	Beleg
+Last original value	Letzter Originalwert
+First caller	Erster Aufrufer
+Reset	Zurücksetzen
+Disable	Ausschalten
+Enable	Einschalten
+More options	Weitere Optionen
+Reset to loaded	Auf geladene zurücksetzen

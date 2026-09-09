@@ -187,9 +187,10 @@ public class TabSelectionPreference extends Preference {
         LinearLayout actions = new LinearLayout(context);
         actions.setGravity(Gravity.CENTER_VERTICAL);
 
-        TextView showAllButton = createActionButton(context, "Reset to loaded", false);
-        TextView cancelButton = createActionButton(context, "Cancel", false);
-        TextView saveButton = createActionButton(context, "Save", true);
+        TextView showAllButton = createActionButton(context,
+                L10n.t(context, "Reset to loaded"), false);
+        TextView cancelButton = createActionButton(context, L10n.t(context, "Cancel"), false);
+        TextView saveButton = createActionButton(context, L10n.t(context, "Save"), true);
 
         actions.addView(showAllButton, new LinearLayout.LayoutParams(
                 0,

@@ -1,5 +1,9 @@
 ## Unreleased
 
+* Thirty more strings speak your language. The Feature Gate Lab's gate details page was English throughout its current state and technical details rows, both override switches and their explanations, and the three buttons that reset or force a selection. So were the close button on the Lab's search box, the overflow button beside the title, and the three buttons under the tab picker. The check that catches this reads what is handed to a view, and each of these went through a helper of its own first, so it read straight past them. It follows the helpers now, whichever file they live in.
+
+* The translation shape check reads every table. It compared placeholders, sentence endings and quote pairs in German and Indonesian only, which is what there was when it was written. Spanish and Brazilian Portuguese came later and nothing checked them.
+
 * An undo of a settings backup says it is an undo. If the copy it put back held Feature Gate Lab rules for another TikTok build, the line on screen said your settings had been restored, and that's a different thing from putting the last change back.
 
 * The sentence under the diagnostics picker keeps its capitals. German writes its nouns with a capital letter, and every kind was lower-cased on its way into that sentence, so Einstellungen came out as einstellungen.

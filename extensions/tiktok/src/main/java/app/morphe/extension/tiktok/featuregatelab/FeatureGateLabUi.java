@@ -4,6 +4,7 @@
  */
 package app.morphe.extension.tiktok.featuregatelab;
 
+import app.morphe.extension.tiktok.settings.L10n;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -59,7 +60,7 @@ final class FeatureGateLabUi {
         ((TextView) header.findViewWithTag("hushfeed_page_title")).setTextSize(onMenu == null ? 40 : 28);
         if (onMenu != null) {
             View menu = iconButton(context, "icon_ellipsis_horizontal", android.R.drawable.ic_menu_more,
-                    "More options", onMenu);
+                    L10n.t(context, "More options"), onMenu);
             menu.setTag("feature_gate_menu");
             ((LinearLayout) header.findViewWithTag("hushfeed_toolbar")).addView(menu,
                     new LinearLayout.LayoutParams(dp(context, 48), dp(context, 48)));
@@ -73,7 +74,7 @@ final class FeatureGateLabUi {
                 context,
                 "icon_x_mark_small",
                 android.R.drawable.ic_menu_close_clear_cancel,
-                "Clear search",
+                L10n.t(context, "Clear search"),
                 onClear
         );
     }

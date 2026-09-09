@@ -141,19 +141,21 @@ public final class FeatureGateDetailFragment extends Fragment {
             content.addView(description, params);
         }
 
-        addSectionTitle(content, "Current state");
+        addSectionTitle(content, L10n.t(context, "Current state"));
         LinearLayout currentState = new LinearLayout(context);
         currentState.setOrientation(LinearLayout.VERTICAL);
         currentState.setPadding(FeatureGateLabUi.dp(context, 16), 0, FeatureGateLabUi.dp(context, 16), 0);
         currentState.setBackground(SettingsUi.borderedSurface(context, 10, false));
         content.addView(currentState, FeatureGateLabUi.matchWrap());
-        addInfo(currentState, "Loaded for this account", entry.loaded ? "Yes" : "No");
-        addInfo(currentState, "TikTok cached value", "OBJECT".equals(entry.type)
-                ? (entry.loaded ? "Structured value observed" : "Not requested in this process yet")
+        addInfo(currentState, L10n.t(context, "Loaded for this account"),
+                L10n.t(context, entry.loaded ? "Yes" : "No"));
+        addInfo(currentState, L10n.t(context, "TikTok cached value"), "OBJECT".equals(entry.type)
+                ? L10n.t(context, entry.loaded
+                        ? "Structured value observed" : "Not requested in this process yet")
                 : (entry.loaded
                         ? entry.currentValue + " (" + entry.currentType + ")"
-                        : "Not present in the current cache"));
-        effectiveValue = addInfo(currentState, "Effective getter result", effectiveValueText());
+                        : L10n.t(context, "Not present in the current cache")));
+        effectiveValue = addInfo(currentState, L10n.t(context, "Effective getter result"), effectiveValueText());
         TextView cacheNote = FeatureGateLabUi.label(
                 context,
                 L10n.t(context, "An override changes the value returned by the getter. It does not rewrite TikTok's cached value or prove the named feature changed.")
@@ -173,7 +175,7 @@ public final class FeatureGateDetailFragment extends Fragment {
             content.addView(sensitive, params);
         }
 
-        addSectionTitle(content, "Override");
+        addSectionTitle(content, L10n.t(context, "Override"));
         status = FeatureGateLabUi.text(context, "", 13, SettingsUi.textSecondary(), Typeface.BOLD);
         status.setPadding(0, 0, 0, FeatureGateLabUi.dp(context, 12));
         content.addView(status, FeatureGateLabUi.matchWrap());
@@ -184,8 +186,8 @@ public final class FeatureGateDetailFragment extends Fragment {
         if (objectEntry) {
             LinearLayout forceRow = settingRow(
                     context,
-                    "Override this configuration",
-                    "Return a copied object with the selected fields changed"
+                    L10n.t(context, "Override this configuration"),
+                    L10n.t(context, "Return a copied object with the selected fields changed")
             );
             force = new Switch(context);
             forceRow.addView(force, new LinearLayout.LayoutParams(
@@ -209,8 +211,8 @@ public final class FeatureGateDetailFragment extends Fragment {
         } else if (booleanEntry) {
             LinearLayout valueRow = settingRow(
                     context,
-                    "Forced result",
-                    "Off forces false; on forces true. Reset returns control to TikTok"
+                    L10n.t(context, "Forced result"),
+                    L10n.t(context, "Off forces false; on forces true. Reset returns control to TikTok")
             );
             booleanValue = new Switch(context);
             booleanValue.setChecked(Boolean.parseBoolean(rule == null ? bestInitialValue(entry) : rule.value));
@@ -223,8 +225,8 @@ public final class FeatureGateDetailFragment extends Fragment {
         } else {
             LinearLayout forceRow = settingRow(
                     context,
-                    "Override this gate",
-                    "When TikTok requests this key, return the selected value below"
+                    L10n.t(context, "Override this gate"),
+                    L10n.t(context, "When TikTok requests this key, return the selected value below")
             );
             force = new Switch(context);
             forceRow.addView(force, new LinearLayout.LayoutParams(
@@ -864,17 +866,21 @@ public final class FeatureGateDetailFragment extends Fragment {
         technicalDetails = new LinearLayout(context);
         technicalDetails.setOrientation(LinearLayout.VERTICAL);
         technicalDetails.setVisibility(View.GONE);
-        addInfo(technicalDetails, "Manager", entry.manager);
-        addInfo(technicalDetails, "Type", entry.type);
-        addInfo(technicalDetails, "Source", entry.sourceLabel());
-        addInfo(technicalDetails, "Generated defaults", join(entry.defaults));
-        addInfo(technicalDetails, "Historical values", join(entry.historical));
-        addInfo(technicalDetails, "Researched values", join(entry.researched));
-        addInfo(technicalDetails, "Proof", entry.proof);
+        addInfo(technicalDetails, L10n.t(context, "Manager"), entry.manager);
+        addInfo(technicalDetails, L10n.t(context, "Type"), entry.type);
+        addInfo(technicalDetails, L10n.t(context, "Source"), entry.sourceLabel());
+        addInfo(technicalDetails, L10n.t(context, "Generated defaults"), join(entry.defaults));
+        addInfo(technicalDetails, L10n.t(context, "Historical values"), join(entry.historical));
+        addInfo(technicalDetails, L10n.t(context, "Researched values"), join(entry.researched));
+        addInfo(technicalDetails, L10n.t(context, "Proof"), entry.proof);
         String original = FeatureGateLabRuntime.originalValue(entry.manager, entry.key, entry.type);
-        if (original != null) addInfo(technicalDetails, "Last original value", original);
+        if (original != null) {
+            addInfo(technicalDetails, L10n.t(context, "Last original value"), original);
+        }
         String caller = FeatureGateLabRuntime.firstCaller(entry.manager, entry.key, entry.type);
-        if (caller != null) addInfo(technicalDetails, "First caller", caller);
+        if (caller != null) {
+            addInfo(technicalDetails, L10n.t(context, "First caller"), caller);
+        }
         root.addView(technicalDetails, FeatureGateLabUi.matchWrap());
 
         View.OnClickListener toggle = ignored -> {

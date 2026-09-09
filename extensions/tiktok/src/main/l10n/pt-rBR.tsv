@@ -750,3 +750,33 @@ seconds	segundos
 videos	vídeos
 view per like	visualização por curtida
 views per like	visualizações por curtida
+Current state	Estado atual
+Loaded for this account	Carregado para esta conta
+Yes	Sim
+No	Não
+TikTok cached value	Valor em cache do TikTok
+Structured value observed	Valor estruturado observado
+Not requested in this process yet	Ainda não foi pedido neste processo
+Not present in the current cache	Não está no cache atual
+Effective getter result	Resultado efetivo do getter
+Override	Substituição
+Override this configuration	Substituir esta configuração
+Return a copied object with the selected fields changed	Devolver um objeto copiado com os campos selecionados alterados
+Forced result	Resultado forçado
+Off forces false; on forces true. Reset returns control to TikTok	Desligado força false e ligado força true. Redefinir devolve o controle ao TikTok
+Override this gate	Substituir este gate
+When TikTok requests this key, return the selected value below	Quando o TikTok pedir esta chave, devolver o valor escolhido abaixo
+Manager	Gerenciador
+Type	Tipo
+Source	Origem
+Generated defaults	Padrões gerados
+Historical values	Valores históricos
+Researched values	Valores pesquisados
+Proof	Comprovação
+Last original value	Último valor original
+First caller	Primeira chamada
+Reset	Redefinir
+Disable	Desligar
+Enable	Ligar
+More options	Mais opções
+Reset to loaded	Voltar às carregadas

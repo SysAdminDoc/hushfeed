@@ -787,9 +787,11 @@ public final class FeatureGateLabFragment extends Fragment {
         LinearLayout actions = new LinearLayout(context);
         actions.setOrientation(LinearLayout.HORIZONTAL);
         actions.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
-        actions.addView(selectionAction(context, "Reset", this::resetSelection));
-        actions.addView(selectionAction(context, "Disable", () -> forceSelection(false)));
-        actions.addView(selectionAction(context, "Enable", () -> forceSelection(true)));
+        actions.addView(selectionAction(context, L10n.t(context, "Reset"), this::resetSelection));
+        actions.addView(selectionAction(context, L10n.t(context, "Disable"),
+                () -> forceSelection(false)));
+        actions.addView(selectionAction(context, L10n.t(context, "Enable"),
+                () -> forceSelection(true)));
         actions.addView(selectionAction(context, L10n.t(context, "Cancel"), () -> {
             selection.clear();
             onSelectionChanged();

@@ -34,6 +34,7 @@ import app.morphe.extension.tiktok.settings.preference.categories.SimSpoofPrefer
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -321,14 +322,13 @@ public class SettingsL10nTest {
         // invented; a sentence that lost or gained its terminator; a quote pair that does not
         // close. The first pass of this check only looked at numbered placeholders in the key,
         // so a bare "%s" and an invented placeholder both walked past it.
+        // Every table, not the two that happened to exist when this was written: Spanish and
+        // Brazilian Portuguese were added later and went unchecked, and five Spanish rows ended
+        // in a full stop their key does not have.
         java.util.List<String> problems = new java.util.ArrayList<>();
-        java.util.Map<String, java.util.Map<String, String>> tables = new java.util.LinkedHashMap<>();
-        tables.put("de", GERMAN);
-        tables.put("in", INDONESIAN);
-
-        for (java.util.Map.Entry<String, java.util.Map<String, String>> table : tables.entrySet()) {
-            String language = table.getKey();
-            for (java.util.Map.Entry<String, String> row : table.getValue().entrySet()) {
+        for (String language : L10nTranslations.LANGUAGES) {
+            for (java.util.Map.Entry<String, String> row
+                    : L10nTranslations.of(language).entrySet()) {
                 String key = row.getKey();
                 String value = row.getValue();
 
@@ -769,7 +769,13 @@ public class SettingsL10nTest {
             while (end < to && kind[end] == LITERAL) end++;
             // The run covers both quotes, so the closing one is not part of the text.
             int contentEnd = end > at + 1 && text.charAt(end - 1) == '"' ? end - 1 : end;
-            parts.add(unescape(text.substring(at + 1, contentEnd)));
+            // A literal something is called on is a comparison, not words on a screen.
+            // "OBJECT".equals(entry.type) sits in an argument that does show text.
+            int after = end;
+            while (after < text.length() && Character.isWhitespace(text.charAt(after))) after++;
+            if (after >= text.length() || text.charAt(after) != '.') {
+                parts.add(unescape(text.substring(at + 1, contentEnd)));
+            }
             at = end - 1;
         }
         return parts;
@@ -816,30 +822,40 @@ public class SettingsL10nTest {
      */
     @Test
     public void noDialogTextIsHandedStraightToAViewInEnglish() throws Exception {
+        Map<java.nio.file.Path, String> sources = new LinkedHashMap<>();
+        for (java.nio.file.Path file : tikTokSources()) {
+            sources.put(file, new String(java.nio.file.Files.readAllBytes(file),
+                    java.nio.charset.StandardCharsets.UTF_8));
+        }
+        Set<String> helpers = helpersThatPutTextOnTheScreen(sources);
         java.util.regex.Pattern call = java.util.regex.Pattern.compile(
-                "\\.\\s*(setText|setHint|setTitle|setMessage|setContentDescription|setPositiveButton"
-                        + "|setNegativeButton|setNeutralButton)\\s*\\(|"
-                        // The helpers whose whole job is to build a label and set its text.
-                        // Without these the rule stops one hop short: the same sentence passes
-                        // if it is written as FeatureGateLabUi.body(context, "...").
-                        + "\\b(FeatureGateLabUi|SettingsUi)\\s*\\.\\s*"
-                        + "(text|label|body|header|title|caption)\\s*\\(");
+                VIEW_TEXT_CALLS + helperAlternation(namesIn(helpers)));
         List<String> unwrapped = new ArrayList<>();
         int checked = 0;
-        for (java.nio.file.Path file : tikTokSources()) {
-            String text = new String(java.nio.file.Files.readAllBytes(file),
-                    java.nio.charset.StandardCharsets.UTF_8);
+        for (Map.Entry<java.nio.file.Path, String> source : sources.entrySet()) {
+            java.nio.file.Path file = source.getKey();
+            String text = source.getValue();
             byte[] kind = classify(text);
+            byte[] outside = withoutL10nCalls(text, kind);
             java.util.regex.Matcher match = call.matcher(text);
             while (match.find()) {
                 if (kind[match.start()] != CODE) continue;
-                int close = closingBracket(text, kind, match.end() - 1);
+                int open = match.end() - 1;
+                int close = closingBracket(text, kind, open);
                 if (close < 0) continue;
                 checked++;
-                for (String literal : literalsIn(text, withoutL10nCalls(text, kind),
-                        match.end(), close)) {
-                    if (isProse(literal)) {
-                        unwrapped.add(file.getFileName() + ": " + literal);
+                String helper = calledName(text, match.start(), open);
+                List<int[]> arguments = argumentsOf(text, kind, open, close);
+                for (int index = 0; index < arguments.size(); index++) {
+                    // A derived helper shows one of its parameters and passes the rest along.
+                    // Reading every literal in its brackets would flag the type name in
+                    // addInfo(root, "TikTok cached value", "OBJECT".equals(entry.type) ? ...).
+                    if (helper != null && !helpers.contains(helper + "#" + index)) continue;
+                    for (String literal : literalsIn(text, outside,
+                            arguments.get(index)[0], arguments.get(index)[1])) {
+                        if (isProse(literal)) {
+                            unwrapped.add(file.getFileName() + ": " + literal);
+                        }
                     }
                 }
             }
@@ -847,6 +863,252 @@ public class SettingsL10nTest {
         assertTrue("no call to any of these was found, so this proves nothing", checked > 20);
         assertEquals("text handed straight to a view in English, wrap it in L10n.t: "
                 + unwrapped, 0, unwrapped.size());
+    }
+
+    /**
+     * The calls that are a view being handed words, before anything is derived from them.
+     *
+     * <p>The two named classes are the label builders this bundle draws its own screens with,
+     * so a sentence written as {@code FeatureGateLabUi.body(context, "...")} is a sentence on
+     * the screen exactly as {@code setText} is.
+     */
+    private static final String VIEW_TEXT_CALLS =
+            "\\.\\s*(setText|setHint|setTitle|setMessage|setContentDescription|setPositiveButton"
+                    + "|setNegativeButton|setNeutralButton)\\s*\\(|"
+                    + "\\b(FeatureGateLabUi|SettingsUi)\\s*\\.\\s*"
+                    + "(text|label|body|header|title|caption)\\s*\\(";
+
+    /** Never a helper, whatever the block behind the bracket does with a String. */
+    private static final Set<String> NOT_A_HELPER = new LinkedHashSet<>(java.util.Arrays.asList(
+            "if", "for", "while", "switch", "catch", "synchronized", "t", "f"));
+
+    /**
+     * Every method here that hands a String it was given straight to something that shows it,
+     * as the method's name, a hash and the position of the parameter that gets shown.
+     *
+     * <p>The label builders above used to be the whole list, written out by hand, which stops
+     * the rule one hop short of wherever the code actually is. FeatureGateLabUi.iconButton
+     * hands its description to setContentDescription and FeatureGateDetailFragment.addInfo
+     * hands its label to body(), so "Clear search" and twelve rows of the Feature Gate Lab's
+     * technical details went out in English with this check reading straight past them. The
+     * declarations are walked instead: a method whose String parameter reaches a call already
+     * known to show text is one of those calls itself, and that repeats until a pass finds
+     * nothing new.
+     *
+     * <p>Straight is the whole of it. A parameter that arrives at the view through L10n is
+     * translated on the way, which is what every preference wrapper here does, so the L10n
+     * calls are blanked out before the parameter is looked for. Without that the wrappers
+     * themselves count as English and every row of every settings page is a finding.
+     */
+    private static Set<String> helpersThatPutTextOnTheScreen(
+            Map<java.nio.file.Path, String> sources) {
+        Map<java.nio.file.Path, byte[]> kinds = new LinkedHashMap<>();
+        Map<java.nio.file.Path, byte[]> masked = new LinkedHashMap<>();
+        Map<java.nio.file.Path, List<Method>> methods = new LinkedHashMap<>();
+        for (Map.Entry<java.nio.file.Path, String> source : sources.entrySet()) {
+            byte[] kind = classify(source.getValue());
+            kinds.put(source.getKey(), kind);
+            masked.put(source.getKey(), withoutL10nCalls(source.getValue(), kind));
+            methods.put(source.getKey(), methodsIn(source.getValue(), kind));
+        }
+
+        Set<String> helpers = new LinkedHashSet<>();
+        boolean grew = true;
+        while (grew) {
+            grew = false;
+            java.util.regex.Pattern shows = java.util.regex.Pattern.compile(
+                    VIEW_TEXT_CALLS + helperAlternation(namesIn(helpers)));
+            for (Map.Entry<java.nio.file.Path, String> source : sources.entrySet()) {
+                String text = source.getValue();
+                byte[] kind = kinds.get(source.getKey());
+                byte[] outside = masked.get(source.getKey());
+                for (Method method : methods.get(source.getKey())) {
+                    for (int index : shownParametersOf(text, kind, outside, method, shows,
+                            helpers)) {
+                        if (helpers.add(method.name + "#" + index)) grew = true;
+                    }
+                }
+            }
+        }
+        return helpers;
+    }
+
+    /** The bare method names of a set of name#index entries. */
+    private static Set<String> namesIn(Set<String> helpers) {
+        Set<String> names = new LinkedHashSet<>();
+        for (String helper : helpers) names.add(helper.substring(0, helper.indexOf('#')));
+        return names;
+    }
+
+    /** The alternation adding the derived helpers to the pattern, empty when there are none. */
+    private static String helperAlternation(Set<String> names) {
+        StringBuilder pattern = new StringBuilder();
+        for (String name : names) {
+            pattern.append("|\\b").append(java.util.regex.Pattern.quote(name)).append("\\s*\\(");
+        }
+        return pattern.toString();
+    }
+
+    /** Which of a method's parameters reach a showing call inside its body without going
+     * through L10n, by position in the declaration. */
+    private static Set<Integer> shownParametersOf(String text, byte[] kind, byte[] outside,
+                                                  Method method, java.util.regex.Pattern shows,
+                                                  Set<String> helpers) {
+        Set<Integer> shown = new LinkedHashSet<>();
+        java.util.regex.Matcher match = shows.matcher(text);
+        int at = method.bodyStart;
+        while (match.find(at) && match.start() < method.bodyEnd) {
+            at = match.end();
+            if (kind[match.start()] != CODE) continue;
+            int open = match.end() - 1;
+            int close = closingBracket(text, kind, open);
+            if (close < 0) continue;
+            String helper = calledName(text, match.start(), open);
+            List<int[]> arguments = argumentsOf(text, kind, open, close);
+            for (int index = 0; index < arguments.size(); index++) {
+                if (helper != null && !helpers.contains(helper + "#" + index)) continue;
+                for (int position : identifiersIn(text, outside,
+                        arguments.get(index)[0], arguments.get(index)[1])) {
+                    int declared = method.parameterAt(text, position);
+                    if (declared >= 0) shown.add(declared);
+                }
+            }
+        }
+        return shown;
+    }
+
+    /** A method declaration: its name, the parameters it takes in order, and its body. */
+    private static final class Method {
+        final String name;
+        final List<String> parameters;
+        final Set<String> stringParameters;
+        final int bodyStart;
+        final int bodyEnd;
+
+        Method(String name, List<String> parameters, Set<String> stringParameters,
+               int bodyStart, int bodyEnd) {
+            this.name = name;
+            this.parameters = parameters;
+            this.stringParameters = stringParameters;
+            this.bodyStart = bodyStart;
+            this.bodyEnd = bodyEnd;
+        }
+
+        /** The position of the String parameter named at this offset, or -1 for anything else. */
+        int parameterAt(String text, int position) {
+            int end = position;
+            while (end < text.length() && Character.isJavaIdentifierPart(text.charAt(end))) end++;
+            String word = text.substring(position, end);
+            return stringParameters.contains(word) ? parameters.indexOf(word) : -1;
+        }
+    }
+
+    /** The name of the method a matched call belongs to, or null when it is one of the seeds. */
+    private static String calledName(String text, int start, int open) {
+        String head = text.substring(start, open).trim();
+        if (head.startsWith(".") || head.contains(".")) return null;
+        return head.matches("\\w+") ? head : null;
+    }
+
+    /** Each argument of a call, as the half-open range it occupies. */
+    private static List<int[]> argumentsOf(String text, byte[] kind, int open, int close) {
+        List<int[]> arguments = new ArrayList<>();
+        int depth = 0;
+        int start = open + 1;
+        for (int at = open + 1; at < close; at++) {
+            if (kind[at] != CODE) continue;
+            char c = text.charAt(at);
+            if (c == '(' || c == '[' || c == '{') depth++;
+            else if (c == ')' || c == ']' || c == '}') depth--;
+            else if (c == ',' && depth == 0) {
+                arguments.add(new int[]{start, at});
+                start = at + 1;
+            }
+        }
+        arguments.add(new int[]{start, close});
+        return arguments;
+    }
+
+    /** Where each bare identifier starts in a range, skipping anything L10n already holds. */
+    private static List<Integer> identifiersIn(String text, byte[] outside, int from, int to) {
+        List<Integer> starts = new ArrayList<>();
+        int at = from;
+        while (at < to) {
+            if (outside[at] != CODE || !Character.isJavaIdentifierStart(text.charAt(at))) {
+                at++;
+                continue;
+            }
+            if (at > 0 && (text.charAt(at - 1) == '.'
+                    || Character.isJavaIdentifierPart(text.charAt(at - 1)))) {
+                at++;
+                continue;
+            }
+            starts.add(at);
+            while (at < to && Character.isJavaIdentifierPart(text.charAt(at))) at++;
+        }
+        return starts;
+    }
+
+    // A name, a bracket with no bracket inside it, and an opening brace. A lambda's parameters
+    // carry no type, so a lambda never has a String parameter by this reading and is skipped.
+    private static final java.util.regex.Pattern DECLARATION = java.util.regex.Pattern.compile(
+            "(\\w+)\\s*\\(([^()]*)\\)\\s*(?:throws\\s+[\\w.,\\s]+?)?\\{");
+
+    /** Every method in a file that takes a String or a CharSequence. */
+    private static List<Method> methodsIn(String text, byte[] kind) {
+        List<Method> methods = new ArrayList<>();
+        java.util.regex.Matcher match = DECLARATION.matcher(text);
+        while (match.find()) {
+            if (kind[match.start()] != CODE) continue;
+            String name = match.group(1);
+            if (NOT_A_HELPER.contains(name)) continue;
+            List<String> parameters = parametersOf(match.group(2));
+            Set<String> strings = stringParametersOf(match.group(2));
+            if (strings.isEmpty()) continue;
+            int open = text.lastIndexOf('{', match.end() - 1);
+            int end = closingBrace(text, kind, open);
+            if (end < 0) continue;
+            methods.add(new Method(name, parameters, strings, open, end));
+        }
+        return methods;
+    }
+
+    /** Every parameter name in a declaration's bracket, in order. */
+    private static List<String> parametersOf(String declaration) {
+        List<String> names = new ArrayList<>();
+        for (String part : declaration.split(",")) {
+            String[] words = part.trim().split("\\s+");
+            names.add(words.length < 2 ? "" : words[words.length - 1]);
+        }
+        return names;
+    }
+
+    /** The names of the String and CharSequence parameters inside a declaration's bracket. */
+    private static Set<String> stringParametersOf(String declaration) {
+        Set<String> names = new LinkedHashSet<>();
+        for (String part : declaration.split(",")) {
+            String[] words = part.trim().split("\\s+");
+            if (words.length < 2) continue;
+            String type = words[words.length - 2];
+            String name = words[words.length - 1];
+            if (!name.matches("\\w+")) continue;
+            if (type.equals("String") || type.equals("CharSequence")
+                    || type.equals("String...") || type.equals("CharSequence...")) {
+                names.add(name);
+            }
+        }
+        return names;
+    }
+
+    /** The brace closing the one at this index, counting only the braces that are code. */
+    private static int closingBrace(String text, byte[] kind, int open) {
+        int depth = 0;
+        for (int at = open; at < text.length(); at++) {
+            if (kind[at] != CODE) continue;
+            if (text.charAt(at) == '{') depth++;
+            else if (text.charAt(at) == '}' && --depth == 0) return at;
+        }
+        return -1;
     }
 
     /** Every .java file under the TikTok extension. */
