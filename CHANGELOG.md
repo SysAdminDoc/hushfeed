@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Saving a video without sound preserves its rotation metadata before the muxer starts. Tests also check sample timestamps, flags and cancellation without deleting the input.
+
 * Native GIPHY sticker URLs now obey the same HTTPS restriction as other sticker sources. Rebinding the save button to an invalid source can't leave the previous sticker attached.
 
 * Story saving no longer keeps discarded story screens alive through its owner index. A live or rebound story still resolves its own media; a missing owner reports that the story is unavailable.

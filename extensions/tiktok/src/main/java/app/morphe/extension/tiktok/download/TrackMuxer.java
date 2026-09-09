@@ -70,6 +70,9 @@ final class TrackMuxer {
             MediaFormat videoFormat = select(picture, "video/");
             muxer = new MediaMuxer(output.getAbsolutePath(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
             int videoTrack = muxer.addTrack(videoFormat);
+            if (videoFormat.containsKey("rotation-degrees")) {
+                muxer.setOrientationHint(videoFormat.getInteger("rotation-degrees"));
+            }
             muxer.start();
             copy(picture, muxer, videoTrack);
             muxer.stop();
