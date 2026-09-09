@@ -16,6 +16,7 @@ import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +43,7 @@ public final class StoryDownloads {
 
     /** The story each play area is showing, and the view each play area put on screen. */
     private static final Map<Object, Object> STORIES = new WeakHashMap<>();
-    private static final Map<View, Object> OWNERS = new WeakHashMap<>();
+    private static final Map<View, WeakReference<Object>> OWNERS = new WeakHashMap<>();
 
     private StoryDownloads() {
     }
@@ -79,7 +80,9 @@ public final class StoryDownloads {
                 return;
             }
             synchronized (OWNERS) {
-                OWNERS.put(view, component);
+                // The native component owns its view. A strong value would keep this map's
+                // weak key alive through that component after the story viewer is closed.
+                OWNERS.put(view, new WeakReference<>(component));
             }
             TAKEN.put(view, Boolean.TRUE);
             view.setOnLongClickListener(anchor -> {
@@ -99,7 +102,8 @@ public final class StoryDownloads {
     static Object storyFor(View view) {
         Object component;
         synchronized (OWNERS) {
-            component = OWNERS.get(view);
+            WeakReference<Object> owner = OWNERS.get(view);
+            component = owner == null ? null : owner.get();
         }
         if (component == null) return null;
         synchronized (STORIES) {

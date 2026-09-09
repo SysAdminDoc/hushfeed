@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Story saving no longer keeps discarded story screens alive through its owner index. A live or rebound story still resolves its own media; a missing owner reports that the story is unavailable.
+
 * An MP4 sticker that fails during graphics setup releases its encoder surface and graphics resources. Cleanup still runs if another release step fails, and the original error remains available.
 
 * The two long-press copy choices now copy the current video or sound link. They were wired to double tap, whose settings never offered them. Default double tap is unchanged.
