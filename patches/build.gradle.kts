@@ -110,6 +110,12 @@ dependencies {
 
     // Android API stubs defined here.
     compileOnly(project(":patches:stub"))
+
+    // The register and instruction helpers under app.morphe.util are the only thing tested
+    // here. They take dexlib2 methods, so the patcher has to be on the test runtime classpath
+    // as well as the compile one.
+    testImplementation("junit:junit:4.13.2")
+    testImplementation(libs.morphe.patcher)
 }
 
 tasks {

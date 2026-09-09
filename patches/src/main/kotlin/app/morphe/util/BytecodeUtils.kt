@@ -1033,7 +1033,7 @@ fun MutableMethod.returnEarly(value: Float) {
  * @see returnLate
  */
 fun MutableMethod.returnEarly(value: Double) {
-    check(returnType.first() == 'J') { RETURN_TYPE_MISMATCH }
+    check(returnType.first() == 'D') { RETURN_TYPE_MISMATCH }
     overrideReturnValue(value.toString(), false)
 }
 
@@ -1062,7 +1062,7 @@ fun MutableMethod.returnEarly(value: String) {
  */
 fun MutableMethod.returnEarly(value: Void?) {
     val returnType = returnType.first()
-    check(returnType == 'L' || returnType != '[') {
+    check(returnType == 'L' || returnType == '[') {
         RETURN_TYPE_MISMATCH
     }
     overrideReturnValue(false.toHexString(), false)
@@ -1259,7 +1259,7 @@ private fun MutableMethod.overrideReturnValue(value: String, returnLate: Boolean
  * Remove the given AccessFlags from the field.
  */
 internal fun MutableField.removeFlags(vararg flags: AccessFlags) {
-    val bitField = flags.map { it.value }.reduce { acc, flag -> acc and flag }
+    val bitField = flags.map { it.value }.reduce { acc, flag -> acc or flag }
     this.accessFlags = this.accessFlags and bitField.inv()
 }
 
