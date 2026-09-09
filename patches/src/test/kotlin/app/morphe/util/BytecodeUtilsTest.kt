@@ -40,7 +40,9 @@ class BytecodeUtilsTest {
             null,
             null,
             ImmutableMethodImplementation(
-                1,
+                // Room for a few registers: a case that needs two of them should not have to
+                // build its own method.
+                4,
                 instructions.toList(),
                 null,
                 null,
@@ -162,7 +164,8 @@ class BytecodeUtilsTest {
             "I",
             ImmutableInstruction21s(Opcode.CONST_16, 0, 1234),
             ImmutableInstruction35c(Opcode.INVOKE_STATIC, 0, 0, 0, 0, 0, 0, unrelated),
-            ImmutableInstruction11x(Opcode.MOVE_RESULT, 0),
+            // Into v1, so the literal in v0 is still the literal when its own call reads it.
+            ImmutableInstruction11x(Opcode.MOVE_RESULT, 1),
             ImmutableInstruction35c(Opcode.INVOKE_STATIC, 1, 0, 0, 0, 0, 0, owner),
             ImmutableInstruction11x(Opcode.MOVE_RESULT, 0),
             ImmutableInstruction11x(Opcode.RETURN, 0),
@@ -175,6 +178,28 @@ class BytecodeUtilsTest {
         assertEquals(Opcode.INVOKE_STATIC, opcodeAt(body, 3))
         assertEquals(Opcode.MOVE_RESULT, opcodeAt(body, 4))
         assertEquals(Opcode.CONST, opcodeAt(body, 5))
+    }
+
+    @Test
+    fun `a literal overwritten before any call is refused`() {
+        // The register is loaded, written again, and only then read by a call. The value the
+        // call reads is not the literal, so overriding that call's result would be overriding
+        // something else entirely.
+        val other = ImmutableMethodReference(
+            "Lcom/example/Other;", "take", listOf("I"), "I",
+        )
+        val body = method(
+            "I",
+            ImmutableInstruction21s(Opcode.CONST_16, 0, 1234),
+            ImmutableInstruction21s(Opcode.CONST_16, 0, 5678),
+            ImmutableInstruction35c(Opcode.INVOKE_STATIC, 1, 0, 0, 0, 0, 0, other),
+            ImmutableInstruction11x(Opcode.MOVE_RESULT, 0),
+            ImmutableInstruction11x(Opcode.RETURN, 0),
+        )
+
+        assertThrows(IllegalStateException::class.java) {
+            body.insertLiteralOverride(0, true)
+        }
     }
 
     @Test

@@ -121,7 +121,7 @@ public class CaptionToolsTest {
         FrameLayout root = new FrameLayout(Utils.getContext());
         // A container with something in it, which is what a render that rendered looks like.
         root.addView(new TextView(Utils.getContext()));
-        for (int render = 0; render < 20; render++) CaptionStyle.apply(root);
+        for (int render = 0; render < 40; render++) CaptionStyle.apply(root);
 
         assertTrue("a build where neither caption view is reachable says nothing",
                 HookStatus.anyMissing());
@@ -187,13 +187,18 @@ public class CaptionToolsTest {
     }
 
     /**
-     * A container holding the caption but not the strip behind it. apply() has always treated a
-     * missing background as ordinary one line later, and the two names are gated on the same
-     * signal, so counting them separately made one of them being there proof that the other was
-     * broken. They are counted as one thing now: either one found says this is a caption
-     * container this build can use.
+     * A container holding the caption but not the strip behind it. This is the likeliest shape
+     * of the defect the report exists for: the names are assigned by a counter, so a reshuffle
+     * moves one of the two more often than it moves both.
+     *
+     * <p>Finding one of them is what makes the other one's absence worth reporting rather than
+     * a bail-out, because it proves this container really is a caption container. Counting the
+     * pair as one thing instead, which is what the first version of this did, made exactly this
+     * build unreportable: the working name cleared the count on every render and the broken one
+     * never reached the threshold, so the caption background setting did nothing while the Hook
+     * status row read clean.
      */
-    @Test public void oneCaptionViewFoundMakesTheOtherOneOrdinary() {
+    @Test public void oneCaptionViewFoundIsWhatMakesTheOtherOneWorthReporting() {
         HookStatus.clear();
         CaptionStyle.resetLookupsForTests();
         int textId = View.generateViewId();
@@ -207,12 +212,14 @@ public class CaptionToolsTest {
         text.setId(textId);
         text.setTextSize(16);
         root.addView(text);
-        for (int render = 0; render < 40; render++) CaptionStyle.apply(root);
+        for (int render = 0; render < 20; render++) CaptionStyle.apply(root);
 
         assertTrue("the caption was never restyled, so this proves nothing",
                 text.getTextSize() > 16);
-        assertFalse("a container holding the caption was called a broken build",
-                HookStatus.anyMissing());
+        assertEquals("the half of the build that works was reported as broken, or the half "
+                        + "that does not was not reported at all",
+                java.util.Collections.singletonList("view caption container#dfn"),
+                HookStatus.missing("captions"));
         HookStatus.clear();
         CaptionStyle.resetLookupsForTests();
     }
@@ -235,8 +242,8 @@ public class CaptionToolsTest {
 
         FrameLayout foreign = new FrameLayout(Utils.getContext());
         foreign.addView(new TextView(Utils.getContext()));
-        for (int render = 0; render < 19; render++) CaptionStyle.apply(foreign);
-        assertFalse("nineteen strangers were already enough to call the build broken",
+        for (int render = 0; render < 39; render++) CaptionStyle.apply(foreign);
+        assertFalse("thirty-nine strangers were already enough to call the build broken",
                 HookStatus.anyMissing());
 
         FrameLayout real = new FrameLayout(Utils.getContext());

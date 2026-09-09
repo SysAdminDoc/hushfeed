@@ -20,6 +20,8 @@ A newer change replaced that undo. Tap Undo again.,A newer change replaced that 
 A settings operation is already running,A settings operation is already running
 A tap on a person in the Send to row only selects them. A second tap on the same person within four seconds sends the video.,A tap on a person in the Send to row only selects them. A second tap on the same person within four seconds sends the video.
 AI-generated posts,AI-generated posts
+Account warning: forced client values apply to every account in this app data and cannot bypass server controls.,Account warning: forced client values apply to every account in this app data and cannot bypass server controls.
+"Account-sensitive name: forcing this key may affect security, login, compliance, region, payment, or account safety behavior.","Account-sensitive name: forcing this key may affect security, login, compliance, region, payment, or account safety behavior."
 Add,Add
 Add a block button to the video player that blocks the account that posted the current video in one tap. An undo action is shown after each block.,Add a block button to the video player that blocks the account that posted the current video in one tap. An undo action is shown after each block.
 Add a button beside the block control to send feedback about the current video.,Add a button beside the block control to send feedback about the current video.
@@ -40,6 +42,7 @@ Always show publish date,Always show publish date
 Always show the publish date in video author information. Restart TikTok to apply this.,Always show the publish date in video author information. Restart TikTok to apply this.
 "An app's package name, like com.dv.adm. The save button sends the video's link there instead of saving it here. Leave it empty to save here.","An app's package name, like com.dv.adm. The save button sends the video's link there instead of saving it here. Leave it empty to save here."
 "An operator code is five or six digits, like 310260","An operator code is five or six digits, like 310260"
+An override changes the value returned by the getter. It does not rewrite TikTok's cached value or prove the named feature changed.,An override changes the value returned by the getter. It does not rewrite TikTok's cached value or prove the named feature changed.
 Animated sticker format,Animated sticker format
 App behavior,App behavior
 Applies saved rules at supported getters,Applies saved rules at supported getters
@@ -198,6 +201,7 @@ Forget what has been counted today and end any hold. The budgets themselves are 
 Full comment sort options,Full comment sort options
 GIF,GIF
 Gate data unavailable,Gate data unavailable
+Gate details,Gate details
 Getter not requested yet,Getter not requested yet
 Getter requested,Getter requested
 "Getter requested, override rejected: %1$s","Getter requested, override rejected: %1$s"
@@ -348,6 +352,7 @@ Let the Offline videos menu use your own limit instead of TikTok's fixed one. Re
 Link copied,Link copied
 "Links, privacy and player tools","Links, privacy and player tools"
 Loaded current values. Loading all known gates...,Loaded current values. Loading all known gates...
+Loading gates...,Loading gates...
 Loading local catalog and current TikTok cache...,Loading local catalog and current TikTok cache...
 Locally hidden creators,Locally hidden creators
 Lock today's budget,Lock today's budget
@@ -386,6 +391,7 @@ No suggested accounts to clear,No suggested accounts to clear
 No video selected,No video selected
 No videos remained after Hushfeed applied your feed filters to %1$d batches. Most matches: %2$s.,No videos remained after Hushfeed applied your feed filters to %1$d batches. Most matches: %2$s.
 No videos remained after Hushfeed applied your feed filters to one batch. Most matches: %1$s.,No videos remained after Hushfeed applied your feed filters to one batch. Most matches: %1$s.
+None recorded,None recorded
 Not blocked,Not blocked
 Not interested in this video,Not interested in this video
 "Nothing has been checked yet, so there is nothing to report.","Nothing has been checked yet, so there is nothing to report."
@@ -404,6 +410,7 @@ One minute left,One minute left
 One value per line,One value per line
 Only bottom tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear.,Only bottom tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear.
 Only enable when recording logs to report an issue. Leaving it on for too long can make TikTok feel laggy and may lead to crashes.,Only enable when recording logs to report an issue. Leaving it on for too long can make TikTok feel laggy and may lead to crashes.
+Only fields that can be type-checked and applied to a copied configuration object are shown.,Only fields that can be type-checked and applied to a copied configuration object are shown.
 Only from these countries,Only from these countries
 Only internal storage folders are supported,Only internal storage folders are supported
 Only tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear.,Only tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear.
@@ -427,6 +434,7 @@ Other feed filters,Other feed filters
 Override SIM details,Override SIM details
 Override saved but off,Override saved but off
 Override store region (experimental),Override store region (experimental)
+Overrides are disabled in the Feature Gate Lab.,Overrides are disabled in the Feature Gate Lab.
 Paid partnerships,Paid partnerships
 "People, shortcuts and sending controls","People, shortcuts and sending controls"
 Photo,Photo
@@ -467,6 +475,7 @@ Remove tracking parameters from shared links.,Remove tracking parameters from sh
 Remove watermark,Remove watermark
 Report saved to %1$s,Report saved to %1$s
 Required,Required
+Reset override,Reset override
 Reset settings,Reset settings
 Restore defaults immediately. Your current settings are kept for Undo.,Restore defaults immediately. Your current settings are kept for Undo.
 Restore failed. Some settings may still be changed.,Restore failed. Some settings may still be changed.
@@ -485,6 +494,7 @@ Save JSON,Save JSON
 Save a profile picture on a long press,Save a profile picture on a long press
 Save a story on a long press,Save a story on a long press
 "Save every photo in the post directly from its source URL, without rendering it again.","Save every photo in the post directly from its source URL, without rendering it again."
+Save field values,Save field values
 Save media,Save media
 Save patch settings and Feature Gate Lab rules to a JSON file.,Save patch settings and Feature Gate Lab rules to a JSON file.
 Save subtitles beside videos,Save subtitles beside videos
@@ -593,6 +603,7 @@ Tap again to like,Tap again to like
 Tap the feed Follow button twice within four seconds.,Tap the feed Follow button twice within four seconds.
 Tap the like heart twice within four seconds. Removing a like stays immediate.,Tap the like heart twice within four seconds. Removing a like stays immediate.
 Tap to start the feed,Tap to start the feed
+Technical details,Technical details
 That backup was written by a newer Hushfeed than this one. Nothing was altered.,That backup was written by a newer Hushfeed than this one. Nothing was altered.
 That creator is already in the list,That creator is already in the list
 "That creator pattern is too long to use, so it was skipped: %1$s","That creator pattern is too long to use, so it was skipped: %1$s"
@@ -629,6 +640,8 @@ The story couldn't be saved.,The story couldn't be saved.
 "The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks.","The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks."
 "The video couldn't be saved. Try again, or choose Automatic.","The video couldn't be saved. Try again, or choose Automatic."
 There was nothing to put back,There was nothing to put back
+This catalog entry is no longer available. Refresh the Lab and try again.,This catalog entry is no longer available. Refresh the Lab and try again.
+This configuration has no fields that can be copied and changed safely on this build.,This configuration has no fields that can be copied and changed safely on this build.
 "This line opens a rule and does not finish it: %1$s. Write two phrases as ""a"" & ""b"" for both, or ""a"" !& ""b"" for the first without the second.","This line opens a rule and does not finish it: %1$s. Write two phrases as ""a"" & ""b"" for both, or ""a"" !& ""b"" for the first without the second."
 "This phone has no file picker, so there is no way to choose a file here.","This phone has no file picker, so there is no way to choose a file here."
 This phone has no folder picker. Type the folder into the row instead.,This phone has no folder picker. Type the folder into the row instead.

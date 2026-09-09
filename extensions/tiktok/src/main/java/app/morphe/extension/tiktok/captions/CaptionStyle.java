@@ -84,9 +84,9 @@ public final class CaptionStyle {
      * <p>One miss is not evidence of anything. The hook is injected at every return-void in the
      * host's render method, early bail-outs included, and HookStatus never forgets a miss, so a
      * single empty renderer would make the Hook status row read broken for the rest of the
-     * process. Five consecutive renders with children in the container and nothing under the id
-     * is not a bail-out; on a working build the first of those five finds the view and the
-     * count is dropped.
+     * process. Twenty consecutive renders of a container that is really a caption container is
+     * not a bail-out; on a working build the first of them finds the view and the count is
+     * dropped.
      */
     private static final int MISSES_BEFORE_REPORTING = 20;
 
@@ -110,27 +110,34 @@ public final class CaptionStyle {
                                    boolean textResolved, boolean backgroundResolved) {
         if (foundText) FOUND.add(TEXT_ID);
         if (foundBackground) FOUND.add(BACKGROUND_ID);
-        // Either one being there says this is a caption container, and apply() has always
-        // treated a missing background as ordinary. Only a container where neither is reachable
-        // is a container this build cannot use, so the two are counted as one thing.
-        if (foundText || foundBackground) {
-            MISSES.clear();
-            return;
-        }
-        if (!hasChildren(root)) return;
-        int misses = (MISSES.containsKey(FAMILY) ? MISSES.get(FAMILY) : 0) + 1;
-        MISSES.put(FAMILY, misses);
-        if (misses < MISSES_BEFORE_REPORTING) return;
-        if (textResolved && !FOUND.contains(TEXT_ID)) {
-            HookStatus.missingMember("captions", "view", "caption container", TEXT_ID);
-        }
-        if (backgroundResolved && !FOUND.contains(BACKGROUND_ID)) {
-            HookStatus.missingMember("captions", "view", "caption container", BACKGROUND_ID);
-        }
+        // Either one being found says this container really is a caption container, which is
+        // what makes the other one's absence worth counting rather than a bail-out. Counting
+        // the pair as one thing instead made a build where exactly one id had moved
+        // unreportable for the life of the process: the working name cleared the count on
+        // every render and the broken one never reached the threshold.
+        boolean aCaptionContainer = foundText || foundBackground;
+        if (!aCaptionContainer && !hasChildren(root)) return;
+        note(TEXT_ID, textResolved, foundText, aCaptionContainer);
+        note(BACKGROUND_ID, backgroundResolved, foundBackground, aCaptionContainer);
     }
 
-    /** The two names are counted together, because either one found makes the other ordinary. */
-    private static final String FAMILY = "captions";
+    private static void note(String name, boolean resolved, boolean found,
+                             boolean aCaptionContainer) {
+        if (found) {
+            MISSES.remove(name);
+            return;
+        }
+        if (!resolved || FOUND.contains(name)) return;
+        int misses = (MISSES.containsKey(name) ? MISSES.get(name) : 0) + 1;
+        MISSES.put(name, misses);
+        // A container with children but neither caption view in it might be somebody else's
+        // view, so those count towards the same total but only report once the count is long
+        // past anything a handful of stray renders could reach.
+        int needed = aCaptionContainer ? MISSES_BEFORE_REPORTING : MISSES_BEFORE_REPORTING * 2;
+        if (misses >= needed) {
+            HookStatus.missingMember("captions", "view", "caption container", name);
+        }
+    }
 
     private static boolean hasChildren(View root) {
         return root instanceof android.view.ViewGroup

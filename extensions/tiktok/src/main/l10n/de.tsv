@@ -552,6 +552,19 @@ Find a setting by title or description	Einstellung nach Titel oder Beschreibung 
 No matching settings	Keine passenden Einstellungen
 Search a title, description or category.	Titel, Beschreibung oder Kategorie durchsuchen.
 Search settings	Einstellungen durchsuchen
+Gate details	Schalterdetails
+This catalog entry is no longer available. Refresh the Lab and try again.	Dieser Katalogeintrag ist nicht mehr verfügbar. Das Labor aktualisieren und es erneut versuchen.
+An override changes the value returned by the getter. It does not rewrite TikTok's cached value or prove the named feature changed.	Eine Überschreibung ändert den Wert, den der Getter zurückgibt. Sie schreibt TikToks zwischengespeicherten Wert nicht um und beweist nicht, dass sich die genannte Funktion geändert hat.
+Account-sensitive name: forcing this key may affect security, login, compliance, region, payment, or account safety behavior.	Kontosensibler Name: Diesen Schlüssel zu erzwingen kann Sicherheit, Anmeldung, Compliance, Region, Zahlungen oder den Kontoschutz beeinflussen.
+Save field values	Feldwerte speichern
+Reset override	Überschreibung zurücksetzen
+Overrides are disabled in the Feature Gate Lab.	Überschreibungen sind im Schalterlabor abgeschaltet.
+This configuration has no fields that can be copied and changed safely on this build.	Diese Konfiguration hat keine Felder, die sich in diesem Build gefahrlos kopieren und ändern lassen.
+Only fields that can be type-checked and applied to a copied configuration object are shown.	Es werden nur Felder gezeigt, deren Typ geprüft und die auf eine kopierte Konfiguration angewendet werden können.
+Technical details	Technische Details
+None recorded	Nichts aufgezeichnet
+Account warning: forced client values apply to every account in this app data and cannot bypass server controls.	Kontowarnung: Erzwungene Werte auf dem Gerät gelten für jedes Konto in diesen App-Daten und umgehen keine Serverregeln.
+Loading gates...	Schalter werden geladen ...
 Restoring your settings	Einstellungen werden wiederhergestellt
 Putting the settings back to their defaults	Einstellungen werden auf die Standardwerte zurückgesetzt
 Undoing the last change	Die letzte Änderung wird rückgängig gemacht

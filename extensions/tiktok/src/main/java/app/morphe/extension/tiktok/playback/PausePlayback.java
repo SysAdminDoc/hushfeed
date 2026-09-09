@@ -206,9 +206,13 @@ public final class PausePlayback {
 
     static void onForeground(Activity activity) {
         try {
-            // The sheet the reader left open is the sheet they are looking at again.
+            // The sheet the reader left open is the sheet they are looking at again, but only
+            // if this is the screen it belongs to. These callbacks are registered for every
+            // activity in the process, and a sheet left open on the feed while the reader is in
+            // the settings is not a reason to take the sound off whatever is playing there.
             View sheet = sheetReference.get();
             if (sheet != null && sheet.getWindowToken() != null
+                    && activityOf(sheet) == activity
                     && Settings.PAUSE_ON_COMMENTS.get() && !SessionBudget.isLocked()) {
                 quieten();
             }

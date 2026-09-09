@@ -818,7 +818,12 @@ public class SettingsL10nTest {
     public void noDialogTextIsHandedStraightToAViewInEnglish() throws Exception {
         java.util.regex.Pattern call = java.util.regex.Pattern.compile(
                 "\\.\\s*(setText|setHint|setTitle|setMessage|setContentDescription|setPositiveButton"
-                        + "|setNegativeButton|setNeutralButton)\\s*\\(");
+                        + "|setNegativeButton|setNeutralButton)\\s*\\(|"
+                        // The helpers whose whole job is to build a label and set its text.
+                        // Without these the rule stops one hop short: the same sentence passes
+                        // if it is written as FeatureGateLabUi.body(context, "...").
+                        + "\\b(FeatureGateLabUi|SettingsUi)\\s*\\.\\s*"
+                        + "(text|label|body|header|title|caption)\\s*\\(");
         List<String> unwrapped = new ArrayList<>();
         int checked = 0;
         for (java.nio.file.Path file : tikTokSources()) {

@@ -350,6 +350,34 @@ public class PausePlaybackTest {
         }
     }
 
+    /**
+     * And coming back onto some other screen does not. These callbacks are registered for every
+     * activity in the process, and the settings are their own activity, so a sheet left open on
+     * the feed would otherwise take the sound off whatever was playing there.
+     */
+    @Test public void comingBackOntoAnotherScreenLeavesTheSoundAlone() {
+        Settings.PAUSE_ON_COMMENTS.save(true);
+        try (var feed = Robolectric.buildActivity(HostActivity.class).setup().visible();
+             var elsewhere = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Utils.setActivity(feed.get());
+            Dialog sheet = openSheet(feed.get());
+            PausePlayback.onCommentCellBound(cellIn(sheet));
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertTrue(PausePlayback.quietenedForTests());
+
+            PausePlayback.onBackground();
+            assertFalse(PausePlayback.quietenedForTests());
+
+            PausePlayback.onForeground(elsewhere.get());
+            assertFalse("the sound was taken for a sheet on a screen nobody is looking at",
+                    PausePlayback.quietenedForTests());
+
+            PausePlayback.onForeground(feed.get());
+            assertTrue("the screen the sheet is on did not take it back",
+                    PausePlayback.quietenedForTests());
+        }
+    }
+
     // ------------------------------------------------------------------------------- fixture
 
     /** A comment sheet the way TikTok's is: a window of its own over the feed. */

@@ -479,6 +479,19 @@ Search a title, description or category.	Busca un título, una descripción o un
 Search and override gate flags	Buscar y sustituir marcas de interruptores
 Search hidden creators	Buscar creadores ocultos
 Search settings	Buscar en los ajustes
+Gate details	Detalles del interruptor
+This catalog entry is no longer available. Refresh the Lab and try again.	Esta entrada del catálogo ya no está disponible. Actualiza el Laboratorio e inténtalo otra vez.
+An override changes the value returned by the getter. It does not rewrite TikTok's cached value or prove the named feature changed.	Una sustitución cambia el valor que devuelve el lector. No reescribe el valor que TikTok tiene en caché ni demuestra que la función nombrada haya cambiado.
+Account-sensitive name: forcing this key may affect security, login, compliance, region, payment, or account safety behavior.	Nombre sensible para la cuenta: forzar esta clave puede afectar a la seguridad, el inicio de sesión, el cumplimiento, la región, los pagos o la protección de la cuenta.
+Save field values	Guardar los valores de los campos
+Reset override	Restablecer la sustitución
+Overrides are disabled in the Feature Gate Lab.	Las sustituciones están desactivadas en el Laboratorio de interruptores.
+This configuration has no fields that can be copied and changed safely on this build.	Esta configuración no tiene campos que se puedan copiar y cambiar con seguridad en esta compilación.
+Only fields that can be type-checked and applied to a copied configuration object are shown.	Solo se muestran los campos cuyo tipo se puede comprobar y aplicar a una copia de la configuración.
+Technical details	Detalles técnicos
+None recorded	Nada registrado
+Account warning: forced client values apply to every account in this app data and cannot bypass server controls.	Aviso sobre la cuenta: los valores forzados en el dispositivo se aplican a todas las cuentas de estos datos de la app y no saltan los controles del servidor.
+Loading gates...	Cargando los interruptores...
 Restoring your settings	Restaurando tus ajustes
 Putting the settings back to their defaults	Devolviendo los ajustes a sus valores de fábrica
 Undoing the last change	Deshaciendo el último cambio

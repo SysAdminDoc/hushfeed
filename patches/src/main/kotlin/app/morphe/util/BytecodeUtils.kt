@@ -671,8 +671,21 @@ fun Method.findInstructionIndicesReversedOrThrow(filter: InstructionFilter): Lis
  */
 private fun MutableMethod.indexOfLiteralCallResult(literalIndex: Int): Int {
     val literalRegister = getInstruction<OneRegisterInstruction>(literalIndex).registerA
-    val invokeIndex = indexOfFirstInstructionOrThrow(literalIndex) {
-        opcode?.name?.startsWith("invoke-") == true && literalRegister in registersUsed
+    var invokeIndex = -1
+    for (index in literalIndex + 1 until instructions.count()) {
+        val instruction = getInstruction(index)
+        if (instruction.opcode.name.startsWith("invoke-") &&
+            literalRegister in instruction.registersUsed
+        ) {
+            invokeIndex = index
+            break
+        }
+        // Anything that writes the register again ends the literal's life. An invoke past
+        // that point reads whatever was written last, which is not what was loaded here.
+        if (instruction.writeRegister == literalRegister) break
+    }
+    check(invokeIndex >= 0) {
+        "No call reads the literal loaded at index $literalIndex"
     }
     val resultIndex = invokeIndex + 1
     check(

@@ -90,12 +90,12 @@ public final class FeatureGateDetailFragment extends Fragment {
         screen.setBackgroundColor(SettingsUi.background());
         screen.requestFocus();
         screen.addView(
-                FeatureGateLabUi.header(context, "Gate details", this::leaveDetail),
+                FeatureGateLabUi.header(context, L10n.t(context, "Gate details"), this::leaveDetail),
                 FeatureGateLabUi.matchWrap()
         );
 
         if (entry == null) {
-            TextView error = FeatureGateLabUi.body(context, "This catalog entry is no longer available. Refresh the Lab and try again.");
+            TextView error = FeatureGateLabUi.body(context, L10n.t(context, "This catalog entry is no longer available. Refresh the Lab and try again."));
             error.setGravity(Gravity.CENTER);
             error.setPadding(
                     FeatureGateLabUi.dp(context, 24),
@@ -156,7 +156,7 @@ public final class FeatureGateDetailFragment extends Fragment {
         effectiveValue = addInfo(currentState, "Effective getter result", effectiveValueText());
         TextView cacheNote = FeatureGateLabUi.label(
                 context,
-                "An override changes the value returned by the getter. It does not rewrite TikTok's cached value or prove the named feature changed."
+                L10n.t(context, "An override changes the value returned by the getter. It does not rewrite TikTok's cached value or prove the named feature changed.")
         );
         LinearLayout.LayoutParams cacheNoteParams = FeatureGateLabUi.matchWrap();
         cacheNoteParams.setMargins(0, FeatureGateLabUi.dp(context, 8), 0, 0);
@@ -165,7 +165,7 @@ public final class FeatureGateDetailFragment extends Fragment {
         if (isSensitiveKey(entry.key)) {
             TextView sensitive = FeatureGateLabUi.label(
                     context,
-                    "Account-sensitive name: forcing this key may affect security, login, compliance, region, payment, or account safety behavior."
+                    L10n.t(context, "Account-sensitive name: forcing this key may affect security, login, compliance, region, payment, or account safety behavior.")
             );
             sensitive.setTextColor(FeatureGateLabUi.warningColor(context));
             LinearLayout.LayoutParams params = FeatureGateLabUi.matchWrap();
@@ -196,7 +196,7 @@ public final class FeatureGateDetailFragment extends Fragment {
             addObjectEditors(content, editable);
             saveObject = FeatureGateLabUi.text(
                     context,
-                    "Save field values",
+                    L10n.t(context, "Save field values"),
                     14,
                     SettingsUi.accent(),
                     Typeface.BOLD
@@ -255,7 +255,7 @@ public final class FeatureGateDetailFragment extends Fragment {
             content.addView(valueRow, FeatureGateLabUi.matchWrap());
         }
 
-        reset = FeatureGateLabUi.text(context, "Reset override", 14, SettingsUi.accent(), Typeface.BOLD);
+        reset = FeatureGateLabUi.text(context, L10n.t(context, "Reset override"), 14, SettingsUi.accent(), Typeface.BOLD);
         reset.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
         reset.setMinimumHeight(FeatureGateLabUi.dp(context, 48));
         reset.setPadding(0, FeatureGateLabUi.dp(context, 10), 0, FeatureGateLabUi.dp(context, 10));
@@ -264,7 +264,7 @@ public final class FeatureGateDetailFragment extends Fragment {
 
         if (force != null) force.setEnabled(editable);
         if (!editable) {
-            TextView disabled = FeatureGateLabUi.label(context, "Overrides are disabled in the Feature Gate Lab.");
+            TextView disabled = FeatureGateLabUi.label(context, L10n.t(context, "Overrides are disabled in the Feature Gate Lab."));
             content.addView(disabled, FeatureGateLabUi.matchWrap());
         }
 
@@ -634,7 +634,7 @@ public final class FeatureGateDetailFragment extends Fragment {
         if (fieldNames.length() == 0) {
             TextView unavailable = FeatureGateLabUi.label(
                     root.getContext(),
-                    "This configuration has no fields that can be copied and changed safely on this build."
+                    L10n.t(root.getContext(), "This configuration has no fields that can be copied and changed safely on this build.")
             );
             unavailable.setTextColor(FeatureGateLabUi.warningColor(root.getContext()));
             root.addView(unavailable, FeatureGateLabUi.matchWrap());
@@ -643,7 +643,7 @@ public final class FeatureGateDetailFragment extends Fragment {
 
         TextView explanation = FeatureGateLabUi.label(
                 root.getContext(),
-                "Only fields that can be type-checked and applied to a copied configuration object are shown."
+                L10n.t(root.getContext(), "Only fields that can be type-checked and applied to a copied configuration object are shown.")
         );
         LinearLayout.LayoutParams explanationParams = FeatureGateLabUi.matchWrap();
         explanationParams.setMargins(0, FeatureGateLabUi.dp(root.getContext(), 6), 0, 0);
@@ -842,7 +842,7 @@ public final class FeatureGateDetailFragment extends Fragment {
         LinearLayout heading = new LinearLayout(context);
         heading.setOrientation(LinearLayout.HORIZONTAL);
         heading.setGravity(Gravity.CENTER_VERTICAL);
-        TextView title = FeatureGateLabUi.text(context, "Technical details", 15, SettingsUi.textPrimary(), Typeface.BOLD);
+        TextView title = FeatureGateLabUi.text(context, L10n.t(context, "Technical details"), 15, SettingsUi.textPrimary(), Typeface.BOLD);
         heading.addView(title, new LinearLayout.LayoutParams(0, FeatureGateLabUi.dp(context, 48), 1f));
         technicalToggle = FeatureGateLabUi.text(context, L10n.t(context, "Show"), 14,
                 SettingsUi.accent(), Typeface.BOLD);
@@ -907,7 +907,8 @@ public final class FeatureGateDetailFragment extends Fragment {
         row.setPadding(0, FeatureGateLabUi.dp(context, 16), 0, FeatureGateLabUi.dp(context, 16));
         TextView labelView = FeatureGateLabUi.body(context, label);
         row.addView(labelView, new LinearLayout.LayoutParams(0, -2, 1));
-        TextView valueView = FeatureGateLabUi.label(context, value == null || value.isEmpty() ? "None recorded" : value);
+        TextView valueView = FeatureGateLabUi.label(context, value == null || value.isEmpty()
+                ? L10n.t(context, "None recorded") : value);
         valueView.setTextIsSelectable(true);
         valueView.setGravity(Gravity.END);
         LinearLayout.LayoutParams valueParams = new LinearLayout.LayoutParams(0, -2, 1);

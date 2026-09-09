@@ -550,6 +550,19 @@ Find a setting by title or description,Temukan setelan berdasarkan judul atau de
 No matching settings,Tidak ada setelan yang cocok
 "Search a title, description or category.","Cari judul, deskripsi, atau kategori."
 Search settings,Cari setelan
+Gate details,Detail gate
+This catalog entry is no longer available. Refresh the Lab and try again.,Entri katalog ini sudah tidak tersedia. Segarkan Lab dan coba lagi.
+An override changes the value returned by the getter. It does not rewrite TikTok's cached value or prove the named feature changed.,Penggantian mengubah nilai yang dikembalikan getter. Ini tidak menulis ulang nilai cache TikTok dan tidak membuktikan fitur yang disebut berubah.
+"Account-sensitive name: forcing this key may affect security, login, compliance, region, payment, or account safety behavior.","Nama sensitif akun: memaksa kunci ini bisa memengaruhi keamanan, login, kepatuhan, wilayah, pembayaran atau perilaku keselamatan akun."
+Save field values,Simpan nilai bidang
+Reset override,Setel ulang penggantian
+Overrides are disabled in the Feature Gate Lab.,Penggantian dimatikan di Feature Gate Lab.
+This configuration has no fields that can be copied and changed safely on this build.,Konfigurasi ini tidak punya bidang yang bisa disalin dan diubah dengan aman di build ini.
+Only fields that can be type-checked and applied to a copied configuration object are shown.,Hanya bidang yang tipenya bisa diperiksa dan diterapkan ke salinan objek konfigurasi yang ditampilkan.
+Technical details,Detail teknis
+None recorded,Tidak ada yang tercatat
+Account warning: forced client values apply to every account in this app data and cannot bypass server controls.,Peringatan akun: nilai yang dipaksa di klien berlaku untuk setiap akun di data aplikasi ini dan tidak bisa menembus kontrol server.
+Loading gates...,Memuat gate...
 Restoring your settings,Memulihkan pengaturan Anda
 Putting the settings back to their defaults,Mengembalikan pengaturan ke bawaan
 Undoing the last change,Membatalkan perubahan terakhir

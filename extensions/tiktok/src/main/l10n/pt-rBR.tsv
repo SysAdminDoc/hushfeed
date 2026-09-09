@@ -479,6 +479,19 @@ Search a title, description or category.	Busque um título, uma descrição ou u
 Search and override gate flags	Buscar e substituir marcas de gates
 Search hidden creators	Buscar criadores escondidos
 Search settings	Buscar nas configurações
+Gate details	Detalhes do gate
+This catalog entry is no longer available. Refresh the Lab and try again.	Esta entrada do catálogo não está mais disponível. Atualize o Laboratório e tente de novo.
+An override changes the value returned by the getter. It does not rewrite TikTok's cached value or prove the named feature changed.	Uma substituição muda o valor devolvido pelo leitor. Ela não reescreve o valor que o TikTok tem em cache nem prova que o recurso citado mudou.
+Account-sensitive name: forcing this key may affect security, login, compliance, region, payment, or account safety behavior.	Nome sensível para a conta: forçar esta chave pode afetar a segurança, o login, a conformidade, a região, os pagamentos ou a proteção da conta.
+Save field values	Salvar os valores dos campos
+Reset override	Redefinir a substituição
+Overrides are disabled in the Feature Gate Lab.	As substituições estão desligadas no Laboratório de gates.
+This configuration has no fields that can be copied and changed safely on this build.	Esta configuração não tem campos que dê para copiar e mudar com segurança nesta build.
+Only fields that can be type-checked and applied to a copied configuration object are shown.	Só aparecem os campos cujo tipo dá para verificar e aplicar a uma cópia da configuração.
+Technical details	Detalhes técnicos
+None recorded	Nada registrado
+Account warning: forced client values apply to every account in this app data and cannot bypass server controls.	Aviso sobre a conta: os valores forçados no aparelho valem para todas as contas nestes dados do app e não passam por cima dos controles do servidor.
+Loading gates...	Carregando os gates...
 Restoring your settings	Restaurando suas configurações
 Putting the settings back to their defaults	Voltando as configurações para os padrões
 Undoing the last change	Desfazendo a última mudança

@@ -192,7 +192,7 @@ public final class FeatureGateLabFragment extends Fragment {
 
         FrameLayout header = FeatureGateLabUi.header(
                 context,
-                "Feature Gate Lab",
+                L10n.t(context, "Feature Gate Lab"),
                 this::leaveLab,
                 this::showOverflow
         );
@@ -234,7 +234,7 @@ public final class FeatureGateLabFragment extends Fragment {
 
         TextView warning = FeatureGateLabUi.label(
                 context,
-                "Account warning: forced client values apply to every account in this app data and cannot bypass server controls."
+                L10n.t(context, "Account warning: forced client values apply to every account in this app data and cannot bypass server controls.")
         );
         warning.setTextColor(FeatureGateLabUi.warningColor(context));
         LinearLayout.LayoutParams warningParams = FeatureGateLabUi.matchWrap();
@@ -361,7 +361,7 @@ public final class FeatureGateLabFragment extends Fragment {
         LinearLayout resultRow = new LinearLayout(context);
         resultRow.setOrientation(LinearLayout.HORIZONTAL);
         resultRow.setGravity(Gravity.CENTER_VERTICAL);
-        count = FeatureGateLabUi.label(context, "Loading gates...");
+        count = FeatureGateLabUi.label(context, L10n.t(context, "Loading gates..."));
         count.setGravity(Gravity.CENTER_VERTICAL);
         resultRow.addView(count, new LinearLayout.LayoutParams(0, FeatureGateLabUi.dp(context, 44), 1f));
         filterButton = FeatureGateLabUi.text(context, "", 14, SettingsUi.textPrimary(), Typeface.BOLD);
