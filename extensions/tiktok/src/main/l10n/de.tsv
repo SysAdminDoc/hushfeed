@@ -3,7 +3,7 @@
 # Keep %s and %d placeholders, {tokens} and product names as they are.
 %1$s destinations must start with %2$s	%1$s-Ziele müssen mit %2$s beginnen
 %1$s isn't installed or doesn't take links	%1$s ist nicht installiert oder nimmt keine Links an
-%s on	%s aktiv
+%1$s on	%1$s aktiv
 A creator pattern is taking too long and was switched off: %1$s	Ein Kreator-Muster braucht zu lange und wurde abgeschaltet: %1$s
 A newer change replaced that undo. Tap Undo again.	Eine neuere Änderung hat dieses Rückgängig ersetzt. Erneut auf Rückgängig tippen.
 A hidden puzzle may be the cause.	Ein ausgeblendetes Rätsel kann die Ursache sein.
@@ -89,7 +89,7 @@ Choose which loaded TikTok feed tabs should stay visible.	Wähle, welche geladen
 Choose which rows and controls appear	Wähle sichtbare Zeilen und Bedienelemente
 Clear all	Alle löschen
 Clear all suggested accounts	Alle vorgeschlagenen Konten löschen
-Clear buffered events and saved crash reports.	Zwischengespeicherte Ereignisse und gespeicherte Absturzberichte löschen.
+Clear buffered events, saved crash reports and the hook status above.	Gepufferte Ereignisse, gespeicherte Absturzberichte und den Hook-Status oben löschen.
 Clear diagnostic data	Diagnosedaten löschen
 Clear display delay	Verzögerung der freien Ansicht
 Clear the seen video history	Verlauf gesehener Videos löschen
@@ -108,7 +108,7 @@ Comment media filename	Dateiname für Kommentar-Medien
 Comments and translation	Kommentare und Übersetzung
 Comments aren't available for this video	Für dieses Video gibt es keine Kommentare
 Comments beside the video	Kommentare neben dem Video
-Compare gate reads with their previous values. Last recording: %d gates.	Gate-Zugriffe mit ihren vorherigen Werten vergleichen. Letzte Aufzeichnung: %d Gates.
+Compare gate reads with their previous values. Last recording: %1$d gates.	Gate-Zugriffe mit ihren vorherigen Werten vergleichen. Letzte Aufzeichnung: %1$d Gates.
 Confirm before following	Vor dem Folgen bestätigen
 Confirm before liking	Vor dem Liken bestätigen
 Confirm before sending to a friend	Vor dem Senden an Freunde bestätigen
@@ -154,7 +154,6 @@ Double tap	Doppeltippen
 Download original photos	Originalfotos herunterladen
 Download path updated	Speicherort aktualisiert
 Downloads	Downloads
-dp	dp
 Drag to move, release to place	Zum Verschieben ziehen, zum Ablegen loslassen
 Drop the notification saying somebody new followed you before it reaches the drawer. Every other notification is left alone, and the follower still appears in the Inbox.	Die Benachrichtigung, dass dir jemand Neues folgt, verwerfen, bevor sie in der Leiste landet. Alle anderen Benachrichtigungen bleiben unberührt, und der Follower erscheint weiterhin im Posteingang.
 Enable diagnostic logging	Diagnoseprotokoll einschalten
@@ -368,7 +367,7 @@ Profile picture saved to %1$s	Profilbild gespeichert unter %1$s
 Put a box above the comments that narrows them to the ones matching what you type, by what they say or who said it. Clearing the box brings the rest back.	Ein Feld über den Kommentaren, das auf die passenden eingrenzt, nach Inhalt oder nach der Person. Feld leeren bringt die übrigen zurück.
 Quality, files, subtitles and hand-off	Qualität, Dateien, Untertitel und Weitergabe
 Quality, speed and automatic advance	Qualität, Tempo und automatischer Wechsel
-Recorded gate reads (%d)	Aufgezeichnete Gate-Zugriffe (%d)
+Recorded gate reads (%1$d)	Aufgezeichnete Gate-Zugriffe (%1$d)
 Recording gate reads. Use a feature, then return here to stop.	Gate-Zugriffe werden aufgezeichnet. Nutze eine Funktion und komm zum Beenden zurück.
 Recover the settings saved before the last restore or reset.	Die vor der letzten Wiederherstellung oder Zurücksetzung gespeicherten Einstellungen zurückholen.
 Region settings	Regionseinstellungen
@@ -453,7 +452,6 @@ Skip videos that use a sound blocked with the player's sound button, or named be
 Skipping videos with %1$s	Videos mit %1$s werden übersprungen
 Sound saved to %1$s	Sound gespeichert unter %1$s
 Source code and releases	Quellcode und Versionen
-sp	sp
 view per like	Aufruf pro Like
 views per like	Aufrufe pro Like
 Speed menu choices	Auswahl im Geschwindigkeitsmenü
@@ -523,7 +521,7 @@ Undo	Rückgängig
 Undo last restore or reset	Letzte Wiederherstellung oder Zurücksetzung rückgängig machen
 Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.	Bis zu 8 Geschwindigkeiten von 0.5 bis 3, durch Kommas getrennt. Beispiel: 0.5, 1, 1.5, 2, 2.5, 3. Leer lassen für TikToks Liste. Nach dem Ändern der Liste neu starten.
 Updating settings	Einstellungen werden aktualisiert
-Use 0 for TikTok's size, or 12 to 48 sp. Applies to the next caption.	0 für TikToks Größe oder 12 bis 48 sp. Gilt ab dem nächsten Untertitel.
+Use 0 for TikTok's size, or 12 to 48. Applies to the next caption.	0 für TikToks Größe, sonst 12 bis 48. Gilt ab dem nächsten Untertitel.
 Use a default playback speed	Standardgeschwindigkeit verwenden
 Use non-personalized search	Nicht personalisierte Suche verwenden
 Use Save JSON for this large report	Nutze für diesen großen Bericht „JSON speichern“
@@ -578,7 +576,6 @@ Remove %1$s	%1$s entfernen
 Search hidden creators	Ausgeblendete Creator durchsuchen
 Showing %1$s again	%1$s wieder anzeigen
 That creator is already in the list	Dieser Creator ist bereits in der Liste
-This creator is already hidden	Dieser Creator ist bereits ausgeblendet
 Days. Zero keeps every age. Posts without a usable timestamp, including future posts, stay visible.	Tage. Null lässt jedes Alter zu. Beiträge ohne brauchbaren Zeitstempel, auch zukünftige, bleiben sichtbar.
 Maximum post age	Höchstalter von Beiträgen
 Ads	Anzeigen
@@ -635,6 +632,13 @@ The smallest value is above the largest	Der kleinste Wert liegt über dem größ
 That is %1$d minutes today	Das sind %1$d Minuten heute
 One minute left	Noch eine Minute
 Open the feed anyway	Feed trotzdem öffnen
+point	Punkt
+points	Punkte
+millisecond	Millisekunde
+milliseconds	Millisekunden
+pixel	Pixel
+pixels	Pixel
+Use the selected country. Restart TikTok after changing region settings.	Das gewählte Land verwenden. TikTok nach Änderungen an den Regionseinstellungen neu starten.
 Remind me every	Erinnere mich alle
 Still here. Nothing is waiting.	Immer noch hier. Es wartet nichts.
 A good place to stop, if you want one.	Ein guter Moment zum Aufhören, falls du einen suchst.

@@ -488,6 +488,41 @@ public class SettingsPagesTest {
         }
     }
 
+    @Test public void theSimSwitchOnlyPromisesTheRowsThatArePresent() throws Exception {
+        // The operator rows are added only when the SIM spoof patch is in the bundle, and the
+        // switch's summary promised "the selected country and operator values" either way.
+        try (var owner = Robolectric.buildActivity(
+                app.morphe.extension.tiktok.interaction.GestureActionsTest.TestActivity.class)
+                .setup()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            boolean original = app.morphe.extension.tiktok.settings.SettingsStatus
+                    .simSpoofEnabled;
+            try {
+                app.morphe.extension.tiktok.settings.SettingsStatus.simSpoofEnabled = false;
+                assertTrue("a bundle without the patch still promised the operator rows",
+                        !summaryOfSimSwitch(activity).contains("operator"));
+
+                app.morphe.extension.tiktok.settings.SettingsStatus.simSpoofEnabled = true;
+                assertTrue("a bundle with the patch stopped naming the operator rows",
+                        summaryOfSimSwitch(activity).contains("operator"));
+            } finally {
+                app.morphe.extension.tiktok.settings.SettingsStatus.simSpoofEnabled = original;
+            }
+        }
+    }
+
+    private static String summaryOfSimSwitch(Activity activity) {
+        var host = (android.preference.PreferenceActivity) activity;
+        var screen = host.getPreferenceManager().createPreferenceScreen(activity);
+        new app.morphe.extension.tiktok.settings.preference.categories
+                .SimSpoofPreferenceCategory(activity, screen);
+        var row = screen.findPreference(
+                app.morphe.extension.tiktok.settings.Settings.SIM_SPOOF.key);
+        assertNotNull("the SIM switch is not on the page", row);
+        return String.valueOf(row.getSummary());
+    }
+
     @Test public void everyDialogActionIsPressableAndReadsAsAButton() throws Exception {
         // The flat actions in the hand built dialogs are TextViews with a click listener, so
         // TalkBack read them as labels rather than as something to press, and the two pickers

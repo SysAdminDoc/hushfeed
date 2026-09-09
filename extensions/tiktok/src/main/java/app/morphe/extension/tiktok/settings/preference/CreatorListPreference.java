@@ -19,7 +19,6 @@ import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -140,12 +139,14 @@ public class CreatorListPreference extends DialogPreference {
         addEditText.setTag("creator_list_add");
         addRow.addView(addEditText, new LinearLayout.LayoutParams(0,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        Button addButton = new Button(context);
+        // Flat, like the Cancel and Save two rows below it. styleActionButton sets the colour
+        // and the weight and leaves the platform background, so this was the only raised button
+        // in any Hushfeed dialog.
+        TextView addButton = new TextView(context);
         addButton.setText(L10n.t(context, "Add"));
         addButton.setContentDescription(L10n.t(context, "Add hidden creator"));
-        addButton.setAllCaps(false);
-        addButton.setMinimumHeight(SettingsUi.dp(context, 48));
-        SettingsUi.styleActionButton(addButton, true);
+        addButton.setTextSize(16);
+        SettingsUi.styleTextAction(addButton, true);
         addButton.setOnClickListener(view -> addEntry());
         LinearLayout.LayoutParams addButtonParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -170,14 +171,15 @@ public class CreatorListPreference extends DialogPreference {
         scrollParams.setMargins(0, SettingsUi.dp(context, 12), 0, 0);
         dialogView.addView(scroll, scrollParams);
 
+        // Inside the list rather than under it. Added after the scroll view, an empty list read
+        // as a 230dp blank band with "No creators are hidden yet" below it, which is a list that
+        // has failed to load rather than one with nothing in it. ShareActionChecklistPreference
+        // puts its own state rows in the container for the same reason.
         emptyState = SettingsUi.text(context, "", 14, SettingsUi.textSecondary(), Typeface.NORMAL);
         emptyState.setGravity(Gravity.CENTER);
         emptyState.setPadding(SettingsUi.dp(context, 12), SettingsUi.dp(context, 18),
                 SettingsUi.dp(context, 12), SettingsUi.dp(context, 18));
-        dialogView.addView(emptyState, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
+
 
         refreshEntryRows();
         return dialogView;
@@ -229,6 +231,10 @@ public class CreatorListPreference extends DialogPreference {
                     ? L10n.t(getContext(), "No creators are hidden yet")
                     : L10n.t(getContext(), "No hidden creators match this search"));
             emptyState.setVisibility(View.VISIBLE);
+            entriesContainer.addView(emptyState, new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            ));
         } else {
             emptyState.setVisibility(View.GONE);
         }

@@ -6,8 +6,8 @@ source,target
 %1$s destinations must start with %2$s,%1$s destinations must start with %2$s
 %1$s isn't installed or doesn't take links,%1$s isn't installed or doesn't take links
 %1$s left,%1$s left
+%1$s on,%1$s on
 %1$s to %2$s,%1$s to %2$s
-%s on,%s on
 A creator pattern is taking too long and was switched off: %1$s,A creator pattern is taking too long and was switched off: %1$s
 "A good place to stop, if you want one.","A good place to stop, if you want one."
 A hidden puzzle may be the cause.,A hidden puzzle may be the cause.
@@ -79,7 +79,7 @@ Choose which loaded TikTok feed tabs should stay visible.,Choose which loaded Ti
 Choose which rows and controls appear,Choose which rows and controls appear
 Clear all,Clear all
 Clear all suggested accounts,Clear all suggested accounts
-Clear buffered events and saved crash reports.,Clear buffered events and saved crash reports.
+"Clear buffered events, saved crash reports and the hook status above.","Clear buffered events, saved crash reports and the hook status above."
 Clear diagnostic data,Clear diagnostic data
 Clear display delay,Clear display delay
 Clear search,Clear search
@@ -100,7 +100,7 @@ Comment media filename,Comment media filename
 Comments and translation,Comments and translation
 Comments aren't available for this video,Comments aren't available for this video
 Comments beside the video,Comments beside the video
-Compare gate reads with their previous values. Last recording: %d gates.,Compare gate reads with their previous values. Last recording: %d gates.
+Compare gate reads with their previous values. Last recording: %1$d gates.,Compare gate reads with their previous values. Last recording: %1$d gates.
 Completed an interrupted settings change. Restart TikTok to apply it.,Completed an interrupted settings change. Restart TikTok to apply it.
 Confirm before following,Confirm before following
 Confirm before liking,Confirm before liking
@@ -421,7 +421,7 @@ Publication age,Publication age
 "Put a box above the comments that narrows them to the ones matching what you type, by what they say or who said it. Clearing the box brings the rest back.","Put a box above the comments that narrows them to the ones matching what you type, by what they say or who said it. Clearing the box brings the rest back."
 "Quality, files, subtitles and hand-off","Quality, files, subtitles and hand-off"
 "Quality, speed and automatic advance","Quality, speed and automatic advance"
-Recorded gate reads (%d),Recorded gate reads (%d)
+Recorded gate reads (%1$d),Recorded gate reads (%1$d)
 "Recording gate reads. Use a feature, then return here to stop.","Recording gate reads. Use a feature, then return here to stop."
 Recover the settings saved before the last restore or reset.,Recover the settings saved before the last restore or reset.
 Recovered an interrupted settings change. Restart TikTok to apply it.,Recovered an interrupted settings change. Restart TikTok to apply it.
@@ -593,7 +593,6 @@ The story couldn't be saved.,The story couldn't be saved.
 "The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks.","The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks."
 "The video couldn't be saved. Try again, or choose Automatic.","The video couldn't be saved. Try again, or choose Automatic."
 There was nothing to put back,There was nothing to put back
-This creator is already hidden,This creator is already hidden
 "This line opens a rule and does not finish it: %1$s. Write two phrases as ""a"" & ""b"" for both, or ""a"" !& ""b"" for the first without the second.","This line opens a rule and does not finish it: %1$s. Write two phrases as ""a"" & ""b"" for both, or ""a"" !& ""b"" for the first without the second."
 This profile picture isn't available to save,This profile picture isn't available to save
 "This quality isn't available as a complete file, so TikTok's own save runs instead","This quality isn't available as a complete file, so TikTok's own save runs instead"
@@ -634,13 +633,14 @@ Undo,Undo
 Undo last restore or reset,Undo last restore or reset
 "Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.","Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list."
 Updating settings,Updating settings
-"Use 0 for TikTok's size, or 12 to 48 sp. Applies to the next caption.","Use 0 for TikTok's size, or 12 to 48 sp. Applies to the next caption."
+"Use 0 for TikTok's size, or 12 to 48. Applies to the next caption.","Use 0 for TikTok's size, or 12 to 48. Applies to the next caption."
 Use Save JSON for this large report,Use Save JSON for this large report
 "Use TikTok's native hold, slide down, and release gesture to lock 2x speed.","Use TikTok's native hold, slide down, and release gesture to lock 2x speed."
 Use a default playback speed,Use a default playback speed
 Use non-personalized search,Use non-personalized search
 Use the preset for TikTok's account and store region getters too. May affect search. Requires the locale option and a restart.,Use the preset for TikTok's account and store region getters too. May affect search. Requires the locale option and a restart.
 Use the selected country and operator values. Restart TikTok after changing region settings.,Use the selected country and operator values. Restart TikTok after changing region settings.
+Use the selected country. Restart TikTok after changing region settings.,Use the selected country. Restart TikTok after changing region settings.
 Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.,Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.
 Verified creators,Verified creators
 Video,Video
@@ -666,12 +666,16 @@ YTDLnis download type,YTDLnis download type
 code %1$s,code %1$s
 day,day
 days,days
-dp,dp
+millisecond,millisecond
+milliseconds,milliseconds
 ms,ms
 or,or
+pixel,pixel
+pixels,pixels
+point,point
+points,points
 second,second
 seconds,seconds
-sp,sp
 videos,videos
 view per like,view per like
 views per like,views per like

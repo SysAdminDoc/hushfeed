@@ -1,7 +1,7 @@
 source,target
 %1$s destinations must start with %2$s,Tujuan %1$s harus diawali %2$s
 %1$s isn't installed or doesn't take links,%1$s tidak terpasang atau tidak menerima tautan
-%s on,%s aktif
+%1$s on,%1$s aktif
 A creator pattern is taking too long and was switched off: %1$s,"Ada pola kreator yang terlalu lama, jadi dimatikan: %1$s"
 A newer change replaced that undo. Tap Undo again.,Perubahan yang lebih baru menggantikan pembatalan itu. Ketuk Urungkan lagi.
 A hidden puzzle may be the cause.,Teka-teki yang disembunyikan bisa jadi penyebabnya.
@@ -87,7 +87,7 @@ Choose which loaded TikTok feed tabs should stay visible.,Pilih tab feed TikTok 
 Choose which rows and controls appear,Pilih baris dan kontrol yang muncul
 Clear all,Hapus semua
 Clear all suggested accounts,Hapus semua akun yang disarankan
-Clear buffered events and saved crash reports.,Hapus peristiwa yang tertahan dan laporan mogok yang tersimpan.
+"Clear buffered events, saved crash reports and the hook status above.","Hapus peristiwa yang tersimpan, laporan crash dan status hook di atas."
 Clear diagnostic data,Hapus data diagnostik
 Clear display delay,Jeda tampilan bersih
 Clear the seen video history,Hapus riwayat video yang sudah ditonton
@@ -106,7 +106,7 @@ Comment media filename,Nama berkas media komentar
 Comments and translation,Komentar dan terjemahan
 Comments aren't available for this video,Komentar tidak tersedia untuk video ini
 Comments beside the video,Komentar di samping video
-Compare gate reads with their previous values. Last recording: %d gates.,Bandingkan pembacaan gate dengan nilai sebelumnya. Rekaman terakhir: %d gate.
+Compare gate reads with their previous values. Last recording: %1$d gates.,Bandingkan pembacaan gate dengan nilai sebelumnya. Rekaman terakhir: %1$d gate.
 Confirm before following,Konfirmasi sebelum mengikuti
 Confirm before liking,Konfirmasi sebelum menyukai
 Confirm before sending to a friend,Konfirmasi sebelum mengirim ke teman
@@ -152,7 +152,6 @@ Double tap,Ketuk dua kali
 Download original photos,Unduh foto asli
 Download path updated,Lokasi unduhan diperbarui
 Downloads,Unduhan
-dp,dp
 "Drag to move, release to place","Seret untuk memindahkan, lepaskan untuk menempatkan"
 "Drop the notification saying somebody new followed you before it reaches the drawer. Every other notification is left alone, and the follower still appears in the Inbox.","Buang notifikasi yang memberi tahu ada orang baru yang mengikutimu sebelum masuk ke laci notifikasi. Notifikasi lain tidak terpengaruh, dan pengikutnya tetap muncul di Kotak Masuk."
 Enable diagnostic logging,Aktifkan pencatatan diagnostik
@@ -366,7 +365,7 @@ Profile picture saved to %1$s,Foto profil disimpan ke %1$s
 "Put a box above the comments that narrows them to the ones matching what you type, by what they say or who said it. Clearing the box brings the rest back.","Kotak di atas komentar yang mempersempit ke komentar yang cocok dengan ketikanmu, berdasarkan isinya atau siapa yang menulis. Mengosongkan kotaknya mengembalikan sisanya."
 "Quality, files, subtitles and hand-off","Kualitas, berkas, subtitel, dan penerusan"
 "Quality, speed and automatic advance","Kualitas, kecepatan, dan lanjut otomatis"
-Recorded gate reads (%d),Pembacaan gate yang terekam (%d)
+Recorded gate reads (%1$d),Pembacaan gate yang terekam (%1$d)
 "Recording gate reads. Use a feature, then return here to stop.","Merekam pembacaan gate. Pakai sebuah fitur, lalu kembali ke sini untuk berhenti."
 Recover the settings saved before the last restore or reset.,Ambil kembali pengaturan yang tersimpan sebelum pemulihan atau penyetelan ulang terakhir.
 Region settings,Pengaturan wilayah
@@ -451,7 +450,6 @@ Skip videos marked as using promotional music.,Lewati video yang ditandai memaka
 Skipping videos with %1$s,Melewati video dengan %1$s
 Sound saved to %1$s,Suara disimpan di %1$s
 Source code and releases,Kode sumber dan rilis
-sp,sp
 view per like,tayangan per like
 views per like,tayangan per like
 Speed menu choices,Pilihan di menu kecepatan
@@ -521,7 +519,7 @@ Undo,Urungkan
 Undo last restore or reset,Urungkan pemulihan atau reset terakhir
 "Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.","Sampai 8 kecepatan dari 0.5 hingga 3, dipisahkan koma. Contoh: 0.5, 1, 1.5, 2, 2.5, 3. Kosongkan untuk memakai daftar TikTok. Mulai ulang setelah mengubah daftar ini."
 Updating settings,Memperbarui pengaturan
-"Use 0 for TikTok's size, or 12 to 48 sp. Applies to the next caption.","Pakai 0 untuk ukuran bawaan TikTok, atau 12 sampai 48 sp. Berlaku untuk keterangan berikutnya."
+"Use 0 for TikTok's size, or 12 to 48. Applies to the next caption.","Gunakan 0 untuk ukuran TikTok, atau 12 sampai 48. Berlaku untuk teks berikutnya."
 Use a default playback speed,Pakai kecepatan pemutaran bawaan
 Use non-personalized search,Pakai pencarian nonpersonal
 Use Save JSON for this large report,Pakai Simpan JSON untuk laporan sebesar ini
@@ -576,7 +574,6 @@ Remove %1$s,Hapus %1$s
 Search hidden creators,Cari kreator tersembunyi
 Showing %1$s again,Tampilkan %1$s lagi
 That creator is already in the list,Kreator itu sudah ada di daftar
-This creator is already hidden,Kreator ini sudah disembunyikan
 "Days. Zero keeps every age. Posts without a usable timestamp, including future posts, stay visible.","Hari. Nol menampilkan semua umur. Kiriman tanpa stempel waktu yang bisa dipakai, termasuk kiriman mendatang, tetap ditampilkan."
 Maximum post age,Usia maksimum kiriman
 Ads,Iklan
@@ -633,6 +630,13 @@ The smallest value is above the largest,Nilai terkecil lebih besar daripada yang
 That is %1$d minutes today,Itu %1$d menit hari ini
 One minute left,Satu menit lagi
 Open the feed anyway,Tetap buka feed
+point,poin
+points,poin
+millisecond,milidetik
+milliseconds,milidetik
+pixel,piksel
+pixels,piksel
+Use the selected country. Restart TikTok after changing region settings.,Gunakan negara yang dipilih. Mulai ulang TikTok setelah mengubah pengaturan wilayah.
 Remind me every,Ingatkan saya setiap
 Still here. Nothing is waiting.,Masih di sini. Tidak ada yang menunggu.
 "A good place to stop, if you want one.","Tempat yang bagus untuk berhenti, kalau kamu mencarinya."

@@ -144,7 +144,9 @@ public class AutomaticClearDisplayTest {
             var screen = activity.getPreferenceManager().createPreferenceScreen(activity);
             new InterfacePreferenceCategory(activity, screen);
             assertNotNull(screen.findPreference("automatic_clear_display"));
-            assertTrue(screen.findPreference("automatic_clear_display_delay").getSummary().toString().contains("1000 ms"));
+            // "ms" is a developer's unit. The row says the word.
+            assertTrue(screen.findPreference("automatic_clear_display_delay")
+                    .getSummary().toString().contains("1000 milliseconds"));
             activity.setPreferenceScreen(screen);
             Shadows.shadowOf(Looper.getMainLooper()).idle();
             app.morphe.extension.tiktok.UiCapture.save(activity.getWindow().getDecorView(), "clear-display-settings.png");

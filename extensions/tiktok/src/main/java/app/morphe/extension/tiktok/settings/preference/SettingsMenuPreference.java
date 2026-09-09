@@ -184,7 +184,7 @@ public final class SettingsMenuPreference extends Preference {
         if (activeCount > 0) {
             TextView badge = SettingsUi.text(
                     getContext(),
-                    L10n.f(getContext(), "%s on", activeCount),
+                    L10n.f(getContext(), "%1$s on", activeCount),
                     12,
                     SettingsUi.badgeText(),
                     1

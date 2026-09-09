@@ -40,7 +40,11 @@ public class SimSpoofPreferenceCategory extends ConditionalPreferenceCategory {
         addPreference(new TogglePreference(
                 context,
                 "Override SIM details",
-                "Use the selected country and operator values. Restart TikTok after changing region settings.",
+                // The operator rows are only added when the SIM spoof patch is in the
+                // bundle, so on one without it this promised two fields that are not there.
+                SettingsStatus.simSpoofEnabled
+                        ? "Use the selected country and operator values. Restart TikTok after changing region settings."
+                        : "Use the selected country. Restart TikTok after changing region settings.",
                 Settings.SIM_SPOOF
         ));
         if (SettingsStatus.regionSpoofEnabled) {

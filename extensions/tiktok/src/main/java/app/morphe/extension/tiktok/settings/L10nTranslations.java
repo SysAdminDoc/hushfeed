@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1352);
+        Map<String, String> table = new HashMap<>(1360);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -75,10 +75,10 @@ public final class L10nTranslations {
                 "%1$s ist nicht installiert oder nimmt keine Links an");
         table.put("%1$s left",
                 "Noch %1$s");
+        table.put("%1$s on",
+                "%1$s aktiv");
         table.put("%1$s to %2$s",
                 "%1$s bis %2$s");
-        table.put("%s on",
-                "%s aktiv");
         table.put("A creator pattern is taking too long and was switched off: %1$s",
                 "Ein Kreator-Muster braucht zu lange und wurde abgeschaltet: %1$s");
         table.put("A good place to stop, if you want one.",
@@ -224,8 +224,8 @@ public final class L10nTranslations {
                 "Alle löschen");
         table.put("Clear all suggested accounts",
                 "Alle vorgeschlagenen Konten löschen");
-        table.put("Clear buffered events and saved crash reports.",
-                "Zwischengespeicherte Ereignisse und gespeicherte Absturzberichte löschen.");
+        table.put("Clear buffered events, saved crash reports and the hook status above.",
+                "Gepufferte Ereignisse, gespeicherte Absturzberichte und den Hook-Status oben löschen.");
         table.put("Clear diagnostic data",
                 "Diagnosedaten löschen");
         table.put("Clear display delay",
@@ -266,8 +266,8 @@ public final class L10nTranslations {
                 "Für dieses Video gibt es keine Kommentare");
         table.put("Comments beside the video",
                 "Kommentare neben dem Video");
-        table.put("Compare gate reads with their previous values. Last recording: %d gates.",
-                "Gate-Zugriffe mit ihren vorherigen Werten vergleichen. Letzte Aufzeichnung: %d Gates.");
+        table.put("Compare gate reads with their previous values. Last recording: %1$d gates.",
+                "Gate-Zugriffe mit ihren vorherigen Werten vergleichen. Letzte Aufzeichnung: %1$d Gates.");
         table.put("Completed an interrupted settings change. Restart TikTok to apply it.",
                 "Eine unterbrochene Einstellungsänderung wurde abgeschlossen. Starte TikTok neu, um sie anzuwenden.");
         table.put("Confirm before following",
@@ -926,8 +926,8 @@ public final class L10nTranslations {
                 "Qualität, Dateien, Untertitel und Weitergabe");
         table.put("Quality, speed and automatic advance",
                 "Qualität, Tempo und automatischer Wechsel");
-        table.put("Recorded gate reads (%d)",
-                "Aufgezeichnete Gate-Zugriffe (%d)");
+        table.put("Recorded gate reads (%1$d)",
+                "Aufgezeichnete Gate-Zugriffe (%1$d)");
         table.put("Recording gate reads. Use a feature, then return here to stop.",
                 "Gate-Zugriffe werden aufgezeichnet. Nutze eine Funktion und komm zum Beenden zurück.");
         table.put("Recover the settings saved before the last restore or reset.",
@@ -1276,8 +1276,6 @@ public final class L10nTranslations {
                 "Das Video konnte nicht gespeichert werden. Versuche es noch einmal oder wähle Automatisch.");
         table.put("There was nothing to put back",
                 "Es gab nichts zurückzuholen");
-        table.put("This creator is already hidden",
-                "Dieser Creator ist bereits ausgeblendet");
         table.put("This line opens a rule and does not finish it: %1$s. Write two phrases as \"a\" & \"b\" for both, or \"a\" !& \"b\" for the first without the second.",
                 "Diese Zeile beginnt eine Regel und beendet sie nicht: %1$s. Schreiben Sie zwei Wendungen als \"a\" & \"b\" für beide oder als \"a\" !& \"b\" für die erste ohne die zweite.");
         table.put("This profile picture isn't available to save",
@@ -1288,11 +1286,11 @@ public final class L10nTranslations {
                 "Diese Story lässt sich nicht speichern");
         table.put("This video has no link to copy",
                 "Dieses Video hat keinen Link zum Kopieren");
+        table.put("This video has no link to send, so TikTok's own save runs instead",
+                "Dieses Video hat keinen Link zum Senden, also speichert TikTok selbst");
     }
 
     private static void fillDe10(Map<String, String> table) {
-        table.put("This video has no link to send, so TikTok's own save runs instead",
-                "Dieses Video hat keinen Link zum Senden, also speichert TikTok selbst");
         table.put("This video has no original sound to save",
                 "Dieses Video hat keinen Originalsound zum Speichern");
         table.put("This video has no sound of its own",
@@ -1361,8 +1359,8 @@ public final class L10nTranslations {
                 "Bis zu 8 Geschwindigkeiten von 0.5 bis 3, durch Kommas getrennt. Beispiel: 0.5, 1, 1.5, 2, 2.5, 3. Leer lassen für TikToks Liste. Nach dem Ändern der Liste neu starten.");
         table.put("Updating settings",
                 "Einstellungen werden aktualisiert");
-        table.put("Use 0 for TikTok's size, or 12 to 48 sp. Applies to the next caption.",
-                "0 für TikToks Größe oder 12 bis 48 sp. Gilt ab dem nächsten Untertitel.");
+        table.put("Use 0 for TikTok's size, or 12 to 48. Applies to the next caption.",
+                "0 für TikToks Größe, sonst 12 bis 48. Gilt ab dem nächsten Untertitel.");
         table.put("Use Save JSON for this large report",
                 "Nutze für diesen großen Bericht „JSON speichern“");
         table.put("Use TikTok's native hold, slide down, and release gesture to lock 2x speed.",
@@ -1375,6 +1373,8 @@ public final class L10nTranslations {
                 "Die Vorgabe auch für TikToks Konto- und Store-Regionsabfragen verwenden. Kann die Suche beeinflussen. Erfordert die Sprachoption und einen Neustart.");
         table.put("Use the selected country and operator values. Restart TikTok after changing region settings.",
                 "Die gewählten Werte für Land und Netzbetreiber verwenden. Starte TikTok nach dem Ändern der Regionseinstellungen neu.");
+        table.put("Use the selected country. Restart TikTok after changing region settings.",
+                "Das gewählte Land verwenden. TikTok nach Änderungen an den Regionseinstellungen neu starten.");
         table.put("Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.",
                 "Das geteilte Layout auf breiteren Bildschirmen verwenden. Starte TikTok nach dem Ändern dieser Option oder nach dem Aufklappen neu, falls das alte Layout bleibt.");
         table.put("Verified creators",
@@ -1428,18 +1428,26 @@ public final class L10nTranslations {
                 "Tag");
         table.put("days",
                 "Tage");
-        table.put("dp",
-                "dp");
+        table.put("millisecond",
+                "Millisekunde");
+        table.put("milliseconds",
+                "Millisekunden");
         table.put("ms",
                 "ms");
         table.put("or",
                 "oder");
+        table.put("pixel",
+                "Pixel");
+        table.put("pixels",
+                "Pixel");
+        table.put("point",
+                "Punkt");
+        table.put("points",
+                "Punkte");
         table.put("second",
                 "Sekunde");
         table.put("seconds",
                 "Sekunden");
-        table.put("sp",
-                "sp");
         table.put("videos",
                 "Videos");
         table.put("view per like",
@@ -1449,7 +1457,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1352);
+        Map<String, String> table = new HashMap<>(1360);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1480,10 +1488,10 @@ public final class L10nTranslations {
                 "%1$s tidak terpasang atau tidak menerima tautan");
         table.put("%1$s left",
                 "%1$s lagi");
+        table.put("%1$s on",
+                "%1$s aktif");
         table.put("%1$s to %2$s",
                 "%1$s sampai %2$s");
-        table.put("%s on",
-                "%s aktif");
         table.put("A creator pattern is taking too long and was switched off: %1$s",
                 "Ada pola kreator yang terlalu lama, jadi dimatikan: %1$s");
         table.put("A good place to stop, if you want one.",
@@ -1629,8 +1637,8 @@ public final class L10nTranslations {
                 "Hapus semua");
         table.put("Clear all suggested accounts",
                 "Hapus semua akun yang disarankan");
-        table.put("Clear buffered events and saved crash reports.",
-                "Hapus peristiwa yang tertahan dan laporan mogok yang tersimpan.");
+        table.put("Clear buffered events, saved crash reports and the hook status above.",
+                "Hapus peristiwa yang tersimpan, laporan crash dan status hook di atas.");
         table.put("Clear diagnostic data",
                 "Hapus data diagnostik");
         table.put("Clear display delay",
@@ -1671,8 +1679,8 @@ public final class L10nTranslations {
                 "Komentar tidak tersedia untuk video ini");
         table.put("Comments beside the video",
                 "Komentar di samping video");
-        table.put("Compare gate reads with their previous values. Last recording: %d gates.",
-                "Bandingkan pembacaan gate dengan nilai sebelumnya. Rekaman terakhir: %d gate.");
+        table.put("Compare gate reads with their previous values. Last recording: %1$d gates.",
+                "Bandingkan pembacaan gate dengan nilai sebelumnya. Rekaman terakhir: %1$d gate.");
         table.put("Completed an interrupted settings change. Restart TikTok to apply it.",
                 "Perubahan pengaturan yang terhenti telah diselesaikan. Mulai ulang TikTok untuk menerapkannya.");
         table.put("Confirm before following",
@@ -2331,8 +2339,8 @@ public final class L10nTranslations {
                 "Kualitas, berkas, subtitel, dan penerusan");
         table.put("Quality, speed and automatic advance",
                 "Kualitas, kecepatan, dan lanjut otomatis");
-        table.put("Recorded gate reads (%d)",
-                "Pembacaan gate yang terekam (%d)");
+        table.put("Recorded gate reads (%1$d)",
+                "Pembacaan gate yang terekam (%1$d)");
         table.put("Recording gate reads. Use a feature, then return here to stop.",
                 "Merekam pembacaan gate. Pakai sebuah fitur, lalu kembali ke sini untuk berhenti.");
         table.put("Recover the settings saved before the last restore or reset.",
@@ -2681,8 +2689,6 @@ public final class L10nTranslations {
                 "Videonya tidak bisa disimpan. Coba lagi, atau pilih Otomatis.");
         table.put("There was nothing to put back",
                 "Tidak ada yang bisa dikembalikan");
-        table.put("This creator is already hidden",
-                "Kreator ini sudah disembunyikan");
         table.put("This line opens a rule and does not finish it: %1$s. Write two phrases as \"a\" & \"b\" for both, or \"a\" !& \"b\" for the first without the second.",
                 "Baris ini memulai sebuah aturan dan tidak menyelesaikannya: %1$s. Tulis dua frasa sebagai \"a\" & \"b\" untuk keduanya, atau \"a\" !& \"b\" untuk yang pertama tanpa yang kedua.");
         table.put("This profile picture isn't available to save",
@@ -2693,11 +2699,11 @@ public final class L10nTranslations {
                 "Story ini tidak bisa disimpan");
         table.put("This video has no link to copy",
                 "Video ini tidak punya tautan untuk disalin");
+        table.put("This video has no link to send, so TikTok's own save runs instead",
+                "Video ini tidak punya tautan untuk dikirim, jadi TikTok yang menyimpannya");
     }
 
     private static void fillIn10(Map<String, String> table) {
-        table.put("This video has no link to send, so TikTok's own save runs instead",
-                "Video ini tidak punya tautan untuk dikirim, jadi TikTok yang menyimpannya");
         table.put("This video has no original sound to save",
                 "Video ini tidak punya suara asli untuk disimpan");
         table.put("This video has no sound of its own",
@@ -2766,8 +2772,8 @@ public final class L10nTranslations {
                 "Sampai 8 kecepatan dari 0.5 hingga 3, dipisahkan koma. Contoh: 0.5, 1, 1.5, 2, 2.5, 3. Kosongkan untuk memakai daftar TikTok. Mulai ulang setelah mengubah daftar ini.");
         table.put("Updating settings",
                 "Memperbarui pengaturan");
-        table.put("Use 0 for TikTok's size, or 12 to 48 sp. Applies to the next caption.",
-                "Pakai 0 untuk ukuran bawaan TikTok, atau 12 sampai 48 sp. Berlaku untuk keterangan berikutnya.");
+        table.put("Use 0 for TikTok's size, or 12 to 48. Applies to the next caption.",
+                "Gunakan 0 untuk ukuran TikTok, atau 12 sampai 48. Berlaku untuk teks berikutnya.");
         table.put("Use Save JSON for this large report",
                 "Pakai Simpan JSON untuk laporan sebesar ini");
         table.put("Use TikTok's native hold, slide down, and release gesture to lock 2x speed.",
@@ -2780,6 +2786,8 @@ public final class L10nTranslations {
                 "Pakai praset itu untuk pembaca wilayah akun dan toko TikTok juga. Bisa memengaruhi pencarian. Perlu opsi lokal dan mulai ulang.");
         table.put("Use the selected country and operator values. Restart TikTok after changing region settings.",
                 "Pakai nilai negara dan operator yang dipilih. Mulai ulang TikTok setelah mengubah pengaturan wilayah.");
+        table.put("Use the selected country. Restart TikTok after changing region settings.",
+                "Gunakan negara yang dipilih. Mulai ulang TikTok setelah mengubah pengaturan wilayah.");
         table.put("Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.",
                 "Pakai tata letak terbagi pada layar yang lebih lebar. Mulai ulang TikTok setelah mengubah opsi ini atau setelah membuka lipatan jika tata letak lama masih muncul.");
         table.put("Verified creators",
@@ -2833,18 +2841,26 @@ public final class L10nTranslations {
                 "hari");
         table.put("days",
                 "hari");
-        table.put("dp",
-                "dp");
+        table.put("millisecond",
+                "milidetik");
+        table.put("milliseconds",
+                "milidetik");
         table.put("ms",
                 "ms");
         table.put("or",
                 "atau");
+        table.put("pixel",
+                "piksel");
+        table.put("pixels",
+                "piksel");
+        table.put("point",
+                "poin");
+        table.put("points",
+                "poin");
         table.put("second",
                 "detik");
         table.put("seconds",
                 "detik");
-        table.put("sp",
-                "sp");
         table.put("videos",
                 "video");
         table.put("view per like",

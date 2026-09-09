@@ -44,7 +44,7 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
     public void addPreferences(Context context) {
         if (SettingsStatus.subtitleToolsEnabled) {
             addPreference(new NumberInputPreference(context, "Caption text size",
-                    "Use 0 for TikTok's size, or 12 to 48 sp. Applies to the next caption.", Settings.CAPTION_TEXT_SIZE, "sp") {
+                    "Use 0 for TikTok's size, or 12 to 48. Applies to the next caption.", Settings.CAPTION_TEXT_SIZE, "point", "points") {
                 @Override protected int clamp(int value) { return value <= 0 ? 0 : Math.max(12, Math.min(48, value)); }
             });
             addPreference(new ChoicePreference(context, "Caption background", Settings.CAPTION_BACKGROUND,
@@ -61,7 +61,8 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
             addPreference(new TogglePreference(context, "Automatic clear display",
                     "Hide controls after each video starts. Tap to restore them.", Settings.AUTOMATIC_CLEAR_DISPLAY));
             addPreference(new NumberInputPreference(context, "Clear display delay",
-                    "Wait before hiding the controls.", Settings.AUTOMATIC_CLEAR_DISPLAY_DELAY, "ms"));
+                    "Wait before hiding the controls.", Settings.AUTOMATIC_CLEAR_DISPLAY_DELAY,
+                    "millisecond", "milliseconds"));
         }
         if (SettingsStatus.doubleTapEnabled) {
             addPreference(new ChoicePreference(context, "Double tap", Settings.DOUBLE_TAP_ACTION,

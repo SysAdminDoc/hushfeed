@@ -76,6 +76,12 @@ public class TabSelectionPreference extends Preference {
         app.morphe.extension.tiktok.Utils.setTitleAndSummaryColor(view);
     }
 
+    private static final String ROW_TAG = "tab_option_";
+
+    /** The rows and the set they show, so "Reset to loaded" can tick them where they are. */
+    private LinearLayout optionsView;
+    private Set<String> selectedKeys;
+
     private void refreshSummary() {
         Set<String> selected = parseEnabledKeys(value);
         List<OptionRow> observedOptions = getObservedOptions();
@@ -152,6 +158,8 @@ public class TabSelectionPreference extends Preference {
         for (OptionRow option : observedOptions) {
             optionsContainer.addView(createOptionRow(context, selected, option));
         }
+        optionsView = optionsContainer;
+        selectedKeys = selected;
 
         ScrollView scrollView = new ScrollView(context);
         scrollView.setFillViewport(false);
@@ -189,16 +197,15 @@ public class TabSelectionPreference extends Preference {
                 .setView(dialogView)
                 .create();
 
+        // Ticks every row and leaves the dialog open, so it is a way of filling the list in
+        // rather than a second Save. It saved and dismissed, which meant a reader who pressed it
+        // to see what it did lost the selection they had come in with, with no undo.
         showAllButton.setOnClickListener(view -> {
             selected.clear();
             for (OptionRow option : observedOptions) {
                 selected.add(option.key);
             }
-            boolean changed = setValue(serializeEnabledKeys(selected));
-            dialog.dismiss();
-            if (changed && setting.rebootApp) {
-                AbstractPreferenceFragment.showRestartDialog(context);
-            }
+            refreshRowChecks();
         });
         cancelButton.setOnClickListener(view -> dialog.dismiss());
         saveButton.setOnClickListener(view -> {
@@ -232,6 +239,29 @@ public class TabSelectionPreference extends Preference {
         return new java.util.ArrayList<>(rows);
     }
 
+    /** Puts every row's tick in step with the selection, without rebuilding the dialog. */
+    private void refreshRowChecks() {
+        if (optionsView == null || selectedKeys == null) return;
+        // Walked rather than indexed: each row is a wrapper holding the row itself and the
+        // divider under it, so the box is a grandchild.
+        refreshRowChecks(optionsView);
+    }
+
+    private void refreshRowChecks(View view) {
+        Object tag = view.getTag();
+        if (view instanceof CheckBox && tag instanceof String
+                && ((String) tag).startsWith(ROW_TAG)) {
+            ((CheckBox) view).setChecked(
+                    selectedKeys.contains(((String) tag).substring(ROW_TAG.length())));
+            return;
+        }
+        if (!(view instanceof ViewGroup)) return;
+        ViewGroup group = (ViewGroup) view;
+        for (int index = 0; index < group.getChildCount(); index++) {
+            refreshRowChecks(group.getChildAt(index));
+        }
+    }
+
     private View createOptionRow(Context context, Set<String> selected, OptionRow option) {
         LinearLayout row = new LinearLayout(context);
         row.setOrientation(LinearLayout.HORIZONTAL);
@@ -240,6 +270,9 @@ public class TabSelectionPreference extends Preference {
         row.setPadding(dpToPx(10), dpToPx(10), dpToPx(10), dpToPx(10));
 
         CheckBox checkBox = new CheckBox(context);
+        // Tagged so "Reset to loaded" can tick them where they are, rather than closing the
+        // dialog and saving to show what it did.
+        checkBox.setTag(ROW_TAG + option.key);
         checkBox.setChecked(selected.contains(option.key));
         checkBox.setEnabled(!isRequiredOption(option.key));
         checkBox.setClickable(false);

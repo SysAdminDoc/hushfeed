@@ -588,7 +588,7 @@ public final class BlockAuthorOverlay {
         String after = app.morphe.extension.tiktok.feedfilter.AdvancedFeedRules.addCreatorEntry(
                 before, author.stableId());
         if (after.equals(before)) {
-            Utils.showToastShort(L10n.t("This creator is already hidden"));
+            Utils.showToastShort(L10n.t("That creator is already in the list"));
             return;
         }
         Settings.LOCAL_HIDDEN_CREATORS.save(after);
