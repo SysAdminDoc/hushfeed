@@ -734,6 +734,15 @@ internal fun MutableMethod.insertLiteralOverride(literalIndex: Int, override: Bo
 /**
  * Called for _all_ methods with the given literal value.
  * Method indices are iterated from last to first.
+ *
+ * <p>Editing inside the walk is safe, which is worth writing down because it does not look it.
+ * The indices are collected on the immutable method and applied in reverse, so an edit never
+ * moves an index still to be used. And the walk itself survives the edit: classDefForEach
+ * iterates PatchClasses.classMap.values(), while mutableClassDefBy only reads that map and
+ * swaps a field on the wrapper it finds there. Nothing is put into the map, so there is no
+ * structural change to the collection being iterated. Checked against morphe-patcher 1.12.0 by
+ * disassembling PatchClasses.mutableClassByOrNull, which is a Map.get and a
+ * ClassDefWrapper.getMutableClass and nothing else.
  */
 fun BytecodePatchContext.forEachLiteralValueInstruction(
     literal: Long,
