@@ -95,6 +95,9 @@ public final class InboxFilter {
      */
     private static final Set<String> DISMISSED_LABELS = new HashSet<>();
 
+    /** Clicks and delayed steps run on the main thread and share one dismissal run. */
+    private static boolean clearingSuggested;
+
     /** Original row heights, so a hidden row can be restored exactly. */
     private static final WeakHashMap<View, Integer> ORIGINAL_HEIGHTS = new WeakHashMap<>();
     private static final WeakHashMap<View, BooleanSetting> SYSTEM_ROWS = new WeakHashMap<>();
@@ -342,6 +345,8 @@ public final class InboxFilter {
     }
 
     private static void clearAllSuggested(Activity activity) {
+        if (clearingSuggested) return;
+        clearingSuggested = true;
         DISMISSED_LABELS.clear();
         clearNextSuggested(activity, 0);
     }
@@ -372,11 +377,15 @@ public final class InboxFilter {
             Utils.runOnMainThreadDelayed(
                     () -> clearNextSuggested(activity, cleared + 1), DISMISS_INTERVAL_MS);
         } catch (Throwable ex) {
+            clearingSuggested = false;
+            DISMISSED_LABELS.clear();
             Logger.printException(() -> "Could not clear suggested accounts", ex);
         }
     }
 
     private static void report(int cleared) {
+        clearingSuggested = false;
+        DISMISSED_LABELS.clear();
         if (cleared == 0) {
             Utils.showToastShort(L10n.t("No suggested accounts to clear"));
         } else if (cleared == 1) {
