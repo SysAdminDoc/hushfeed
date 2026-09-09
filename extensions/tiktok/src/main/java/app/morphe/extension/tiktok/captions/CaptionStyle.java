@@ -25,11 +25,13 @@ public final class CaptionStyle {
      *
      * <p>These used to be written here as the numbers they resolve to on 46.2.3, so a build that
      * reshuffled the resource table left both caption settings doing nothing and said nothing.
-     * A name this build does not have is reported. A name it does have that is not the view in
-     * this container is not, and cannot be from here: the hook is installed on every way out of
-     * TikTok's render method, including the ones that rendered nothing, and it runs before the
-     * check that this renderer is the video on screen, so an empty container is an ordinary
-     * outcome rather than a broken build.
+     * A name this build does not have is reported. So is a name it does have that names nothing
+     * in the container, which is the likelier of the two: obfuscated entry names are assigned
+     * by a counter, so a reshuffle moves a name onto a different view more often than it drops
+     * one. That one cannot be reported on sight, though. The hook is installed on every way out
+     * of TikTok's render method, including the ones that rendered nothing, and it runs before
+     * the check that this renderer is the video on screen, so an empty container is an ordinary
+     * outcome rather than a broken build. See {@link #noteLookup}.
      */
     private static final String TEXT_ID = "dfu";
     private static final String BACKGROUND_ID = "dfn";
@@ -52,6 +54,7 @@ public final class CaptionStyle {
     static void apply(View root) {
         int textId = identifier(root, TEXT_ID);
         TextView text = textId == 0 ? null : root.findViewById(textId);
+        if (textId != 0) noteLookup(root, TEXT_ID, text != null);
         if (text != null) {
             if (size() > 0) {
                 // Not putIfAbsent: that is an API 24 default method on the Map interface, and
@@ -62,6 +65,7 @@ public final class CaptionStyle {
         }
         int backgroundId = identifier(root, BACKGROUND_ID);
         View background = backgroundId == 0 ? null : root.findViewById(backgroundId);
+        if (backgroundId != 0) noteLookup(root, BACKGROUND_ID, background != null);
         if (background == null) return;
         String color = Settings.CAPTION_BACKGROUND.get();
         if (!"default".equals(color) && !BACKGROUNDS.containsKey(background)) {
@@ -75,9 +79,63 @@ public final class CaptionStyle {
         } else background.setBackgroundColor(backgroundColor());
     }
 
+    /**
+     * How many renders of a container that has something in it have to miss before this says so.
+     *
+     * <p>One miss is not evidence of anything. The hook is injected at every return-void in the
+     * host's render method, early bail-outs included, and HookStatus never forgets a miss, so a
+     * single empty renderer would make the Hook status row read broken for the rest of the
+     * process. Five consecutive renders with children in the container and nothing under the id
+     * is not a bail-out; on a working build the first of those five finds the view and the
+     * count is dropped.
+     */
+    private static final int MISSES_BEFORE_REPORTING = 5;
+
+    /**
+     * Consecutive misses per name, and the names that have ever been found.
+     *
+     * <p>Only ever touched from apply, which runs on the thread that lays the caption out.
+     */
+    private static final Map<String, Integer> MISSES = new java.util.HashMap<>();
+    private static final java.util.Set<String> FOUND = new java.util.HashSet<>();
+
+    /**
+     * Follows an id that resolved but found nothing under this container.
+     *
+     * <p>Silent while the container is empty, because that is what the early returns in TikTok's
+     * own render method look like from here, and silent forever once the name has been found
+     * once: a build where it works has nothing to report, and every later miss on it is another
+     * bail-out.
+     */
+    private static void noteLookup(View root, String name, boolean found) {
+        if (found) {
+            FOUND.add(name);
+            MISSES.remove(name);
+            return;
+        }
+        if (FOUND.contains(name) || !hasChildren(root)) return;
+        Integer seen = MISSES.get(name);
+        int misses = (seen == null ? 0 : seen) + 1;
+        MISSES.put(name, misses);
+        if (misses >= MISSES_BEFORE_REPORTING) {
+            HookStatus.missingMember("captions", "view", "caption container", name);
+        }
+    }
+
+    private static boolean hasChildren(View root) {
+        return root instanceof android.view.ViewGroup
+                && ((android.view.ViewGroup) root).getChildCount() > 0;
+    }
+
     /** Lets a test stand in for a TikTok resource id, which only the real APK resolves. */
     static void resolveForTests(String name, int id) {
         RESOURCE_IDS.putForTests(APP_PACKAGE, name, id);
+    }
+
+    /** Forgets what has been looked up, between tests. */
+    static void resetLookupsForTests() {
+        MISSES.clear();
+        FOUND.clear();
     }
 
     /** Resolves a caption view id, saying so once when this build does not have it. */

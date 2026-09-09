@@ -38,6 +38,7 @@ public class CaptionToolsTest {
     public static final class Video { public String aid; Video(String id) { aid = id; } }
     @Before public void setup() {
         Utils.setContext(RuntimeEnvironment.getApplication());
+        CaptionStyle.resetLookupsForTests();
         Settings.CAPTION_TEXT_SIZE.save(0);
         Settings.CAPTION_BACKGROUND.save("default");
         Settings.KEEP_CAPTIONS_CLEAR_DISPLAY.save(false);
@@ -99,6 +100,90 @@ public class CaptionToolsTest {
                 HookStatus.missing("captions"));
         assertTrue(String.join(" ", HookStatus.report()).contains("captions"));
         HookStatus.clear();
+    }
+
+    /**
+     * The other half of the same defect, and the harder one. The names are assigned by a
+     * counter, so a reshuffled resource table is likelier to move a name onto a different view
+     * than to drop it: findViewById answers null, both caption settings quietly do nothing, and
+     * the Hook status row used to say everything was bound.
+     */
+    @Test public void anIdThatNamesNothingInTheContainerSaysSoOnTheHookStatusRow() {
+        HookStatus.clear();
+        CaptionStyle.resetLookupsForTests();
+        // The ids resolve, which is what tells this apart from the case above. They just are
+        // not the views in this container.
+        CaptionStyle.resolveForTests("dfu", View.generateViewId());
+        CaptionStyle.resolveForTests("dfn", View.generateViewId());
+        Settings.CAPTION_TEXT_SIZE.save(32);
+        Settings.CAPTION_BACKGROUND.save("black");
+
+        FrameLayout root = new FrameLayout(Utils.getContext());
+        // A container with something in it, which is what a render that rendered looks like.
+        root.addView(new TextView(Utils.getContext()));
+        for (int render = 0; render < 5; render++) CaptionStyle.apply(root);
+
+        assertTrue("a build where neither caption view is reachable says nothing",
+                HookStatus.anyMissing());
+        assertEquals(java.util.Arrays.asList(
+                        "view caption container#dfu", "view caption container#dfn"),
+                HookStatus.missing("captions"));
+        HookStatus.clear();
+        CaptionStyle.resetLookupsForTests();
+    }
+
+    /**
+     * And the reason the naive version of this was written and reverted on the same day. The
+     * hook is injected at every return-void in TikTok's render method, early bail-outs
+     * included, and it runs before the check that this renderer is the video on screen, so an
+     * empty container is ordinary. HookStatus never forgets a miss, so reporting one would make
+     * the row read broken for the rest of the process on a perfectly healthy build.
+     */
+    @Test public void anEmptyRendererIsNotAMissHoweverManyTimesItArrives() {
+        HookStatus.clear();
+        CaptionStyle.resetLookupsForTests();
+        CaptionStyle.resolveForTests("dfu", View.generateViewId());
+        CaptionStyle.resolveForTests("dfn", View.generateViewId());
+        Settings.CAPTION_TEXT_SIZE.save(32);
+        Settings.CAPTION_BACKGROUND.save("black");
+
+        FrameLayout empty = new FrameLayout(Utils.getContext());
+        for (int render = 0; render < 100; render++) CaptionStyle.apply(empty);
+
+        assertFalse("a hundred empty renders were reported as a broken build",
+                HookStatus.anyMissing());
+        HookStatus.clear();
+        CaptionStyle.resetLookupsForTests();
+    }
+
+    /** And a build where it works stays quiet through the bail-outs between real renders. */
+    @Test public void aWorkingBuildIsNotReportedByTheRendersThatRenderNothing() {
+        HookStatus.clear();
+        CaptionStyle.resetLookupsForTests();
+        int textId = View.generateViewId();
+        int backgroundId = View.generateViewId();
+        CaptionStyle.resolveForTests("dfu", textId);
+        CaptionStyle.resolveForTests("dfn", backgroundId);
+        Settings.CAPTION_TEXT_SIZE.save(32);
+        Settings.CAPTION_BACKGROUND.save("black");
+
+        FrameLayout root = new FrameLayout(Utils.getContext());
+        FrameLayout background = new FrameLayout(Utils.getContext());
+        background.setId(backgroundId);
+        TextView text = new TextView(Utils.getContext());
+        text.setId(textId);
+        root.addView(background);
+        background.addView(text);
+
+        FrameLayout bailOut = new FrameLayout(Utils.getContext());
+        bailOut.addView(new TextView(Utils.getContext()));
+        CaptionStyle.apply(root);
+        for (int render = 0; render < 50; render++) CaptionStyle.apply(bailOut);
+
+        assertFalse("the renderers that rendered nothing were called a broken build",
+                HookStatus.anyMissing());
+        HookStatus.clear();
+        CaptionStyle.resetLookupsForTests();
     }
 
     @Test public void clearDisplayKeepsOnlyTheCurrentCueAndHidesOnFocusLossOrVideoChange() throws Exception {
