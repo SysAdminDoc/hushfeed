@@ -1,9 +1,16 @@
 package app.morphe.extension.tiktok.settings.preference;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import android.content.Context;
 import android.preference.PreferenceActivity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.StringSetting;
@@ -51,6 +58,82 @@ public class RangeValueSummaryTest {
 
             preference.setValue("0-" + Long.MAX_VALUE);
             assertEquals("Summary\n0 and above", preference.getSummary().toString());
+        }
+    }
+
+    @Test
+    public void theDialogStoresWhatWasTypedAndRefusesWhatItCannotRead() {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            Context context = controller.get();
+            StringSetting setting =
+                    new StringSetting("range_dialog_test_views", "20000-1500000");
+            RangeValuePreference preference =
+                    new RangeValuePreference(context, "Views", "Summary", setting);
+
+            // Typed the way the row shows it, which is the reason the field is not a number
+            // keyboard. Both forms have to come back as plain digits in the stored value.
+            type(preference, "5K", "1.5M");
+            preference.onDialogClosed(true);
+            assertEquals("5000-1500000", preference.getValue());
+            assertEquals("Summary\n5K to 1.5M", preference.getSummary().toString());
+
+            // An empty maximum is no upper bound, not a value that could not be read.
+            type(preference, "10", "");
+            preference.onDialogClosed(true);
+            assertEquals("10-" + Long.MAX_VALUE, preference.getValue());
+            assertEquals("Summary\n10 and above", preference.getSummary().toString());
+
+            // Cancel leaves everything as it was, whatever is in the fields.
+            type(preference, "1", "2");
+            preference.onDialogClosed(false);
+            assertEquals("10-" + Long.MAX_VALUE, preference.getValue());
+        }
+    }
+
+    @Test
+    public void aRangeThatCannotBeReadOrIsTheWrongWayRoundIsNotStored() {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            Context context = controller.get();
+            StringSetting setting =
+                    new StringSetting("range_dialog_test_likes", "100-200");
+            RangeValuePreference preference =
+                    new RangeValuePreference(context, "Likes", "Summary", setting);
+
+            type(preference, "seven", "200");
+            preference.onDialogClosed(true);
+            assertEquals("the unreadable minimum was stored", "100-200", preference.getValue());
+
+            type(preference, "-5", "200");
+            preference.onDialogClosed(true);
+            assertEquals("a negative minimum was stored", "100-200", preference.getValue());
+
+            type(preference, "900", "200");
+            preference.onDialogClosed(true);
+            assertEquals("an inverted range was stored", "100-200", preference.getValue());
+
+            // The positive control: the same dialog does save a range it can read.
+            type(preference, "300", "900");
+            preference.onDialogClosed(true);
+            assertEquals("300-900", preference.getValue());
+        }
+    }
+
+    /** Types into the dialog's own two fields, so the preference sees it as a person typing. */
+    private static void type(RangeValuePreference preference, String minimum, String maximum) {
+        List<EditText> fields = new ArrayList<>();
+        collect(preference.onCreateDialogView(), fields);
+        assertEquals("the dialog no longer has two fields", 2, fields.size());
+        assertNotNull(fields.get(0));
+        fields.get(0).setText(minimum);
+        fields.get(1).setText(maximum);
+    }
+
+    private static void collect(View view, List<EditText> found) {
+        if (view instanceof EditText) {
+            found.add((EditText) view);
+        } else if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int at = 0; at < group.getChildCount(); at++) collect(group.getChildAt(at), found);
         }
     }
 }
