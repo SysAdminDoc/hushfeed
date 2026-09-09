@@ -111,8 +111,11 @@ public class AnimatedWebpMp4ConverterTest {
 
         java.io.File output = java.io.File.createTempFile("hushfeed-sticker", ".mp4");
         output.deleteOnExit();
-        try {
-            AnimatedWebpMp4Converter.convert(webp, output.getAbsolutePath());
+        // Robolectric closes its path-owned stream only from nativeStop, not release.
+        // This rejection happens before start, so own the descriptor as the MediaStore caller
+        // does and close it even when conversion refuses the canvas.
+        try (java.io.FileOutputStream stream = new java.io.FileOutputStream(output)) {
+            AnimatedWebpMp4Converter.convert(webp, stream.getFD());
             fail("a gigabyte of canvas was accepted");
         } catch (IllegalStateException refused) {
             assertTrue("refused for the wrong reason: " + refused.getMessage(),
