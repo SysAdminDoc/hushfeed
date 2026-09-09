@@ -814,6 +814,38 @@ public class SettingsPagesTest {
         }
     }
 
+    /**
+     * The same page in Spanish at twice the text size. Spanish and Portuguese run about a fifth
+     * longer than English, so a row that fits in English and in German still has to be looked
+     * at once in a Romance language: "Silenciar el feed mientras los comentarios están abiertos"
+     * is not a line German would have produced.
+     */
+    @Test @Config(qualifiers = "es-rES-w320dp-h800dp-night-mdpi")
+    public void longSpanishLabelsStayReadableAtTwoTimesTextSize() throws Exception {
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            var configuration = activity.getResources().getConfiguration();
+            configuration.fontScale = 2.0f;
+            activity.getResources().updateConfiguration(
+                    configuration, activity.getResources().getDisplayMetrics());
+            TikTokPreferenceFragment page = attachSection(activity, "COMMENTS");
+            layout(page.getView(), 320, 800);
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+            TextView heading = page.getView().findViewWithTag("metra_page_title");
+            assertNotNull(heading);
+            assertEquals("the page title is not in Spanish, so this proves nothing",
+                    "Comentarios y traducción", heading.getText().toString());
+            assertTextFits(heading);
+            TextView caption = findTextViewContaining(page.getView(), "Filtros, traducción");
+            assertNotNull("the page description is not in Spanish", caption);
+            assertTextFits(caption);
+            assertRowsReadable(page.getView().findViewById(android.R.id.list), 48);
+            UiCapture.save(page.getView(), "pages/dark/comments-spanish-large.png", 320, 800);
+        }
+    }
+
     @Test @Config(qualifiers = "de-rDE-w320dp-h800dp-notnight-mdpi")
     public void controlsAndEditorsStayReadableAtTwoTimesTextSize() throws Exception {
         try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {

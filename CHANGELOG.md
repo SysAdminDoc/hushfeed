@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The settings screen speaks Spanish and Brazilian Portuguese. Both tables carry all 687 strings, so a phone set to either language gets the whole screen rather than a half translated one. Neither has been read by a native speaker yet. They were written here, against the English, and corrections are welcome: each language is one file under extensions/tiktok/src/main/l10n and a pull request against it needs nothing else.
+
 * Two switches for a feed that plays when nobody is watching it. "Quieten the feed while comments are open" takes the sound the moment a comment sheet opens and hands it back when it closes. "Do not start the feed on returning" holds the feed after you come back to the app until you tap once, and leaves the tab bar alone so messages, a profile and search are still one tap away. Both are off by default. Neither presses a pause button, because there isn't one to press: they ask for the audio focus, the way the session hold does, which is how one app tells another to stop.
 
 * You can see the hold coming now. "Fade the feed out before the hold" is off by default; switched on, the feed dims over the last three quarters of a minute of a time budget, most of it in the final half minute, and the last shade of the fade is the shade of the hold itself, so there is no jump. It needs a budget in minutes, since a budget counted in videos has no time left to follow, and it does nothing at all if you have turned system animations off. It takes no touches and a screen reader is told nothing until the hold speaks for itself.

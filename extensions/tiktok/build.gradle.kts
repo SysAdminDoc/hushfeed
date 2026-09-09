@@ -28,6 +28,7 @@ val trackedScreenshots = mapOf(
     "region-settings.png" to "region-settings.png",
     "settings/behavior.png" to "pages/dark/behavior.png",
     "settings/comments-german-large.png" to "pages/dark/comments-german-large.png",
+    "settings/comments-spanish-large.png" to "pages/dark/comments-spanish-large.png",
     "settings/comments.png" to "pages/dark/comments.png",
     "settings/creator-list.png" to "pages/dark/creator-list.png",
     "settings/diagnostics-light.png" to "pages/light/diagnostics.png",
