@@ -1,4 +1,4 @@
-## Unreleased
+## 0.26.0
 
 * The last English left on the settings screen is translated. The diagnostics picker with its eight kinds of event, the line you see after saving any of the fifty settings that ask for a restart, the message when diagnostic data is cleared, and every line of the hook status report. These live in code shared with other bundles that carry no translations at all, so they could not simply be wrapped: the shared classes ask this bundle for the words and fall back to English for anyone else. The report line was five pieces glued together, which no translation can hold, and is one sentence now.
 
