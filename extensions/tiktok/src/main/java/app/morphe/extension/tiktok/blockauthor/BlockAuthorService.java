@@ -13,6 +13,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * Performs the block and unblock calls.
@@ -89,29 +90,36 @@ public final class BlockAuthorService {
     }
 
     private static void submit(VideoAuthor author, int blockType, Callback callback) {
-        Utils.runOnBackgroundThread(() -> {
-            Result result = Result.UNCONFIRMED;
-            String message = null;
+        try {
+            Utils.submitOnBackgroundThread(() -> {
+                Result result = Result.UNCONFIRMED;
+                String message = null;
 
-            try {
-                result = execute(author, blockType);
-                if (result == Result.REJECTED) {
-                    message = "TikTok rejected the request";
-                } else if (result == Result.UNCONFIRMED) {
+                try {
+                    result = execute(author, blockType);
+                    if (result == Result.REJECTED) {
+                        message = "TikTok rejected the request";
+                    } else if (result == Result.UNCONFIRMED) {
+                        message = "TikTok's response could not be confirmed";
+                    }
+                } catch (UnsupportedOperationException ex) {
                     message = "TikTok's response could not be confirmed";
+                    Logger.printInfo(() -> "Block endpoint unavailable: " + ex.getMessage());
+                } catch (Throwable ex) {
+                    message = "Request failed; TikTok's response could not be confirmed";
+                    Logger.printException(() -> "Block request failed", ex);
                 }
-            } catch (UnsupportedOperationException ex) {
-                message = "TikTok's response could not be confirmed";
-                Logger.printInfo(() -> "Block endpoint unavailable: " + ex.getMessage());
-            } catch (Throwable ex) {
-                message = "Request failed; TikTok's response could not be confirmed";
-                Logger.printException(() -> "Block request failed", ex);
-            }
 
-            final Result finalResult = result;
-            final String finalMessage = message;
-            Utils.runOnMainThread(() -> callback.onResult(finalResult, finalMessage));
-        });
+                final Result finalResult = result;
+                final String finalMessage = message;
+                Utils.runOnMainThread(() -> callback.onResult(finalResult, finalMessage));
+                return null;
+            });
+        } catch (RejectedExecutionException failure) {
+            Logger.printException(() -> "Block request could not be queued", failure);
+            Utils.runOnMainThread(() -> callback.onResult(Result.UNCONFIRMED,
+                    "TikTok's response could not be confirmed"));
+        }
     }
 
     private static Result execute(VideoAuthor author, int blockType) throws Exception {

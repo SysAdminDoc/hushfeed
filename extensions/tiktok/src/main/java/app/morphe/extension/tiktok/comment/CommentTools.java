@@ -27,6 +27,7 @@ import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.preference.SettingsUi;
 import app.morphe.extension.tiktok.settings.L10n;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -50,9 +51,9 @@ import java.util.WeakHashMap;
  *
  * The thumbs down is a RelativeLayout ({@code jlk}) holding an icon ({@code m3b}) at the
  * right end of the comment's action row; both ids were read off a live comment panel. TikTok
- * drives it with a touch listener installed once per view, the first time the cell binds, so
- * this class installs its own touch listener after the bind has returned, which replaces
- * TikTok's and survives every later rebind. The icon stays; a tap now blocks the commenter
+ * drives it with a touch listener that can be installed only once per view. A native install
+ * hook keeps that listener in a view-owned wrapper, and the posted cell bind switches the
+ * wrapper to blocking while the setting is enabled. The icon stays; a tap blocks the commenter
  * (a second tap unblocks), the row dims and the icon tints while the account is blocked, and
  * an undo banner is drawn in the window the comments live in, because the panel is not
  * always in the activity's window and anything added to the activity's content root then
@@ -84,19 +85,18 @@ public final class CommentTools {
     private static final WeakHashMap<View, Object> CELL_COMMENTS = new WeakHashMap<>();
 
     /**
-     * What a control looked like before the takeover, keyed by every view the takeover touched.
-     *
-     * <p>The hand-back used to restore framework defaults on any cell that came past with the
-     * setting off, whether or not it had ever been taken over, so turning the feature off
-     * stripped TikTok's own label, its tint and its touch handling from every comment row. A
-     * control is only put back if it is in here, and it is put back to what it had.
+     * The view owns its wrapper, native listener and saved state. Weak values matter too:
+     * TikTok's listener owns its row, so a strong map value would retain its own weak key.
      */
-    private static final WeakHashMap<View, ControlState> TAKEN_OVER = new WeakHashMap<>();
+    private static final WeakHashMap<View, WeakReference<ControlTouchListener>> CONTROL_TOUCHES =
+            new WeakHashMap<>();
 
     /** The values the takeover overwrites. One instance is shared by a row's button and icon. */
     private static final class ControlState {
         final View button;
         final View icon;
+        final View cell;
+        final boolean buttonClickable;
         final CharSequence description;
         final CharSequence stateDescription;
         final int iconImportance;
@@ -106,6 +106,8 @@ public final class CommentTools {
         ControlState(View button, View icon, View cell) {
             this.button = button;
             this.icon = icon;
+            this.cell = cell;
+            this.buttonClickable = button != null && button.isClickable();
             this.description = button == null ? null : button.getContentDescription();
             this.stateDescription = button != null && android.os.Build.VERSION.SDK_INT >= 30
                     ? button.getStateDescription() : null;
@@ -242,7 +244,7 @@ public final class CommentTools {
                 return;
             }
 
-            // Replaces TikTok's listener on the control; the icon gets one too so a touch
+            // Switches the view-owned listener to blocking; the icon gets one too so a touch
             // that lands on it never reaches TikTok's handling either.
             // A press taken while this row held a different comment must not be released onto
             // the account that just arrived in it.
@@ -250,8 +252,10 @@ public final class CommentTools {
             rememberBeforeTakeover(cell, button, icon);
             wireBlockControl(button, icon);
             if (holdsAnotherComment) {
-                DISLIKE_TOUCH.forget(button);
-                DISLIKE_TOUCH.forget(icon);
+                // Forget the old comment, but keep ownership of its unfinished press even
+                // if the switch is turned off before the finger comes up.
+                control(button).discardUntilRelease |= DISLIKE_TOUCH.forget(button);
+                if (icon != null) control(icon).discardUntilRelease |= DISLIKE_TOUCH.forget(icon);
             }
 
             applyBlockedState(cell);
@@ -260,44 +264,84 @@ public final class CommentTools {
         }
     }
 
-    /**
-     * Hands the thumbs down back to TikTok on a cell that still carries the takeover.
-     *
-     * <p>The click listener is deliberately left alone. TikTok wires its own during every bind,
-     * which is the whole reason the takeover has to run after every bind rather than once, so by
-     * the time this lands the listener on the control is TikTok's again and nulling it would
-     * kill the ordinary dislike for as long as the setting is off. A listener of ours that did
-     * somehow survive cannot block anyone either: {@link #onDislikeTapped} checks the setting.
-     */
+    /** Called instead of the verified native thumbs-down setOnTouchListener call. */
+    public static void setDislikeTouchListener(View view, View.OnTouchListener nativeListener) {
+        if (view != null) control(view).nativeListener = nativeListener;
+    }
+
+    private static ControlTouchListener existingControl(View view) {
+        synchronized (CONTROL_TOUCHES) {
+            WeakReference<ControlTouchListener> reference = CONTROL_TOUCHES.get(view);
+            return reference == null ? null : reference.get();
+        }
+    }
+
+    private static ControlTouchListener control(View view) {
+        synchronized (CONTROL_TOUCHES) {
+            ControlTouchListener listener = existingControl(view);
+            if (listener == null) {
+                listener = new ControlTouchListener();
+                CONTROL_TOUCHES.put(view, new WeakReference<>(listener));
+            }
+            view.setOnTouchListener(listener);
+            return listener;
+        }
+    }
+
+    /** The native handler stays strongly owned by its view even while the takeover is off. */
+    private static final class ControlTouchListener implements View.OnTouchListener {
+        View.OnTouchListener nativeListener;
+        ControlState state;
+        boolean blocking;
+        boolean discardUntilRelease;
+
+        void handBack(View view) {
+            discardUntilRelease |= DISLIKE_TOUCH.forget(view);
+            blocking = false;
+            state = null;
+        }
+
+        @Override public boolean onTouch(View view, MotionEvent event) {
+            if (blocking && !Settings.BLOCK_FROM_COMMENT.get()) releaseDislike(view);
+            if (discardUntilRelease) {
+                int action = event.getActionMasked();
+                if (action == MotionEvent.ACTION_DOWN) {
+                    discardUntilRelease = false;
+                } else {
+                    if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+                        discardUntilRelease = false;
+                    }
+                    return true;
+                }
+            }
+            if (blocking && Settings.BLOCK_FROM_COMMENT.get()) {
+                return DISLIKE_TOUCH.onTouch(view, event);
+            }
+            return nativeListener != null && nativeListener.onTouch(view, event);
+        }
+    }
+
     /** Records what the takeover is about to overwrite, the first time it touches a control. */
     private static void rememberBeforeTakeover(View cell, View button, View icon) {
         if (button == null) return;
-        synchronized (TAKEN_OVER) {
-            if (TAKEN_OVER.containsKey(button)) return;
-            ControlState state = new ControlState(button, icon, cell);
-            TAKEN_OVER.put(button, state);
-            if (icon != null) TAKEN_OVER.put(icon, state);
-        }
+        ControlTouchListener listener = control(button);
+        if (listener.state != null) return;
+        ControlState state = new ControlState(button, icon, cell);
+        listener.state = state;
+        if (icon != null) control(icon).state = state;
     }
 
     /** Hands back whichever of a row's controls this took over, and only those. */
     private static void releaseDislike(View touched) {
         if (touched == null) return;
         try {
-            ControlState state = null;
-            synchronized (TAKEN_OVER) {
-                state = TAKEN_OVER.get(touched);
-                if (state == null) {
-                    // The tap-time path is handed the control; the bind-time path is handed the
-                    // row, so look inside it before deciding this row was never taken over.
-                    View button = touched.findViewById(identifier(touched, DISLIKE_BUTTON_ID));
-                    if (button != null) state = TAKEN_OVER.get(button);
-                }
-                if (state == null) return;
-                TAKEN_OVER.remove(state.button);
-                if (state.icon != null) TAKEN_OVER.remove(state.icon);
+            ControlTouchListener listener = existingControl(touched);
+            if (listener == null || listener.state == null) {
+                // A bind supplies itemView; a touch supplies either indexed control.
+                View button = touched.findViewById(identifier(touched, DISLIKE_BUTTON_ID));
+                listener = existingControl(button);
             }
-            unwireBlockControl(state);
+            if (listener != null && listener.state != null) unwireBlockControl(listener.state);
         } catch (Throwable ex) {
             Logger.printException(() -> "Could not hand the comment thumbs down back", ex);
         }
@@ -306,11 +350,11 @@ public final class CommentTools {
     static void unwireBlockControl(ControlState state) {
         View button = state.button;
         if (button != null) {
-            DISLIKE_TOUCH.forget(button);
-            // TikTok sets no touch listener of its own on this control, which is why ours
-            // survives a rebind at all, so clearing it hands the touches back rather than
-            // dropping one of TikTok's.
-            button.setOnTouchListener(null);
+            ControlTouchListener listener = existingControl(button);
+            if (listener != null) listener.handBack(button);
+            // The native jlk control uses touch handling; this click belongs to the takeover.
+            button.setOnClickListener(null);
+            button.setClickable(state.buttonClickable);
             button.setContentDescription(state.description);
             if (android.os.Build.VERSION.SDK_INT >= 30) {
                 button.setStateDescription(state.stateDescription);
@@ -318,27 +362,13 @@ public final class CommentTools {
         }
         View icon = state.icon;
         if (icon != null) {
-            DISLIKE_TOUCH.forget(icon);
-            icon.setOnTouchListener(null);
+            ControlTouchListener listener = existingControl(icon);
+            if (listener != null) listener.handBack(icon);
             icon.setImportantForAccessibility(state.iconImportance);
             if (icon instanceof ImageView) ((ImageView) icon).setColorFilter(state.iconFilter);
         }
-        View cell = cellOfAny(button);
+        View cell = state.cell;
         if (cell != null && cell.getAlpha() != state.cellAlpha) cell.setAlpha(state.cellAlpha);
-    }
-
-    /** The row a control sits in, without needing it to still be in {@link #CELL_COMMENTS}. */
-    private static View cellOfAny(View view) {
-        View current = view;
-        for (int depth = 0; current != null && depth < 12; depth++) {
-            if (current.findViewById(identifier(current, DISLIKE_BUTTON_ID)) != null
-                    && current != view) {
-                return current;
-            }
-            ViewParent parent = current.getParent();
-            current = parent instanceof View ? (View) parent : null;
-        }
-        return null;
     }
 
     /**
@@ -367,10 +397,10 @@ public final class CommentTools {
          */
         private final WeakHashMap<View, Gesture> gestures = new WeakHashMap<>();
 
-        void forget(View view) {
-            if (view == null) return;
+        boolean forget(View view) {
+            if (view == null) return false;
             synchronized (gestures) {
-                gestures.remove(view);
+                return gestures.remove(view) != null;
             }
         }
 
@@ -422,10 +452,10 @@ public final class CommentTools {
      */
     static void wireBlockControl(View button, View icon) {
         if (button == null) return;
-        button.setOnTouchListener(DISLIKE_TOUCH);
+        control(button).blocking = true;
         button.setOnClickListener(CommentTools::onDislikeTapped);
         if (icon != null) {
-            icon.setOnTouchListener(DISLIKE_TOUCH);
+            control(icon).blocking = true;
             // One target for the row rather than two, so the label and the state are in one
             // place and a screen reader does not read the same control twice.
             icon.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
@@ -451,7 +481,7 @@ public final class CommentTools {
             // A listener left on a cell from before the setting was turned off. One tap spent
             // handing the control back is the right answer; blocking someone the reader did not
             // choose to block is not.
-            releaseDislike(cellOf(touched));
+            releaseDislike(touched);
             return;
         }
         try {

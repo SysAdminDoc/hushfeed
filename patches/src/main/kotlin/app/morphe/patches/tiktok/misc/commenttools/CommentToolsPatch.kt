@@ -6,10 +6,13 @@
  */
 package app.morphe.patches.tiktok.misc.commenttools
 
+import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.interaction.blockauthor.BlockServiceFingerprint
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
@@ -22,12 +25,23 @@ import app.morphe.patches.tiktok.shared.objectIn
 import app.morphe.util.getFreeRegisterProvider
 import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/comment/CommentTools;"
 private const val COMMENT_DESCRIPTOR = "Lcom/ss/android/ugc/aweme/comment/model/Comment;"
 private const val COMMENT_LIST_DESCRIPTOR = "Lcom/ss/android/ugc/aweme/comment/model/CommentItemList;"
+private const val TOUCH_LISTENER_DESCRIPTOR = "Landroid/view/View\$OnTouchListener;"
+
+private object CommentDislikeTouchInitFingerprint : Fingerprint(
+    definingClass = "LX/0nvj;",
+    returnType = "V",
+    parameters = emptyList(),
+    custom = { method, _ -> method.name == "LIZIZ" },
+)
 
 /**
  * Hooks the same two places the comment translation patch does: the comment cell being
@@ -58,6 +72,7 @@ val commentToolsPatch = bytecodePatch(
         // Blocking a commenter goes through the same BlockApi as the block button. Fail
         // the build rather than ship a gesture that silently does nothing.
         BlockServiceFingerprint.method
+        CommentDislikeTouchInitFingerprint.method.captureDislikeTouchListener()
 
         BaseCommentCellBindFingerprint.method.apply {
             val instructions = implementation!!.instructions
@@ -151,4 +166,40 @@ val commentToolsPatch = bytecodePatch(
             )
         }
     }
+}
+
+/** 46.2.3 installs jlk's native listener once in one rollout and on every bind in the other. */
+internal fun MutableMethod.captureDislikeTouchListener() {
+    val instructions = implementation!!.instructions.toList()
+    val matches = instructions.withIndex().filter { (index, instruction) ->
+        val target = instruction.getReference<MethodReference>()
+        val fieldLoad = instructions.getOrNull(index - 5)
+        val field = fieldLoad?.getReference<FieldReference>()
+        (instruction.opcode == Opcode.INVOKE_VIRTUAL || instruction.opcode == Opcode.INVOKE_VIRTUAL_RANGE) &&
+            target?.definingClass == "Landroid/view/View;" && target.name == "setOnTouchListener" &&
+            target.parameterTypes == listOf(TOUCH_LISTENER_DESCRIPTOR) && target.returnType == "V" &&
+            fieldLoad?.opcode == Opcode.IGET_OBJECT && field != null && field.definingClass == definingClass &&
+            field.name == "LLJJIJIIJIL" && field.type == "Landroid/widget/RelativeLayout;"
+    }
+    if (matches.size != 1) throw PatchException("Comment tools: expected one native dislike touch install")
+    val (index, instruction) = matches.single()
+    val (receiver, count, operands) = when (instruction) {
+        is FiveRegisterInstruction -> Triple(
+            instruction.registerC, instruction.registerCount,
+            "{v${instruction.registerC}, v${instruction.registerD}}",
+        )
+        is RegisterRangeInstruction -> Triple(
+            instruction.startRegister, instruction.registerCount,
+            "{v${instruction.startRegister} .. v${instruction.startRegister + 1}}",
+        )
+        else -> throw PatchException("Comment tools: unexpected native touch invocation")
+    }
+    if (count != 2 || (instructions[index - 5] as TwoRegisterInstruction).registerA != receiver) {
+        throw PatchException("Comment tools: native dislike touch receiver changed")
+    }
+    val range = if (instruction is RegisterRangeInstruction) "/range" else ""
+    replaceInstruction(
+        index,
+        "invoke-static$range $operands, $EXTENSION_CLASS_DESCRIPTOR->setDislikeTouchListener(Landroid/view/View;$TOUCH_LISTENER_DESCRIPTOR)V",
+    )
 }

@@ -81,6 +81,88 @@ public class CommentDislikeGestureTest {
                 View.IMPORTANT_FOR_ACCESSIBILITY_AUTO, cell.icon.getImportantForAccessibility());
     }
 
+    @Test public void aFullWorkerQueueReportsFailureAndTheSameControlCanRetry() throws Exception {
+        Utils.awaitBackgroundTasksForTests();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        app.morphe.extension.tiktok.settings.Settings.BLOCK_FROM_COMMENT.save(true);
+        Cell cell = cell();
+        bind(cell);
+        ShadowToast.reset();
+        var serviceType = app.morphe.extension.tiktok.blockauthor.BlockAuthorService.class;
+        Object previousService = ReflectionHelpers.getStaticField(serviceType, "cachedService");
+        Object previousMethod = ReflectionHelpers.getStaticField(serviceType, "cachedBlockMethod");
+        QueueTestBlockService service = new QueueTestBlockService();
+        ReflectionHelpers.setStaticField(serviceType, "cachedService", service);
+        ReflectionHelpers.setStaticField(serviceType, "cachedBlockMethod",
+                QueueTestBlockService.class.getMethod("block", String.class, String.class, int.class, int.class));
+        java.util.concurrent.ThreadPoolExecutor pool = ReflectionHelpers.getStaticField(Utils.class, "backgroundThreadPool");
+        java.util.concurrent.CountDownLatch release = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.CountDownLatch entered = new java.util.concurrent.CountDownLatch(pool.getMaximumPoolSize());
+        java.util.List<java.util.concurrent.Future<?>> held = new java.util.ArrayList<>();
+        try {
+            int jobs = pool.getMaximumPoolSize() + pool.getQueue().remainingCapacity();
+            for (int i = 0; i < jobs; i++) {
+                held.add(Utils.submitOnBackgroundThread(() -> {
+                    entered.countDown();
+                    if (!release.await(5, java.util.concurrent.TimeUnit.SECONDS)) {
+                        throw new AssertionError("test did not release a held worker");
+                    }
+                    return null;
+                }));
+            }
+            assertTrue("the worker pool was never full", entered.await(2, java.util.concurrent.TimeUnit.SECONDS));
+            assertEquals(0, pool.getQueue().remainingCapacity());
+            assertTrue(cell.button.performClick());
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertTrue("a rejected block left the control silently busy",
+                    String.valueOf(ShadowToast.getTextOfLatestToast()).startsWith("Could not confirm block for "));
+            assertEquals(java.util.List.of(), service.types);
+
+            release.countDown();
+            for (var job : held) job.get(5, java.util.concurrent.TimeUnit.SECONDS);
+            Utils.awaitBackgroundTasksForTests();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertTrue(cell.button.performClick());
+            Utils.awaitBackgroundTasksForTests();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertEquals("the busy guard survived the failed submission", java.util.List.of(1), service.types);
+            assertEquals("Unblock this commenter", cell.button.getContentDescription());
+            assertTrue(cell.button.performClick());
+            Utils.awaitBackgroundTasksForTests();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertEquals(java.util.List.of(1, 0), service.types);
+            assertEquals("Block this commenter", cell.button.getContentDescription());
+        } finally {
+            release.countDown();
+            for (var job : held) job.get(5, java.util.concurrent.TimeUnit.SECONDS);
+            Utils.awaitBackgroundTasksForTests();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            ReflectionHelpers.setStaticField(serviceType, "cachedService", previousService);
+            ReflectionHelpers.setStaticField(serviceType, "cachedBlockMethod", previousMethod);
+        }
+    }
+
+    public static final class QueueTestBlockService {
+        final java.util.List<Integer> types = new java.util.concurrent.CopyOnWriteArrayList<>();
+        public QueueTestCall block(String uid, String secUid, int type, int source) {
+            assertEquals("uid-bound", uid);
+            types.add(type);
+            return new QueueTestCall();
+        }
+    }
+
+    public static final class QueueTestCall {
+        public QueueTestResponse execute() { return new QueueTestResponse(); }
+    }
+
+    public static final class QueueTestResponse {
+        public QueueTestBody body() { return new QueueTestBody(); }
+    }
+
+    public static final class QueueTestBody {
+        public final int statusCode = 0;
+    }
+
     @Test public void aTapLeftOverFromBeforeTheSettingWentOffBlocksNobody() {
         app.morphe.extension.tiktok.settings.Settings.BLOCK_FROM_COMMENT.save(true);
         Cell cell = cell();

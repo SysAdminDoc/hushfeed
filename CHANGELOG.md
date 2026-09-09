@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Comment blocking recovers when the worker queue is full instead of leaving the button busy. Turning it off restores the original dislike touch handler and the actual comment cell's appearance. A press already started as a block can't become a native dislike, and discarded cells can be collected. Rebinding a row during a press also keeps that release away from a cancelled native gesture.
+
 * On Android 6 through 9, a profile-picture long press explains when storage permission prevents saving. Granting permission lets the same picture save. The message is translated into all four supported languages.
 
 * Saving a video without sound preserves its rotation metadata before the muxer starts. Tests also check sample timestamps, flags and cancellation without deleting the input.
