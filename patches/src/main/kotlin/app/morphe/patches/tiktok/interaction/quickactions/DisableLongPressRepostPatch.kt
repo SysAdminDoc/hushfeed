@@ -19,7 +19,7 @@ private const val FEATURE_CONTROLS_DESCRIPTOR =
 
 @Suppress("unused")
 val disableLongPressRepostPatch = bytecodePatch(
-    name = "Disable long-press repost",
+    name = "Disable the long press repost",
     description = "Keeps holding Like from opening TikTok's repost action.",
     default = true,
 ) {

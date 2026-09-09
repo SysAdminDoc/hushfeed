@@ -83,7 +83,7 @@ public final class InboxPreferenceCategory extends ConditionalPreferenceCategory
             ));
             addPreference(new TogglePreference(
                     context,
-                    "Hide add people",
+                    "Hide the add people icon",
                     "Hide the add people icon in the Inbox header.",
                     Settings.HIDE_INBOX_ADD_PEOPLE
             ));

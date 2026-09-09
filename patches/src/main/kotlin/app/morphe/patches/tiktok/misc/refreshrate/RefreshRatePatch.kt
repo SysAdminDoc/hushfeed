@@ -45,7 +45,7 @@ private object RefreshRateWriteFingerprint : Fingerprint(
 
 @Suppress("unused")
 val refreshRatePatch = bytecodePatch(
-    name = "Uncap the refresh rate",
+    name = "Keep the screen's refresh rate",
     description = "Stops TikTok asking the screen to run slower than it can, which it does " +
         "by asking for the frame rate of the video it is playing. On a 90 or 120 Hz phone " +
         "that ask takes the whole app down to that rate, scrolling included. A request that " +

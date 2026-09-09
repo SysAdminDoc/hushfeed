@@ -43,8 +43,8 @@ public class SimSpoofPreferenceCategory extends ConditionalPreferenceCategory {
                 // The operator rows are only added when the SIM spoof patch is in the
                 // bundle, so on one without it this promised two fields that are not there.
                 SettingsStatus.simSpoofEnabled
-                        ? "Use the selected country and operator values. Restart TikTok after changing region settings."
-                        : "Use the selected country. Restart TikTok after changing region settings.",
+                        ? "Use the selected country and operator values. Restart TikTok to apply this."
+                        : "Use the selected country. Restart TikTok to apply this.",
                 Settings.SIM_SPOOF
         ));
         if (SettingsStatus.regionSpoofEnabled) {

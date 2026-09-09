@@ -46,7 +46,7 @@ final class GateReportExport {
                 Utils.showToastLong(L10n.f("Report saved to %1$s", write(app, report)));
             } catch (IOException | RuntimeException error) {
                 Logger.printException(() -> "Could not save gate report", error);
-                Utils.showToastLong(L10n.t("The report could not be saved."));
+                Utils.showToastLong(L10n.t("The report couldn't be saved. Try again."));
             }
         });
     }

@@ -47,7 +47,7 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
 
     private void addFeedFilterRules(Context context) {
         addPreference(new InputTextPreference(context, "Blocked caption words",
-                "Comma separated words or phrases. Matching captions are skipped. Case doesn't matter. Two phrases in quotes can be joined: \"a\" & \"b\" needs both, \"a\" !& \"b\" needs the first without the second.",
+                "Comma separated words or phrases. Matching captions are skipped. Case does not matter. Two phrases in quotes can be joined: \"a\" & \"b\" needs both, \"a\" !& \"b\" needs the first without the second.",
                 Settings.BLOCKED_CAPTION_WORDS)
                 .withCheck(app.morphe.extension.tiktok.feedfilter.KeywordRules::problem));
         addPreference(new InputTextPreference(context, "Only from these countries",
@@ -80,7 +80,7 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
         ));
         addPreference(new TogglePreference(
                 context,
-                "Hide livestreams", "Hide livestreams from the feed.",
+                "Hide LIVE videos", "Hide the LIVE videos from the feed.",
                 Settings.HIDE_LIVE
         ));
         addPreference(new TogglePreference(
@@ -110,7 +110,7 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
         ));
         addPreference(new RangeValuePreference(
                 context,
-                "Min/Max favourites", "The minimum or maximum favourites of a video to show.",
+                "Min/Max favorites", "The minimum or maximum favorites of a video to show.",
                 Settings.MIN_MAX_FAVOURITES
         ));
         addPreference(new RangeValuePreference(

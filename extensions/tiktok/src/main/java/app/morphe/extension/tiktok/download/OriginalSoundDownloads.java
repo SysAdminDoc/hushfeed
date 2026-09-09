@@ -143,7 +143,7 @@ public final class OriginalSoundDownloads {
             } catch (IOException | RuntimeException exception) {
                 if (!MediaBudget.isCancellation(exception)) {
                     Logger.printException(() -> "Original sound download failed", exception);
-                    Utils.showToastLong(L10n.t("The sound couldn't be saved."));
+                    Utils.showToastLong(L10n.t("The sound couldn't be saved. Try again."));
                 }
             } finally {
                 if (fetched != null && !MediaCache.delete(fetched)) {

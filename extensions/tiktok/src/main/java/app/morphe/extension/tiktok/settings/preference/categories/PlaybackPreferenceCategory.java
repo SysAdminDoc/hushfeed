@@ -45,7 +45,7 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
             addPreference(new TogglePreference(context, "Advance when a video ends",
                     "Keep automatic advance enabled, and show TikTok's own Auto scroll action in "
                             + "the video panel even if your account never had it. Pauses and open "
-                            + "dialogs still stop scrolling. Restart after enabling it, then use "
+                            + "dialogs still stop scrolling. Restart TikTok to apply this, then use "
                             + "this switch to turn it off.",
                     Settings.AUTO_ADVANCE));
             addPreference(new NumberInputPreference(context, "Auto-advance session limit",
@@ -179,7 +179,7 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
                     new String[]{"0.5x", "0.75x", "1x", "1.25x", "1.5x", "1.75x", "2x", "2.5x", "3x"},
                     new String[]{"0.5", "0.75", "1", "1.25", "1.5", "1.75", "2", "2.5", "3"}));
             InputTextPreference speeds = new InputTextPreference(context, "Speed menu choices",
-                    "Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.",
+                    "Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart TikTok to apply this.",
                     Settings.CUSTOM_SPEEDS);
             speeds.setOnPreferenceChangeListener((preference, value) -> {
                 try { PlaybackSpeedPatch.parseMenuSpeeds(value.toString()); return true; }

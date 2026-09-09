@@ -66,7 +66,7 @@ final class AudioDownloads {
             } catch (IOException | RuntimeException exception) {
                 if (!MediaBudget.isCancellation(exception)) {
                     Logger.printException(() -> "Sound download failed", exception);
-                    Utils.showToastLong(L10n.t("The sound couldn't be saved."));
+                    Utils.showToastLong(L10n.t("The sound couldn't be saved. Try again."));
                 }
             } finally {
                 if (fetched != null && !MediaCache.delete(fetched)) {
@@ -106,7 +106,7 @@ final class AudioDownloads {
             Utils.showToastShort(L10n.f("Sound saved to %1$s", path));
         } catch (IOException | RuntimeException exception) {
             Logger.printException(() -> "Sound save failed", exception);
-            Utils.showToastLong(L10n.t("The sound couldn't be saved."));
+            Utils.showToastLong(L10n.t("The sound couldn't be saved. Try again."));
         } finally {
             if (output != null && !MediaCache.delete(output)) {
                 Logger.printInfo(() -> "Could not remove sound temporary file");

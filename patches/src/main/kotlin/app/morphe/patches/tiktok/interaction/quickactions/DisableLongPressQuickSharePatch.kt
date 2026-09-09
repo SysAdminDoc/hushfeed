@@ -23,7 +23,7 @@ private const val FEATURE_CONTROLS_DESCRIPTOR =
 
 @Suppress("unused")
 val disableLongPressQuickSharePatch = bytecodePatch(
-    name = "Disable long-press quick share",
+    name = "Disable the long press quick share",
     description = "Keeps long-pressing Share from opening TikTok's quick-share interaction.",
     default = true,
 ) {

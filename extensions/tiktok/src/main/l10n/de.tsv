@@ -38,7 +38,7 @@ Already marked as not interested	Bereits als „nicht interessiert“ markiert
 Also apply these filters to downloaded videos TikTok uses when the feed cannot load enough new items.	Diese Filter auch auf heruntergeladene Videos anwenden, die TikTok nutzt, wenn der Feed nicht genug neue Beiträge laden kann.
 Also change the region TikTok reports internally. Keeps your interface language. Needs Override SIM details and a restart; your IP address and your account's own rules still apply.	Ändert außerdem die Region, die TikTok intern meldet. Die Sprache der Oberfläche bleibt. Braucht SIM-Daten ersetzen und einen Neustart; deine IP-Adresse und die Regeln deines Kontos gelten weiterhin.
 Always show publish date	Veröffentlichungsdatum immer anzeigen
-Always show the publish date in video author information. Requires restart.	Das Veröffentlichungsdatum immer in den Angaben zum Video-Ersteller anzeigen. Erfordert einen Neustart.
+Always show the publish date in video author information. Restart TikTok to apply this.	Das Veröffentlichungsdatum immer bei den Angaben zum Video anzeigen. TikTok neu starten, damit das gilt.
 An app's package name, like com.dv.adm. The save button sends the video's link there instead of saving it here. Leave it empty to save here.	Der Paketname einer App, etwa com.dv.adm. Die Speichern-Schaltfläche schickt den Link des Videos dorthin, statt es hier zu speichern. Leer lassen, um hier zu speichern.
 An operator code is five or six digits, like 310260	Ein Betreibercode hat fünf oder sechs Ziffern, zum Beispiel 310260
 Animated sticker format	Format animierter Sticker
@@ -47,7 +47,7 @@ App behavior	App-Verhalten
 Applies to both video and photo downloads.	Gilt für Video- und Foto-Downloads.
 Arrange your feed and bottom tabs	Ordne deine Feed-Tabs und unteren Tabs an
 Auto-advance session limit	Limit für automatisches Weiterschalten pro Sitzung
-Show TikTok's own sort sheet on every post, with its hot, newest, media and creator options, instead of whichever cut-down row your account was given. Restart TikTok after changing this: TikTok reads the style once per run and remembers it.	TikToks eigenes Sortierfenster bei jedem Beitrag anzeigen, mit den Optionen Beliebt, Neueste, Medien und Ersteller, statt der gekürzten Zeile, die dein Konto bekommen hat. Starte TikTok danach neu: TikTok liest den Stil einmal pro Lauf und merkt ihn sich.
+Show TikTok's own sort sheet on every post, with its hot, newest, media and creator options, instead of whichever cut-down row your account was given. Restart TikTok to apply this: it reads the style once per run and remembers it.	TikToks eigenes Sortiermenü bei jedem Beitrag zeigen, mit Beliebt, Neueste, Medien und Ersteller, statt der gekürzten Zeile, die dein Konto bekommen hat. TikTok neu starten, damit das gilt: Es liest den Stil einmal pro Start und merkt ihn sich.
 Sound link copied	Soundlink kopiert
 Tap again to follow	Noch einmal tippen zum Folgen
 Tap again to like	Noch einmal tippen zum Liken
@@ -81,7 +81,7 @@ Caption background	Untertitel-Hintergrund
 Caption text size	Textgröße der Untertitel
 Captions, gestures and on-screen controls	Untertitel, Gesten und Bildschirmelemente
 Capture crash reports locally	Absturzberichte lokal speichern
-Choose 1-1000 videos. Values outside this range use the nearest valid limit. Restart TikTok after saving.	Wähle 1 bis 1000 Videos. Werte außerhalb dieses Bereichs nutzen das nächstgelegene gültige Limit. Starte TikTok nach dem Speichern neu.
+Choose 1-1000 videos. Values outside this range use the nearest valid limit. Restart TikTok to apply this.	1 bis 1000 Videos wählen. Werte außerhalb dieses Bereichs nehmen die nächste gültige Grenze. TikTok neu starten, damit das gilt.
 Choose a backup file. Your current settings are kept for Undo.	Wähle eine Sicherungsdatei. Deine aktuellen Einstellungen bleiben zum Rückgängigmachen erhalten.
 Choose what reaches your feed	Wähle aus, was in deinem Feed erscheint
 Choose which loaded TikTok bottom navigation tabs should stay visible.	Wähle, welche geladenen Tabs der unteren TikTok-Navigation sichtbar bleiben.
@@ -133,7 +133,7 @@ Could not unblock %1$s: %2$s	Die Blockierung von %1$s konnte nicht aufgehoben we
 Country and network preferences	Land und Netzwerkeinstellungen
 Country ISO	Länder-ISO
 Current: %1$s %2$s	Aktuell: %1$s %2$s
-Custom offline videos	Eigene Offline-Videos
+Use your own offline videos limit	Eigene Grenze für Offline-Videos verwenden
 Custom SIM details	Eigene SIM-Angaben
 Dark	Dunkel
 day	Tag
@@ -144,8 +144,8 @@ Delete the local record of the videos you have watched.	Die lokale Aufzeichnung 
 Device language, then original	Gerätesprache, dann Original
 Diagnostics	Diagnose
 Disable analytics and tracking	Analyse und Tracking abschalten
-Disable long-press quick share	Schnelles Teilen abschalten
-Disable long-press repost	Reposten bei langem Drücken abschalten
+Disable the long press quick share	Schnelles Teilen per langem Drücken abschalten
+Disable the long press repost	Repost per langem Drücken abschalten
 Dismissed %1$s suggested accounts	%1$s Kontovorschläge entfernt
 Dismissed one suggested account	Ein Kontovorschlag entfernt
 Do nothing	Nichts tun
@@ -178,7 +178,7 @@ GIF	GIF
 Hidden commenters	Ausgeblendete Kommentierende
 Hide activity	Aktivität ausblenden
 Hide activity status	Aktivitätsstatus ausblenden
-Hide add people	„Personen hinzufügen“ ausblenden
+Hide the add people icon	Symbol Personen hinzufügen ausblenden
 Hide AI generated videos	KI-generierte Videos ausblenden
 Hide archive	Archiv ausblenden
 Hide bottom tabs TikTok adds later unless you allow them.	Untere Tabs ausblenden, die TikTok später hinzufügt, sofern du sie nicht erlaubst.
@@ -190,7 +190,7 @@ Hide comments that contain any of the words below, or that come from the account
 Hide controls after each video starts. Tap to restore them.	Bedienelemente nach dem Start jedes Videos ausblenden. Tippe, um sie wieder einzublenden.
 Hide conversations	Unterhaltungen ausblenden
 Hide every direct message conversation. Leaves the Inbox empty apart from whatever else is still switched on.	Jede Direktnachrichten-Unterhaltung ausblenden. Der Posteingang bleibt leer, abgesehen von allem, was sonst noch eingeschaltet ist.
-Hide feed follow button	Folgen-Schaltfläche im Feed ausblenden
+Hide the follow button on the feed	Folgen-Knopf im Feed ausblenden
 Hide feed save button	Speichern-Schaltfläche im Feed ausblenden
 Hide feed search button	Suchschaltfläche im Feed ausblenden
 Hide floating promotion badges, coins, and timer banners on the homepage.	Schwebende Werbe-Abzeichen, Münzen und Timer-Banner auf der Startseite ausblenden.
@@ -198,10 +198,10 @@ Hide floating promotions	Schwebende Werbeaktionen ausblenden
 Hide photo posts	Fotobeiträge ausblenden
 Hide the photo posts from the feed.	Die Fotobeiträge aus dem Feed ausblenden.
 Hide inserted cards	Eingeschobene Karten ausblenden
-Hide Live entrance	Live-Zugang ausblenden
+Hide the LIVE button	LIVE-Knopf ausblenden
 Hide LIVE replays	LIVE-Wiederholungen ausblenden
-Hide livestreams	Livestreams ausblenden
-Hide livestreams from the feed.	Livestreams aus dem Feed ausblenden.
+Hide LIVE videos	LIVE-Videos ausblenden
+Hide the LIVE videos from the feed.	Die LIVE-Videos aus dem Feed ausblenden.
 Hide message requests	Nachrichtenanfragen ausblenden
 Hide message streaks	Nachrichten-Serien ausblenden
 Hide new follower notifications	Follower-Hinweise ausblenden
@@ -226,7 +226,7 @@ Hide surveys	Umfragen ausblenden
 Hide tabs TikTok adds later unless you allow them.	Tabs ausblenden, die TikTok später hinzufügt, sofern du sie nicht erlaubst.
 Hide Tako AI	Tako AI ausblenden
 Hide the "Search this image" prompt TikTok shows over videos when it spots something to shop for.	Den Hinweis „Dieses Bild suchen“ ausblenden, den TikTok über Videos zeigt, wenn es etwas zum Kaufen erkennt.
-Hide the action bar	Aktionsleiste ausblenden
+Hide the right column	Rechte Spalte ausblenden
 Hide the Activity row of likes and comments on your posts.	Die Zeile „Aktivität“ mit Likes und Kommentaren zu deinen Beiträgen ausblenden.
 Hide the activity status control in the Inbox header.	Das Element für den Aktivitätsstatus in der Kopfzeile des Posteingangs ausblenden.
 Hide the add people icon in the Inbox header.	Das Symbol zum Hinzufügen von Personen in der Kopfzeile des Posteingangs ausblenden.
@@ -236,27 +236,27 @@ Hide the avatar and follow button	Bild und Folgen-Button ausblenden
 Hide the caption	Beschreibung ausblenden
 Hide the comments button	Kommentar-Button ausblenden
 Hide the counts on the right column	Zahlen in der rechten Spalte ausblenden
-Hide the creator's picture and the plus button at the top of the right column.	Bild und Plus-Button oben in der rechten Spalte ausblenden.
+Hide the creator's picture and the plus button at the top of the right column. Hide the follow button on the feed hides the plus button on its own.	Das Bild des Erstellers und den Plus-Knopf oben in der rechten Spalte ausblenden. Folgen-Knopf im Feed ausblenden blendet nur den Plus-Knopf aus.
 Hide the description under the creator's name on the feed.	Die Beschreibung unter dem Namen des Creators im Feed ausblenden.
 Hide the event badge	Event-Abzeichen ausblenden
-Hide the favourite button	Favoriten-Button ausblenden
-Hide the favourite button and its count in the right column.	Den Favoriten-Button und seine Zahl in der rechten Spalte ausblenden.
+Hide the favorite button	Favoriten-Knopf ausblenden
+Hide the favorite button and its count in the right column.	Den Favoriten-Knopf und seine Zahl in der rechten Spalte ausblenden.
 Hide the floating promotional badge over the feed.	Das schwebende Werbe-Abzeichen über dem Feed ausblenden.
 Hide the friend recommendation card and the other cards TikTok slots between videos.	Die Freundesvorschlagskarte und die anderen Karten ausblenden, die TikTok zwischen Videos einschiebt.
 Hide the heart and its count in the right column.	Herz und Zähler in der rechten Spalte ausblenden.
 Hide the like button	Like-Button ausblenden
-Hide the Live button in the top left corner of the feed.	Die Live-Schaltfläche oben links im Feed ausblenden.
+Hide the LIVE button in the top left corner of the feed.	Den LIVE-Knopf in der linken oberen Ecke des Feeds ausblenden.
 Hide the Message requests row.	Die Zeile „Nachrichtenanfragen“ ausblenden.
 Hide the music disc	Musikplatte ausblenden
 Hide the music line	Musikzeile ausblenden
 Hide the New followers row.	Die Zeile „Neue Follower“ ausblenden.
-Hide the numbers under the like, comment, favourite and share buttons. The buttons stay.	Blendet die Zahlen unter Like, Kommentar, Favorit und Teilen aus. Die Buttons bleiben.
+Hide the numbers under the like, comment, favorite and share buttons. The buttons stay.	Die Zahlen unter den Knöpfen für Gefällt mir, Kommentare, Favoriten und Teilen ausblenden. Die Knöpfe bleiben.
 Hide the playlist bar	Playlist-Leiste ausblenden
 Hide the playlist bar along the bottom of videos that belong to a series.	Die Playlist-Leiste am unteren Rand von Videos ausblenden, die zu einer Serie gehören.
-Hide the plus button under the creator's avatar on the action rail.	Die Plus-Schaltfläche unter dem Avatar des Creators in der Aktionsleiste ausblenden.
+Hide the plus button under the creator's picture in the right column. Hide the avatar and follow button hides the picture with it.	Den Plus-Knopf unter dem Bild des Erstellers in der rechten Spalte ausblenden. Bild und Folgen-Knopf ausblenden nimmt das Bild mit.
 Hide the question cards TikTok slides over a video near its end.	Die Fragekarten ausblenden, die TikTok gegen Ende eines Videos einblendet.
 Hide the row of story avatars across the top of the Inbox.	Die Reihe der Story-Avatare oben im Posteingang ausblenden.
-Hide the save button on the action rail.	Die Speichern-Schaltfläche in der Aktionsleiste ausblenden.
+Hide the save button in the right column.	Den Speichern-Knopf in der rechten Spalte ausblenden.
 Hide the search button in the top right corner of the feed.	Die Suchschaltfläche oben rechts im Feed ausblenden.
 Hide the search icon in the Inbox header.	Das Suchsymbol in der Kopfzeile des Posteingangs ausblenden.
 Hide the searches TikTok offers before you type. Your own search history stays.	Die Suchen ausblenden, die TikTok anbietet, bevor du tippst. Dein eigener Suchverlauf bleibt.
@@ -296,16 +296,16 @@ Includes all Morphe diagnostic events.	Enthält alle Morphe-Diagnoseereignisse.
 Interface	Oberfläche
 Invalid SIM preset	Ungültige SIM-Vorlage
 Keep a local record of what you have watched and drop those videos from later feed pages.	Lokal festhalten, was du gesehen hast, und diese Videos aus späteren Feed-Seiten entfernen.
-Keep automatic advance enabled, and show TikTok's own Auto scroll action in the video panel even if your account never had it. Pauses and open dialogs still stop scrolling. Restart after enabling it, then use this switch to turn it off.	Automatisches Weiterschalten eingeschaltet lassen und TikToks eigene Aktion „Auto-Scroll“ im Videopanel anzeigen, auch wenn dein Konto sie nie hatte. Pausen und offene Dialoge stoppen das Scrollen weiterhin. Nach dem Einschalten neu starten, dann zum Ausschalten diesen Schalter verwenden.
+Keep automatic advance enabled, and show TikTok's own Auto scroll action in the video panel even if your account never had it. Pauses and open dialogs still stop scrolling. Restart TikTok to apply this, then use this switch to turn it off.	Den automatischen Weiterlauf aktiviert lassen und TikToks eigene Aktion Auto-Scrollen im Videomenü zeigen, auch wenn dein Konto sie nie hatte. Pausen und offene Dialoge stoppen das Scrollen weiterhin. TikTok neu starten, damit das gilt, und danach mit diesem Schalter wieder ausschalten.
 Keep captions in clear display	Untertitel in der freien Ansicht behalten
-Keep holding Like from opening TikTok's repost action.	Verhindern, dass Halten von „Gefällt mir“ TikToks Repost-Aktion öffnet.
-Keep long-pressing Share from opening TikTok's quick-share interaction.	Verhindern, dass langes Drücken auf „Teilen“ TikToks schnelles Teilen öffnet.
+Keep pressing and holding Like from opening TikTok's repost action.	Verhindert, dass langes Drücken auf Gefällt mir TikToks Repost-Aktion öffnet.
+Keep pressing and holding Share from opening TikTok's quick share action.	Verhindert, dass langes Drücken auf Teilen TikToks schnelles Teilen öffnet.
 Keep the clock and status icons off the screen while TikTok is open. Swipe down from the top to peek at them.	Uhr und Statussymbole ausblenden, solange TikTok geöffnet ist. Wische von oben nach unten, um sie kurz zu sehen.
 Keep the screen's refresh rate	Bildwiederholrate des Bildschirms behalten
 Leave maximum empty to keep it unlimited.	Lass das Maximum leer, damit es unbegrenzt bleibt.
 Leave the sound out of the saved video. Save the sound as well still writes the .m4a beside it if you want both.	Den Ton aus dem gespeicherten Video weglassen. Ton ebenfalls speichern schreibt die .m4a weiterhin daneben, wenn du beides willst.
-Let screenshots, screen recording and Circle to Search work on TikTok again. Restart TikTok after changing this.	Screenshots, Bildschirmaufnahmen und Circle to Search funktionieren in TikTok wieder. Starte TikTok danach neu.
-Let the Offline videos menu use your own limit instead of TikTok's fixed one. Restart TikTok after turning this on.	Das Menü „Offline-Videos“ nutzt dein eigenes Limit statt TikToks festem. Starte TikTok nach dem Einschalten neu.
+Let screenshots, screen recording and Circle to Search work on TikTok again. Restart TikTok to apply this.	Screenshots, Bildschirmaufnahme und Circle to Search auf TikTok wieder zulassen. TikTok neu starten, damit das gilt.
+Let the Offline videos menu use your own limit instead of TikTok's fixed one. Restart TikTok to apply this.	Das Menü Offline-Videos deine eigene Grenze statt TikToks fester verwenden lassen. TikTok neu starten, damit das gilt.
 Links, privacy and player tools	Links, Datenschutz und Wiedergabewerkzeuge
 Long press	Langes Drücken
 Lowest	Niedrigste
@@ -317,7 +317,7 @@ Maximum video length	Maximale Videolänge
 Maximum views per like	Maximale Aufrufe pro Like
 Media	Medien
 Min/Max comments	Min/Max Kommentare
-Min/Max favourites	Min/Max Favoriten
+Min/Max favorites	Min./Max. Favoriten
 Min/Max likes	Min./Max. Likes
 Min/Max shares	Min./Max. geteilt
 Min/Max views	Min./Max. Aufrufe
@@ -332,7 +332,7 @@ No sound to block on this video	Bei diesem Video gibt es keinen Sound zum Blocki
 Not interested in this video	Kein Interesse an diesem Video
 No suggested accounts to clear	Es gibt keine Kontovorschläge zum Entfernen
 No video selected	Kein Video ausgewählt
-Not interested button	Schaltfläche „Kein Interesse“
+Show the Not interested button	Knopf Kein Interesse anzeigen
 Nothing is playing to seek	Es läuft gerade nichts zum Springen
 Offline videos limit	Limit für Offline-Videos
 On mobile data	Bei mobilen Daten
@@ -409,7 +409,7 @@ Saving video and subtitles to %1$s	Video und Untertitel werden in %1$s gespeiche
 Search and override gate flags	Gate-Flags suchen und überschreiben
 Search the comments	Kommentare durchsuchen
 Search these comments	Diese Kommentare durchsuchen
-Search without personalisation, whatever your account is set to.	Ohne Personalisierung suchen, unabhängig von deiner Kontoeinstellung.
+Search without personalization, whatever your account is set to.	Ohne Personalisierung suchen, unabhängig davon, was dein Konto eingestellt hat.
 Seconds. Zero keeps every length. If a whole batch would be filtered out, the video closest to your limit is kept so the feed is not empty.	Sekunden. Null behält jede Länge. Würde ein ganzer Schwung wegfallen, bleibt das Video, das deinem Limit am nächsten kommt, damit der Feed nicht leer ist.
 second	Sekunde
 seconds	Sekunden
@@ -426,18 +426,18 @@ Settings restored. Restart TikTok to apply all changes.	Einstellungen wiederherg
 Share links through another host	Links über einen anderen Host teilen
 Share sheet	Teilen-Menü
 Show @username beside a video instead of the display name the creator chose.	Zeigt @Benutzername neben einem Video statt des Anzeigenamens, den die Person gewählt hat.
-Show a video preview thumbnail while dragging the seekbar.	Beim Ziehen der Fortschrittsleiste ein Vorschaubild des Videos anzeigen.
+Show a video preview thumbnail while dragging the progress bar.	Beim Ziehen des Fortschrittsbalkens ein Vorschaubild des Videos zeigen.
 Show block button on videos	Blockieren-Schaltfläche auf Videos anzeigen
-Show Live search	Live-Suche anzeigen
-Show seekbar	Fortschrittsleiste anzeigen
-Show seekbar thumbnail	Vorschaubild beim Ziehen
+Show LIVE search	LIVE-Suche anzeigen
+Show the progress bar	Fortschrittsbalken anzeigen
+Show the progress bar thumbnail	Vorschaubild im Fortschrittsbalken anzeigen
 Show the country a video was posted from next to the creator's name.	Das Land, aus dem ein Video veröffentlicht wurde, neben dem Namen des Creators anzeigen.
 Show the current spoken caption while the other controls are hidden.	Den aktuell gesprochenen Untertitel anzeigen, während die anderen Bedienelemente ausgeblendet sind.
 Show the handle instead of the name	@Namen statt Anzeigenamen zeigen
 Show the whole Activity and New followers lists instead of stopping at a View all button.	Die vollständigen Listen „Aktivität“ und „Neue Follower“ anzeigen, statt bei einer Schaltfläche „Alle anzeigen“ zu enden.
 Show the whole video instead of cropping it to the window. Nothing changes on a tall phone, where it already fits. On a folding phone opened up, a squarer screen or a split view the sides or the ends stop being cut off.	Das ganze Video zeigen, statt es auf das Fenster zuzuschneiden. Auf einem hohen Telefon ändert sich nichts, dort passt es bereits. Auf einem aufgeklappten Falttelefon, einem quadratischeren Bildschirm oder im geteilten Bildschirm werden die Seiten oder die Enden nicht mehr abgeschnitten.
 Show TikTok's own progress bar on videos where it is normally hidden.	TikToks eigene Fortschrittsleiste bei Videos zeigen, wo sie sonst versteckt ist.
-Show TikTok's search entry in the Live drawer where supported.	TikToks Sucheingang im Live-Bereich anzeigen, wo das unterstützt wird.
+Show TikTok's search entry in the LIVE drawer where supported.	TikToks Sucheinstieg im LIVE-Bereich zeigen, wo es geht.
 Show where a video was posted	Herkunftsland anzeigen
 SIM country preset	SIM-Ländervorgabe
 SIM preset saved	SIM-Vorlage gespeichert
@@ -483,15 +483,15 @@ That sticker is in a format Hushfeed cannot read	Dieser Sticker liegt in einem F
 The destination contains an invalid folder name	Im Zielpfad steht ein unzulässiger Ordnername
 This phone has no file picker, so there is no way to choose a file here.	Dieses Telefon hat keine Dateiauswahl, hier lässt sich also keine Datei wählen.
 The minimum or maximum comments on a video to show.	Mindest- oder Höchstzahl an Kommentaren, damit ein Video gezeigt wird.
-The minimum or maximum favourites of a video to show.	Mindest- oder Höchstzahl an Favoriten, damit ein Video gezeigt wird.
+The minimum or maximum favorites of a video to show.	Das Minimum oder Maximum an Favoriten, das ein Video haben muss, um gezeigt zu werden.
 The minimum or maximum likes of a video to show.	Die Mindest- oder Höchstzahl an Likes, damit ein Video gezeigt wird.
 The minimum or maximum shares of a video to show.	Die Mindest- oder Höchstzahl, wie oft ein Video geteilt wurde, damit es gezeigt wird.
 The minimum or maximum views of a video to show.	Die Mindest- oder Höchstzahl an Aufrufen, damit ein Video gezeigt wird.
 The original photos aren't available, so TikTok's own save runs instead	Die Originalfotos sind nicht verfügbar, also speichert TikTok selbst
 The profile picture couldn't be saved.	Das Profilbild konnte nicht gespeichert werden.
-The report could not be saved.	Der Bericht konnte nicht gespeichert werden.
-The sound couldn't be saved.	Der Sound konnte nicht gespeichert werden.
-The sticker could not be saved	Der Sticker konnte nicht gespeichert werden
+The report couldn't be saved. Try again.	Der Bericht konnte nicht gespeichert werden. Versuch es noch einmal.
+The sound couldn't be saved. Try again.	Der Ton konnte nicht gespeichert werden. Versuch es noch einmal.
+The sticker couldn't be saved. Try again.	Der Sticker konnte nicht gespeichert werden. Versuch es noch einmal.
 The story couldn't be saved.	Die Story konnte nicht gespeichert werden.
 The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks.	Der Daumen runter an jedem Kommentar blockiert das Konto dahinter, statt zu disliken. Der Kommentar wird blasser, ein Banner bietet den Weg zurück, und ein zweiter Tipp hebt die Blockierung auf.
 The video couldn't be saved. Try again, or choose Automatic.	Das Video konnte nicht gespeichert werden. Versuche es noch einmal oder wähle Automatisch.
@@ -516,14 +516,14 @@ Two letters, like us, gb or jp.	Zwei Buchstaben, etwa us, gb oder jp.
 Unblocked %1$s	%1$s entblockt
 Undo	Rückgängig
 Undo last restore or reset	Letzte Wiederherstellung oder Zurücksetzung rückgängig machen
-Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.	Bis zu 8 Geschwindigkeiten von 0.5 bis 3, durch Kommas getrennt. Beispiel: 0.5, 1, 1.5, 2, 2.5, 3. Leer lassen für TikToks Liste. Nach dem Ändern der Liste neu starten.
+Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart TikTok to apply this.	Bis zu 8 Geschwindigkeiten von 0.5 bis 3, durch Kommas getrennt. Beispiel: 0.5, 1, 1.5, 2, 2.5, 3. Leer lassen für TikToks Liste. TikTok neu starten, damit das gilt.
 Use 0 for TikTok's size, or 12 to 48. Applies to the next caption.	0 für TikToks Größe, sonst 12 bis 48. Gilt ab dem nächsten Untertitel.
 Use a default playback speed	Standardgeschwindigkeit verwenden
 Use non-personalized search	Nicht personalisierte Suche verwenden
 Use Save JSON for this large report	Nutze für diesen großen Bericht „JSON speichern“
 Use the preset for the region TikTok reports for your account and its shop too. May affect search. Needs the language option and a restart.	Die Vorlage auch für die Region verwenden, die TikTok für dein Konto und seinen Shop meldet. Kann die Suche beeinflussen. Braucht die Sprachoption und einen Neustart.
-Use the selected country and operator values. Restart TikTok after changing region settings.	Die gewählten Werte für Land und Netzbetreiber verwenden. Starte TikTok nach dem Ändern der Regionseinstellungen neu.
-Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.	Das geteilte Layout auf breiteren Bildschirmen verwenden. Starte TikTok nach dem Ändern dieser Option oder nach dem Aufklappen neu, falls das alte Layout bleibt.
+Use the selected country and operator values. Restart TikTok to apply this.	Das gewählte Land und die Anbieterwerte verwenden. TikTok neu starten, damit das gilt.
+Use the split layout on wider screens. Restart TikTok to apply this, or unfold again if the old layout is still there.	Auf breiteren Bildschirmen das geteilte Layout verwenden. TikTok neu starten, damit das gilt, oder erneut aufklappen, wenn das alte Layout noch da ist.
 Use TikTok's native hold, slide down, and release gesture to lock 2x speed.	TikToks eigene Geste „Halten, nach unten wischen, loslassen“ verwenden, um die 2x-Geschwindigkeit zu fixieren.
 Video	Video
 Video (MP4)	Video (MP4)
@@ -541,7 +541,7 @@ YTDLnis download type	YTDLnis-Downloadtyp
 For com.deniscerri.ytdl only. Ask YTDLnis for audio or video when the save button hands it a link.	Nur für com.deniscerri.ytdl. Beim Übergeben eines Links kann die Speichertaste YTDLnis um Audio oder Video bitten.
 YTDLnis background mode	YTDLnis-Hintergrundmodus
 For com.deniscerri.ytdl only. Hide its download card and start the handoff in the background.	Nur für com.deniscerri.ytdl. Die Downloadkarte wird ausgeblendet und die Übergabe im Hintergrund gestartet.
-Window width needed to enable the layout. Restart after changing.	Fensterbreite, ab der das Layout aktiv wird. Nach dem Ändern neu starten.
+Window width needed to enable the layout. Restart TikTok to apply this.	Fensterbreite, ab der das Layout gilt. TikTok neu starten, damit das gilt.
 Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.	Den Ton des Videos daneben als .m4a speichern. Ab Android 10 wird Audio getrennt abgelegt, also landet die Datei unter Music im Ordner mit dem Namen deines Videoordners.
 YOUR EXPERIENCE	DEIN ERLEBNIS
 Your operator's name, like T-Mobile.	Der Name deines Anbieters, etwa T-Mobile.
@@ -681,7 +681,7 @@ millisecond	Millisekunde
 milliseconds	Millisekunden
 pixel	Pixel
 pixels	Pixel
-Use the selected country. Restart TikTok after changing region settings.	Das gewählte Land verwenden. TikTok nach Änderungen an den Regionseinstellungen neu starten.
+Use the selected country. Restart TikTok to apply this.	Das gewählte Land verwenden. TikTok neu starten, damit das gilt.
 Remind me every	Erinnere mich alle
 Still here. Nothing is waiting.	Immer noch hier. Es wartet nichts.
 A good place to stop, if you want one.	Ein guter Moment zum Aufhören, falls du einen suchst.
@@ -716,7 +716,7 @@ Today's budget is locked. The day starts over at %1$s.	Das heutige Budget ist ge
 Today's budget is locked. The feed opens again at %1$s. Messages, profiles and search still work.	Das heutige Budget ist gesperrt. Der Feed öffnet wieder um %1$s. Nachrichten, Profile und Suche funktionieren weiterhin.
 Today is back where it was	Der heutige Tag ist wieder wie zuvor
 Today has moved on, so there is nothing to put back	Der Tag ist weitergezogen, es gibt nichts zurückzuholen
-Comma separated words or phrases. Matching captions are skipped. Case doesn't matter. Two phrases in quotes can be joined: "a" & "b" needs both, "a" !& "b" needs the first without the second.	Wörter oder Wendungen, durch Kommas getrennt. Passende Beschreibungen werden übersprungen. Groß- und Kleinschreibung spielt keine Rolle. Zwei Wendungen in Anführungszeichen lassen sich verbinden: "a" & "b" verlangt beide, "a" !& "b" verlangt die erste ohne die zweite.
+Comma separated words or phrases. Matching captions are skipped. Case does not matter. Two phrases in quotes can be joined: "a" & "b" needs both, "a" !& "b" needs the first without the second.	Wörter oder Wendungen, durch Kommas getrennt. Passende Untertitel werden übersprungen. Groß- und Kleinschreibung spielt keine Rolle. Zwei Wendungen in Anführungszeichen lassen sich verbinden: "a" & "b" verlangt beide, "a" !& "b" die erste ohne die zweite.
 Comma separated. A comment is hidden if its text contains any of them. Case does not matter. Two phrases in quotes can be joined: "a" & "b" needs both, "a" !& "b" needs the first without the second.	Durch Kommas getrennt. Ein Kommentar wird ausgeblendet, wenn sein Text eines davon enthält. Groß- und Kleinschreibung spielt keine Rolle. Zwei Wendungen in Anführungszeichen lassen sich verbinden: "a" & "b" verlangt beide, "a" !& "b" verlangt die erste ohne die zweite.
 This line opens a rule and does not finish it: %1$s. Write two phrases as "a" & "b" for both, or "a" !& "b" for the first without the second.	Diese Zeile beginnt eine Regel und beendet sie nicht: %1$s. Schreiben Sie zwei Wendungen als "a" & "b" für beide oder als "a" !& "b" für die erste ohne die zweite.
 One of the quote marks in that list has nothing to close it, so the rest of the line reads as one phrase. Add the missing quote or take the stray one out.	Eines der Anführungszeichen in dieser Liste wird nicht geschlossen, deshalb liest sich der Rest der Zeile als eine einzige Wendung. Ergänzen Sie das fehlende Anführungszeichen oder entfernen Sie das überzählige.

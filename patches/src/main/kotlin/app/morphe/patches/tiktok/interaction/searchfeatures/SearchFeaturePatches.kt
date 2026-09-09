@@ -45,7 +45,7 @@ private fun BytecodePatchContext.patchBooleanGate(
 
 @Suppress("unused")
 val enableNonPersonalizedSearchPatch = bytecodePatch(
-    name = "Enable non-personalized search",
+    name = "Use non-personalized search",
     description = "Uses TikTok's non-personalized search mode instead of its saved account choice.",
     default = true,
 ) {
@@ -69,7 +69,7 @@ val enableNonPersonalizedSearchPatch = bytecodePatch(
 
 @Suppress("unused")
 val enableLiveSearchPatch = bytecodePatch(
-    name = "Enable Live search",
+    name = "Show LIVE search",
     description = "Shows TikTok's search entry in the Live drawer where supported.",
     default = true,
 ) {

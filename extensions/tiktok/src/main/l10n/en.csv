@@ -37,7 +37,7 @@ Already marked as not interested,Already marked as not interested
 Also apply these filters to downloaded videos TikTok uses when the feed cannot load enough new items.,Also apply these filters to downloaded videos TikTok uses when the feed cannot load enough new items.
 Also change the region TikTok reports internally. Keeps your interface language. Needs Override SIM details and a restart; your IP address and your account's own rules still apply.,Also change the region TikTok reports internally. Keeps your interface language. Needs Override SIM details and a restart; your IP address and your account's own rules still apply.
 Always show publish date,Always show publish date
-Always show the publish date in video author information. Requires restart.,Always show the publish date in video author information. Requires restart.
+Always show the publish date in video author information. Restart TikTok to apply this.,Always show the publish date in video author information. Restart TikTok to apply this.
 "An app's package name, like com.dv.adm. The save button sends the video's link there instead of saving it here. Leave it empty to save here.","An app's package name, like com.dv.adm. The save button sends the video's link there instead of saving it here. Leave it empty to save here."
 "An operator code is five or six digits, like 310260","An operator code is five or six digits, like 310260"
 Animated sticker format,Animated sticker format
@@ -75,7 +75,7 @@ Caption background,Caption background
 Caption text size,Caption text size
 "Captions, gestures and on-screen controls","Captions, gestures and on-screen controls"
 Capture crash reports locally,Capture crash reports locally
-Choose 1-1000 videos. Values outside this range use the nearest valid limit. Restart TikTok after saving.,Choose 1-1000 videos. Values outside this range use the nearest valid limit. Restart TikTok after saving.
+Choose 1-1000 videos. Values outside this range use the nearest valid limit. Restart TikTok to apply this.,Choose 1-1000 videos. Values outside this range use the nearest valid limit. Restart TikTok to apply this.
 Choose a backup file. Your current settings are kept for Undo.,Choose a backup file. Your current settings are kept for Undo.
 Choose a preset to fill the SIM details.,Choose a preset to fill the SIM details.
 Choose a subfolder under %1$s.,Choose a subfolder under %1$s.
@@ -100,7 +100,7 @@ Close,Close
 "Comma separated names exactly as the share sheet shows them: friends in the Send to row, share targets such as Facebook, and actions such as Create group or Repost. Stable keys such as copy, save and dislike also work before the sheet opens.","Comma separated names exactly as the share sheet shows them: friends in the Send to row, share targets such as Facebook, and actions such as Create group or Repost. Stable keys such as copy, save and dislike also work before the sheet opens."
 Comma separated sound ids recorded by the player's sound button. Remove one to unblock it.,Comma separated sound ids recorded by the player's sound button. Remove one to unblock it.
 Comma separated usernames or display names whose comments are hidden.,Comma separated usernames or display names whose comments are hidden.
-"Comma separated words or phrases. Matching captions are skipped. Case doesn't matter. Two phrases in quotes can be joined: ""a"" & ""b"" needs both, ""a"" !& ""b"" needs the first without the second.","Comma separated words or phrases. Matching captions are skipped. Case doesn't matter. Two phrases in quotes can be joined: ""a"" & ""b"" needs both, ""a"" !& ""b"" needs the first without the second."
+"Comma separated words or phrases. Matching captions are skipped. Case does not matter. Two phrases in quotes can be joined: ""a"" & ""b"" needs both, ""a"" !& ""b"" needs the first without the second.","Comma separated words or phrases. Matching captions are skipped. Case does not matter. Two phrases in quotes can be joined: ""a"" & ""b"" needs both, ""a"" !& ""b"" needs the first without the second."
 "Comma separated words to match against a sound's name, like saxophone. Case does not matter.","Comma separated words to match against a sound's name, like saxophone. Case does not matter."
 "Comma separated. A comment is hidden if its text contains any of them. Case does not matter. Two phrases in quotes can be joined: ""a"" & ""b"" needs both, ""a"" !& ""b"" needs the first without the second.","Comma separated. A comment is hidden if its text contains any of them. Case does not matter. Two phrases in quotes can be joined: ""a"" & ""b"" needs both, ""a"" !& ""b"" needs the first without the second."
 Comment media filename,Comment media filename
@@ -143,7 +143,6 @@ Current: %1$s,Current: %1$s
 Current: %1$s %2$s,Current: %1$s %2$s
 Custom %1$s value (unverified),Custom %1$s value (unverified)
 Custom SIM details,Custom SIM details
-Custom offline videos,Custom offline videos
 Custom value (unverified),Custom value (unverified)
 Daily time budget,Daily time budget
 Daily video budget,Daily video budget
@@ -155,8 +154,8 @@ Delete the local record of the videos you have watched.,Delete the local record 
 "Device language, then original","Device language, then original"
 Diagnostics,Diagnostics
 Disable analytics and tracking,Disable analytics and tracking
-Disable long-press quick share,Disable long-press quick share
-Disable long-press repost,Disable long-press repost
+Disable the long press quick share,Disable the long press quick share
+Disable the long press repost,Disable the long press repost
 Dismiss,Dismiss
 Dismissed %1$s suggested accounts,Dismissed %1$s suggested accounts
 Dismissed one suggested account,Dismissed one suggested account
@@ -210,7 +209,7 @@ Hide,Hide
 Hide AI generated videos,Hide AI generated videos
 Hide CAPTCHA popups,Hide CAPTCHA popups
 Hide LIVE replays,Hide LIVE replays
-Hide Live entrance,Hide Live entrance
+Hide LIVE videos,Hide LIVE videos
 Hide Series,Hide Series
 Hide Tako AI,Hide Tako AI
 Hide TikTok Shop,Hide TikTok Shop
@@ -220,7 +219,6 @@ Hide TikTok Tako,Hide TikTok Tako
 Hide TikTok's exposed quick emoji row in supported comment inputs.,Hide TikTok's exposed quick emoji row in supported comment inputs.
 Hide activity,Hide activity
 Hide activity status,Hide activity status
-Hide add people,Hide add people
 Hide archive,Hide archive
 Hide bottom tabs TikTok adds later unless you allow them.,Hide bottom tabs TikTok adds later unless you allow them.
 "Hide browsing and LIVE puzzle dialogs. Login, account verification and any puzzle raised over a follow, like, comment or repost stay visible.","Hide browsing and LIVE puzzle dialogs. Login, account verification and any puzzle raised over a follow, like, comment or repost stay visible."
@@ -230,14 +228,11 @@ Hide comments made of an image or a sticker instead of words.,Hide comments made
 Hide controls after each video starts. Tap to restore them.,Hide controls after each video starts. Tap to restore them.
 Hide conversations,Hide conversations
 Hide every direct message conversation. Leaves the Inbox empty apart from whatever else is still switched on.,Hide every direct message conversation. Leaves the Inbox empty apart from whatever else is still switched on.
-Hide feed follow button,Hide feed follow button
 Hide feed save button,Hide feed save button
 Hide feed search button,Hide feed search button
 "Hide floating promotion badges, coins, and timer banners on the homepage.","Hide floating promotion badges, coins, and timer banners on the homepage."
 Hide floating promotions,Hide floating promotions
 Hide inserted cards,Hide inserted cards
-Hide livestreams,Hide livestreams
-Hide livestreams from the feed.,Hide livestreams from the feed.
 Hide message requests,Hide message requests
 Hide message streaks,Hide message streaks
 Hide new follower notifications,Hide new follower notifications
@@ -262,39 +257,43 @@ Hide tabs TikTok adds later unless you allow them.,Hide tabs TikTok adds later u
 "Hide the ""Search this image"" prompt TikTok shows over videos when it spots something to shop for.","Hide the ""Search this image"" prompt TikTok shows over videos when it spots something to shop for."
 Hide the Activity row of likes and comments on your posts.,Hide the Activity row of likes and comments on your posts.
 Hide the Archive row.,Hide the Archive row.
-Hide the Live button in the top left corner of the feed.,Hide the Live button in the top left corner of the feed.
+Hide the LIVE button,Hide the LIVE button
+Hide the LIVE button in the top left corner of the feed.,Hide the LIVE button in the top left corner of the feed.
+Hide the LIVE videos from the feed.,Hide the LIVE videos from the feed.
 Hide the Message requests row.,Hide the Message requests row.
 Hide the New followers row.,Hide the New followers row.
 Hide the Send to row,Hide the Send to row
 Hide the Tako AI feed bubble above the profile button.,Hide the Tako AI feed bubble above the profile button.
 Hide the TikTok Tako assistant conversation.,Hide the TikTok Tako assistant conversation.
-Hide the action bar,Hide the action bar
 Hide the activity status control in the Inbox header.,Hide the activity status control in the Inbox header.
+Hide the add people icon,Hide the add people icon
 Hide the add people icon in the Inbox header.,Hide the add people icon in the Inbox header.
 Hide the arrow and its count in the right column.,Hide the arrow and its count in the right column.
 Hide the avatar and follow button,Hide the avatar and follow button
 Hide the caption,Hide the caption
 Hide the comments button,Hide the comments button
 Hide the counts on the right column,Hide the counts on the right column
-Hide the creator's picture and the plus button at the top of the right column.,Hide the creator's picture and the plus button at the top of the right column.
+Hide the creator's picture and the plus button at the top of the right column. Hide the follow button on the feed hides the plus button on its own.,Hide the creator's picture and the plus button at the top of the right column. Hide the follow button on the feed hides the plus button on its own.
 Hide the description under the creator's name on the feed.,Hide the description under the creator's name on the feed.
 Hide the event badge,Hide the event badge
-Hide the favourite button,Hide the favourite button
-Hide the favourite button and its count in the right column.,Hide the favourite button and its count in the right column.
+Hide the favorite button,Hide the favorite button
+Hide the favorite button and its count in the right column.,Hide the favorite button and its count in the right column.
 Hide the floating promotional badge over the feed.,Hide the floating promotional badge over the feed.
+Hide the follow button on the feed,Hide the follow button on the feed
 Hide the friend recommendation card and the other cards TikTok slots between videos.,Hide the friend recommendation card and the other cards TikTok slots between videos.
 Hide the heart and its count in the right column.,Hide the heart and its count in the right column.
 Hide the like button,Hide the like button
 Hide the music disc,Hide the music disc
 Hide the music line,Hide the music line
-"Hide the numbers under the like, comment, favourite and share buttons. The buttons stay.","Hide the numbers under the like, comment, favourite and share buttons. The buttons stay."
+"Hide the numbers under the like, comment, favorite and share buttons. The buttons stay.","Hide the numbers under the like, comment, favorite and share buttons. The buttons stay."
 Hide the photo posts from the feed.,Hide the photo posts from the feed.
 Hide the playlist bar,Hide the playlist bar
 Hide the playlist bar along the bottom of videos that belong to a series.,Hide the playlist bar along the bottom of videos that belong to a series.
-Hide the plus button under the creator's avatar on the action rail.,Hide the plus button under the creator's avatar on the action rail.
+Hide the plus button under the creator's picture in the right column. Hide the avatar and follow button hides the picture with it.,Hide the plus button under the creator's picture in the right column. Hide the avatar and follow button hides the picture with it.
 Hide the question cards TikTok slides over a video near its end.,Hide the question cards TikTok slides over a video near its end.
+Hide the right column,Hide the right column
 Hide the row of story avatars across the top of the Inbox.,Hide the row of story avatars across the top of the Inbox.
-Hide the save button on the action rail.,Hide the save button on the action rail.
+Hide the save button in the right column.,Hide the save button in the right column.
 Hide the search button in the top right corner of the feed.,Hide the search button in the top right corner of the feed.
 Hide the search icon in the Inbox header.,Hide the search icon in the Inbox header.
 Hide the searches TikTok offers before you type. Your own search history stays.,Hide the searches TikTok offers before you type. Your own search history stays.
@@ -332,10 +331,10 @@ Inserted cards,Inserted cards
 Interface,Interface
 Invalid SIM preset,Invalid SIM preset
 Keep a local record of what you have watched and drop those videos from later feed pages.,Keep a local record of what you have watched and drop those videos from later feed pages.
-"Keep automatic advance enabled, and show TikTok's own Auto scroll action in the video panel even if your account never had it. Pauses and open dialogs still stop scrolling. Restart after enabling it, then use this switch to turn it off.","Keep automatic advance enabled, and show TikTok's own Auto scroll action in the video panel even if your account never had it. Pauses and open dialogs still stop scrolling. Restart after enabling it, then use this switch to turn it off."
+"Keep automatic advance enabled, and show TikTok's own Auto scroll action in the video panel even if your account never had it. Pauses and open dialogs still stop scrolling. Restart TikTok to apply this, then use this switch to turn it off.","Keep automatic advance enabled, and show TikTok's own Auto scroll action in the video panel even if your account never had it. Pauses and open dialogs still stop scrolling. Restart TikTok to apply this, then use this switch to turn it off."
 Keep captions in clear display,Keep captions in clear display
-Keep holding Like from opening TikTok's repost action.,Keep holding Like from opening TikTok's repost action.
-Keep long-pressing Share from opening TikTok's quick-share interaction.,Keep long-pressing Share from opening TikTok's quick-share interaction.
+Keep pressing and holding Like from opening TikTok's repost action.,Keep pressing and holding Like from opening TikTok's repost action.
+Keep pressing and holding Share from opening TikTok's quick share action.,Keep pressing and holding Share from opening TikTok's quick share action.
 Keep the clock and status icons off the screen while TikTok is open. Swipe down from the top to peek at them.,Keep the clock and status icons off the screen while TikTok is open. Swipe down from the top to peek at them.
 Keep the screen's refresh rate,Keep the screen's refresh rate
 "Kept to %1$s, the nearest value this row allows","Kept to %1$s, the nearest value this row allows"
@@ -344,8 +343,8 @@ LIVE videos,LIVE videos
 Leave maximum empty to keep it unlimited.,Leave maximum empty to keep it unlimited.
 Leave the sound out of the saved video. Save the sound as well still writes the .m4a beside it if you want both.,Leave the sound out of the saved video. Save the sound as well still writes the .m4a beside it if you want both.
 Less than a minute left,Less than a minute left
-"Let screenshots, screen recording and Circle to Search work on TikTok again. Restart TikTok after changing this.","Let screenshots, screen recording and Circle to Search work on TikTok again. Restart TikTok after changing this."
-Let the Offline videos menu use your own limit instead of TikTok's fixed one. Restart TikTok after turning this on.,Let the Offline videos menu use your own limit instead of TikTok's fixed one. Restart TikTok after turning this on.
+"Let screenshots, screen recording and Circle to Search work on TikTok again. Restart TikTok to apply this.","Let screenshots, screen recording and Circle to Search work on TikTok again. Restart TikTok to apply this."
+Let the Offline videos menu use your own limit instead of TikTok's fixed one. Restart TikTok to apply this.,Let the Offline videos menu use your own limit instead of TikTok's fixed one. Restart TikTok to apply this.
 Link copied,Link copied
 "Links, privacy and player tools","Links, privacy and player tools"
 Loaded current values. Loading all known gates...,Loaded current values. Loading all known gates...
@@ -364,7 +363,7 @@ Maximum views per like,Maximum views per like
 Media,Media
 "Messages, profiles and search still work.","Messages, profiles and search still work."
 Min/Max comments,Min/Max comments
-Min/Max favourites,Min/Max favourites
+Min/Max favorites,Min/Max favorites
 Min/Max likes,Min/Max likes
 Min/Max shares,Min/Max shares
 Min/Max views,Min/Max views
@@ -388,7 +387,6 @@ No video selected,No video selected
 No videos remained after Hushfeed applied your feed filters to %1$d batches. Most matches: %2$s.,No videos remained after Hushfeed applied your feed filters to %1$d batches. Most matches: %2$s.
 No videos remained after Hushfeed applied your feed filters to one batch. Most matches: %1$s.,No videos remained after Hushfeed applied your feed filters to one batch. Most matches: %1$s.
 Not blocked,Not blocked
-Not interested button,Not interested button
 Not interested in this video,Not interested in this video
 "Nothing has been checked yet, so there is nothing to report.","Nothing has been checked yet, so there is nothing to report."
 "Nothing has been looked up yet. Use the app for a moment, then come back.","Nothing has been looked up yet. Use the app for a moment, then come back."
@@ -513,7 +511,7 @@ Search share actions,Search share actions
 Search the comments,Search the comments
 Search these comments,Search these comments
 "Search translated titles and descriptions, then open the original setting.","Search translated titles and descriptions, then open the original setting."
-"Search without personalisation, whatever your account is set to.","Search without personalisation, whatever your account is set to."
+"Search without personalization, whatever your account is set to.","Search without personalization, whatever your account is set to."
 Search words or key,Search words or key
 "Seconds. Zero keeps every length. If a whole batch would be filtered out, the video closest to your limit is kept so the feed is not empty.","Seconds. Zero keeps every length. If a whole batch would be filtered out, the video closest to your limit is kept so the feed is not empty."
 Seek by,Seek by
@@ -537,18 +535,19 @@ Share sheet,Share sheet
 Shop posts,Shop posts
 Show,Show
 Show @username beside a video instead of the display name the creator chose.,Show @username beside a video instead of the display name the creator chose.
-Show Live search,Show Live search
+Show LIVE search,Show LIVE search
 Show TikTok's own progress bar on videos where it is normally hidden.,Show TikTok's own progress bar on videos where it is normally hidden.
-"Show TikTok's own sort sheet on every post, with its hot, newest, media and creator options, instead of whichever cut-down row your account was given. Restart TikTok after changing this: TikTok reads the style once per run and remembers it.","Show TikTok's own sort sheet on every post, with its hot, newest, media and creator options, instead of whichever cut-down row your account was given. Restart TikTok after changing this: TikTok reads the style once per run and remembers it."
-Show TikTok's search entry in the Live drawer where supported.,Show TikTok's search entry in the Live drawer where supported.
-Show a video preview thumbnail while dragging the seekbar.,Show a video preview thumbnail while dragging the seekbar.
+"Show TikTok's own sort sheet on every post, with its hot, newest, media and creator options, instead of whichever cut-down row your account was given. Restart TikTok to apply this: it reads the style once per run and remembers it.","Show TikTok's own sort sheet on every post, with its hot, newest, media and creator options, instead of whichever cut-down row your account was given. Restart TikTok to apply this: it reads the style once per run and remembers it."
+Show TikTok's search entry in the LIVE drawer where supported.,Show TikTok's search entry in the LIVE drawer where supported.
+Show a video preview thumbnail while dragging the progress bar.,Show a video preview thumbnail while dragging the progress bar.
 Show block button on videos,Show block button on videos
 Show gates,Show gates
-Show seekbar,Show seekbar
-Show seekbar thumbnail,Show seekbar thumbnail
+Show the Not interested button,Show the Not interested button
 Show the country a video was posted from next to the creator's name.,Show the country a video was posted from next to the creator's name.
 Show the current spoken caption while the other controls are hidden.,Show the current spoken caption while the other controls are hidden.
 Show the handle instead of the name,Show the handle instead of the name
+Show the progress bar,Show the progress bar
+Show the progress bar thumbnail,Show the progress bar thumbnail
 Show the whole Activity and New followers lists instead of stopping at a View all button.,Show the whole Activity and New followers lists instead of stopping at a View all button.
 "Show the whole video instead of cropping it to the window. Nothing changes on a tall phone, where it already fits. On a folding phone opened up, a squarer screen or a split view the sides or the ends stop being cut off.","Show the whole video instead of cropping it to the window. Nothing changes on a tall phone, where it already fits. On a folding phone opened up, a squarer screen or a split view the sides or the ends stop being cut off."
 Show where a video was posted,Show where a video was posted
@@ -615,17 +614,17 @@ The feed does not end. This is a fine time to leave it.,The feed does not end. T
 The feed is open again,The feed is open again
 The last change is undone. Restart TikTok to apply all changes.,The last change is undone. Restart TikTok to apply all changes.
 The minimum or maximum comments on a video to show.,The minimum or maximum comments on a video to show.
-The minimum or maximum favourites of a video to show.,The minimum or maximum favourites of a video to show.
+The minimum or maximum favorites of a video to show.,The minimum or maximum favorites of a video to show.
 The minimum or maximum likes of a video to show.,The minimum or maximum likes of a video to show.
 The minimum or maximum shares of a video to show.,The minimum or maximum shares of a video to show.
 The minimum or maximum views of a video to show.,The minimum or maximum views of a video to show.
 "The original photos aren't available, so TikTok's own save runs instead","The original photos aren't available, so TikTok's own save runs instead"
 The profile picture couldn't be saved.,The profile picture couldn't be saved.
-The report could not be saved.,The report could not be saved.
+The report couldn't be saved. Try again.,The report couldn't be saved. Try again.
 The settings backup was rejected. Nothing was altered.,The settings backup was rejected. Nothing was altered.
 The smallest value is above the largest,The smallest value is above the largest
-The sound couldn't be saved.,The sound couldn't be saved.
-The sticker could not be saved,The sticker could not be saved
+The sound couldn't be saved. Try again.,The sound couldn't be saved. Try again.
+The sticker couldn't be saved. Try again.,The sticker couldn't be saved. Try again.
 The story couldn't be saved.,The story couldn't be saved.
 "The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks.","The thumbs down on each comment blocks the account that posted it instead of disliking. The comment dims, an undo banner follows, and a second tap unblocks."
 "The video couldn't be saved. Try again, or choose Automatic.","The video couldn't be saved. Try again, or choose Automatic."
@@ -672,17 +671,18 @@ Unblocked %1$s,Unblocked %1$s
 Undo,Undo
 Undo last restore or reset,Undo last restore or reset
 Undoing the last change,Undoing the last change
-"Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.","Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list."
+"Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart TikTok to apply this.","Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart TikTok to apply this."
 "Use 0 for TikTok's size, or 12 to 48. Applies to the next caption.","Use 0 for TikTok's size, or 12 to 48. Applies to the next caption."
 Use Save JSON for this large report,Use Save JSON for this large report
 "Use TikTok's native hold, slide down, and release gesture to lock 2x speed.","Use TikTok's native hold, slide down, and release gesture to lock 2x speed."
 Use a default playback speed,Use a default playback speed
 Use non-personalized search,Use non-personalized search
 Use the preset for the region TikTok reports for your account and its shop too. May affect search. Needs the language option and a restart.,Use the preset for the region TikTok reports for your account and its shop too. May affect search. Needs the language option and a restart.
-Use the selected country and operator values. Restart TikTok after changing region settings.,Use the selected country and operator values. Restart TikTok after changing region settings.
-Use the selected country. Restart TikTok after changing region settings.,Use the selected country. Restart TikTok after changing region settings.
-Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.,Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.
+Use the selected country and operator values. Restart TikTok to apply this.,Use the selected country and operator values. Restart TikTok to apply this.
+Use the selected country. Restart TikTok to apply this.,Use the selected country. Restart TikTok to apply this.
+"Use the split layout on wider screens. Restart TikTok to apply this, or unfold again if the old layout is still there.","Use the split layout on wider screens. Restart TikTok to apply this, or unfold again if the old layout is still there."
 Use value,Use value
+Use your own offline videos limit,Use your own offline videos limit
 Using TikTok's value,Using TikTok's value
 Value,Value
 Value to return,Value to return
@@ -699,7 +699,7 @@ Video saved,Video saved
 Video saved with %1$s subtitles in %2$s,Video saved with %1$s subtitles in %2$s
 Wait before hiding the controls.,Wait before hiding the controls.
 "WebP, exactly as TikTok sent it","WebP, exactly as TikTok sent it"
-Window width needed to enable the layout. Restart after changing.,Window width needed to enable the layout. Restart after changing.
+Window width needed to enable the layout. Restart TikTok to apply this.,Window width needed to enable the layout. Restart TikTok to apply this.
 "Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.","Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos."
 YOUR EXPERIENCE,YOUR EXPERIENCE
 YTDLnis background mode,YTDLnis background mode

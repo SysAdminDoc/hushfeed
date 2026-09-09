@@ -34,9 +34,9 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
     public void addPreferences(Context context) {
         if (SettingsStatus.foldableSplitViewEnabled) {
             addPreference(new TogglePreference(context, "Comments beside the video",
-                    "Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.", Settings.FOLDABLE_SPLIT_VIEW));
+                    "Use the split layout on wider screens. Restart TikTok to apply this, or unfold again if the old layout is still there.", Settings.FOLDABLE_SPLIT_VIEW));
             addPreference(new app.morphe.extension.tiktok.settings.preference.NumberInputPreference(context,
-                    "Split comment minimum width", "Window width needed to enable the layout. Restart after changing.",
+                    "Split comment minimum width", "Window width needed to enable the layout. Restart TikTok to apply this.",
                     Settings.FOLDABLE_SPLIT_VIEW_MIN_WIDTH_DP, "pixel", "pixels"));
         }
         if (SettingsStatus.sanitizeShareUrlsEnabled) {
@@ -67,7 +67,7 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
         if (SettingsStatus.showSeekbarEnabled) {
             addPreference(new TogglePreference(
                     context,
-                    "Show seekbar",
+                    "Show the progress bar",
                     "Show TikTok's own progress bar on videos where it is normally hidden.",
                     Settings.SHOW_SEEKBAR
             ));
@@ -75,8 +75,8 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
         if (SettingsStatus.seekbarThumbnailEnabled) {
             addPreference(new TogglePreference(
                     context,
-                    "Show seekbar thumbnail",
-                    "Show a video preview thumbnail while dragging the seekbar.",
+                    "Show the progress bar thumbnail",
+                    "Show a video preview thumbnail while dragging the progress bar.",
                     Settings.SHOW_SEEKBAR_THUMBNAIL
             ));
         }
@@ -107,16 +107,16 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
         if (SettingsStatus.disableLongPressQuickShareEnabled) {
             addPreference(new TogglePreference(
                     context,
-                    "Disable long-press quick share",
-                    "Keep long-pressing Share from opening TikTok's quick-share interaction.",
+                    "Disable the long press quick share",
+                    "Keep pressing and holding Share from opening TikTok's quick share action.",
                     Settings.DISABLE_LONG_PRESS_QUICK_SHARE
             ));
         }
         if (SettingsStatus.disableLongPressRepostEnabled) {
             addPreference(new TogglePreference(
                     context,
-                    "Disable long-press repost",
-                    "Keep holding Like from opening TikTok's repost action.",
+                    "Disable the long press repost",
+                    "Keep pressing and holding Like from opening TikTok's repost action.",
                     Settings.DISABLE_LONG_PRESS_REPOST
             ));
         }
@@ -149,7 +149,7 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
             ));
         }
         if (SettingsStatus.notInterestedEnabled) {
-            addPreference(new TogglePreference(context, "Not interested button",
+            addPreference(new TogglePreference(context, "Show the Not interested button",
                     "Add a button beside the block control to send feedback about the current video.",
                     Settings.NOT_INTERESTED_BUTTON));
         }
@@ -157,15 +157,15 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
             addPreference(new TogglePreference(
                     context,
                     "Use non-personalized search",
-                    "Search without personalisation, whatever your account is set to.",
+                    "Search without personalization, whatever your account is set to.",
                     Settings.ENABLE_NON_PERSONALIZED_SEARCH
             ));
         }
         if (SettingsStatus.liveSearchEnabled) {
             addPreference(new TogglePreference(
                     context,
-                    "Show Live search",
-                    "Show TikTok's search entry in the Live drawer where supported.",
+                    "Show LIVE search",
+                    "Show TikTok's search entry in the LIVE drawer where supported.",
                     Settings.ENABLE_LIVE_SEARCH
             ));
         }

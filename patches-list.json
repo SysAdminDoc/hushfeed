@@ -420,64 +420,6 @@
       "options": []
     },
     {
-      "name": "Disable long-press quick share",
-      "description": "Keeps long-pressing Share from opening TikTok's quick-share interaction.",
-      "use": true,
-      "dependencies": [
-        "Settings",
-        "BytecodePatch"
-      ],
-      "compatiblePackages": {
-        "com.zhiliaoapp.musically": [
-          "46.2.3"
-        ]
-      },
-      "compatibility": [
-        {
-          "name": "TikTok",
-          "packageName": "com.zhiliaoapp.musically",
-          "description": null,
-          "appIconColor": 16657493,
-          "targets": [
-            {
-              "version": "46.2.3",
-              "experimental": false
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Disable long-press repost",
-      "description": "Keeps holding Like from opening TikTok's repost action.",
-      "use": true,
-      "dependencies": [
-        "Settings",
-        "BytecodePatch"
-      ],
-      "compatiblePackages": {
-        "com.zhiliaoapp.musically": [
-          "46.2.3"
-        ]
-      },
-      "compatibility": [
-        {
-          "name": "TikTok",
-          "packageName": "com.zhiliaoapp.musically",
-          "description": null,
-          "appIconColor": 16657493,
-          "targets": [
-            {
-              "version": "46.2.3",
-              "experimental": false
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
       "name": "Disable screen capture detection",
       "description": "Prevents TikTok from reacting to screenshots and screen recordings.",
       "use": true,
@@ -533,6 +475,64 @@
       "options": []
     },
     {
+      "name": "Disable the long press quick share",
+      "description": "Keeps long-pressing Share from opening TikTok's quick-share interaction.",
+      "use": true,
+      "dependencies": [
+        "Settings",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable the long press repost",
+      "description": "Keeps holding Like from opening TikTok's repost action.",
+      "use": true,
+      "dependencies": [
+        "Settings",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Double-tap controls",
       "description": "Lets double taps do nothing or open the current video's comments.",
       "use": false,
@@ -565,63 +565,6 @@
     {
       "name": "Downloads",
       "description": "Adds watermark-free downloads, comment sticker saving, configurable folders, and filename templates.",
-      "use": true,
-      "dependencies": [
-        "Settings",
-        "BytecodePatch"
-      ],
-      "compatiblePackages": {
-        "com.zhiliaoapp.musically": [
-          "46.2.3"
-        ]
-      },
-      "compatibility": [
-        {
-          "name": "TikTok",
-          "packageName": "com.zhiliaoapp.musically",
-          "description": null,
-          "appIconColor": 16657493,
-          "targets": [
-            {
-              "version": "46.2.3",
-              "experimental": false
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Enable Live search",
-      "description": "Shows TikTok's search entry in the Live drawer where supported.",
-      "use": true,
-      "dependencies": [
-        "BytecodePatch"
-      ],
-      "compatiblePackages": {
-        "com.zhiliaoapp.musically": [
-          "46.2.3"
-        ]
-      },
-      "compatibility": [
-        {
-          "name": "TikTok",
-          "packageName": "com.zhiliaoapp.musically",
-          "description": null,
-          "appIconColor": 16657493,
-          "targets": [
-            {
-              "version": "46.2.3",
-              "experimental": false
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Enable non-personalized search",
-      "description": "Uses TikTok's non-personalized search mode instead of its saved account choice.",
       "use": true,
       "dependencies": [
         "Settings",
@@ -819,7 +762,7 @@
       "options": []
     },
     {
-      "name": "Fit video to the screen",
+      "name": "Fit the video to the screen",
       "description": "Puts the whole of a vertical video on screen instead of cropping it to the window. On a 9:16 phone nothing changes, because the video already fills it. On a Fold opened up, a squarer phone or a split view the sides or the ends stop being cut off.",
       "use": false,
       "dependencies": [
@@ -1022,35 +965,6 @@
     {
       "name": "Hide comment popup ads",
       "description": "Stops the brand animation that plays over the comment sheet when a comment matches an advertiser's trigger word or emoji.",
-      "use": false,
-      "dependencies": [
-        "Settings",
-        "BytecodePatch"
-      ],
-      "compatiblePackages": {
-        "com.zhiliaoapp.musically": [
-          "46.2.3"
-        ]
-      },
-      "compatibility": [
-        {
-          "name": "TikTok",
-          "packageName": "com.zhiliaoapp.musically",
-          "description": null,
-          "appIconColor": 16657493,
-          "targets": [
-            {
-              "version": "46.2.3",
-              "experimental": false
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Hide content warnings",
-      "description": "Adds an option to play videos TikTok has classified without the warning overlay asking to be tapped through first.",
       "use": false,
       "dependencies": [
         "Settings",
@@ -1456,6 +1370,35 @@
       "options": []
     },
     {
+      "name": "Keep the screen's refresh rate",
+      "description": "Stops TikTok asking the screen to run slower than it can, which it does by asking for the frame rate of the video it is playing. On a 90 or 120 Hz phone that ask takes the whole app down to that rate, scrolling included. A request that is not slower than the screen is left alone.",
+      "use": false,
+      "dependencies": [
+        "Settings",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Long-press controls",
       "description": "Lets a long press on a video keep TikTok's own action, do nothing, open the video's comments, save the original sound, or copy the link to the video or its sound, and can turn a press on the left or right third of the screen into a jump back or forward. Brings Double-tap controls with it, which supplies the comment control. ",
       "use": false,
@@ -1834,6 +1777,34 @@
       "options": []
     },
     {
+      "name": "Show LIVE search",
+      "description": "Shows TikTok's search entry in the Live drawer where supported.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Show author region",
       "description": "Adds an option to show the country a video was posted from next to the creator's name on the feed.",
       "use": false,
@@ -1864,7 +1835,7 @@
       "options": []
     },
     {
-      "name": "Show seekbar",
+      "name": "Show the progress bar",
       "description": "Shows TikTok's native video seekbar where it would normally be hidden.",
       "use": true,
       "dependencies": [
@@ -1893,10 +1864,39 @@
       "options": []
     },
     {
-      "name": "Show seekbar thumbnail",
+      "name": "Show the progress bar thumbnail",
       "description": "Shows TikTok's video preview thumbnail while dragging the seekbar.",
       "use": true,
       "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Skip content warnings",
+      "description": "Adds an option to play videos TikTok has classified without the warning overlay asking to be tapped through first.",
+      "use": false,
+      "dependencies": [
+        "Settings",
         "BytecodePatch"
       ],
       "compatiblePackages": {
@@ -2010,9 +2010,9 @@
       "options": []
     },
     {
-      "name": "Uncap the refresh rate",
-      "description": "Stops TikTok asking the screen to run slower than it can, which it does by asking for the frame rate of the video it is playing. On a 90 or 120 Hz phone that ask takes the whole app down to that rate, scrolling included. A request that is not slower than the screen is left alone.",
-      "use": false,
+      "name": "Use non-personalized search",
+      "description": "Uses TikTok's non-personalized search mode instead of its saved account choice.",
+      "use": true,
       "dependencies": [
         "Settings",
         "BytecodePatch"
