@@ -525,6 +525,13 @@ public final class FeatureGateLabFragment extends Fragment {
     }
 
     private void handleSystemBack() {
+        // Entering selection changed what a tap means, so Back is what takes that back. Without
+        // this the only way out was the Cancel action, and Back left the Lab entirely.
+        if (!selection.isEmpty()) {
+            selection.clear();
+            onSelectionChanged();
+            return;
+        }
         if (search != null && search.hasFocus()) {
             FeatureGateLabUi.hideKeyboard(search);
             View root = getView();
@@ -808,41 +815,48 @@ public final class FeatureGateLabFragment extends Fragment {
     private void forceSelection(boolean value) {
         List<FeatureGateCatalog.Entry> gates = new ArrayList<>(selection.values());
         int total = gates.size();
-        runLabChange(() -> {
+        boolean started = runLabChange(() -> {
             int written = FeatureGateLabUndo.forceBoolean(gates, value);
             if (written == 0) {
                 throw new IllegalStateException(
                         "None of these gates takes a true or false value.");
             }
-            if (written < total) {
-                // Said rather than silently dropped: the ones that were skipped are gates whose
-                // own catalogue says they are not booleans.
-                throw new SkippedSome(written, total, value);
-            }
-        }, (value ? "Forced " : "Turned off ") + total
-                + (total == 1 ? " gate. " : " gates. ") + "Restart TikTok to apply this.");
-        selection.clear();
-        onSelectionChanged();
+            // The message says what happened rather than what was asked for. Reported as a
+            // failure, which is what throwing here did, it said nothing went through on a run
+            // where most of it had.
+            String did = (value ? "Forced " : "Turned off ")
+                    + (written == total ? countOfGates(written)
+                            : written + " of " + total + "; the rest do not take a true or "
+                                    + "false value");
+            return did + ". Restart TikTok to apply this.";
+        });
+        if (started) {
+            selection.clear();
+            onSelectionChanged();
+        }
     }
 
     private void resetSelection() {
         List<FeatureGateCatalog.Entry> gates = new ArrayList<>(selection.values());
-        runLabChange(() -> {
-            if (FeatureGateLabUndo.resetAll(gates) == 0) {
+        int total = gates.size();
+        boolean started = runLabChange(() -> {
+            int dropped = FeatureGateLabUndo.resetAll(gates);
+            if (dropped == 0) {
                 throw new IllegalStateException("None of these gates had an override to reset.");
             }
-        }, "Reset " + gates.size() + (gates.size() == 1 ? " gate. " : " gates. ")
-                + "Restart TikTok to apply this.");
-        selection.clear();
-        onSelectionChanged();
+            // Dropped, not selected: choosing five gates of which two had an override resets two.
+            return "Reset " + countOfGates(dropped)
+                    + (dropped == total ? "" : " of " + total)
+                    + ". Restart TikTok to apply this.";
+        });
+        if (started) {
+            selection.clear();
+            onSelectionChanged();
+        }
     }
 
-    /** Carried as a failure so runLabChange reports it, though the write itself went through. */
-    private static final class SkippedSome extends Exception {
-        SkippedSome(int written, int total, boolean value) {
-            super((value ? "Forced " : "Turned off ") + written + " of " + total
-                    + "; the rest do not take a true or false value.");
-        }
+    private static String countOfGates(int count) {
+        return count == 1 ? "1 gate" : count + " gates";
     }
 
     private void openDetail(FeatureGateCatalog.Entry entry) {
@@ -1144,6 +1158,9 @@ public final class FeatureGateLabFragment extends Fragment {
 
     private interface LabChange { void run() throws Exception; }
 
+    /** A change that decides its own message from what it turned out to do. */
+    private interface ReportingLabChange { String run() throws Exception; }
+
     /**
      * The thread the last Lab change ran on.
      *
@@ -1157,15 +1174,27 @@ public final class FeatureGateLabFragment extends Fragment {
     }
 
     private void runLabChange(LabChange change, String message) {
+        runLabChange(() -> {
+            change.run();
+            return message;
+        });
+    }
+
+    /**
+     * @return false when another change was already running, so nothing was started. Callers with
+     *         state of their own, such as the gate selection, keep it rather than giving it up
+     *         for a change that never ran.
+     */
+    private boolean runLabChange(ReportingLabChange change) {
         if (!CHANGING.compareAndSet(false, true)) {
             postToast("A Lab change is already running");
-            return;
+            return false;
         }
         Utils.runOnBackgroundThread(() -> {
             lastChangeThreadForTests = Thread.currentThread().getName();
-            String result = message;
+            String result;
             try {
-                change.run();
+                result = change.run();
             } catch (Exception error) {
                 Logger.printException(() -> "Lab change failed", error);
                 result = "Could not change Lab settings. " + error.getMessage();
@@ -1181,6 +1210,7 @@ public final class FeatureGateLabFragment extends Fragment {
                 Utils.showToastLong(notice);
             });
         });
+        return true;
     }
 
     private static void showStyled(AlertDialog dialog) {

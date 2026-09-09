@@ -86,14 +86,15 @@ public final class SessionBudget {
     private static int passesUsed;
 
     /**
-     * The watched time when the last quiet reminder went out, and how many have gone today.
+     * The watched time when the last quiet reminder went out, and how many have ever gone.
      *
      * <p>Measured against {@link #watchedMs} rather than the clock, so the interval is minutes
      * of feed rather than minutes of being awake, and time on messages or a profile does not
-     * bring one on. The count is what picks the wording, so the three do not repeat.
+     * bring one on. The count is what picks the wording, so the three take turns; it is not a
+     * count of the day and does not roll over with it.
      */
     private static long noticeMarkMs;
-    private static int intervalNotices;
+    private static long noticesShown;
 
     /**
      * What "start today over" cleared, so the next tap can put it back. Held in memory rather
@@ -108,7 +109,6 @@ public final class SessionBudget {
     private static boolean undoNoticeShown;
     private static int undoPassesUsed;
     private static long undoNoticeMarkMs;
-    private static int undoIntervalNotices;
     private static long lastTickMs;
     private static String lastCountedId;
     private static boolean noticeShown;
@@ -378,11 +378,18 @@ public final class SessionBudget {
             if (lockUntilMs > now) return -1;
             long interval = minutes * 60_000L;
             if (watchedMs - noticeMarkMs < interval) return -1;
-            // Moved to a whole number of intervals rather than to now, so a reader who was away
-            // while the count stood still does not get the next one early.
-            noticeMarkMs += ((watchedMs - noticeMarkMs) / interval) * interval;
-            int wording = intervalNotices % 3;
-            intervalNotices++;
+            // Moved to now. Rounding down to a whole number of intervals, which this did first,
+            // left the mark behind the moment the reminder went out by however far the watched
+            // time had overshot, so the next one arrived that much early: on a five minute row a
+            // reader who reached nine minutes fifty-nine before the video changed got the second
+            // one a second after the first. Time away cannot bring one forward either way, since
+            // watchedMs only moves while the feed is playing.
+            noticeMarkMs = watchedMs;
+            // Not reset by the day, because it is not a count of anything: it is which of the
+            // three wordings comes next. Rolled over, a reader who gets one reminder a day read
+            // the same sentence every day, which is the thing having three is for.
+            int wording = (int) Math.floorMod(noticesShown, 3L);
+            noticesShown++;
             save();
             return wording;
         }
@@ -419,7 +426,6 @@ public final class SessionBudget {
             undoNoticeShown = noticeShown;
             undoPassesUsed = passesUsed;
             undoNoticeMarkMs = noticeMarkMs;
-            undoIntervalNotices = intervalNotices;
             undoAvailable = true;
             day = dayOf(clock.now());
             videos = 0;
@@ -435,7 +441,6 @@ public final class SessionBudget {
             // back to zero, so the mark they measure from has to as well.
             passesUsed = 0;
             noticeMarkMs = 0;
-            intervalNotices = 0;
             save();
             return true;
         }
@@ -490,7 +495,6 @@ public final class SessionBudget {
             noticeShown = undoNoticeShown;
             passesUsed = undoPassesUsed;
             noticeMarkMs = undoNoticeMarkMs;
-            intervalNotices = undoIntervalNotices;
             lastCountedId = null;
             undoAvailable = false;
             save();
@@ -589,7 +593,6 @@ public final class SessionBudget {
         lockedToday = false;
         passesUsed = 0;
         noticeMarkMs = 0;
-        intervalNotices = 0;
         undoAvailable = false;
         lastCountedId = null;
         noticeShown = false;
@@ -622,11 +625,14 @@ public final class SessionBudget {
                     // Same again for the pass count, which arrived after both. A day recorded
                     // before it existed had no cap to spend, so zero is the honest answer.
                     passesUsed = parts.length >= 7 ? Integer.parseInt(parts[6]) : 0;
-                    // Same again for the reminders, which arrived after the passes. A day
-                    // recorded before them had none, so zero is the honest answer.
+                    // Same again for the reminder's mark, which arrived after the passes. A
+                    // day recorded before it had none, so zero is the honest answer.
                     noticeMarkMs = parts.length >= 8 ? Long.parseLong(parts[7]) : 0;
-                    intervalNotices = parts.length >= 9 ? Integer.parseInt(parts[8]) : 0;
                 }
+                // Read whether or not the record is today's, because it is not a count of a
+                // day: it is which of the three wordings comes next, and a reader who gets one
+                // reminder a day would otherwise read the same sentence every day.
+                if (parts.length >= 9) noticesShown = Long.parseLong(parts[8]);
             }
         } catch (RuntimeException malformed) {
             Logger.printDebug(() -> "Discarded an unreadable session budget record");
@@ -644,7 +650,7 @@ public final class SessionBudget {
                 + lockUntilMs + "|" + (noticeShown ? "1" : "0")
                 + "|" + (lockedToday ? "1" : "0")
                 + "|" + passesUsed
-                + "|" + noticeMarkMs + "|" + intervalNotices;
+                + "|" + noticeMarkMs + "|" + noticesShown;
         try {
             WRITER.execute(() -> Settings.SESSION_BUDGET_STATE.save(record));
         } catch (RejectedExecutionException stopped) {
@@ -697,7 +703,7 @@ public final class SessionBudget {
             lockedToday = false;
             passesUsed = 0;
             noticeMarkMs = 0;
-            intervalNotices = 0;
+            noticesShown = 0;
             undoAvailable = false;
             lastTickMs = 0;
             lastCountedId = null;

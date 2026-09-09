@@ -328,15 +328,17 @@ public class SessionBudgetTest {
         assertEquals(0, SessionBudget.claimIntervalNotice());
     }
 
-    @Test public void timeAwayDoesNotBringTheNextReminderForward() {
-        // The mark moves to a whole number of intervals rather than to the moment the reminder
-        // went out, so the next one is still a full interval of watching away.
+    @Test public void everyReminderIsAFullIntervalAfterTheOneBefore() {
+        // The reminder is claimed on a video change, so the watched time has almost always run
+        // past the interval by the time it fires. Rounding the mark down to a whole number of
+        // intervals, which this did first, left it behind the moment the reminder went out by
+        // exactly that overshoot, and the next one came that much early: here, three watched
+        // minutes after the first on a row that says five.
         Settings.SESSION_BUDGET_NOTICE_MINUTES.save(5);
         watch(12);
         assertEquals(0, SessionBudget.claimIntervalNotice());
 
-        // Two intervals were watched through, so the mark stands at ten, not at twelve.
-        watch(2);
+        watch(4);
         assertEquals("the second reminder came early", -1, SessionBudget.claimIntervalNotice());
         watch(1);
         assertEquals(1, SessionBudget.claimIntervalNotice());
@@ -355,9 +357,12 @@ public class SessionBudgetTest {
         assertEquals("the wording restarted with the process", 1,
                 SessionBudget.claimIntervalNotice());
 
+        // The day's counts go, but which wording comes next is not one of them: a reader who
+        // gets one reminder a day would otherwise read the same sentence every day, which is
+        // the whole reason for having three.
         now.set(at(2026, Calendar.SEPTEMBER, 8, 12, 0));
         watch(5);
-        assertEquals("a new day did not start the wordings again", 0,
+        assertEquals("the wordings started again with the day", 2,
                 SessionBudget.claimIntervalNotice());
     }
 
