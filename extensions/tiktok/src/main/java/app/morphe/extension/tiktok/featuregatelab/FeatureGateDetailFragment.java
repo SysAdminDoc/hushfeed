@@ -556,7 +556,8 @@ public final class FeatureGateDetailFragment extends Fragment {
             view.setTextColor(SettingsUi.accent());
             if (!dropdown) {
                 android.graphics.drawable.Drawable arrow =
-                        new app.morphe.extension.tiktok.settings.preference.SettingsMenuPreference.ChevronDrawable();
+                        new app.morphe.extension.tiktok.settings.preference.SettingsMenuPreference
+                                .ChevronDrawable(context);
                 arrow.setBounds(0, 0, FeatureGateLabUi.dp(context, 18), FeatureGateLabUi.dp(context, 18));
                 view.setCompoundDrawablesRelative(null, null, arrow, null);
             }

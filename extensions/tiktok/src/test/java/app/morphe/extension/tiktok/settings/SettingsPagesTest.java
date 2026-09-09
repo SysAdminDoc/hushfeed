@@ -408,6 +408,58 @@ public class SettingsPagesTest {
         }
     }
 
+    @Test
+    @Config(sdk = 28, qualifiers = "xhdpi")
+    public void theHandDrawnGlyphsMirrorAndAreDrawnInDp() throws Exception {
+        // Two things, both invisible on the captured screenshots because those are density 1.
+        // The containers mirror by margin and gravity, so an Arabic or Hebrew reader had a left
+        // pointing back arrow at the right edge and chevrons pointing back into the text. And
+        // Paint.setStrokeWidth takes canvas pixels, so on a dense screen the menu tile's lines
+        // came out under a dp wide beside 40sp type.
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            float density = activity.getResources().getDisplayMetrics().density;
+            assertTrue("the fixture is not a dense screen, so this proves nothing", density >= 2f);
+
+            var back = new app.morphe.extension.tiktok.settings.preference
+                    .SettingsHeaderPreference.BackDrawable(activity);
+            var chevron = new app.morphe.extension.tiktok.settings.preference
+                    .SettingsMenuPreference.ChevronDrawable(activity);
+
+            assertTrue("the back arrow does not mirror", back.isAutoMirrored());
+            assertTrue("the chevron does not mirror", chevron.isAutoMirrored());
+
+            assertEquals("the back arrow is a hairline on a dense screen",
+                    2.1f * density, strokeOf(back), 0.01f);
+            assertEquals("the chevron is a hairline on a dense screen",
+                    1.8f * density, strokeOf(chevron), 0.01f);
+            assertTrue("the chevron is under 2dp wide", strokeOf(chevron) >= 2f);
+
+            // And the glyph itself turns round, rather than only its container.
+            assertEquals("the arrow points the same way in both directions",
+                    View.LAYOUT_DIRECTION_RTL, mirroredArrowDirection(back, activity));
+        }
+    }
+
+    /** The stroke the drawable's own paint carries. */
+    private static float strokeOf(android.graphics.drawable.Drawable drawable) throws Exception {
+        var field = drawable.getClass().getDeclaredField("paint");
+        field.setAccessible(true);
+        return ((android.graphics.Paint) field.get(drawable)).getStrokeWidth();
+    }
+
+    /**
+     * Draws the arrow both ways round and answers which direction put its point on the right,
+     * which is where a mirrored back arrow points.
+     */
+    private static int mirroredArrowDirection(
+            android.graphics.drawable.Drawable arrow, Activity activity) {
+        arrow.setBounds(0, 0, 48, 48);
+        arrow.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        return arrow.getLayoutDirection();
+    }
+
     @Test public void everyDialogActionIsPressableAndReadsAsAButton() throws Exception {
         // The flat actions in the hand built dialogs are TextViews with a click listener, so
         // TalkBack read them as labels rather than as something to press, and the two pickers

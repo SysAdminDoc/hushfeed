@@ -57,7 +57,7 @@ public final class SettingsMenuPreference extends Preference {
         this.activeCount = activeCount;
         setTitle(title);
         setSummary(summary);
-        setIcon(new MenuIconDrawable(icon));
+        setIcon(new MenuIconDrawable(context, icon));
         setOnPreferenceClickListener(listener);
     }
 
@@ -203,7 +203,7 @@ public final class SettingsMenuPreference extends Preference {
         }
 
         ImageView chevron = new ImageView(getContext());
-        chevron.setImageDrawable(new ChevronDrawable());
+        chevron.setImageDrawable(new ChevronDrawable(getContext()));
         // Decorative, like the one the list adapter adds to every other row.
         chevron.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         LinearLayout.LayoutParams chevronParams = new LinearLayout.LayoutParams(
@@ -218,21 +218,28 @@ public final class SettingsMenuPreference extends Preference {
     public static final class ChevronDrawable extends Drawable {
         private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-        public ChevronDrawable() {
+        public ChevronDrawable(Context context) {
             paint.setColor(SettingsUi.textSecondary());
             paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(1.8f);
+            paint.setStrokeWidth(SettingsUi.strokePx(context, 1.8f));
             paint.setStrokeCap(Paint.Cap.ROUND);
             paint.setStrokeJoin(Paint.Join.ROUND);
+        }
+
+        /** The row it sits at the end of mirrors; pointing into the text is what it did before. */
+        @Override
+        public boolean isAutoMirrored() {
+            return true;
         }
 
         @Override
         public void draw(Canvas canvas) {
             float centerX = getBounds().exactCenterX();
             float centerY = getBounds().exactCenterY();
-            float offset = Math.min(getBounds().width(), getBounds().height()) * 0.22f;
-            canvas.drawLine(centerX - offset, centerY - offset, centerX + offset, centerY, paint);
-            canvas.drawLine(centerX + offset, centerY, centerX - offset, centerY + offset, paint);
+            float size = Math.min(getBounds().width(), getBounds().height()) * 0.22f;
+            float offset = getLayoutDirection() == View.LAYOUT_DIRECTION_RTL ? -size : size;
+            canvas.drawLine(centerX - offset, centerY - size, centerX + offset, centerY, paint);
+            canvas.drawLine(centerX + offset, centerY, centerX - offset, centerY + size, paint);
         }
 
         @Override
@@ -258,15 +265,15 @@ public final class SettingsMenuPreference extends Preference {
         private final Paint line = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Path path = new Path();
 
-        MenuIconDrawable(Icon icon) {
+        MenuIconDrawable(Context context, Icon icon) {
             this.icon = icon;
             fill.setColor(SettingsUi.liftedSurface());
             border.setColor(SettingsUi.border());
             border.setStyle(Paint.Style.STROKE);
-            border.setStrokeWidth(1f);
+            border.setStrokeWidth(SettingsUi.strokePx(context, 1f));
             line.setColor(SettingsUi.textSecondary());
             line.setStyle(Paint.Style.STROKE);
-            line.setStrokeWidth(1.8f);
+            line.setStrokeWidth(SettingsUi.strokePx(context, 1.8f));
             line.setStrokeCap(Paint.Cap.ROUND);
             line.setStrokeJoin(Paint.Join.ROUND);
         }

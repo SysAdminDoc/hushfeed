@@ -73,7 +73,7 @@ final class SettingsListAdapter extends BaseAdapter implements WrapperListAdapte
             if (widget.findViewWithTag("metra_chevron") == null) {
                 ImageView arrow = new ImageView(row.getContext());
                 arrow.setTag("metra_chevron");
-                arrow.setImageDrawable(new SettingsMenuPreference.ChevronDrawable());
+                arrow.setImageDrawable(new SettingsMenuPreference.ChevronDrawable(row.getContext()));
                 arrow.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
                 android.widget.LinearLayout.LayoutParams params = new android.widget.LinearLayout.LayoutParams(
                         SettingsUi.dp(row.getContext(), 18), SettingsUi.dp(row.getContext(), 24));

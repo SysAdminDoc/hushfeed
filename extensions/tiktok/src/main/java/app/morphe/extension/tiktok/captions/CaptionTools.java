@@ -76,7 +76,10 @@ public final class CaptionTools {
         TextView text = new TextView(activity);
         text.setTextColor(Color.WHITE);
         text.setGravity(Gravity.CENTER);
-        text.setShadowLayer(2, 0, 1, Color.BLACK);
+        // In pixels, so on a 3x screen this was about 0.7dp of blur. It is what separates white
+        // caption text from the video when the reader picks the transparent background.
+        float density = activity.getResources().getDisplayMetrics().density;
+        text.setShadowLayer(2 * density, 0, density, Color.BLACK);
         text.setClickable(false);
         text.setFocusable(false);
         int padding = Math.round(12 * text.getResources().getDisplayMetrics().density);

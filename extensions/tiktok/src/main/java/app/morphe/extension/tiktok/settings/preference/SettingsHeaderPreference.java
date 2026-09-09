@@ -111,7 +111,7 @@ public final class SettingsHeaderPreference extends Preference {
         toolbar.setGravity(Gravity.CENTER_VERTICAL);
         ImageView back = new ImageView(context);
         back.setContentDescription(L10n.t(context, "Back"));
-        back.setImageDrawable(new BackDrawable());
+        back.setImageDrawable(new BackDrawable(context));
         back.setOnClickListener(view -> { if (onBack != null) onBack.run(); });
         back.setFocusable(true);
         // The same accent-at-15%-alpha the grouped rows use. divider() is 1.3:1 against the
@@ -151,26 +151,36 @@ public final class SettingsHeaderPreference extends Preference {
         return caption;
     }
 
-    private static final class BackDrawable extends Drawable {
+    public static final class BackDrawable extends Drawable {
         private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-        BackDrawable() {
+        public BackDrawable(Context context) {
             paint.setColor(SettingsUi.textPrimary());
             paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(2.1f);
+            paint.setStrokeWidth(SettingsUi.strokePx(context, 2.1f));
             paint.setStrokeCap(Paint.Cap.ROUND);
             paint.setStrokeJoin(Paint.Join.ROUND);
+        }
+
+        /**
+         * The header row mirrors, by margin and gravity, and the glyph inside it did not, so an
+         * Arabic or Hebrew reader got a left pointing back arrow parked at the right edge.
+         */
+        @Override
+        public boolean isAutoMirrored() {
+            return true;
         }
 
         @Override
         public void draw(Canvas canvas) {
             float centerX = getBounds().exactCenterX();
             float centerY = getBounds().exactCenterY();
-            float offset = Math.min(getBounds().width(), getBounds().height()) * 0.18f;
+            float size = Math.min(getBounds().width(), getBounds().height()) * 0.18f;
+            float offset = getLayoutDirection() == View.LAYOUT_DIRECTION_RTL ? -size : size;
             float pointX = centerX - offset;
             canvas.drawLine(pointX, centerY, centerX + offset, centerY, paint);
-            canvas.drawLine(pointX, centerY, centerX - offset * 0.1f, centerY - offset * 0.9f, paint);
-            canvas.drawLine(pointX, centerY, centerX - offset * 0.1f, centerY + offset * 0.9f, paint);
+            canvas.drawLine(pointX, centerY, centerX - offset * 0.1f, centerY - size * 0.9f, paint);
+            canvas.drawLine(pointX, centerY, centerX - offset * 0.1f, centerY + size * 0.9f, paint);
         }
 
         @Override

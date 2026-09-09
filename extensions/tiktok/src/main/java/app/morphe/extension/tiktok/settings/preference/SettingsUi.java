@@ -216,6 +216,18 @@ public final class SettingsUi {
         return Math.round(value * context.getResources().getDisplayMetrics().density);
     }
 
+    /**
+     * The same in pixels without rounding, for a stroke width.
+     *
+     * <p>Paint.setStrokeWidth takes canvas pixels. Every hand drawn glyph here was given its
+     * width as though it were dp, so on a 420 dpi phone the menu tile's lines came out 0.69dp
+     * wide and the back arrow 0.8dp: hairlines beside 40sp type. The screenshots are captured at
+     * density 1, which is why they looked right.
+     */
+    public static float strokePx(Context context, float dpValue) {
+        return dpValue * context.getResources().getDisplayMetrics().density;
+    }
+
     public static @ColorInt int background() {
         return isDarkMode() ? DARK_BACKGROUND : LIGHT_BACKGROUND;
     }
