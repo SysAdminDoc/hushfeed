@@ -287,6 +287,62 @@ public class SessionLockOverlayTest {
         }
     }
 
+    @Test public void theWayToMessagesIsOfferedOnlyWhileThereIsAnInboxTabToOpen() throws Exception {
+        // The panel says messages still work and then covers everything, so without this the
+        // reader has to already know the Inbox tab is under it.
+        Settings.SESSION_BUDGET_VIDEOS.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(5);
+        SessionBudget.noteVideo("a");
+        assertTrue(SessionBudget.claimNotice());
+
+        try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setActivity(activity);
+
+            // No Inbox tab, which is what a build that renamed it and a reader who hid it in
+            // Feed navigation both look like: the filter drops the tab and no view is built.
+            seedInboxTab(null);
+            SessionLockOverlay.sync();
+            ViewGroup root = activity.findViewById(android.R.id.content);
+            ViewGroup panel = (ViewGroup) root.getChildAt(root.getChildCount() - 1);
+            android.widget.TextView messages = (android.widget.TextView) panel.getChildAt(4);
+            assertEquals("a way to an Inbox that is not there", View.GONE,
+                    messages.getVisibility());
+
+            // With one, it is offered, reads as a button, and a tap is the tab's own click. The
+            // view has to be in the window: the cache re-resolves anything detached by name, and
+            // the resource this build looks for does not exist in a test application.
+            var inbox = new FrameLayout(activity);
+            var taps = new java.util.concurrent.atomic.AtomicInteger();
+            inbox.setOnClickListener(view -> taps.incrementAndGet());
+            root.addView(inbox, 0);
+            seedInboxTab(inbox);
+            SessionLockOverlay.sync();
+            assertEquals(View.VISIBLE, messages.getVisibility());
+            assertEquals("Open messages", messages.getText().toString());
+            assertEquals("a screen reader would not hear it as a button",
+                    android.widget.Button.class.getName(), roleOf(messages));
+
+            messages.performClick();
+            assertEquals("the Inbox tab was not clicked", 1, taps.get());
+            assertTrue("the hold ended when the reader went to messages",
+                    SessionBudget.isLocked());
+        }
+    }
+
+    /** What TalkBack would call the view. */
+    private static String roleOf(View view) {
+        var info = android.view.accessibility.AccessibilityNodeInfo.obtain();
+        view.onInitializeAccessibilityNodeInfo(info);
+        return String.valueOf(info.getClassName());
+    }
+
+    private static void seedInboxTab(View inboxTab) {
+        org.robolectric.util.ReflectionHelpers.setStaticField(
+                app.morphe.extension.tiktok.blockauthor.FeedVisibility.class,
+                "inboxTabReference", new java.lang.ref.WeakReference<>(inboxTab));
+    }
+
     private static Object holdOrNull() {
         return SessionBudget.isLocked() ? Boolean.TRUE : null;
     }

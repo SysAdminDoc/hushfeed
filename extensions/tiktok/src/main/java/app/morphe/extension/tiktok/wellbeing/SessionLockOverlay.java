@@ -53,6 +53,7 @@ public final class SessionLockOverlay {
     private static WeakReference<TextView> remainingReference = new WeakReference<>(null);
     private static WeakReference<TextView> releaseReference = new WeakReference<>(null);
     private static WeakReference<TextView> hintReference = new WeakReference<>(null);
+    private static WeakReference<TextView> messagesReference = new WeakReference<>(null);
     private static volatile boolean ticking;
 
     /**
@@ -169,6 +170,15 @@ public final class SessionLockOverlay {
             release.setVisibility(locked || left == 0 ? View.GONE : View.VISIBLE);
             release.setText(releaseLabel(left));
             release.setContentDescription(release.getText());
+        }
+        // Absent when this build renames the tab and when the reader has hidden Inbox in Feed
+        // navigation, which is the same thing as far as the panel is concerned: there is no
+        // Inbox to open, so there is nothing to offer.
+        TextView messages = messagesReference.get();
+        if (messages != null) {
+            Activity activity = Utils.getActivity();
+            boolean reachable = activity != null && FeedVisibility.inboxTabView(activity) != null;
+            messages.setVisibility(reachable ? View.VISIBLE : View.GONE);
         }
         TextView hint = hintReference.get();
         if (hint == null) return;
@@ -313,6 +323,40 @@ public final class SessionLockOverlay {
         });
         panel.addView(release);
         releaseReference = new WeakReference<>(release);
+
+        // The panel says messages still work and then covers everything, so the reader has to
+        // already know the Inbox tab is under it. This is that tab's own view, clicked the way a
+        // finger would: no call into a renamed method, and TikTok's own listener does the rest.
+        TextView messages = new TextView(activity);
+        messages.setText(L10n.t(activity, "Open messages"));
+        messages.setContentDescription(L10n.t(activity, "Open messages"));
+        messages.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            @Override public void onInitializeAccessibilityNodeInfo(
+                    View host, android.view.accessibility.AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                info.setClassName(android.widget.Button.class.getName());
+            }
+        });
+        messages.setTextColor(Color.argb(200, 255, 255, 255));
+        messages.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+        messages.setGravity(Gravity.CENTER);
+        messages.setPadding(padding, SettingsUi.dp(activity, 12), padding,
+                SettingsUi.dp(activity, 12));
+        messages.setMinimumHeight(SettingsUi.dp(activity, 48));
+        LinearLayout.LayoutParams messagesParams = new LinearLayout.LayoutParams(-2, -2);
+        messagesParams.topMargin = SettingsUi.dp(activity, 8);
+        messages.setLayoutParams(messagesParams);
+        messages.setOnClickListener(view -> {
+            View inbox = FeedVisibility.inboxTabView(activity);
+            if (inbox == null) return;
+            inbox.performClick();
+            // Off the feed the panel hides itself rather than detaching, so the hold is still
+            // running and comes back the moment the reader does.
+            sync();
+        });
+        panel.addView(messages);
+        messagesReference = new WeakReference<>(messages);
+
         applyLockedState();
 
         // Stops above the navigation. Covering the whole content root would take the tab bar
