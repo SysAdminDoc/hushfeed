@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1336);
+        Map<String, String> table = new HashMap<>(1344);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -1313,6 +1313,14 @@ public final class L10nTranslations {
                 "Das heutige Budget ist gesperrt. Der Feed öffnet wieder um %1$s. Nachrichten, Profile und Suche funktionieren weiterhin.");
         table.put("Today's budget is locked. This can be changed again at %1$s.",
                 "Das heutige Budget ist gesperrt. Änderungen sind wieder ab %1$s möglich.");
+        table.put("Today: %1$d minute",
+                "Heute: %1$d Minute");
+        table.put("Today: %1$d minutes",
+                "Heute: %1$d Minuten");
+        table.put("Today: %1$d video",
+                "Heute: %1$d Video");
+        table.put("Today: %1$d videos",
+                "Heute: %1$d Videos");
         table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Save original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",
                 "Tokens: {creator}, {date}, {video_id}, {index}. {index} nummeriert die Fotos einer Diashow, die du mit „Originalfotos speichern“ sicherst; alles, was über TikToks eigene Schaltfläche gespeichert wird, nummeriert stattdessen der Ordner. Die Dateiendung wird automatisch beibehalten.");
         table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
@@ -1403,6 +1411,9 @@ public final class L10nTranslations {
                 "Der Zahlencode deines Anbieters, etwa 310260.");
         table.put("Zero keeps auto-advance unlimited. Count only videos that finish while Hushfeed started automatic advance; prefetches, manual swipes and native-only advance do not count. The count resets when the feed component is recreated and stays stopped across backgrounding until it is recreated or the limit changes.",
                 "Null lässt das automatische Weiterschalten unbegrenzt. Gezählt werden nur Videos, die enden, während Hushfeed das automatische Weiterschalten gestartet hat; Vorabladen, manuelles Wischen und reines natives Weiterschalten zählen nicht. Der Zähler wird beim Erstellen der Feed-Komponente zurückgesetzt und bleibt nach dem Wechsel in den Hintergrund angehalten, bis sie neu erstellt oder das Limit geändert wird.");
+    }
+
+    private static void fillDe11(Map<String, String> table) {
         table.put("code %1$s",
                 "Code %1$s");
         table.put("day",
@@ -1411,9 +1422,6 @@ public final class L10nTranslations {
                 "Tage");
         table.put("dp",
                 "dp");
-    }
-
-    private static void fillDe11(Map<String, String> table) {
         table.put("ms",
                 "ms");
         table.put("or",
@@ -1433,7 +1441,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1336);
+        Map<String, String> table = new HashMap<>(1344);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2702,6 +2710,14 @@ public final class L10nTranslations {
                 "Anggaran hari ini terkunci. Feed terbuka lagi pada %1$s. Pesan, profil dan pencarian tetap berfungsi.");
         table.put("Today's budget is locked. This can be changed again at %1$s.",
                 "Anggaran hari ini terkunci. Ini bisa diubah lagi pada %1$s.");
+        table.put("Today: %1$d minute",
+                "Hari ini: %1$d menit");
+        table.put("Today: %1$d minutes",
+                "Hari ini: %1$d menit");
+        table.put("Today: %1$d video",
+                "Hari ini: %1$d video");
+        table.put("Today: %1$d videos",
+                "Hari ini: %1$d video");
         table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Save original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",
                 "Token: {creator}, {date}, {video_id}, {index}. {index} menomori foto slideshow yang kamu simpan dengan Simpan foto asli; apa pun yang disimpan lewat tombol TikTok sendiri dinomori oleh folder. Ekstensi file dipertahankan otomatis.");
         table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
@@ -2792,6 +2808,9 @@ public final class L10nTranslations {
                 "Kode angka operatormu, misalnya 310260.");
         table.put("Zero keeps auto-advance unlimited. Count only videos that finish while Hushfeed started automatic advance; prefetches, manual swipes and native-only advance do not count. The count resets when the feed component is recreated and stays stopped across backgrounding until it is recreated or the limit changes.",
                 "Nol membuat lanjut otomatis tanpa batas. Hitung hanya video yang selesai saat Hushfeed memulai lanjut otomatis; pramuat, usapan manual, dan lanjut otomatis bawaan saja tidak dihitung. Hitungan diatur ulang saat komponen feed dibuat ulang dan tetap berhenti setelah aplikasi masuk latar belakang sampai komponen dibuat ulang atau batas diubah.");
+    }
+
+    private static void fillIn11(Map<String, String> table) {
         table.put("code %1$s",
                 "kode %1$s");
         table.put("day",
@@ -2800,9 +2819,6 @@ public final class L10nTranslations {
                 "hari");
         table.put("dp",
                 "dp");
-    }
-
-    private static void fillIn11(Map<String, String> table) {
         table.put("ms",
                 "ms");
         table.put("or",

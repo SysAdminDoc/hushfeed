@@ -610,6 +610,10 @@ Today starts again,Today starts again
 Today's budget is locked. The day starts over at %1$s.,Today's budget is locked. The day starts over at %1$s.
 "Today's budget is locked. The feed opens again at %1$s. Messages, profiles and search still work.","Today's budget is locked. The feed opens again at %1$s. Messages, profiles and search still work."
 Today's budget is locked. This can be changed again at %1$s.,Today's budget is locked. This can be changed again at %1$s.
+Today: %1$d minute,Today: %1$d minute
+Today: %1$d minutes,Today: %1$d minutes
+Today: %1$d video,Today: %1$d video
+Today: %1$d videos,Today: %1$d videos
 "Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Save original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.","Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Save original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically."
 "Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.","Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically."
 "Tokens: {date}, {media_id}. Works for image and video stickers.","Tokens: {date}, {media_id}. Works for image and video stickers."

@@ -154,6 +154,47 @@ public class NumberInputPreferenceTest {
     }
 
     @Test
+    public void aRowCanCarryAFourthLineAndTheDailyBudgetsUseItForToday() {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            Context context = controller.get();
+            IntegerSetting setting = new IntegerSetting("unit_test_today", 0).withRange(0, 2000);
+            // Until this, the only place the day's progress showed was the one notice when the
+            // budget ran out, so a row set to 200 said nothing about the 57 already watched.
+            NumberInputPreference row = new NumberInputPreference(
+                    context, "Daily video budget", "Summary", setting, "video", "videos") {
+                @Override protected String extraSummaryLine() {
+                    return setting.get() <= 0 ? null : "Today: 57 videos";
+                }
+            };
+
+            // The stored setting is what says whether a budget is set, not the text in the box:
+            // typing a number does not save it, and the page is built from what is saved.
+            setting.save(200);
+            row.setValue("200");
+            assertEquals("Summary\n0 to 2000\nCurrent: 200 videos\nToday: 57 videos",
+                    row.getSummary().toString());
+
+            // Off, and there is no budget for the day to be measured against.
+            setting.save(0);
+            row.setValue("0");
+            assertEquals("Summary\n0 to 2000\nCurrent: 0 videos", row.getSummary().toString());
+        }
+    }
+
+    @Test
+    public void aRowWithNothingToAddIsUnchanged() {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            Context context = controller.get();
+            IntegerSetting setting = new IntegerSetting("unit_test_plain", 3).withRange(0, 10);
+            NumberInputPreference row = new NumberInputPreference(
+                    context, "Title", "Summary", setting, "video", "videos");
+
+            row.setValue("4");
+            assertEquals("Summary\n0 to 10\nCurrent: 4 videos", row.getSummary().toString());
+        }
+    }
+
+    @Test
     public void aRowWhereZeroMeansOffSaysOffRatherThanNoneOfSomething() {
         try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
             Context context = controller.get();

@@ -89,11 +89,24 @@ public class NumberInputPreference extends EditTextPreference {
         // The range is read off the setting, so every one of these rows states it without each
         // of them growing a sentence of its own. Twelve of the fourteen said nothing about it
         // and pulled an out of range number to the nearest end without a word.
+        String extra = extraSummaryLine();
         setSummary(L10n.t(getContext(), baseSummary)
                 + "\n" + L10n.f(getContext(), "%1$s to %2$s", minValue, maxValue)
                 + "\n" + (unit.isEmpty()
                         ? L10n.f(getContext(), "Current: %1$s", shown)
-                        : L10n.f(getContext(), "Current: %1$s %2$s", shown, unit)));
+                        : L10n.f(getContext(), "Current: %1$s %2$s", shown, unit))
+                + (extra == null ? "" : "\n" + extra));
+    }
+
+    /**
+     * A fourth line under the current value, or null for the rows that have nothing to add.
+     *
+     * <p>The two daily budgets use it for how much of today has gone. Called from
+     * {@link #setValue}, which the constructor calls, so an override must not read state of its
+     * own: the two that exist read the setting and the day's counts, both of them statics.
+     */
+    protected String extraSummaryLine() {
+        return null;
     }
 
     /**

@@ -633,6 +633,10 @@ The smallest value is above the largest,Nilai terkecil lebih besar daripada yang
 That is %1$d minutes today,Itu %1$d menit hari ini
 One minute left,Satu menit lagi
 Open the feed anyway,Tetap buka feed
+Today: %1$d video,Hari ini: %1$d video
+Today: %1$d videos,Hari ini: %1$d video
+Today: %1$d minute,Hari ini: %1$d menit
+Today: %1$d minutes,Hari ini: %1$d menit
 Open messages,Buka pesan
 "Open the feed anyway, the last time today","Tetap buka feed, terakhir kali hari ini"
 "Open the feed anyway, %1$d left today","Tetap buka feed, sisa %1$d hari ini"

@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Both daily budgets show how much of today has gone. Set one to 200 videos and the row reads "Today: 57 videos" under it, so the day's progress is visible where you set the budget instead of only in the one notice when it runs out. With a budget of zero there is nothing to measure against and the line is absent.
+
 * The hold panel offers a way to your messages. It always said messages, profiles and search still work, and then covered the screen, so you had to already know the Inbox tab was underneath. There is an "Open messages" action under the countdown now. It opens the Inbox tab exactly as tapping it would, the hold stays up behind it, and it comes back when you return to the feed. If you have hidden Inbox in Feed navigation, the action is not there.
 
 * The install steps say what Android now asks for. From 2026-09-30, phones in Brazil, Indonesia, Singapore and Thailand put an app from an unverified developer through an extra flow, and because every release is an update, it happens again each time. The README says what the flow wants and that installing over adb skips it. The memory numbers are described as floors now, since newer Manager builds raise the ceiling on phones that can take it.

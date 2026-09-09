@@ -55,15 +55,36 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
         // The counting hangs off the hook that tracks which video is on screen, which the
         // block author patch installs. Without it these would take a number and count nothing.
         if (SettingsStatus.blockAuthorEnabled) {
+        // Both budgets carry how much of today has gone, which until now was only visible in
+        // the one notice when it ran out. Read when the page is built, which is what a settings
+        // screen shows: it is a figure for the day, not a ticker.
         addPreference(new NumberInputPreference(context, "Daily video budget",
                 "Zero switches this off. Count every video that comes up in the feed, however you "
                         + "got to it, and say so once the count is reached. This is separate from "
                         + "the auto-advance limit above, which only counts videos Hushfeed itself "
-                        + "advanced past.", Settings.SESSION_BUDGET_VIDEOS, "video", "videos").zeroMeansOff());
+                        + "advanced past.", Settings.SESSION_BUDGET_VIDEOS, "video", "videos") {
+            @Override protected String extraSummaryLine() {
+                if (Settings.SESSION_BUDGET_VIDEOS.get() <= 0) return null;
+                int seen = SessionBudget.videosSeen();
+                return seen == 1
+                        ? L10n.f(getContext(), "Today: %1$d video", seen)
+                        : L10n.f(getContext(), "Today: %1$d videos", seen);
+            }
+        }.zeroMeansOff());
         addPreference(new NumberInputPreference(context, "Daily time budget",
                 "Zero switches this off. Count the minutes the player spends running in the feed. "
                         + "Time on messages, a profile or search does not count.",
-                Settings.SESSION_BUDGET_MINUTES, "minute", "minutes").zeroMeansOff());
+                Settings.SESSION_BUDGET_MINUTES, "minute", "minutes") {
+            @Override protected String extraSummaryLine() {
+                if (Settings.SESSION_BUDGET_MINUTES.get() <= 0) return null;
+                // Whole minutes down, so a budget of 30 never reads "Today: 30 minutes" while
+                // there is still time left on it.
+                long minutes = SessionBudget.watchedMs() / 60_000L;
+                return minutes == 1
+                        ? L10n.f(getContext(), "Today: %1$d minute", minutes)
+                        : L10n.f(getContext(), "Today: %1$d minutes", minutes);
+            }
+        }.zeroMeansOff());
         addPreference(new NumberInputPreference(context, "Hold the feed after the budget",
                 "Zero shows the notice and leaves the feed alone. Anything else covers the feed "
                         + "for that many minutes once a budget is reached. Messages, profiles and "
