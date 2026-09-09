@@ -4,9 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import app.morphe.extension.tiktok.SettingsContextRule;
 import android.content.Context;
 import android.os.Environment;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
@@ -20,6 +22,7 @@ import java.nio.file.Files;
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE, sdk = 28)
 public class LogBufferManagerExportTest {
+    @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
     @Test public void anOlderAndroidSaysNothingAboutTheLastExit() {
         // The history arrived in API 30 and this bundle runs from 23, so the section has to be
         // absent rather than empty or guessed at.

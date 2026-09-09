@@ -262,6 +262,23 @@ public class SessionBudgetTest {
         assertEquals(2, SessionBudget.passesLeftToday());
     }
 
+    @Test public void startingTodayOverGivesTheDaysPassesBackAndUndoTakesThemAgain() {
+        // A pass is one of today's counts, and the row says today is forgotten. Left spent, it
+        // gave back the videos and the minutes while the way out of the hold stayed gone, on a
+        // day every number on the screen said was untouched.
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(10);
+        Settings.SESSION_BUDGET_PASSES_PER_DAY.save(1);
+        assertTrue(reachTheHold("a"));
+        assertEquals(0, SessionBudget.passesLeftToday());
+
+        assertTrue(SessionBudget.clear());
+        assertEquals("start today over kept the pass spent", 1, SessionBudget.passesLeftToday());
+        assertEquals(0, SessionBudget.videosSeen());
+
+        assertTrue(SessionBudget.undoClear());
+        assertEquals("undo did not put the spent pass back", 0, SessionBudget.passesLeftToday());
+    }
+
     @Test public void withNoCapNothingChanges() {
         Settings.SESSION_BUDGET_LOCK_MINUTES.save(10);
         Settings.SESSION_BUDGET_PASSES_PER_DAY.save(0);

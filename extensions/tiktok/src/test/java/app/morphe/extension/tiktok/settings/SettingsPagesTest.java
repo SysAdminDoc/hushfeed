@@ -1,6 +1,7 @@
 package app.morphe.extension.tiktok.settings;
 
 import static org.junit.Assert.*;
+import app.morphe.extension.tiktok.SettingsContextRule;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Looper;
@@ -19,6 +20,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.junit.Rule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,6 +36,7 @@ import org.robolectric.annotation.GraphicsMode;
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @SuppressWarnings("deprecation")
 public class SettingsPagesTest {
+    @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
     private static final String[] SECTIONS = {"FEED_FILTER", "FEED_NAVIGATION", "INTERFACE", "COMMENTS",
             "DOWNLOADS", "PLAYBACK", "INBOX", "SHARE", "REGION", "BEHAVIOR", "DIAGNOSTICS"};
     private static final String[] TITLES = {"Feed filter", "Feed navigation", "Interface", "Comments and translation",

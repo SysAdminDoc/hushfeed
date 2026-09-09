@@ -32,21 +32,18 @@ import java.util.stream.Stream;
  * NumberInputPreferenceTest and ShareModelFilterTest each did.
  */
 public class SettingsContextGuardTest {
-    /** A read or a write of a setting: Settings.SOME_KEY, or a Setting built by hand. */
+    /**
+     * A read or a write of a setting: Settings.SOME_KEY, BaseSettings.SOME_KEY, or a Setting
+     * built by hand.
+     */
     private static final Pattern TOUCHES_SETTINGS =
-            Pattern.compile("\\bSettings\\.[A-Z][A-Z0-9_]+|\\bnew\\s+\\w*Setting\\s*\\(");
+            Pattern.compile("\\b\\w*Settings\\.[A-Z][A-Z0-9_]+|\\bnew\\s+\\w*Setting\\s*\\(");
 
     private static final Pattern DECLARES_RULE =
             Pattern.compile("@Rule[^;]*\\bnew\\s+SettingsContextRule\\s*\\(", Pattern.DOTALL);
 
-    /**
-     * A {@code @Before} method whose body calls {@code setContext}. The body is matched up to the
-     * next annotation or the end of the file rather than by counting braces, which is enough to
-     * tell it apart from a {@code setContext} that only appears under {@code @After}.
-     */
-    private static final Pattern BEFORE_INSTALLS_CONTEXT =
-            Pattern.compile("@Before\\b(?:(?!@After|@Test|@AfterClass|@Rule).)*?setContext\\s*\\(",
-                    Pattern.DOTALL);
+    /** Where a {@code @Before} method starts, so its body can be brace matched from there. */
+    private static final Pattern BEFORE_METHOD = Pattern.compile("@Before\\b(?!Class)");
 
     @Test
     public void everyTestClassThatTouchesASettingInstallsAContextFirst() throws IOException {
@@ -63,7 +60,7 @@ public class SettingsContextGuardTest {
             String text = new String(Files.readAllBytes(source), StandardCharsets.UTF_8);
             if (!TOUCHES_SETTINGS.matcher(text).find()) continue;
             if (DECLARES_RULE.matcher(text).find()) continue;
-            if (BEFORE_INSTALLS_CONTEXT.matcher(text).find()) continue;
+            if (installsContextFirst(text)) continue;
             offenders.add(source.getFileName().toString());
         }
 
@@ -99,6 +96,103 @@ public class SettingsContextGuardTest {
                     .sorted()
                     .collect(Collectors.toList());
         }
+    }
+
+    /**
+     * Whether any {@code @Before} method's own body calls {@code setContext}.
+     *
+     * <p>The body is found by matching braces from the method's opening one, over a source with
+     * its comments blanked out. Reading from the annotation to the next one instead, which is
+     * what this did first, let a match start at a {@code @Before} written in prose and run on
+     * into an unrelated {@code @Test} body: SettingsPagesTest and LogBufferManagerExportTest both
+     * passed the guard that way while installing their context inside each test method, which is
+     * the shape the guard exists to catch.
+     */
+    static boolean installsContextFirst(String rawSource) {
+        String source = withoutComments(rawSource);
+        Matcher annotation = BEFORE_METHOD.matcher(source);
+        while (annotation.find()) {
+            int open = source.indexOf('{', annotation.end());
+            if (open < 0) continue;
+            int depth = 0;
+            for (int index = open; index < source.length(); index++) {
+                char character = source.charAt(index);
+                if (character == '{') {
+                    depth++;
+                } else if (character == '}') {
+                    depth--;
+                    if (depth == 0) {
+                        if (source.substring(open, index).contains("setContext(")) return true;
+                        break;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * The source with its comments blanked out, so a {@code @Before} or a {@code setContext} that
+     * only appears in prose cannot answer for one that is not there. String literals are left
+     * alone: none of the patterns here can be spelled inside one by accident, and this class's
+     * own source, which does spell them, is skipped above.
+     */
+    static String withoutComments(String source) {
+        StringBuilder result = new StringBuilder(source.length());
+        int index = 0;
+        while (index < source.length()) {
+            if (source.startsWith("//", index)) {
+                int end = source.indexOf('\n', index);
+                if (end < 0) end = source.length();
+                for (int blank = index; blank < end; blank++) result.append(' ');
+                index = end;
+            } else if (source.startsWith("/*", index)) {
+                int end = source.indexOf("*/", index + 2);
+                end = end < 0 ? source.length() : end + 2;
+                for (int blank = index; blank < end; blank++) {
+                    result.append(source.charAt(blank) == '\n' ? '\n' : ' ');
+                }
+                index = end;
+            } else {
+                result.append(source.charAt(index));
+                index++;
+            }
+        }
+        return result.toString();
+    }
+
+    @Test
+    public void aBeforeInACommentDoesNotAnswerForOneThatIsNotThere() {
+        // A comment naming the annotation, immediately above a method that does install a
+        // context but is not a @Before. Reading from the comment's word to the block after it
+        // answers yes for a class whose first case still runs against whatever the last one
+        // left. SettingsPagesTest was this shape, in prose a few lines further off.
+        String slipped = String.join("\n",
+                "class Slipped {",
+                "    @Before public void installControls() { flags(); }",
+                "    // Unlike the @Before pattern, this one installs per case.",
+                "    @Test public void aCase() {",
+                "        Utils.setContext(activity);",
+                "        Settings.DEFAULT_SPEED_ENABLED.get();",
+                "    }",
+                "}");
+        assertTrue("the guard would not notice a setting here",
+                TOUCHES_SETTINGS.matcher(slipped).find());
+        assertTrue("a @Before that installs nothing was accepted",
+                !installsContextFirst(slipped));
+
+        String held = slipped.replace("public void installControls() { flags(); }",
+                "public void installControls() { Utils.setContext(app()); }");
+        assertTrue("a @Before that does install a context was rejected",
+                installsContextFirst(held));
+    }
+
+    @Test
+    public void aBaseSettingsReadCountsAsTouchingTheRegistry() {
+        // Four test classes name BaseSettings rather than Settings, and the first version of
+        // this pattern could not see them: \bSettings finds no boundary inside BaseSettings.
+        assertTrue(TOUCHES_SETTINGS.matcher("BaseSettings.DEBUG.get()").find());
+        assertTrue(TOUCHES_SETTINGS.matcher("Settings.DEBUG.get()").find());
     }
 
     /** Keeps the offender pattern honest: it has to match the shapes it is written for. */

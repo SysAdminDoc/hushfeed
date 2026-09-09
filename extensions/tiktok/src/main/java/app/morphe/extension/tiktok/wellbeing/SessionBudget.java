@@ -96,6 +96,7 @@ public final class SessionBudget {
     private static long undoWatchedMs;
     private static long undoLockUntilMs;
     private static boolean undoNoticeShown;
+    private static int undoPassesUsed;
     private static long lastTickMs;
     private static String lastCountedId;
     private static boolean noticeShown;
@@ -374,6 +375,7 @@ public final class SessionBudget {
             undoWatchedMs = watchedMs;
             undoLockUntilMs = lockUntilMs;
             undoNoticeShown = noticeShown;
+            undoPassesUsed = passesUsed;
             undoAvailable = true;
             day = dayOf(clock.now());
             videos = 0;
@@ -382,6 +384,10 @@ public final class SessionBudget {
             lockUntilMs = 0;
             lastCountedId = null;
             noticeShown = false;
+            // A pass is one of today's counts, and this row's own wording is that today is
+            // forgotten. Leaving it spent gave back the videos and the minutes and kept the way
+            // out of the hold gone, on a day the screen was showing as untouched.
+            passesUsed = 0;
             save();
             return true;
         }
@@ -434,6 +440,7 @@ public final class SessionBudget {
             writtenWatchedMs = undoWatchedMs;
             lockUntilMs = undoLockUntilMs;
             noticeShown = undoNoticeShown;
+            passesUsed = undoPassesUsed;
             lastCountedId = null;
             undoAvailable = false;
             save();
