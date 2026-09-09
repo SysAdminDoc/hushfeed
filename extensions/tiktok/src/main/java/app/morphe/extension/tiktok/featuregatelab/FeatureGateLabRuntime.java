@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.lang.reflect.Type;
 
 public final class FeatureGateLabRuntime {
@@ -636,6 +637,14 @@ public final class FeatureGateLabRuntime {
         return null;
     }
 
+    /** So the background catalogue load below is asked for once in a process, not per read. */
+    private static final AtomicBoolean catalogRequested = new AtomicBoolean();
+
+    /** Puts a test back on a process that has not asked for the catalogue yet. */
+    static void clearCatalogRequestForTests() {
+        catalogRequested.set(false);
+    }
+
     /**
      * Refuses a rule whose type the catalogue disagrees with.
      *
@@ -644,9 +653,12 @@ public final class FeatureGateLabRuntime {
      * so a rule matched by key alone can hand the host a String where its caller casts to a
      * Number, and the ClassCastException lands in TikTok's own frame.
      *
-     * <p>The catalogue is loaded by the Lab's own screen, so on a process where that screen has
-     * not been opened there is nothing to consult and the rule is taken as it stands, which is
-     * what this did for every rule before.
+     * <p>Nothing but the Lab's own screen used to load the catalogue, so on a fresh launch this
+     * check could not refuse anything until that screen was opened, which is the case it exists
+     * for. Reaching it with nothing cached now asks for the catalogue in the background and takes
+     * the rule as it stands this once; every later read has something to check against. The load
+     * is asked for only where a rule of this shape exists, so a phone with no AB rules saved
+     * never pays for it, and only once per process either way.
      */
     private static FeatureGateLabStore.Rule catalogAgrees(String key, FeatureGateLabStore.Rule rule) {
         if (rule == null) {
@@ -654,6 +666,16 @@ public final class FeatureGateLabRuntime {
         }
         FeatureGateCatalog.Snapshot catalog = FeatureGateCatalog.cachedSnapshot();
         if (catalog == null) {
+            if (catalogRequested.compareAndSet(false, true)) {
+                // Nothing to do when it lands: the next read reads the cache it fills.
+                FeatureGateCatalog.loadAsync(false, new FeatureGateCatalog.Callback() {
+                    @Override public void onLoaded(FeatureGateCatalog.Snapshot loaded) { }
+
+                    @Override public void onError(String message) {
+                        Log.w(TAG, "catalog load for the AB fallback failed: " + message);
+                    }
+                });
+            }
             return rule;
         }
         FeatureGateCatalog.Entry entry =

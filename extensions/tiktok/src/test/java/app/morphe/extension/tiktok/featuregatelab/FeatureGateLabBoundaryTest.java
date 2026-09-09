@@ -2,6 +2,7 @@ package app.morphe.extension.tiktok.featuregatelab;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -42,14 +43,18 @@ public class FeatureGateLabBoundaryTest {
         SettingsManagerObservationRecorder.clear();
         FeatureGateLabStore.resetAllLabData();
         FeatureGateLabRuntime.clearTriggered();
+        FeatureGateLabRuntime.clearCatalogRequestForTests();
         FeatureGateLabRuntime.reloadRules();
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
         FeatureGateLearnMode.cancel();
         SettingsManagerObservationRecorder.clear();
         FeatureGateLabStore.resetAllLabData();
+        // A load one of these asked for has to be finished with before the cache is cleared, or
+        // it lands in the middle of the next test and the catalogue appears from nowhere.
+        FeatureGateCatalog.awaitForTests();
         FeatureGateCatalog.resetForTests();
         SettingsStatus.featureGateRecorderEnabled = recorderEnabled;
     }
@@ -204,6 +209,29 @@ public class FeatureGateLabBoundaryTest {
 
         assertNull("the test started with a catalogue loaded", FeatureGateCatalog.cachedSnapshot());
         assertEquals(5, FeatureGateLabRuntime.overrideRawAbValue("early_gate", null, false));
+    }
+
+    @Test
+    public void withNoCatalogueLoadedTheFallbackAsksForOneSoTheNextReadIsChecked() throws Exception {
+        // The check could only refuse a rule while the catalogue happened to be loaded, and
+        // nothing loaded it until the Lab's own screen was opened in that process, so on a fresh
+        // launch the fallback behaved exactly as it had before the check existed.
+        FeatureGateLabStore.saveRule(FeatureGateLabStore.MANAGER_ABMOCK, "mistyped_gate",
+                "STRING", "not a number", true);
+        FeatureGateLabStore.setMasterEnabled(true);
+        assertNull("the test started with a catalogue loaded", FeatureGateCatalog.cachedSnapshot());
+
+        // This one read still has nothing to check against, and applies the rule as it always did.
+        assertEquals("not a number",
+                FeatureGateLabRuntime.overrideRawAbValue("mistyped_gate", null, false));
+
+        FeatureGateCatalog.awaitForTests();
+        assertNotNull("the fallback did not ask for the catalogue",
+                FeatureGateCatalog.cachedSnapshot());
+
+        // The real catalogue has never heard of this key, so now there is something to check
+        // against the rule is refused rather than handed to the host.
+        assertNull(FeatureGateLabRuntime.overrideRawAbValue("mistyped_gate", null, false));
     }
 
     @Test
