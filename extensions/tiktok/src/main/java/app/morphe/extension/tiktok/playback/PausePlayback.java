@@ -82,7 +82,11 @@ public final class PausePlayback {
             // The hold covers the feed and takes the touches, so nothing can be playing behind
             // a sheet during one, and taking the focus off it would hand the sound back.
             if (SessionBudget.isLocked()) return;
-            View sheet = sheetOf(cell);
+            // The sheet can have closed between the bind and this post. Quietening for a sheet
+            // that has already gone would hang the listener on a view that will never detach
+            // again, and the feed would stay quiet for the life of the process.
+            if (cell.getWindowToken() == null) return;
+            View sheet = sheetWindowOf(cell);
             if (sheet == null || sheet == sheetReference.get()) return;
             sheetReference = new WeakReference<>(sheet);
             quieten();
@@ -92,7 +96,11 @@ public final class PausePlayback {
 
                 @Override public void onViewDetachedFromWindow(View view) {
                     view.removeOnAttachStateChangeListener(this);
-                    if (sheetReference.get() == view) sheetReference = new WeakReference<>(null);
+                    // Only the sheet that is holding it hands it back. A second sheet opened
+                    // over the first takes the focus on its own, and the first one closing
+                    // underneath it would otherwise give the sound back with one still open.
+                    if (sheetReference.get() != view) return;
+                    sheetReference = new WeakReference<>(null);
                     // The feed is back in front of the reader, so it may have the sound again.
                     unquieten();
                 }
@@ -103,20 +111,27 @@ public final class PausePlayback {
     }
 
     /**
-     * The thing that goes away when the sheet closes.
+     * The thing that goes away when the comments close, or null when nothing here can tell.
      *
-     * <p>A sheet drawn into the activity is a child of the content root, and a sheet in a window
-     * of its own tops out at that window's own root. Either way it is the highest view the cell
-     * can see, and it is the one that detaches.
+     * <p>A sheet in a window of its own, which is what a bottom sheet dialog is, has a root view
+     * of its own, and that root detaches when the sheet is dismissed. That is a signal worth
+     * trusting.
+     *
+     * <p>A sheet drawn into the activity shares the activity's root, and nothing in the
+     * hierarchy says when it closes. Walking up to a fixed container and watching that would be
+     * watching a view that never detaches: the sound would be handed back never, rather than
+     * when the reader closed the comments. So on a build shaped that way this answers null and
+     * the switch does nothing at all, which is the failure worth having. It is also why the
+     * walk does not stop at android.R.id.content, which is not the top of the window.
      */
-    static View sheetOf(View cell) {
-        View node = cell;
-        while (node.getParent() instanceof ViewGroup) {
-            ViewGroup parent = (ViewGroup) node.getParent();
-            if (parent.getId() == android.R.id.content) return node;
-            node = parent;
-        }
-        return node == cell ? null : node;
+    static View sheetWindowOf(View cell) {
+        View root = cell.getRootView();
+        if (root == null || root == cell) return null;
+        Activity activity = Utils.getActivity();
+        View activityRoot = activity == null || activity.getWindow() == null
+                ? null
+                : activity.getWindow().getDecorView();
+        return root == activityRoot ? null : root;
     }
 
     // ------------------------------------------------------------------ coming back to the app
@@ -139,16 +154,16 @@ public final class PausePlayback {
                         }
 
                         @Override public void onActivityPaused(Activity paused) {
-                            wasAway = true;
+                        }
+
+                        @Override public void onActivityStopped(Activity stopped) {
+                            onBackground();
                         }
 
                         @Override public void onActivityCreated(Activity created, Bundle state) {
                         }
 
                         @Override public void onActivityStarted(Activity started) {
-                        }
-
-                        @Override public void onActivityStopped(Activity stopped) {
                         }
 
                         @Override public void onActivitySaveInstanceState(
@@ -161,6 +176,20 @@ public final class PausePlayback {
         } catch (Throwable error) {
             Logger.printException(() -> "Could not follow the app coming back", error);
         }
+    }
+
+    /**
+     * The app is no longer on screen.
+     *
+     * <p>Stopped rather than paused: a dialog or an in-app screen over the feed pauses the
+     * activity without the reader having gone anywhere, and gating the feed behind a tap for
+     * that is not what the row says. And nothing this holds survives the app going away, since
+     * a sheet dismissed while nobody was looking would otherwise leave the feed quiet until
+     * the process died.
+     */
+    static void onBackground() {
+        wasAway = true;
+        letGo();
     }
 
     static void onForeground(Activity activity) {
@@ -206,6 +235,13 @@ public final class PausePlayback {
         params.bottomMargin = SessionLockOverlay.navigationHeight(activity, root);
         root.addView(catcher, params);
         catcherReference = new WeakReference<>(catcher);
+    }
+
+    /** Hands everything back: the sound, the catcher, and the sheet being followed. */
+    private static void letGo() {
+        sheetReference = new WeakReference<>(null);
+        removeCatcher();
+        unquieten();
     }
 
     private static void removeCatcher() {

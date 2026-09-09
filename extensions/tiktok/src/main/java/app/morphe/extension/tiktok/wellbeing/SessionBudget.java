@@ -226,9 +226,12 @@ public final class SessionBudget {
         synchronized (LOCK) {
             load();
             rollOver(clock.now());
-            if (spent()) return 0;
             int minuteBudget = Settings.SESSION_BUDGET_MINUTES.get();
+            // Asked first, and before spent(). A budget counted only in videos runs out
+            // without any time having run down, and answering zero there told anything
+            // drawing from the clock that it had reached the end of a clock nobody set.
             if (minuteBudget <= 0) return -1;
+            if (spent()) return 0;
             return Math.max(0, minuteBudget * 60_000L - watchedMs);
         }
     }

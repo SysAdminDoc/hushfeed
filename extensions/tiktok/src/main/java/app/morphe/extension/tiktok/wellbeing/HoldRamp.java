@@ -43,7 +43,17 @@ public final class HoldRamp {
      */
     static final int FULL_ALPHA = 238;
 
+    /**
+     * How often the budget is asked, in milliseconds.
+     *
+     * <p>The player's progress callback fires several times a second and this runs off it. At
+     * a quarter of a second the cover still moves smoothly, in about 180 steps across the
+     * ramp, and the other nine callbacks in that second cost a setting read.
+     */
+    private static final long ASK_EVERY_MS = 250L;
+
     private static WeakReference<View> coverReference = new WeakReference<>(null);
+    private static long lastAskedAt;
 
     private HoldRamp() {
     }
@@ -95,9 +105,32 @@ public final class HoldRamp {
      */
     public static void sync() {
         if (!Settings.SESSION_BUDGET_RAMP.get()) {
-            if (coverReference.get() != null) detach();
+            if (coverReference.get() != null) Utils.runOnMainThread(HoldRamp::detach);
             return;
         }
+        // The ramp is the approach to the hold. With no hold to arrive at there is nothing to
+        // lead into, and the row that turns the hold off says in as many words that it leaves
+        // the feed alone, so a cover here would be one screen's promise breaking another's.
+        if (!aHoldWillFollow()) {
+            if (coverReference.get() != null) Utils.runOnMainThread(HoldRamp::detach);
+            return;
+        }
+        long now = android.os.SystemClock.uptimeMillis();
+        if (now - lastAskedAt < ASK_EVERY_MS && coverReference.get() == null) return;
+        lastAskedAt = now;
+        // Every sibling on this callback hops to the main thread before it touches a view.
+        // addView from the player's own thread throws, and the catch below would swallow it
+        // into a log line several times a second while the ramp never appeared.
+        Utils.runOnMainThread(HoldRamp::syncOnMainThread);
+    }
+
+    /** Whether a hold starts when the budget runs out, which is what the ramp leads into. */
+    private static boolean aHoldWillFollow() {
+        return Settings.SESSION_BUDGET_LOCK.get()
+                || Settings.SESSION_BUDGET_LOCK_MINUTES.get() > 0;
+    }
+
+    private static void syncOnMainThread() {
         try {
             // The hold covers the feed itself and swallows the touches; a ramp under it would
             // be two covers doing one job.
@@ -114,7 +147,15 @@ public final class HoldRamp {
                 detach();
                 return;
             }
-            int alpha = alphaFor(SessionBudget.budgetRemainingMs());
+            long remaining = SessionBudget.budgetRemainingMs();
+            // Nothing left to ramp towards. The hold is either about to go up or has already
+            // run its course, and a cover that stays past the end of the budget is a feed
+            // nobody can see with nothing on screen to say why.
+            if (remaining <= 0) {
+                detach();
+                return;
+            }
+            int alpha = alphaFor(remaining);
             if (alpha <= 0) {
                 detach();
                 return;
@@ -131,6 +172,9 @@ public final class HoldRamp {
         ViewGroup root = activity.findViewById(android.R.id.content);
         if (root == null) return null;
         if (existing != null && existing.getParent() == root) return existing;
+        // The activity moved. Take the old cover off the screen it is on rather than dropping
+        // the only handle to it and building a second one.
+        detach();
 
         View cover = new View(activity);
         // Nothing about this is interactive. A plain View with no click listener refuses the
@@ -156,9 +200,22 @@ public final class HoldRamp {
         if (parent != null) parent.removeView(cover);
     }
 
+    /**
+     * One pass with the throttle stood aside, so a test can drive the ramp step by step rather
+     * than pretending a quarter of a second goes by between two lines of a fixture.
+     */
+    static void syncNowForTests() {
+        // Far enough back that the throttle lets this pass. Zero would not: the clock starts
+        // near zero under a test runner, so "nothing has been asked yet" and "asked a moment
+        // ago" are the same number there.
+        lastAskedAt = android.os.SystemClock.uptimeMillis() - ASK_EVERY_MS;
+        sync();
+    }
+
     /** Drops the cover and forgets it, between tests. */
     static void resetForTests() {
         detach();
+        lastAskedAt = 0;
     }
 
     /** The cover on screen, or null when there is none. Test seam. */

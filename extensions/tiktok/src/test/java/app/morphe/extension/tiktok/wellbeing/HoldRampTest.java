@@ -9,6 +9,7 @@ import static org.junit.Assert.assertTrue;
 import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Looper;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -26,6 +27,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 
 /**
@@ -51,6 +53,8 @@ public class HoldRampTest {
         Settings.SESSION_BUDGET_LOCK_MINUTES.resetToDefault();
         Settings.SESSION_BUDGET_LOCK.resetToDefault();
         Settings.SESSION_BUDGET_RAMP.resetToDefault();
+        Settings.SESSION_BUDGET_LOCK_MINUTES.resetToDefault();
+        Settings.SESSION_BUDGET_VIDEOS.resetToDefault();
         Settings.SESSION_BUDGET_STATE.resetToDefault();
         now.set(at(2026, Calendar.SEPTEMBER, 7, 12, 0));
         SessionBudget.setClockForTests(now::get);
@@ -102,45 +106,53 @@ public class HoldRampTest {
         assertEquals(30_000L, SessionBudget.budgetRemainingMs());
         watch(30_000L);
         assertEquals("a spent budget has something left", 0L, SessionBudget.budgetRemainingMs());
+    }
 
+    /**
+     * And a budget counted only in videos has no time left, which is a different answer from no
+     * time left at all. Answering zero told the ramp it had reached the end of a clock nobody
+     * set, and 0 is the darkest frame there is.
+     */
+    @Test public void aBudgetCountedInVideosHasNoTimeToReport() {
         Settings.SESSION_BUDGET_MINUTES.save(0);
-        Settings.SESSION_BUDGET_VIDEOS.save(10);
-        SessionBudget.resetForTests();
-        assertTrue("a budget counted in videos reported time left",
+        Settings.SESSION_BUDGET_VIDEOS.save(1);
+        assertTrue("a videos budget reported time left",
                 SessionBudget.budgetRemainingMs() < 0);
+        SessionBudget.noteVideo("only-one");
+        assertTrue("the budget did not run out", SessionBudget.reachedLimit());
+        assertTrue("a spent videos budget reported no time left rather than no clock",
+                SessionBudget.budgetRemainingMs() < 0);
+        assertEquals("and the ramp drew something for it",
+                0, HoldRamp.alphaFor(SessionBudget.budgetRemainingMs()));
     }
 
     /**
      * The live path, entered the way the player enters it. The cover appears part way through
-     * the last three quarters of a minute and finishes on the hold's own shade, so the last
-     * frame of the ramp and the first frame of the hold are the same.
+     * the last three quarters of a minute and deepens as the budget runs down.
      */
-    @Test public void withThirtySecondsLeftTheFeedIsPartlyCoveredAndItMeetsTheHold() {
+    @Test public void withThirtySecondsLeftTheFeedIsPartlyCovered() {
         Settings.SESSION_BUDGET_RAMP.save(true);
         Settings.SESSION_BUDGET_MINUTES.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(10);
         try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
             Activity activity = owner.get();
             Utils.setActivity(activity);
 
-            HoldRamp.sync();
+            sync();
             assertNull("the feed was covered with a whole minute left", HoldRamp.coverForTests());
 
             watch(30_000L);
-            HoldRamp.sync();
+            sync();
             View cover = HoldRamp.coverForTests();
             assertNotNull("nothing covered the feed with thirty seconds left", cover);
             assertEquals(26, alphaOf(cover));
             assertSame(activity, cover);
 
+            // Ten seconds left, which is 144 of the 238 the hold itself is.
             watch(20_000L);
-            HoldRamp.sync();
-            assertTrue("the cover did not deepen as the budget ran down",
-                    alphaOf(HoldRamp.coverForTests()) > 26);
-
-            watch(10_000L);
-            HoldRamp.sync();
-            assertEquals("the ramp did not finish on the hold's own shade",
-                    HoldRamp.FULL_ALPHA, alphaOf(HoldRamp.coverForTests()));
+            sync();
+            assertEquals("the cover did not deepen as the budget ran down",
+                    144, alphaOf(HoldRamp.coverForTests()));
         }
     }
 
@@ -153,14 +165,64 @@ public class HoldRampTest {
             Activity activity = owner.get();
             Utils.setActivity(activity);
             watch(45_000L);
-            HoldRamp.sync();
+            sync();
             assertNotNull("the ramp never started", HoldRamp.coverForTests());
 
             watch(15_000L);
             assertTrue("the budget did not run out", SessionBudget.claimNotice());
             assertTrue("no hold started", SessionBudget.isLocked());
-            HoldRamp.sync();
+            sync();
             assertNull("the ramp stayed under the hold", HoldRamp.coverForTests());
+        }
+    }
+
+    /**
+     * And it does not come back once the hold has run its course. A hold that lasts ten minutes
+     * lets go by itself, and the budget is still spent, so a ramp that only stood down while
+     * the hold was up covered the feed at nearly full black until four in the morning.
+     */
+    @Test public void theCoverDoesNotComeBackAfterTheHoldHasRunItsCourse() {
+        Settings.SESSION_BUDGET_RAMP.save(true);
+        Settings.SESSION_BUDGET_MINUTES.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(10);
+        try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setActivity(activity);
+            watch(60_000L);
+            assertTrue(SessionBudget.claimNotice());
+            assertTrue("no hold started", SessionBudget.isLocked());
+
+            // The hold lets go on its own, and the day has not turned over.
+            now.addAndGet(11 * 60_000L);
+            assertFalse("the hold never ended", SessionBudget.isLocked());
+
+            sync();
+            assertNull("the ramp covered the feed for the rest of the day after the hold ended",
+                    HoldRamp.coverForTests());
+        }
+    }
+
+    /**
+     * With no hold set, the row that says "shows the notice and leaves the feed alone" means it.
+     * A ramp leading to nothing is a feed that goes dark and stays dark with nothing on screen
+     * to say why.
+     */
+    @Test public void withNoHoldToArriveAtNothingFades() {
+        Settings.SESSION_BUDGET_RAMP.save(true);
+        Settings.SESSION_BUDGET_MINUTES.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(0);
+        try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setActivity(activity);
+            watch(45_000L);
+            sync();
+            assertNull("the feed faded towards a hold that is switched off",
+                    HoldRamp.coverForTests());
+
+            watch(15_000L);
+            sync();
+            assertNull("the feed was left covered with no hold and nothing to say why",
+                    HoldRamp.coverForTests());
         }
     }
 
@@ -172,13 +234,14 @@ public class HoldRampTest {
     @Test public void removeAnimationsLeavesTheFeedAloneUntilTheHold() {
         Settings.SESSION_BUDGET_RAMP.save(true);
         Settings.SESSION_BUDGET_MINUTES.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(10);
         animationScale(0f);
         try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
             Activity activity = owner.get();
             Utils.setActivity(activity);
             assertTrue("the fixture did not take the setting", HoldRamp.animationIsOff(activity));
             watch(45_000L);
-            HoldRamp.sync();
+            sync();
             assertNull("the feed was faded for a reader who asked for no animation",
                     HoldRamp.coverForTests());
 
@@ -191,6 +254,7 @@ public class HoldRampTest {
     /** Off, which is the default, nothing is added to the feed at all. */
     @Test public void withTheSwitchOffTheFeedIsNeverTouched() {
         Settings.SESSION_BUDGET_MINUTES.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(10);
         assertFalse("the ramp is on by default", Settings.SESSION_BUDGET_RAMP.get());
         try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
             Activity activity = owner.get();
@@ -198,7 +262,7 @@ public class HoldRampTest {
             ViewGroup root = activity.findViewById(android.R.id.content);
             int before = root.getChildCount();
             watch(45_000L);
-            HoldRamp.sync();
+            sync();
             assertNull(HoldRamp.coverForTests());
             assertEquals("something was added to the feed with the switch off",
                     before, root.getChildCount());
@@ -213,11 +277,12 @@ public class HoldRampTest {
     @Test public void theCoverTakesNoTouchesAndIsNotAnnounced() {
         Settings.SESSION_BUDGET_RAMP.save(true);
         Settings.SESSION_BUDGET_MINUTES.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(10);
         try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
             Activity activity = owner.get();
             Utils.setActivity(activity);
             watch(40_000L);
-            HoldRamp.sync();
+            sync();
             View cover = HoldRamp.coverForTests();
             assertNotNull(cover);
             assertFalse("the cover swallowed touches", cover.isClickable());
@@ -232,6 +297,18 @@ public class HoldRampTest {
     private static void assertSame(Activity activity, View cover) {
         ViewGroup root = activity.findViewById(android.R.id.content);
         assertTrue("the cover is not on the feed's own root", cover.getParent() == root);
+    }
+
+    /**
+     * One pass of the ramp, the way the player's callback drives it.
+     *
+     * <p>It hops to the main thread, because addView from the player's own thread throws, and
+     * it only asks the budget every quarter second, so the fixture has to let that go by
+     * between steps rather than pretending a whole ramp happens inside one millisecond.
+     */
+    private static void sync() {
+        HoldRamp.syncNowForTests();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
     }
 
     private static int alphaOf(View cover) {

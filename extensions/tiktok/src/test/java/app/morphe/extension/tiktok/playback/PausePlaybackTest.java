@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.media.AudioManager;
 import android.os.Looper;
 import android.view.View;
@@ -54,18 +55,21 @@ public class PausePlaybackTest {
         Settings.NO_RESUME_ON_FOREGROUND.resetToDefault();
     }
 
-    /** Open the comments and the sound goes; close them and it comes back. */
-    @Test public void aCommentSheetTakesTheSoundAndGivesItBackOnClose() {
+    /**
+     * A comment sheet in a window of its own, which is what a bottom sheet dialog is. Its root
+     * view detaches when it is dismissed, and that is the signal this feature is built on.
+     */
+    @Test public void aCommentSheetInItsOwnWindowTakesTheSoundAndGivesItBackOnClose() {
         Settings.PAUSE_ON_COMMENTS.save(true);
         try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
             Activity activity = owner.get();
             Utils.setActivity(activity);
-            ViewGroup root = activity.findViewById(android.R.id.content);
             var shadow = Shadows.shadowOf(
                     (AudioManager) activity.getSystemService(Activity.AUDIO_SERVICE));
             assertNull("something already held the focus", shadow.getLastAudioFocusRequest());
 
-            View cell = openSheet(activity, root);
+            Dialog sheet = openSheet(activity);
+            View cell = cellIn(sheet);
             PausePlayback.onCommentCellBound(cell);
             Shadows.shadowOf(Looper.getMainLooper()).idle();
 
@@ -74,17 +78,96 @@ public class PausePlaybackTest {
             assertEquals(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT,
                     shadow.getLastAudioFocusRequest().durationHint);
 
-            // A second cell in the same sheet is the list scrolling, not a second sheet.
+            // Another cell in the same sheet is the list scrolling, not a second sheet.
             PausePlayback.onCommentCellBound(cell);
             Shadows.shadowOf(Looper.getMainLooper()).idle();
             assertNull("scrolling the comments handed the focus back",
                     shadow.getLastAbandonedAudioFocusListener());
 
-            closeSheet(root);
+            sheet.dismiss();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
             assertFalse("the feed stayed quiet after the sheet closed",
                     PausePlayback.quietenedForTests());
             assertNotNull("the focus was never handed back",
                     shadow.getLastAbandonedAudioFocusListener());
+        }
+    }
+
+    /**
+     * And a sheet drawn into the activity itself, which shares the activity's root view. There
+     * is no signal here that says when it closes, so this does nothing rather than taking the
+     * sound and never giving it back. The failure worth having is the one that leaves the app
+     * as it was.
+     */
+    @Test public void aSheetDrawnIntoTheActivityIsLeftAlone() {
+        Settings.PAUSE_ON_COMMENTS.save(true);
+        try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setActivity(activity);
+            ViewGroup root = activity.findViewById(android.R.id.content);
+            var shadow = Shadows.shadowOf(
+                    (AudioManager) activity.getSystemService(Activity.AUDIO_SERVICE));
+
+            FrameLayout inActivitySheet = new FrameLayout(activity);
+            View cell = new View(activity);
+            inActivitySheet.addView(cell);
+            root.addView(inActivitySheet);
+
+            PausePlayback.onCommentCellBound(cell);
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+            assertNull("the walk up found a sheet where there is no window of its own",
+                    PausePlayback.sheetWindowOf(cell));
+            assertFalse(PausePlayback.quietenedForTests());
+            assertNull("the sound was taken with nothing to give it back",
+                    shadow.getLastAudioFocusRequest());
+        }
+    }
+
+    /** A sheet closing underneath a second one does not hand the sound back. */
+    @Test public void aClosingSheetLeavesTheSoundWithTheOneStillOpen() {
+        Settings.PAUSE_ON_COMMENTS.save(true);
+        try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setActivity(activity);
+
+            Dialog first = openSheet(activity);
+            PausePlayback.onCommentCellBound(cellIn(first));
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            Dialog second = openSheet(activity);
+            PausePlayback.onCommentCellBound(cellIn(second));
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertTrue(PausePlayback.quietenedForTests());
+
+            first.dismiss();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertTrue("the sheet underneath handed back the sound the top one is holding",
+                    PausePlayback.quietenedForTests());
+
+            second.dismiss();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertFalse(PausePlayback.quietenedForTests());
+        }
+    }
+
+    /**
+     * The walk up waits a post, because a cell has no parent during its bind. A sheet that
+     * closes in that gap is a sheet nothing will ever see detach again.
+     */
+    @Test public void aSheetThatClosesBeforeThePostRunsTakesNothing() {
+        Settings.PAUSE_ON_COMMENTS.save(true);
+        try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setActivity(activity);
+
+            Dialog sheet = openSheet(activity);
+            View cell = cellIn(sheet);
+            PausePlayback.onCommentCellBound(cell);
+            sheet.dismiss();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+            assertFalse("the sound was taken for a sheet that had already gone",
+                    PausePlayback.quietenedForTests());
         }
     }
 
@@ -93,11 +176,10 @@ public class PausePlaybackTest {
         try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
             Activity activity = owner.get();
             Utils.setActivity(activity);
-            ViewGroup root = activity.findViewById(android.R.id.content);
             var shadow = Shadows.shadowOf(
                     (AudioManager) activity.getSystemService(Activity.AUDIO_SERVICE));
 
-            PausePlayback.onCommentCellBound(openSheet(activity, root));
+            PausePlayback.onCommentCellBound(cellIn(openSheet(activity)));
             Shadows.shadowOf(Looper.getMainLooper()).idle();
 
             assertFalse(PausePlayback.quietenedForTests());
@@ -133,7 +215,7 @@ public class PausePlaybackTest {
         }
     }
 
-    /** A resume that follows no pause is a dialog closing, not the reader coming back. */
+    /** A resume that follows no stop is a dialog closing, not the reader coming back. */
     @Test public void aResumeWithoutHavingLeftIsNotAReturn() {
         Settings.NO_RESUME_ON_FOREGROUND.save(true);
         try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
@@ -145,6 +227,31 @@ public class PausePlaybackTest {
             assertFalse("a resume that never left held the feed",
                     PausePlayback.quietenedForTests());
             assertNull(PausePlayback.catcherForTests());
+        }
+    }
+
+    /**
+     * And the app going away hands everything back, whatever state it was in. A sheet dismissed
+     * while nobody was looking, or a catcher on an activity that is being torn down, would
+     * otherwise leave the feed quiet for the life of the process.
+     */
+    @Test public void theAppGoingAwayHandsBackTheSoundAndTheCatcher() {
+        Settings.NO_RESUME_ON_FOREGROUND.save(true);
+        try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setActivity(activity);
+            PausePlayback.setWasAwayForTests(true);
+            PausePlayback.onForeground(activity);
+            assertTrue(PausePlayback.quietenedForTests());
+            assertNotNull(PausePlayback.catcherForTests());
+
+            PausePlayback.onBackground();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+            assertFalse("the feed stayed quiet after the app went away",
+                    PausePlayback.quietenedForTests());
+            assertNull("the catcher outlived the screen it was on",
+                    PausePlayback.catcherForTests());
         }
     }
 
@@ -183,36 +290,34 @@ public class PausePlaybackTest {
         }
     }
 
-    /** The sheet is what goes away when the comments close, not the cell inside it. */
-    @Test public void theSheetIsTheThingThatDetaches() {
-        try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
-            Activity activity = owner.get();
-            ViewGroup root = activity.findViewById(android.R.id.content);
-            FrameLayout sheet = new FrameLayout(activity);
-            FrameLayout list = new FrameLayout(activity);
-            View cell = new View(activity);
-            list.addView(cell);
-            sheet.addView(list);
-            root.addView(sheet);
-
-            assertEquals("the walk up stopped somewhere in the middle of the sheet",
-                    sheet, PausePlayback.sheetOf(cell));
-            assertNull("a cell with nothing above it is not in a sheet",
-                    PausePlayback.sheetOf(new View(activity)));
-        }
-    }
-
     // ------------------------------------------------------------------------------- fixture
 
-    private static View openSheet(Activity activity, ViewGroup root) {
-        FrameLayout sheet = new FrameLayout(activity);
-        View cell = new View(activity);
-        sheet.addView(cell);
-        root.addView(sheet);
+    /** A comment sheet the way TikTok's is: a window of its own over the feed. */
+    private static Dialog openSheet(Activity activity) {
+        Dialog sheet = new Dialog(activity);
+        FrameLayout content = new FrameLayout(activity);
+        content.addView(new View(activity));
+        sheet.setContentView(content);
+        sheet.show();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        return sheet;
+    }
+
+    private static View cellIn(Dialog sheet) {
+        ViewGroup content = sheet.findViewById(android.R.id.content);
+        assertNotNull("the sheet has no content", content);
+        View cell = firstLeaf(content);
+        assertNotNull("the sheet has no cell in it", cell);
         return cell;
     }
 
-    private static void closeSheet(ViewGroup root) {
-        root.removeViewAt(root.getChildCount() - 1);
+    private static View firstLeaf(View view) {
+        if (!(view instanceof ViewGroup)) return view;
+        ViewGroup group = (ViewGroup) view;
+        for (int index = 0; index < group.getChildCount(); index++) {
+            View found = firstLeaf(group.getChildAt(index));
+            if (found != null) return found;
+        }
+        return null;
     }
 }

@@ -116,8 +116,10 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
                 "Off by default. Switched on, the feed dims over the last three quarters of a "
                         + "minute of a time budget, most of it in the final half minute, so the "
                         + "hold is somewhere you arrive rather than somewhere you land. Needs a "
-                        + "budget in minutes: a budget counted in videos has no time left to "
-                        + "follow. Nothing fades if you have turned animations off.",
+                        + "budget in minutes and a hold to arrive at: a budget counted in videos "
+                        + "has no time left to follow, and with the hold switched off there is "
+                        + "nothing to lead into. Nothing fades if you have turned animations "
+                        + "off.",
                 Settings.SESSION_BUDGET_RAMP));
         addPreference(new ClockHourPreference(context, "Start the day at",
                 "The hour both budgets reset, on a 24 hour clock. Four in the morning by default, "
