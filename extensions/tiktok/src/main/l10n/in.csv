@@ -554,6 +554,41 @@ Find a setting by title or description,Temukan setelan berdasarkan judul atau de
 No matching settings,Tidak ada setelan yang cocok
 "Search a title, description or category.","Cari judul, deskripsi, atau kategori."
 Search settings,Cari setelan
+Value to return,Nilai yang dikembalikan
+Enable overrides,Aktifkan penggantian
+Applies saved rules at supported getters,Menerapkan aturan tersimpan pada getter yang didukung
+"%1$s, selected","%1$s, dipilih"
+Custom %1$s value (unverified),Nilai %1$s khusus (belum diverifikasi)
+Custom value (unverified),Nilai khusus (belum diverifikasi)
+Use value,Gunakan nilai
+Using TikTok's value,Memakai nilai TikTok
+Override saved but off,Penggantian tersimpan tapi mati
+"Getter requested, override rejected: %1$s","Getter diminta, penggantian ditolak: %1$s"
+Getter requested,Getter diminta
+Getter not requested yet,Getter belum diminta
+One value per line,Satu nilai per baris
+Advanced JSON value,Nilai JSON lanjutan
+Value,Nilai
+Show,Tampilkan
+Hide,Sembunyikan
+Search words or key,Cari kata atau kunci
+Loading local catalog and current TikTok cache...,Memuat katalog lokal dan cache TikTok saat ini...
+No gates match this search and filter.,Tidak ada gate yang cocok dengan pencarian dan filter ini.
+Refreshing current TikTok cache...,Menyegarkan cache TikTok saat ini...
+Loaded current values. Loading all known gates...,Nilai saat ini dimuat. Memuat semua gate yang diketahui...
+Current cache unavailable: %1$s,Cache saat ini tidak tersedia: %1$s
+Gate data unavailable,Data gate tidak tersedia
+No gate data is available. Refresh values from the menu to try again.,Tidak ada data gate. Segarkan nilai dari menu untuk mencoba lagi.
+Filter: %1$s,Filter: %1$s
+Show gates,Tampilkan gate
+1 gate selected,1 gate dipilih
+%1$d gates selected,%1$d gate dipilih
+Preview shortened. Save JSON includes the full report.,Pratinjau dipendekkan. Simpan JSON memuat laporan lengkapnya.
+Choose a preset to fill the SIM details.,Pilih preset untuk mengisi detail SIM.
+Search countries or operators,Cari negara atau operator
+Only bottom tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear.,Hanya tab bawah yang sudah dimuat TikTok di perangkat ini yang muncul di sini. Ini tidak memaksa tab yang tidak tersedia untuk muncul.
+Only tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear.,Hanya tab yang sudah dimuat TikTok di perangkat ini yang muncul di sini. Ini tidak memaksa tab yang tidak tersedia untuk muncul.
+Required,Wajib
 "Search translated titles and descriptions, then open the original setting.","Cari judul dan deskripsi terjemahan, lalu buka setelan asli."
 Try a different word or clear the search.,Coba kata lain atau hapus pencarian.
 Type to search settings,Ketik untuk mencari setelan

@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The dialogs that were still in English are not. The SIM country picker, the tab pickers and their help text, the Feature Gate Lab from its search box to its selection count, the gate editor with its value hints and status lines, and what a screen reader is told about all of them. Thirty-five more strings in German, Indonesian, Spanish and Brazilian Portuguese. Two of them had a German row all along and never asked for it, which is the sort of thing a check catches and reading does not, so there is a check now: text handed straight to a view in English fails the build.
+
 * The daily budget costs less to keep. Working out which day it is used to read the device's timezone on every frame the player reported, and on Android that hands back a copy each time. It now listens for the timezone changing instead, which is the one moment the answer can be wrong, so the check on the hot path is two comparisons.
 
 * One line of the settings screen was still in English on a translated phone: the summary under "Start today over" after you have tapped it. It is translated in all four languages now, and the check that catches this kind of gap taps the row itself rather than waiting for it to be found by accident.

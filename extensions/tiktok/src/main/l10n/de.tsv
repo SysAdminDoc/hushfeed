@@ -556,6 +556,41 @@ Find a setting by title or description	Einstellung nach Titel oder Beschreibung 
 No matching settings	Keine passenden Einstellungen
 Search a title, description or category.	Titel, Beschreibung oder Kategorie durchsuchen.
 Search settings	Einstellungen durchsuchen
+Value to return	Zurückgegebener Wert
+Enable overrides	Überschreibungen aktivieren
+Applies saved rules at supported getters	Wendet gespeicherte Regeln an unterstützten Gettern an
+%1$s, selected	%1$s, ausgewählt
+Custom %1$s value (unverified)	Eigener %1$s-Wert (ungeprüft)
+Custom value (unverified)	Eigener Wert (ungeprüft)
+Use value	Wert verwenden
+Using TikTok's value	TikToks Wert wird verwendet
+Override saved but off	Überschreibung gespeichert, aber aus
+Getter requested, override rejected: %1$s	Getter abgefragt, Überschreibung abgelehnt: %1$s
+Getter requested	Getter abgefragt
+Getter not requested yet	Getter noch nicht abgefragt
+One value per line	Ein Wert pro Zeile
+Advanced JSON value	Erweiterter JSON-Wert
+Value	Wert
+Show	Anzeigen
+Hide	Ausblenden
+Search words or key	Nach Wörtern oder Schlüssel suchen
+Loading local catalog and current TikTok cache...	Lokaler Katalog und aktueller TikTok-Cache werden geladen ...
+No gates match this search and filter.	Keine Schalter passen zu dieser Suche und diesem Filter.
+Refreshing current TikTok cache...	Aktueller TikTok-Cache wird aktualisiert ...
+Loaded current values. Loading all known gates...	Aktuelle Werte geladen. Alle bekannten Schalter werden geladen ...
+Current cache unavailable: %1$s	Aktueller Cache nicht verfügbar: %1$s
+Gate data unavailable	Schalterdaten nicht verfügbar
+No gate data is available. Refresh values from the menu to try again.	Es sind keine Schalterdaten verfügbar. Werte über das Menü aktualisieren und es erneut versuchen.
+Filter: %1$s	Filter: %1$s
+Show gates	Schalter anzeigen
+1 gate selected	1 Schalter ausgewählt
+%1$d gates selected	%1$d Schalter ausgewählt
+Preview shortened. Save JSON includes the full report.	Vorschau gekürzt. JSON speichern enthält den vollständigen Bericht.
+Choose a preset to fill the SIM details.	Eine Vorlage wählen, um die SIM-Angaben auszufüllen.
+Search countries or operators	Nach Ländern oder Anbietern suchen
+Only bottom tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear.	Hier stehen nur die unteren Tabs, die TikTok auf diesem Gerät geladen hat. Nicht verfügbare Tabs erscheinen dadurch nicht.
+Only tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear.	Hier stehen nur die Tabs, die TikTok auf diesem Gerät geladen hat. Nicht verfügbare Tabs erscheinen dadurch nicht.
+Required	Erforderlich
 Search translated titles and descriptions, then open the original setting.	Übersetzte Titel und Beschreibungen durchsuchen und dann die ursprüngliche Einstellung öffnen.
 Try a different word or clear the search.	Versuche ein anderes Wort oder lösche die Suche.
 Type to search settings	Tippe, um Einstellungen zu durchsuchen

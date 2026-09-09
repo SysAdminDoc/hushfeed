@@ -4,6 +4,7 @@
  */
 package app.morphe.extension.tiktok.featuregatelab;
 
+import app.morphe.extension.tiktok.settings.L10n;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -215,12 +216,15 @@ public final class FeatureGateLabFragment extends Fragment {
         masterRow.setBackground(SettingsUi.borderedSurface(context, 10, false));
         LinearLayout masterText = new LinearLayout(context);
         masterText.setOrientation(LinearLayout.VERTICAL);
-        masterText.addView(FeatureGateLabUi.body(context, "Enable overrides"), FeatureGateLabUi.matchWrap());
-        masterText.addView(FeatureGateLabUi.label(context, "Applies saved rules at supported getters"), FeatureGateLabUi.matchWrap());
+        masterText.addView(FeatureGateLabUi.body(context, L10n.t(context, "Enable overrides")),
+                FeatureGateLabUi.matchWrap());
+        masterText.addView(FeatureGateLabUi.label(context,
+                L10n.t(context, "Applies saved rules at supported getters")),
+                FeatureGateLabUi.matchWrap());
         masterRow.addView(masterText, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         master = new Switch(context);
         master.setChecked(FeatureGateLabStore.masterEnabled());
-        master.setContentDescription("Enable overrides");
+        master.setContentDescription(L10n.t(context, "Enable overrides"));
         SettingsUi.styleSwitch(master);
         masterRow.addView(master, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -247,7 +251,7 @@ public final class FeatureGateLabFragment extends Fragment {
         search.setTextSize(16);
         // No content description on a search box. On an editable view it replaces what was
         // typed in the announcement, so "cats" came back as the label. The hint names it.
-        search.setHint("Search words or key");
+        search.setHint(L10n.t(context, "Search words or key"));
         search.setBackgroundColor(Color.TRANSPARENT);
         search.setTextColor(SettingsUi.textPrimary());
         search.setHintTextColor(SettingsUi.textSecondary());
@@ -377,7 +381,8 @@ public final class FeatureGateLabFragment extends Fragment {
         ));
         controls.addView(resultRow, FeatureGateLabUi.matchWrap());
 
-        loading = FeatureGateLabUi.label(context, "Loading local catalog and current TikTok cache...");
+        loading = FeatureGateLabUi.label(context,
+                L10n.t(context, "Loading local catalog and current TikTok cache..."));
         controls.addView(loading, FeatureGateLabUi.matchWrap());
 
         FrameLayout listContainer = new FrameLayout(context);
@@ -411,7 +416,8 @@ public final class FeatureGateLabFragment extends Fragment {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
         ));
-        empty = FeatureGateLabUi.label(context, "No gates match this search and filter.");
+        empty = FeatureGateLabUi.label(context,
+                L10n.t(context, "No gates match this search and filter."));
         empty.setGravity(Gravity.CENTER);
         empty.setPadding(
                 FeatureGateLabUi.dp(context, 24),
@@ -547,7 +553,9 @@ public final class FeatureGateLabFragment extends Fragment {
 
     private void load(boolean refresh) {
         loading.setVisibility(View.VISIBLE);
-        loading.setText(refresh ? "Refreshing current TikTok cache..." : "Loading local catalog and current TikTok cache...");
+        loading.setText(L10n.t(getContext(), refresh
+                ? "Refreshing current TikTok cache..."
+                : "Loading local catalog and current TikTok cache..."));
         FeatureGateCatalog.loadAsync(refresh, new FeatureGateCatalog.Callback() {
             @Override
             public void onLoaded(FeatureGateCatalog.Snapshot loaded) {
@@ -557,23 +565,25 @@ public final class FeatureGateLabFragment extends Fragment {
                     loading.setVisibility(View.GONE);
                 } else {
                     loading.setVisibility(View.VISIBLE);
-                    loading.setText("Loaded current values. Loading all known gates...");
+                    loading.setText(L10n.t(getContext(),
+                            "Loaded current values. Loading all known gates..."));
                 }
-                empty.setText("No gates match this search and filter.");
+                empty.setText(L10n.t(getContext(), "No gates match this search and filter."));
                 rebuild();
             }
 
             @Override
             public void onError(String message) {
                 if (!isAdded() || getView() == null) return;
-                loading.setText("Current cache unavailable: " + message);
+                loading.setText(
+                        L10n.f(getContext(), "Current cache unavailable: %1$s", message));
                 FeatureGateCatalog.Snapshot cached = FeatureGateCatalog.cachedSnapshot();
                 if (cached != null) {
                     snapshot = cached;
                     rebuild();
                 } else {
-                    count.setText("Gate data unavailable");
-                    empty.setText("No gate data is available. Refresh values from the menu to try again.");
+                    count.setText(L10n.t(getContext(), "Gate data unavailable"));
+                    empty.setText(L10n.t(getContext(), "No gate data is available. Refresh values from the menu to try again."));
                 }
             }
         });
@@ -705,17 +715,23 @@ public final class FeatureGateLabFragment extends Fragment {
             tab.setTypeface(Typeface.DEFAULT, selected ? Typeface.BOLD : Typeface.NORMAL);
             indicator.setBackgroundColor(selected ? SettingsUi.accent() : Color.TRANSPARENT);
         }
-        if (filterButton != null) filterButton.setText("Filter: " + FILTER_LABELS[selectedFilter]);
+        if (filterButton != null) {
+            // The label itself is left as it is: the same five words are the choices in the
+            // dialog this button opens, and translating one without the other would be worse
+            // than translating neither.
+            filterButton.setText(
+                    L10n.f(getContext(), "Filter: %1$s", FILTER_LABELS[selectedFilter]));
+        }
     }
 
     private void showFilterPicker() {
         AlertDialog dialog = new AlertDialog.Builder(getActivity())
-                .setTitle("Show gates")
+                .setTitle(L10n.t(getContext(), "Show gates"))
                 .setSingleChoiceItems(FILTER_LABELS, selectedFilter, (choiceDialog, which) -> {
                     onFilterSelected(which);
                     choiceDialog.dismiss();
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(L10n.t(getContext(), "Cancel"), null)
                 .create();
         showStyled(dialog);
     }
@@ -730,7 +746,7 @@ public final class FeatureGateLabFragment extends Fragment {
     private void syncMasterSwitch() {
         if (master == null) return;
         master.setChecked(FeatureGateLabStore.masterEnabled());
-        master.setContentDescription("Enable overrides");
+        master.setContentDescription(L10n.t(getContext(), "Enable overrides"));
         SettingsUi.styleSwitch(master);
     }
 
@@ -774,7 +790,7 @@ public final class FeatureGateLabFragment extends Fragment {
         actions.addView(selectionAction(context, "Reset", this::resetSelection));
         actions.addView(selectionAction(context, "Disable", () -> forceSelection(false)));
         actions.addView(selectionAction(context, "Enable", () -> forceSelection(true)));
-        actions.addView(selectionAction(context, "Cancel", () -> {
+        actions.addView(selectionAction(context, L10n.t(context, "Cancel"), () -> {
             selection.clear();
             onSelectionChanged();
         }));
@@ -810,8 +826,8 @@ public final class FeatureGateLabFragment extends Fragment {
         }
         if (selectionCount != null) {
             selectionCount.setText(selection.size() == 1
-                    ? "1 gate selected"
-                    : selection.size() + " gates selected");
+                    ? L10n.t(getContext(), "1 gate selected")
+                    : L10n.f(getContext(), "%1$d gates selected", selection.size()));
         }
         if (adapter != null) adapter.notifyDataSetChanged();
     }
@@ -1474,8 +1490,13 @@ public final class FeatureGateLabFragment extends Fragment {
             }
             holder.state.setText(state);
             holder.state.setTextColor(stateColor);
-            convertView.setContentDescription(entry.title + ", " + entry.key + ", " + entry.type
-                    + ", " + shownValue + ", " + state + (chosen ? ", selected" : ""));
+            // The row read out as one sentence. The parts are the gate's own words, and
+            // only the last piece is ours, so only that one is a key.
+            String spoken = entry.title + ", " + entry.key + ", " + entry.type
+                    + ", " + shownValue + ", " + state;
+            convertView.setContentDescription(chosen
+                    ? L10n.f(getContext(), "%1$s, selected", spoken)
+                    : spoken);
             return convertView;
         }
     }

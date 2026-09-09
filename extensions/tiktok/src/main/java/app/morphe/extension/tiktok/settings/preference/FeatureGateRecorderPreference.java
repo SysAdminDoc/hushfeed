@@ -35,7 +35,9 @@ public final class FeatureGateRecorderPreference extends Preference {
         ScrollView scroll = new ScrollView(context);
         TextView text = new TextView(context);
         text.setText(report.length() <= GateReportExport.MAX_CLIPBOARD_CHARS ? report
-                : report.substring(0, GateReportExport.MAX_CLIPBOARD_CHARS) + "\n\nPreview shortened. Save JSON includes the full report.");
+                : report.substring(0, GateReportExport.MAX_CLIPBOARD_CHARS) + "\n\n"
+                        + L10n.t(context,
+                                "Preview shortened. Save JSON includes the full report."));
         text.setTextIsSelectable(true);
         text.setTextColor(SettingsUi.textPrimary());
         text.setTextSize(13);

@@ -481,6 +481,41 @@ Search a title, description or category.	Busca un título, una descripción o un
 Search and override gate flags	Buscar y sustituir marcas de interruptores
 Search hidden creators	Buscar creadores ocultos
 Search settings	Buscar en los ajustes
+Value to return	Valor que se devuelve
+Enable overrides	Activar las sustituciones
+Applies saved rules at supported getters	Aplica las reglas guardadas donde se puede
+%1$s, selected	%1$s, seleccionado
+Custom %1$s value (unverified)	Valor %1$s propio (sin verificar)
+Custom value (unverified)	Valor propio (sin verificar)
+Use value	Usar el valor
+Using TikTok's value	Se usa el valor de TikTok
+Override saved but off	Sustitución guardada pero desactivada
+Getter requested, override rejected: %1$s	Se pidió el valor y se rechazó la sustitución: %1$s
+Getter requested	Se pidió el valor
+Getter not requested yet	Todavía no se ha pedido el valor
+One value per line	Un valor por línea
+Advanced JSON value	Valor JSON avanzado
+Value	Valor
+Show	Mostrar
+Hide	Ocultar
+Search words or key	Buscar palabras o clave
+Loading local catalog and current TikTok cache...	Cargando el catálogo local y la caché actual de TikTok...
+No gates match this search and filter.	Ningún interruptor coincide con esta búsqueda y este filtro.
+Refreshing current TikTok cache...	Actualizando la caché actual de TikTok...
+Loaded current values. Loading all known gates...	Valores actuales cargados. Cargando todos los interruptores conocidos...
+Current cache unavailable: %1$s	La caché actual no está disponible: %1$s
+Gate data unavailable	Datos de los interruptores no disponibles
+No gate data is available. Refresh values from the menu to try again.	No hay datos de los interruptores. Actualiza los valores desde el menú para intentarlo otra vez.
+Filter: %1$s	Filtro: %1$s
+Show gates	Mostrar interruptores
+1 gate selected	1 interruptor seleccionado
+%1$d gates selected	%1$d interruptores seleccionados
+Preview shortened. Save JSON includes the full report.	Vista previa recortada. Guardar JSON incluye el informe completo.
+Choose a preset to fill the SIM details.	Elige un ajuste preestablecido para rellenar los datos de la SIM.
+Search countries or operators	Buscar países u operadores
+Only bottom tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear.	Aquí solo están las pestañas inferiores que TikTok ha cargado en este dispositivo. Esto no hace aparecer las que no están disponibles.
+Only tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear.	Aquí solo están las pestañas que TikTok ha cargado en este dispositivo. Esto no hace aparecer las que no están disponibles.
+Required	Obligatorio
 Search share actions	Buscar acciones de compartir
 Search the comments	Buscar en los comentarios
 Search these comments	Buscar en estos comentarios

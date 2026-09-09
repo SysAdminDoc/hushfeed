@@ -134,7 +134,8 @@ public class TabSelectionPreference extends Preference {
         dialogView.setPadding(padding, padding, padding, padding);
 
         TextView title = new TextView(context);
-        title.setText(bottomTabs ? "Allowed bottom tabs" : "Allowed loaded tabs");
+        title.setText(L10n.t(getContext(),
+                bottomTabs ? "Allowed bottom tabs" : "Allowed loaded tabs"));
         title.setTextColor(getTitleTextColor());
         title.setTextSize(20);
         title.setTypeface(title.getTypeface(), Typeface.BOLD);
@@ -145,8 +146,11 @@ public class TabSelectionPreference extends Preference {
 
         TextView helper = new TextView(context);
         helper.setText(bottomTabs
-                ? "Only bottom tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear."
-                : "Only tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear.");
+                // One literal each, and written out where the call is. The table is keyed
+                // on the whole sentence, and the gate that pairs a key with its translation
+                // reads what is inside the call rather than what the compiler joins together.
+                ? L10n.t(getContext(), "Only bottom tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear.")
+                : L10n.t(getContext(), "Only tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear."));
         helper.setTextColor(getSummaryTextColor());
         LinearLayout.LayoutParams helperParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -299,7 +303,7 @@ public class TabSelectionPreference extends Preference {
 
         if (isRequiredOption(option.key)) {
             TextView summary = new TextView(context);
-            summary.setText("Required");
+            summary.setText(L10n.t(getContext(), "Required"));
             summary.setTextColor(getSummaryTextColor());
             summary.setTextSize(13);
             textContainer.addView(summary);

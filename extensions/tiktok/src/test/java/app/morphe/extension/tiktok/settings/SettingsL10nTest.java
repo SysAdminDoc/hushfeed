@@ -802,6 +802,101 @@ public class SettingsL10nTest {
      * repeats every key back as a literal, so including it left the orphan check unable to fail:
      * a key was "shown" because the generator had written it out again.
      */
+    /**
+     * Text a hand-built dialog puts on a view, which the checks above cannot see.
+     *
+     * <p>They reflect preference titles and summaries and they scan toasts and content
+     * descriptions. A dialog built by hand calls setText, setHint or setTitle instead, and a
+     * string handed to one of those went out in English however many tables it was in: two of
+     * these already had German rows and simply bypassed L10n.
+     *
+     * <p>The rule is about the call rather than the table. Prose reaching one of these methods
+     * has to arrive through L10n, so a later table that loses the row fails the check above
+     * rather than shipping quietly.
+     */
+    @Test
+    public void noDialogTextIsHandedStraightToAViewInEnglish() throws Exception {
+        java.util.regex.Pattern call = java.util.regex.Pattern.compile(
+                "\\.\\s*(setText|setHint|setTitle|setMessage|setContentDescription|setPositiveButton"
+                        + "|setNegativeButton|setNeutralButton)\\s*\\(");
+        List<String> unwrapped = new ArrayList<>();
+        int checked = 0;
+        for (java.nio.file.Path file : tikTokSources()) {
+            String text = new String(java.nio.file.Files.readAllBytes(file),
+                    java.nio.charset.StandardCharsets.UTF_8);
+            byte[] kind = classify(text);
+            java.util.regex.Matcher match = call.matcher(text);
+            while (match.find()) {
+                if (kind[match.start()] != CODE) continue;
+                int close = closingBracket(text, kind, match.end() - 1);
+                if (close < 0) continue;
+                checked++;
+                for (String literal : literalsIn(text, withoutL10nCalls(text, kind),
+                        match.end(), close)) {
+                    if (isProse(literal)) {
+                        unwrapped.add(file.getFileName() + ": " + literal);
+                    }
+                }
+            }
+        }
+        assertTrue("no call to any of these was found, so this proves nothing", checked > 20);
+        assertEquals("text handed straight to a view in English, wrap it in L10n.t: "
+                + unwrapped, 0, unwrapped.size());
+    }
+
+    /** Every .java file under the TikTok extension. */
+    private static List<java.nio.file.Path> tikTokSources() throws Exception {
+        java.io.File root = new java.io.File("src/main/java/app/morphe/extension/tiktok");
+        if (!root.isDirectory()) root = new java.io.File(
+                "extensions/tiktok/src/main/java/app/morphe/extension/tiktok");
+        assertTrue("could not find the source tree", root.isDirectory());
+        try (java.util.stream.Stream<java.nio.file.Path> files =
+                     java.nio.file.Files.walk(root.toPath())) {
+            return files.filter(p -> p.toString().endsWith(".java"))
+                    .collect(java.util.stream.Collectors.toList());
+        }
+    }
+
+    /**
+     * The same classification with every L10n call blanked out.
+     *
+     * <p>A literal inside L10n.t is the key of a translated string, which is the thing this
+     * check wants to see. Only what is left over is text going to a view as it stands.
+     */
+    private static byte[] withoutL10nCalls(String text, byte[] kind) {
+        byte[] outside = kind.clone();
+        java.util.regex.Pattern l10n = java.util.regex.Pattern.compile("L10n\\s*\\.\\s*[tf]\\s*\\(");
+        java.util.regex.Matcher match = l10n.matcher(text);
+        while (match.find()) {
+            if (kind[match.start()] != CODE) continue;
+            int close = closingBracket(text, kind, match.end() - 1);
+            if (close < 0) continue;
+            for (int index = match.start(); index <= close && index < outside.length; index++) {
+                outside[index] = COMMENT;
+            }
+        }
+        return outside;
+    }
+
+    /**
+     * Whether a literal is something a reader reads rather than a value.
+     *
+     * <p>A resource name, a package name, a format fragment and a path are all strings that
+     * mean the same in every language. Prose has a space in it, or is a capitalised word long
+     * enough not to be an abbreviation.
+     */
+    private static boolean isProse(String literal) {
+        String trimmed = literal.trim();
+        if (trimmed.length() < 4) return false;
+        if (trimmed.startsWith("%") || trimmed.contains("://")) return false;
+        // A path, a package name or a resource id: no spaces and a separator inside it.
+        if (!trimmed.contains(" ")
+                && (trimmed.contains(".") || trimmed.contains("/") || trimmed.contains("_"))) {
+            return false;
+        }
+        return trimmed.contains(" ") || Character.isUpperCase(trimmed.charAt(0));
+    }
+
     private static Set<String> runtimeStringsInSource() throws Exception {
         Set<String> literals = new LinkedHashSet<>();
         // Gradle runs the tests with the module directory as the working directory, so the paths

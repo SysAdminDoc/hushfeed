@@ -1,4 +1,5 @@
 source,target
+%1$d gates selected,%1$d gates selected
 %1$d minutes left,%1$d minutes left
 %1$d setting was not in that file and was left as it is.,%1$d setting was not in that file and was left as it is.
 %1$d settings were not in that file and were left as they are.,%1$d settings were not in that file and were left as they are.
@@ -8,6 +9,8 @@ source,target
 %1$s left,%1$s left
 %1$s on,%1$s on
 %1$s to %2$s,%1$s to %2$s
+"%1$s, selected","%1$s, selected"
+1 gate selected,1 gate selected
 A creator pattern is taking too long and was switched off: %1$s,A creator pattern is taking too long and was switched off: %1$s
 "A good place to stop, if you want one.","A good place to stop, if you want one."
 A hidden puzzle may be the cause.,A hidden puzzle may be the cause.
@@ -22,6 +25,7 @@ Add a button beside the block control to send feedback about the current video.,
 Add hidden creator,Add hidden creator
 Ads,Ads
 Advance when a video ends,Advance when a video ends
+Advanced JSON value,Advanced JSON value
 All available languages,All available languages
 All loaded tabs,All loaded tabs
 Allow Duet and Stitch anyway,Allow Duet and Stitch anyway
@@ -37,6 +41,7 @@ Always show the publish date in video author information. Requires restart.,Alwa
 "An operator code is five or six digits, like 310260","An operator code is five or six digits, like 310260"
 Animated sticker format,Animated sticker format
 App behavior,App behavior
+Applies saved rules at supported getters,Applies saved rules at supported getters
 Applies to both video and photo downloads.,Applies to both video and photo downloads.
 Arrange your feed and bottom tabs,Arrange your feed and bottom tabs
 Audio,Audio
@@ -71,6 +76,7 @@ Caption text size,Caption text size
 Capture crash reports locally,Capture crash reports locally
 Choose 1-1000 videos. Values outside this range use the nearest valid limit. Restart TikTok after saving.,Choose 1-1000 videos. Values outside this range use the nearest valid limit. Restart TikTok after saving.
 Choose a backup file. Your current settings are kept for Undo.,Choose a backup file. Your current settings are kept for Undo.
+Choose a preset to fill the SIM details.,Choose a preset to fill the SIM details.
 Choose a subfolder under %1$s.,Choose a subfolder under %1$s.
 Choose observed share actions to hide. The stable identifier is shown below each label; unknown saved identifiers stay in the manual list.,Choose observed share actions to hide. The stable identifier is shown below each label; unknown saved identifiers stay in the manual list.
 Choose what reaches your feed,Choose what reaches your feed
@@ -131,10 +137,13 @@ Country ISO,Country ISO
 Country and network preferences,Country and network preferences
 Creator handle or id,Creator handle or id
 Creators hidden from later feed batches by the player action. Search the list and remove one entry at a time.,Creators hidden from later feed batches by the player action. Search the list and remove one entry at a time.
+Current cache unavailable: %1$s,Current cache unavailable: %1$s
 Current: %1$s,Current: %1$s
 Current: %1$s %2$s,Current: %1$s %2$s
+Custom %1$s value (unverified),Custom %1$s value (unverified)
 Custom SIM details,Custom SIM details
 Custom offline videos,Custom offline videos
+Custom value (unverified),Custom value (unverified)
 Daily time budget,Daily time budget
 Daily video budget,Daily video budget
 Dark,Dark
@@ -162,6 +171,7 @@ Downloads,Downloads
 "Each surface, how many of the things it looks for are in this build, and how many are not.","Each surface, how many of the things it looks for are in this build, and how many are not."
 Enable diagnostic logging,Enable diagnostic logging
 Enable hold-and-slide 2x lock,Enable hold-and-slide 2x lock
+Enable overrides,Enable overrides
 Enter a creator handle or id,Enter a creator handle or id
 Enter a valid two-letter country code,Enter a valid two-letter country code
 "Enter a whole number, or one like 20K, 1.5M or 2B","Enter a whole number, or one like 20K, 1.5M or 2B"
@@ -178,6 +188,7 @@ Filter comments by keyword,Filter comments by keyword
 Filter feed tabs,Filter feed tabs
 Filter offline fallback videos,Filter offline fallback videos
 Filter the list,Filter the list
+Filter: %1$s,Filter: %1$s
 "Filters, translation and copy options","Filters, translation and copy options"
 Find a setting by title or description,Find a setting by title or description
 Fit the video to the screen,Fit the video to the screen
@@ -190,10 +201,15 @@ Forget seen videos after,Forget seen videos after
 Forget what has been counted today and end any hold. The budgets themselves are left alone.,Forget what has been counted today and end any hold. The budgets themselves are left alone.
 Full comment sort options,Full comment sort options
 GIF,GIF
+Gate data unavailable,Gate data unavailable
+Getter not requested yet,Getter not requested yet
+Getter requested,Getter requested
+"Getter requested, override rejected: %1$s","Getter requested, override rejected: %1$s"
 Ghost mode,Ghost mode
 Hidden %1$s locally,Hidden %1$s locally
 Hidden commenters,Hidden commenters
 Hidden creators,Hidden creators
+Hide,Hide
 Hide AI generated videos,Hide AI generated videos
 Hide CAPTCHA popups,Hide CAPTCHA popups
 Hide LIVE replays,Hide LIVE replays
@@ -335,6 +351,8 @@ Less than a minute left,Less than a minute left
 Let the Offline videos menu use your own limit instead of TikTok's fixed one. Restart TikTok after turning this on.,Let the Offline videos menu use your own limit instead of TikTok's fixed one. Restart TikTok after turning this on.
 Link copied,Link copied
 "Links, privacy and player tools","Links, privacy and player tools"
+Loaded current values. Loading all known gates...,Loaded current values. Loading all known gates...
+Loading local catalog and current TikTok cache...,Loading local catalog and current TikTok cache...
 Locally hidden creators,Locally hidden creators
 Lock today's budget,Lock today's budget
 Long press,Long press
@@ -358,6 +376,8 @@ Never from these countries,Never from these countries
 No account to block on this video,No account to block on this video
 No account to hide on this video,No account to hide on this video
 No creators are hidden yet,No creators are hidden yet
+No gate data is available. Refresh values from the menu to try again.,No gate data is available. Refresh values from the menu to try again.
+No gates match this search and filter.,No gates match this search and filter.
 No hidden creators match this search,No hidden creators match this search
 No limit,No limit
 No matching countries,No matching countries
@@ -386,9 +406,12 @@ On mobile data,On mobile data
 One minute left,One minute left
 "One of the quote marks in that list has nothing to close it, so the rest of the line reads as one phrase. Add the missing quote or take the stray one out.","One of the quote marks in that list has nothing to close it, so the rest of the line reads as one phrase. Add the missing quote or take the stray one out."
 One surface was checked and found everything it needed.,One surface was checked and found everything it needed.
+One value per line,One value per line
+Only bottom tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear.,Only bottom tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear.
 Only enable when recording logs to report an issue. Leaving it on for too long can make TikTok feel laggy and may lead to crashes.,Only enable when recording logs to report an issue. Leaving it on for too long can make TikTok feel laggy and may lead to crashes.
 Only from these countries,Only from these countries
 Only internal storage folders are supported,Only internal storage folders are supported
+Only tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear.,Only tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear.
 Open TikTok home feed to detect loaded tabs.,Open TikTok home feed to detect loaded tabs.
 Open TikTok home to detect loaded bottom tabs.,Open TikTok home to detect loaded bottom tabs.
 "Open a share sheet once, then return here to choose its actions.","Open a share sheet once, then return here to choose its actions."
@@ -407,6 +430,7 @@ Operator name,Operator name
 Original language,Original language
 Other feed filters,Other feed filters
 Override SIM details,Override SIM details
+Override saved but off,Override saved but off
 Override store region (experimental),Override store region (experimental)
 Paid partnerships,Paid partnerships
 "People, shortcuts and sending controls","People, shortcuts and sending controls"
@@ -420,6 +444,7 @@ Playlist posts,Playlist posts
 Press and hold a profile picture to save the full size original to your photo destination.,Press and hold a profile picture to save the full size original to your photo destination.
 "Press and hold a story to save it. Stories have no save button of their own, and holding one is how TikTok pauses it, so this takes that gesture over.","Press and hold a story to save it. Stories have no save button of their own, and holding one is how TikTok pauses it, so this takes that gesture over."
 Press and hold the left or right third of the screen to jump back or forward. The middle third keeps the Long press action.,Press and hold the left or right third of the screen to jump back or forward. The middle third keeps the Long press action.
+Preview shortened. Save JSON includes the full report.,Preview shortened. Save JSON includes the full report.
 Profile picture saved to %1$s,Profile picture saved to %1$s
 Promotional music,Promotional music
 Publication age,Publication age
@@ -431,6 +456,7 @@ Recorded gate reads (%1$d),Recorded gate reads (%1$d)
 "Recording gate reads. Use a feature, then return here to stop.","Recording gate reads. Use a feature, then return here to stop."
 Recover the settings saved before the last restore or reset.,Recover the settings saved before the last restore or reset.
 Recovered an interrupted settings change. Restart TikTok to apply it.,Recovered an interrupted settings change. Restart TikTok to apply it.
+Refreshing current TikTok cache...,Refreshing current TikTok cache...
 Region rules,Region rules
 Region settings,Region settings
 Remind me every,Remind me every
@@ -444,6 +470,7 @@ Remove the row of friends from the top of the share sheet.,Remove the row of fri
 Remove tracking parameters from shared links.,Remove tracking parameters from shared links.
 Remove watermark,Remove watermark
 Report saved to %1$s,Report saved to %1$s
+Required,Required
 Reset settings,Reset settings
 Restore defaults immediately. Your current settings are kept for Undo.,Restore defaults immediately. Your current settings are kept for Undo.
 Restore failed. Some settings may still be changed.,Restore failed. Some settings may still be changed.
@@ -480,6 +507,7 @@ Saving the story,Saving the story
 Saving video and subtitles to %1$s,Saving video and subtitles to %1$s
 "Search a title, description or category.","Search a title, description or category."
 Search and override gate flags,Search and override gate flags
+Search countries or operators,Search countries or operators
 Search hidden creators,Search hidden creators
 Search settings,Search settings
 Search share actions,Search share actions
@@ -487,6 +515,7 @@ Search the comments,Search the comments
 Search these comments,Search these comments
 "Search translated titles and descriptions, then open the original setting.","Search translated titles and descriptions, then open the original setting."
 "Search without personalisation, whatever your account is set to.","Search without personalisation, whatever your account is set to."
+Search words or key,Search words or key
 "Seconds. Zero keeps every length. If a whole batch would be filtered out, the video closest to your limit is kept so the feed is not empty.","Seconds. Zero keeps every length. If a whole batch would be filtered out, the video closest to your limit is kept so the feed is not empty."
 Seek by,Seek by
 Seek from the edges,Seek from the edges
@@ -506,6 +535,7 @@ Share action checklist,Share action checklist
 Share links through another host,Share links through another host
 Share sheet,Share sheet
 Shop posts,Shop posts
+Show,Show
 Show @username beside a video instead of the display name the creator chose.,Show @username beside a video instead of the display name the creator chose.
 Show Live search,Show Live search
 Show TikTok's own progress bar on videos where it is normally hidden.,Show TikTok's own progress bar on videos where it is normally hidden.
@@ -513,6 +543,7 @@ Show TikTok's own progress bar on videos where it is normally hidden.,Show TikTo
 Show TikTok's search entry in the Live drawer where supported.,Show TikTok's search entry in the Live drawer where supported.
 Show a video preview thumbnail while dragging the seekbar.,Show a video preview thumbnail while dragging the seekbar.
 Show block button on videos,Show block button on videos
+Show gates,Show gates
 Show seekbar,Show seekbar
 Show seekbar thumbnail,Show seekbar thumbnail
 Show the country a video was posted from next to the creator's name.,Show the country a video was posted from next to the creator's name.
@@ -650,6 +681,10 @@ Use the preset for TikTok's account and store region getters too. May affect sea
 Use the selected country and operator values. Restart TikTok after changing region settings.,Use the selected country and operator values. Restart TikTok after changing region settings.
 Use the selected country. Restart TikTok after changing region settings.,Use the selected country. Restart TikTok after changing region settings.
 Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.,Use the split layout on wider screens. Restart TikTok after changing this option or unfolding if the old layout remains.
+Use value,Use value
+Using TikTok's value,Using TikTok's value
+Value,Value
+Value to return,Value to return
 Verified creators,Verified creators
 Video,Video
 Video (MP4),Video (MP4)

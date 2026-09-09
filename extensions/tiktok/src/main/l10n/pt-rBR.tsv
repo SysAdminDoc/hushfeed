@@ -481,6 +481,41 @@ Search a title, description or category.	Busque um título, uma descrição ou u
 Search and override gate flags	Buscar e substituir marcas de gates
 Search hidden creators	Buscar criadores escondidos
 Search settings	Buscar nas configurações
+Value to return	Valor devolvido
+Enable overrides	Ativar as substituições
+Applies saved rules at supported getters	Aplica as regras salvas onde dá
+%1$s, selected	%1$s, selecionado
+Custom %1$s value (unverified)	Valor %1$s próprio (não verificado)
+Custom value (unverified)	Valor próprio (não verificado)
+Use value	Usar o valor
+Using TikTok's value	Usando o valor do TikTok
+Override saved but off	Substituição salva mas desligada
+Getter requested, override rejected: %1$s	O valor foi pedido e a substituição recusada: %1$s
+Getter requested	O valor foi pedido
+Getter not requested yet	O valor ainda não foi pedido
+One value per line	Um valor por linha
+Advanced JSON value	Valor JSON avançado
+Value	Valor
+Show	Mostrar
+Hide	Esconder
+Search words or key	Buscar palavras ou chave
+Loading local catalog and current TikTok cache...	Carregando o catálogo local e o cache atual do TikTok...
+No gates match this search and filter.	Nenhum gate combina com esta busca e este filtro.
+Refreshing current TikTok cache...	Atualizando o cache atual do TikTok...
+Loaded current values. Loading all known gates...	Valores atuais carregados. Carregando todos os gates conhecidos...
+Current cache unavailable: %1$s	O cache atual não está disponível: %1$s
+Gate data unavailable	Dados dos gates não disponíveis
+No gate data is available. Refresh values from the menu to try again.	Não há dados dos gates. Atualize os valores pelo menu para tentar de novo.
+Filter: %1$s	Filtro: %1$s
+Show gates	Mostrar gates
+1 gate selected	1 gate selecionado
+%1$d gates selected	%1$d gates selecionados
+Preview shortened. Save JSON includes the full report.	Prévia encurtada. Salvar JSON traz o relatório inteiro.
+Choose a preset to fill the SIM details.	Escolha uma predefinição para preencher os dados do SIM.
+Search countries or operators	Buscar países ou operadoras
+Only bottom tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear.	Aqui só aparecem as abas de baixo que o TikTok carregou neste aparelho. Isto não faz aparecer as que não estão disponíveis.
+Only tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear.	Aqui só aparecem as abas que o TikTok carregou neste aparelho. Isto não faz aparecer as que não estão disponíveis.
+Required	Obrigatório
 Search share actions	Buscar ações de compartilhamento
 Search the comments	Buscar nos comentários
 Search these comments	Buscar nestes comentários

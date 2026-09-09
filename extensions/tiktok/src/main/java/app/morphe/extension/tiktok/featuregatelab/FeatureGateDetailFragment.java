@@ -4,6 +4,7 @@
  */
 package app.morphe.extension.tiktok.featuregatelab;
 
+import app.morphe.extension.tiktok.settings.L10n;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
@@ -238,14 +239,15 @@ public final class FeatureGateDetailFragment extends Fragment {
             valueRow.setPadding(FeatureGateLabUi.dp(context, 16), FeatureGateLabUi.dp(context, 14),
                     FeatureGateLabUi.dp(context, 16), FeatureGateLabUi.dp(context, 8));
             valueRow.setBackground(SettingsUi.groupedRow(context, false, true));
-            TextView valueLabel = FeatureGateLabUi.body(context, "Value to return");
+            TextView valueLabel = FeatureGateLabUi.body(context,
+                    L10n.t(context, "Value to return"));
             valueRow.addView(valueLabel, FeatureGateLabUi.matchWrap());
             options = buildOptions(entry, rule);
             values = new Spinner(context);
             applyOptionsAdapter();
             values.setEnabled(editable);
             values.setBackgroundColor(android.graphics.Color.TRANSPARENT);
-            values.setContentDescription("Value to return");
+            values.setContentDescription(L10n.t(context, "Value to return"));
             values.setMinimumHeight(FeatureGateLabUi.dp(context, 48));
             LinearLayout.LayoutParams valueParams = FeatureGateLabUi.matchWrap();
             valueParams.setMargins(0, FeatureGateLabUi.dp(context, 4), 0, FeatureGateLabUi.dp(context, 4));
@@ -483,14 +485,18 @@ public final class FeatureGateDetailFragment extends Fragment {
     private void showCustomValue() {
         EditText input = new EditText(getActivity());
         input.setSingleLine(!"STRING".equals(entry.type));
-        input.setHint("Custom " + entry.type.toLowerCase(Locale.ROOT) + " value (unverified)");
+        // One sentence with the type in it, rather than three pieces glued together: no
+        // table row can express a concatenation, and word order is not the same everywhere.
+        input.setHint(L10n.f(getContext(), "Custom %1$s value (unverified)",
+                entry.type.toLowerCase(Locale.ROOT)));
         input.setText(rule == null ? "" : rule.value);
         SettingsUi.styleEditText(input);
         AlertDialog dialog = customValueDialog = new AlertDialog.Builder(getActivity())
-                .setTitle("Custom value (unverified)")
+                .setTitle(L10n.t(getContext(), "Custom value (unverified)"))
                 .setView(input)
-                .setPositiveButton("Use value", null)
-                .setNegativeButton("Cancel", (ignored, which) -> restoreSelection())
+                .setPositiveButton(L10n.t(getContext(), "Use value"), null)
+                .setNegativeButton(L10n.t(getContext(), "Cancel"),
+                        (ignored, which) -> restoreSelection())
                 .setOnCancelListener(ignored -> restoreSelection())
                 .create();
         dialog.setOnShowListener(ignored -> {
@@ -582,13 +588,13 @@ public final class FeatureGateDetailFragment extends Fragment {
         if (status == null || entry == null) return;
         rule = FeatureGateLabStore.rule(entry.manager, entry.key, entry.type);
         if (rule == null) {
-            status.setText("Using TikTok's value");
+            status.setText(L10n.t(getContext(), "Using TikTok's value"));
             status.setTextColor(SettingsUi.textSecondary());
             if (effectiveValue != null) effectiveValue.setText(effectiveValueText());
             return;
         }
         if (!rule.enabled) {
-            status.setText("Override saved but off");
+            status.setText(L10n.t(getContext(), "Override saved but off"));
             status.setTextColor(SettingsUi.textSecondary());
             if (effectiveValue != null) effectiveValue.setText(effectiveValueText());
             return;
@@ -596,8 +602,9 @@ public final class FeatureGateDetailFragment extends Fragment {
         boolean triggered = FeatureGateLabRuntime.isTriggered(entry.manager, entry.key, entry.type);
         String failure = FeatureGateLabRuntime.structuredFailure(entry.manager, entry.key, entry.type);
         status.setText(failure != null
-                ? "Getter requested, override rejected: " + failure
-                : (triggered ? "Getter requested" : "Getter not requested yet"));
+                ? L10n.f(getContext(), "Getter requested, override rejected: %1$s", failure)
+                : L10n.t(getContext(), triggered
+                        ? "Getter requested" : "Getter not requested yet"));
         status.setTextColor(triggered ? SettingsUi.accent() : FeatureGateLabUi.warningColor(getActivity()));
         if (effectiveValue != null) effectiveValue.setText(effectiveValueText());
     }
@@ -674,9 +681,19 @@ public final class FeatureGateDetailFragment extends Fragment {
                 EditText input = new EditText(root.getContext());
                 input.setEnabled(editable);
                 input.setText(editorText(value, kind));
-                input.setHint(kind.startsWith("LIST_")
-                        ? "One value per line"
-                        : ("JSON".equals(kind) ? "Advanced JSON value" : "Value"));
+                // Three calls rather than one with a comparison inside it. "JSON" is a
+                // format name, and a literal inside an L10n call is read as a key by the gate
+                // that pairs a key with its translation; a hint behind a variable is read by
+                // nothing at all.
+                String hint;
+                if (kind.startsWith("LIST_")) {
+                    hint = L10n.t(root.getContext(), "One value per line");
+                } else if ("JSON".equals(kind)) {
+                    hint = L10n.t(root.getContext(), "Advanced JSON value");
+                } else {
+                    hint = L10n.t(root.getContext(), "Value");
+                }
+                input.setHint(hint);
                 input.setSingleLine(!kind.startsWith("LIST_") && !"JSON".equals(kind));
                 input.setInputType(inputTypeFor(kind));
                 input.setMinimumHeight(FeatureGateLabUi.dp(
@@ -827,7 +844,8 @@ public final class FeatureGateDetailFragment extends Fragment {
         heading.setGravity(Gravity.CENTER_VERTICAL);
         TextView title = FeatureGateLabUi.text(context, "Technical details", 15, SettingsUi.textPrimary(), Typeface.BOLD);
         heading.addView(title, new LinearLayout.LayoutParams(0, FeatureGateLabUi.dp(context, 48), 1f));
-        technicalToggle = FeatureGateLabUi.text(context, "Show", 14, SettingsUi.accent(), Typeface.BOLD);
+        technicalToggle = FeatureGateLabUi.text(context, L10n.t(context, "Show"), 14,
+                SettingsUi.accent(), Typeface.BOLD);
         technicalToggle.setGravity(Gravity.CENTER);
         technicalToggle.setPadding(
                 FeatureGateLabUi.dp(context, 12),
@@ -862,7 +880,7 @@ public final class FeatureGateDetailFragment extends Fragment {
         View.OnClickListener toggle = ignored -> {
             boolean show = technicalDetails.getVisibility() != View.VISIBLE;
             technicalDetails.setVisibility(show ? View.VISIBLE : View.GONE);
-            technicalToggle.setText(show ? "Hide" : "Show");
+            technicalToggle.setText(L10n.t(getContext(), show ? "Hide" : "Show"));
         };
         heading.setOnClickListener(toggle);
         technicalToggle.setOnClickListener(toggle);
