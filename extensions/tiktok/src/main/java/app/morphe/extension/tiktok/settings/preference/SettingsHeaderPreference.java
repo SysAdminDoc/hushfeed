@@ -132,7 +132,8 @@ public final class SettingsHeaderPreference extends Preference {
         brandParams.setMarginStart(SettingsUi.dp(context, 8));
         toolbar.addView(brand, brandParams);
         header.addView(toolbar, new LinearLayout.LayoutParams(-1, -2));
-        TextView heading = SettingsUi.text(context, title, 40, SettingsUi.textPrimary(), 1);
+        TextView heading = SettingsUi.text(
+                context, title, headingSizeSp(context), SettingsUi.textPrimary(), 1);
         heading.setTag("metra_page_title");
         if (android.os.Build.VERSION.SDK_INT >= 28) heading.setAccessibilityHeading(true);
         LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(-1, -2);
@@ -149,6 +150,20 @@ public final class SettingsHeaderPreference extends Preference {
                 SettingsUi.dp(context, 8), SettingsUi.dp(context, 32));
         caption.setBackgroundColor(SettingsUi.background());
         return caption;
+    }
+
+    /**
+     * How large the page title may be at the reader's text scale.
+     *
+     * <p>40sp against a 2x scale is 80sp of page title: "Kommentare und Uebersetzung" took five
+     * lines and 85% of the screen, with the first card of the page below the fold. The title is
+     * allowed to grow to about a third again of its own size and no further, so an ordinary
+     * scale is unchanged and a large one still leaves the page underneath it.
+     */
+    public static int headingSizeSp(Context context) {
+        float scale = context.getResources().getConfiguration().fontScale;
+        if (scale <= 1.3f) return 40;
+        return Math.max(24, Math.round(40 * 1.3f / scale));
     }
 
     public static final class BackDrawable extends Drawable {

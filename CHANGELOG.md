@@ -1,5 +1,7 @@
 ## Unreleased
 
+* At a large text size the settings page shows the page, not just its title. A page called "Kommentare und Ubersetzung" took five lines and most of the screen at 2x text, and the first row of the page was below the fold. The title still grows with your text size, just not without limit. The Feature Gate Lab's search box grows with it too, instead of clipping the letters in a fixed height.
+
 * The hand-drawn arrows and chevrons turn round in a right-to-left language, and they are the width they were meant to be. Their containers already mirrored, so an Arabic or Hebrew reader had a back arrow pointing left at the right edge of the screen and chevrons pointing back into the text. Separately, every one of these strokes was given its width in raw pixels, so on a dense screen the settings menu tiles drew lines under a pixel wide next to very large type, and the shadow behind a caption was almost nothing on a 3x screen, which matters most when you pick the transparent caption background.
 
 * Three small things on screens you actually touch. The four buttons on the feed are 48dp instead of 44, and "Not interested" is the same round shape over the same shade as the three it sits with, rather than a rounded rectangle over a darker one. Pressing a settings row at the corner of a card no longer paints outside the card. And every flat action in a dialog, the Saves and Cancels and Applies, is at least 48dp and is announced by a screen reader as a button rather than as a label.

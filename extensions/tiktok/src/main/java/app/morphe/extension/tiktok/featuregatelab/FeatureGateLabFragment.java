@@ -268,7 +268,11 @@ public final class FeatureGateLabFragment extends Fragment {
             if (rootView != null) rootView.requestFocus();
             return true;
         });
-        searchRow.addView(search, new LinearLayout.LayoutParams(0, FeatureGateLabUi.dp(context, 48), 1f));
+        // A fixed 48dp box clipped 32sp glyphs at 2x text. CommentSearch documents the
+        // same trap and answers it the same way: 48dp is the floor, not the height.
+        search.setMinimumHeight(FeatureGateLabUi.dp(context, 48));
+        searchRow.addView(search, new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         clearSearch = FeatureGateLabUi.clearSearchButton(context, () -> search.setText(""));
         clearSearch.setVisibility(searchQuery.isEmpty() ? View.GONE : View.VISIBLE);
         searchRow.addView(clearSearch, new LinearLayout.LayoutParams(

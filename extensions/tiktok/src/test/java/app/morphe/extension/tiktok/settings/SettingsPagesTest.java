@@ -460,6 +460,34 @@ public class SettingsPagesTest {
         return arrow.getLayoutDirection();
     }
 
+    @Test public void aLongPageTitleLeavesRoomForThePageAtAnyTextScale() throws Exception {
+        // 40sp against a 2x text scale is 80sp of page title. The two-times-text capture showed
+        // "Kommentare und Uebersetzung" on five lines taking 85% of the screen, with the first
+        // card of the page below the fold.
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            var configuration = activity.getResources().getConfiguration();
+            float original = configuration.fontScale;
+            try {
+                configuration.fontScale = 1.0f;
+                assertEquals("the ordinary scale should be untouched", 40,
+                        app.morphe.extension.tiktok.settings.preference.SettingsHeaderPreference
+                                .headingSizeSp(activity));
+
+                configuration.fontScale = 2.0f;
+                int large = app.morphe.extension.tiktok.settings.preference
+                        .SettingsHeaderPreference.headingSizeSp(activity);
+                assertTrue("the title still fills the screen at 2x: " + large, large <= 26);
+                assertTrue("the title shrank past readable: " + large, large >= 24);
+                assertTrue("the rendered height grew by more than a third",
+                        large * 2.0f <= 40 * 1.35f);
+            } finally {
+                configuration.fontScale = original;
+            }
+        }
+    }
+
     @Test public void everyDialogActionIsPressableAndReadsAsAButton() throws Exception {
         // The flat actions in the hand built dialogs are TextViews with a click listener, so
         // TalkBack read them as labels rather than as something to press, and the two pickers
