@@ -19,7 +19,6 @@ import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction35c
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
-private const val USER_SERVICE_DESCRIPTOR = "Lcom/ss/android/ugc/aweme/userservice/api/IUserService;"
 private const val COMMON_FOLLOW_API_DESCRIPTOR = "Lcom/ss/android/ugc/aweme/userservice/CommonFollowApi;"
 private const val JEDI_FOLLOW_API_DESCRIPTOR = "Lcom/ss/android/ugc/aweme/userservice/jedi/model/JediFollowApi;"
 private const val CALL_SERVER_INTERCEPTOR_DESCRIPTOR = "Lcom/bytedance/retrofit2/CallServerInterceptor;"
@@ -72,28 +71,7 @@ val followDiagnosticsPatch = bytecodePatch(
                 }
 
                 implementation.instructions.forEachIndexed { index, instruction ->
-                    if (instruction.opcode != Opcode.INVOKE_INTERFACE &&
-                        instruction.opcode != Opcode.INVOKE_INTERFACE_RANGE
-                    ) {
-                        return@forEachIndexed
-                    }
-
-                    val methodReference = instruction.getReference<MethodReference>() ?: return@forEachIndexed
-
-                    val beforeInstructions = when (methodReference.definingClass) {
-                        USER_SERVICE_DESCRIPTOR -> when (methodReference.name) {
-                            "LJ" -> simpleFollowRequestInstructions(instruction)
-                            "LJFF" -> detailedFollowRequestInstructions(instruction)
-                            else -> null
-                        }
-
-                        JEDI_FOLLOW_API_DESCRIPTOR -> when (methodReference.name) {
-                            "followWithRetrofitPost" -> jediFollowRequestInstructions(instruction)
-                            else -> null
-                        }
-
-                        else -> null
-                    } ?: return@forEachIndexed
+                    val beforeInstructions = followRequestInstructions(instruction) ?: return@forEachIndexed
 
                     patchesByMethod.getOrPut(method) { ArrayDeque() }
                         .add(FollowCallPatch(index, beforeInstructions))
@@ -106,27 +84,39 @@ val followDiagnosticsPatch = bytecodePatch(
 
             while (patches.isNotEmpty()) {
                 val patch = patches.removeLast()
-                val moveResult = mutableMethod.implementation!!.instructions
-                    .getOrNull(patch.index + 1)
-                    ?.takeIf { it.opcode == Opcode.MOVE_RESULT_OBJECT } as? OneRegisterInstruction
-
-                mutableMethod.addInstructions(
-                    patch.index + 2,
-                    moveResult?.let { result ->
-                        if (patch.beforeInstructions.contains("logJediFollowRequest")) {
-                            "invoke-static/range {v${result.registerA} .. v${result.registerA}}, " +
-                                "$EXTENSION_CLASS_DESCRIPTOR->logFollowStream(Ljava/lang/Object;)V"
-                        } else {
-                            "invoke-static/range {v${result.registerA} .. v${result.registerA}}, " +
-                                "$EXTENSION_CLASS_DESCRIPTOR->logFollowResult(Ljava/lang/Object;)V"
-                        }
-                    } ?: "nop",
-                )
-
-                mutableMethod.addInstructions(patch.index, patch.beforeInstructions)
+                mutableMethod.patchFollowCall(patch.index, patch.beforeInstructions)
             }
         }
     }
+}
+
+internal fun followRequestInstructions(instruction: Instruction): String? {
+    if (instruction.opcode != Opcode.INVOKE_INTERFACE &&
+        instruction.opcode != Opcode.INVOKE_INTERFACE_RANGE
+    ) return null
+    val methodReference = instruction.getReference<MethodReference>() ?: return null
+    // IUserService.LIZLLL and LJ both reach the CommonFollowApi hook. LJFF only observes
+    // existing follow state. Instrumenting those outer calls duplicates or invents requests.
+    return when (methodReference.definingClass) {
+        JEDI_FOLLOW_API_DESCRIPTOR -> when (methodReference.name) {
+            "followWithRetrofitPost" -> jediFollowRequestInstructions(instruction)
+            else -> null
+        }
+        else -> null
+    }
+}
+
+internal fun MutableMethod.patchFollowCall(index: Int, beforeInstructions: String) {
+    val moveResult = implementation!!.instructions.getOrNull(index + 1)
+        ?.takeIf { it.opcode == Opcode.MOVE_RESULT_OBJECT } as? OneRegisterInstruction
+    addInstructions(
+        index + 2,
+        moveResult?.let { result ->
+            "invoke-static/range {v${result.registerA} .. v${result.registerA}}, " +
+                "$EXTENSION_CLASS_DESCRIPTOR->logFollowStream(Ljava/lang/Object;)V"
+        } ?: "nop",
+    )
+    addInstructions(index, beforeInstructions)
 }
 
 /**
@@ -215,7 +205,7 @@ private val COMMON_FOLLOW_PARAMETERS = listOf(
     "Ljava/lang/String;", "Ljava/util/Map;",
 )
 
-private fun patchCommonFollowApi(method: MutableMethod) {
+internal fun patchCommonFollowApi(method: MutableMethod) {
     val implementation = method.implementation
         ?: throw PatchException("Follow diagnostics: CommonFollowApi.LIZ has no body.")
 
@@ -266,34 +256,6 @@ private fun patchNetworkExecuteCall(method: MutableMethod) = patchNetworkLancet(
     responseLogger = "$EXTENSION_CLASS_DESCRIPTOR->logNetworkResponse(Ljava/lang/Object;Ljava/lang/Object;)V",
     throwableLogger = "$EXTENSION_CLASS_DESCRIPTOR->logNetworkThrowable(Ljava/lang/Object;Ljava/lang/Throwable;)V",
 )
-
-private fun simpleFollowRequestInstructions(instruction: Instruction): String? {
-    val actionRegister = instruction.argumentRegister(1) ?: return null
-    val uidRegister = instruction.argumentRegister(2) ?: return null
-    val secUidRegister = instruction.argumentRegister(3) ?: return null
-
-    return if (instruction is Instruction3rc) {
-        "invoke-static/range {v$actionRegister .. v$secUidRegister}, " +
-            "$EXTENSION_CLASS_DESCRIPTOR->logSimpleFollowRequest(ILjava/lang/String;Ljava/lang/String;)V"
-    } else {
-        if (listOf(actionRegister, uidRegister, secUidRegister).any { it > 15 }) return null
-
-        "invoke-static {v$actionRegister, v$uidRegister, v$secUidRegister}, " +
-            "$EXTENSION_CLASS_DESCRIPTOR->logSimpleFollowRequest(ILjava/lang/String;Ljava/lang/String;)V"
-    }
-}
-
-private fun detailedFollowRequestInstructions(instruction: Instruction): String? {
-    val firstArgumentRegister = instruction.argumentRegister(1) ?: return null
-    val lastArgumentRegister = instruction.argumentRegister(10) ?: return null
-
-    if (instruction is Instruction3rc) {
-        return "invoke-static/range {v$firstArgumentRegister .. v$lastArgumentRegister}, " +
-            "$EXTENSION_CLASS_DESCRIPTOR->logDetailedFollowRequest(IIIILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)V"
-    }
-
-    return null
-}
 
 private fun jediFollowRequestInstructions(instruction: Instruction): String? {
     val firstArgumentRegister = instruction.argumentRegister(1) ?: return null

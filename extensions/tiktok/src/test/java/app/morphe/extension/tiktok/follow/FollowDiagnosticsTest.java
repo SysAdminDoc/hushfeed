@@ -9,6 +9,7 @@ package app.morphe.extension.tiktok.follow;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.os.Looper;
@@ -67,35 +68,44 @@ public class FollowDiagnosticsTest {
     }
 
     @Test
-    public void aHashedAccountIdCannotBeCheckedAgainstAGuess() throws Exception {
+    public void accountPseudonymsStayStableWithinOneInstallAndDifferBetweenInstalls() throws Exception {
         Utils.setContext(RuntimeEnvironment.getApplication());
-        java.lang.reflect.Method hash =
-                FollowDiagnostics.class.getDeclaredMethod("hash", String.class);
-        hash.setAccessible(true);
+        BaseSettings.DEBUG.save(true);
         java.lang.reflect.Field cached = FollowDiagnostics.class.getDeclaredField("salt");
         cached.setAccessible(true);
 
         try {
             Settings.DIAGNOSTIC_REPORT_SALT.save("");
             cached.set(null, null);
-            String first = (String) hash.invoke(null, "6812345678901234567");
+            String first = requestPseudonym("6812345678901234567");
             assertNotEquals("the salt must be made and kept", "",
                     Settings.DIAGNOSTIC_REPORT_SALT.get());
 
             // Same install, same id: two reports from one phone still line up.
-            assertEquals(first, hash.invoke(null, "6812345678901234567"));
+            assertEquals(first, requestPseudonym("6812345678901234567"));
 
-            // Another install hashes the same id differently, so holding the id tells you
-            // nothing about whether it appears in somebody else's report.
+            // Another install uses a different private key for the same account.
             Settings.DIAGNOSTIC_REPORT_SALT.save("");
             cached.set(null, null);
-            assertNotEquals(first, hash.invoke(null, "6812345678901234567"));
+            assertNotEquals(first, requestPseudonym("6812345678901234567"));
 
-            assertEquals("empty", hash.invoke(null, (Object) null));
+            assertEquals("empty", requestPseudonym(null));
         } finally {
             Settings.DIAGNOSTIC_REPORT_SALT.save("");
             cached.set(null, null);
         }
+    }
+
+    private static String requestPseudonym(String uid) throws ReflectiveOperationException {
+        FollowDiagnostics.logCommonFollowRequest(1, 0, 0, 0, uid, null, null, null, null, null);
+        java.lang.reflect.Field recent = FollowDiagnostics.class.getDeclaredField("recentDirectContext");
+        recent.setAccessible(true);
+        FollowDiagnostics.FollowRequestContext context =
+                (FollowDiagnostics.FollowRequestContext) recent.get(null);
+        assertNotNull("the public request hook did not retain its context", context);
+        assertEquals("the request reused an earlier context",
+                FollowDiagnostics.eventCountForTests(), context.id);
+        return context.uidHash;
     }
 
     @Test

@@ -3,6 +3,8 @@ package app.morphe.extension.tiktok.follow;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -12,6 +14,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
@@ -26,6 +30,8 @@ public final class FollowDiagnostics {
     private static final long READBACK_WINDOW_MS = 30_000L;
     private static final AtomicInteger eventCount = new AtomicInteger();
     private static final AtomicInteger callId = new AtomicInteger();
+    // The patched Common and Jedi calls do not nest. Entries clear failed calls;
+    // each return consumes its admission even when logging was switched off.
     private static final ThreadLocal<Integer> activeCallId = new ThreadLocal<>();
     private static final Object networkContextLock = new Object();
     private static final IdentityHashMap<Object, FollowRequestContext> networkContexts = new IdentityHashMap<>();
@@ -89,6 +95,7 @@ public final class FollowDiagnostics {
     private static final AtomicBoolean warnedAboutRefusedFollow = new AtomicBoolean();
 
     public static void logSimpleFollowRequest(int action, String uid, String secUid) {
+        activeCallId.remove();
         if (!shouldLog()) return;
 
         try {
@@ -120,6 +127,7 @@ public final class FollowDiagnostics {
             String previousPage,
             Map<?, ?> extra
     ) {
+        activeCallId.remove();
         if (!shouldLog()) return;
 
         try {
@@ -158,6 +166,7 @@ public final class FollowDiagnostics {
             String recType,
             Map<?, ?> extra
     ) {
+        activeCallId.remove();
         if (!shouldLog()) return;
 
         try {
@@ -197,6 +206,7 @@ public final class FollowDiagnostics {
             String recType,
             Integer extraStatus
     ) {
+        activeCallId.remove();
         if (!shouldLog()) return;
 
         try {
@@ -225,12 +235,13 @@ public final class FollowDiagnostics {
     }
 
     public static void logFollowStream(Object stream) {
-        if (!shouldLog()) return;
+        Integer id = activeCallId.get();
+        activeCallId.remove();
+        if (id == null || !shouldLog()) return;
 
         try {
-            Integer id = activeCallId.get();
             Logger.printInfo(() -> "[Morphe TikTok FollowProbe] stream"
-                    + " id=" + (id == null ? "unknown" : id)
+                    + " id=" + id
                     + " class=" + (stream == null ? "null" : stream.getClass().getName()));
         } catch (Exception ex) {
             Logger.printDebug(() -> "[Morphe TikTok FollowProbe] stream log failed", ex);
@@ -238,13 +249,13 @@ public final class FollowDiagnostics {
     }
 
     public static void logFollowResult(Object followStatus) {
-        if (!shouldLog()) return;
+        Integer id = activeCallId.get();
+        activeCallId.remove();
+        if (id == null || !shouldLog()) return;
 
         try {
-            Integer id = activeCallId.get();
-            activeCallId.remove();
             Logger.printInfo(() -> "[Morphe TikTok FollowProbe] result"
-                    + " id=" + (id == null ? "unknown" : id)
+                    + " id=" + id
                     + " status=" + describeFollowStatus(followStatus));
         } catch (Exception ex) {
             Logger.printDebug(() -> "[Morphe TikTok FollowProbe] result log failed", ex);
@@ -1142,23 +1153,30 @@ public final class FollowDiagnostics {
     }
 
     /**
-     * Stands in for an account id in a report that gets attached to bug reports. Without the
-     * salt this was a membership test: anybody holding a handful of candidate ids could hash
-     * them and see which appeared. The salt is made once per install and never leaves the
-     * phone, so two reports from the same device still line up with each other and a report
-     * from somebody else says nothing about whose accounts are in it.
+     * A stable per-install pseudonym. Prefixing FNV with a secret still lets one known account
+     * reveal the intermediate state and identify other accounts. HMAC keeps that secret as a
+     * key instead of mixing it into a reversible hash prefix. The key never enters a report.
      */
     private static String hash(String value) {
         if (value == null || value.isEmpty()) return "empty";
 
-        int hash = 0x811c9dc5;
-        String salted = salt() + value;
-        for (int i = 0; i < salted.length(); i++) {
-            hash ^= salted.charAt(i);
-            hash *= 0x01000193;
+        try {
+            Mac digest = Mac.getInstance("HmacSHA256");
+            digest.init(new SecretKeySpec(salt().getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+            return hex(digest.doFinal(value.getBytes(StandardCharsets.UTF_8)));
+        } catch (GeneralSecurityException failure) {
+            Logger.printException(() -> "Could not create a diagnostic account pseudonym", failure);
+            return "unavailable";
         }
+    }
 
-        return String.format(Locale.US, "%08x", hash);
+    private static String hex(byte[] bytes) {
+        StringBuilder result = new StringBuilder(bytes.length * 2);
+        for (byte value : bytes) {
+            result.append(Character.forDigit((value & 0xff) >>> 4, 16));
+            result.append(Character.forDigit(value & 0xf, 16));
+        }
+        return result.toString();
     }
 
     private static volatile String salt;
@@ -1171,7 +1189,9 @@ public final class FollowDiagnostics {
             if (salt != null) return salt;
             String stored = Settings.DIAGNOSTIC_REPORT_SALT.get();
             if (stored.isEmpty()) {
-                stored = Long.toHexString(new java.security.SecureRandom().nextLong());
+                byte[] key = new byte[32];
+                new java.security.SecureRandom().nextBytes(key);
+                stored = hex(key);
                 Settings.DIAGNOSTIC_REPORT_SALT.save(stored);
             }
             salt = stored;
