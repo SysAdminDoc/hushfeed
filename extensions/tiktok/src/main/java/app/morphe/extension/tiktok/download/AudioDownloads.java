@@ -34,7 +34,7 @@ final class AudioDownloads {
     /** Fetches the sound itself, for the downloads this extension does not handle. */
     static void start(Object aweme, Context context) {
         if (context == null || !enabled()) return;
-        if (android.os.Build.VERSION.SDK_INT >= 23 && android.os.Build.VERSION.SDK_INT < 29
+        if (android.os.Build.VERSION.SDK_INT < 29
                 && context.checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != android.content.pm.PackageManager.PERMISSION_GRANTED) return;
         Object video = Reflect.property(aweme, "getVideo", "video");

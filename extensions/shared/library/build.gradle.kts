@@ -22,6 +22,10 @@ android {
     lint {
         checkOnly += "NewApi"
         error += "NewApi"
+        // NewApi catches a call above the floor. ObsoleteSdkInt catches an SDK_INT guard at or
+        // below it, which is dead code today and a wrong floor the next time minSdk moves.
+        checkOnly += "ObsoleteSdkInt"
+        error += "ObsoleteSdkInt"
         abortOnError = true
     }
 }

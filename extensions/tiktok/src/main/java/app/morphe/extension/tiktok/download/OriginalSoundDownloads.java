@@ -111,7 +111,7 @@ public final class OriginalSoundDownloads {
         // Android 6 to 9 write a real file, so without the permission the save fails after the
         // fetch has already run and the reader is told only that it could not be saved. Asked
         // before anything is fetched, the way every other saver here asks it.
-        if (android.os.Build.VERSION.SDK_INT >= 23 && android.os.Build.VERSION.SDK_INT < 29
+        if (android.os.Build.VERSION.SDK_INT < 29
                 && context.checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != android.content.pm.PackageManager.PERMISSION_GRANTED) {
             Utils.showToastLong(L10n.t("Storage permission is needed to save a sound"));

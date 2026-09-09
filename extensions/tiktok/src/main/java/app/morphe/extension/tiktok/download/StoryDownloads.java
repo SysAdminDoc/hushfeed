@@ -116,7 +116,7 @@ public final class StoryDownloads {
             Utils.showToastShort(L10n.t("Open the story again and try once more"));
             return true;
         }
-        if (android.os.Build.VERSION.SDK_INT >= 23 && android.os.Build.VERSION.SDK_INT < 29
+        if (android.os.Build.VERSION.SDK_INT < 29
                 && context.checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != android.content.pm.PackageManager.PERMISSION_GRANTED) {
             Utils.showToastLong(L10n.t("Storage permission is needed to save a story"));

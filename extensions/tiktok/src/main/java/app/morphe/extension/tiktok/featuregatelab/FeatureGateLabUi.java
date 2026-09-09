@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -197,9 +196,7 @@ final class FeatureGateLabUi {
         if (view instanceof RadioButton) {
             RadioButton radio = (RadioButton) view;
             radio.setTextColor(SettingsUi.textPrimary());
-            if (Build.VERSION.SDK_INT >= 21) {
-                radio.setButtonTintList(ColorStateList.valueOf(SettingsUi.accent()));
-            }
+            radio.setButtonTintList(ColorStateList.valueOf(SettingsUi.accent()));
         } else if (view instanceof Button) {
             ((Button) view).setTextColor(SettingsUi.accent());
         } else if (view instanceof TextView) {

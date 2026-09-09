@@ -23,7 +23,7 @@ final class VideoDownloads {
 
     static boolean start(Object aweme, Context context) {
         if (context == null) return false;
-        if (android.os.Build.VERSION.SDK_INT >= 23 && android.os.Build.VERSION.SDK_INT < 29
+        if (android.os.Build.VERSION.SDK_INT < 29
                 && context.checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != android.content.pm.PackageManager.PERMISSION_GRANTED) return false;
         Object video = Reflect.property(aweme, "getVideo", "video");

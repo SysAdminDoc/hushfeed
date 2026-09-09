@@ -20,7 +20,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.RippleDrawable;
 import android.graphics.drawable.StateListDrawable;
-import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -441,21 +440,17 @@ public final class SettingsUi {
     public static void styleEditText(EditText editText) {
         editText.setTextColor(textPrimary());
         editText.setHintTextColor(textSecondary());
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            editText.setBackgroundTintList(ColorStateList.valueOf(accent()));
-        }
+        editText.setBackgroundTintList(ColorStateList.valueOf(accent()));
     }
 
     public static void styleCheckBox(CompoundButton button) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            int[][] states = new int[][]{
-                    new int[]{android.R.attr.state_checked},
-                    new int[]{-android.R.attr.state_enabled},
-                    new int[]{}
-            };
-            int[] colors = new int[]{accent(), textDisabled(), textSecondary()};
-            button.setButtonTintList(new ColorStateList(states, colors));
-        }
+        int[][] states = new int[][]{
+                new int[]{android.R.attr.state_checked},
+                new int[]{-android.R.attr.state_enabled},
+                new int[]{}
+        };
+        int[] colors = new int[]{accent(), textDisabled(), textSecondary()};
+        button.setButtonTintList(new ColorStateList(states, colors));
     }
 
     private static final class DialogCheckMarkDrawable extends Drawable {

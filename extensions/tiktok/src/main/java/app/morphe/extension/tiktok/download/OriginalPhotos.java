@@ -27,7 +27,7 @@ public final class OriginalPhotos {
         AudioDownloads.start(aweme, context);
         if (!Settings.DOWNLOAD_ORIGINAL_PHOTOS.get() || context == null) return false;
         if (Reflect.property(aweme, "getPhotoModeImageInfo", "photoModeImageInfo") == null) return false;
-        if (android.os.Build.VERSION.SDK_INT >= 23 && android.os.Build.VERSION.SDK_INT < 29
+        if (android.os.Build.VERSION.SDK_INT < 29
                 && context.checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != android.content.pm.PackageManager.PERMISSION_GRANTED) return false;
         List<List<String>> photos = sources(aweme);
