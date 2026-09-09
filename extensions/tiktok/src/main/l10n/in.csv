@@ -290,7 +290,7 @@ Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops wo
 "Ignore the creator's choice so the Duet and Stitch entries appear. Everything else the app checks still applies, and whether the upload is accepted is the server's decision.","Abaikan pilihan pembuat video supaya entri Duet dan Stitch muncul. Semua pemeriksaan lain di aplikasi tetap berlaku, dan diterima atau tidaknya unggahan adalah keputusan server."
 Inbox,Kotak Masuk
 Included diagnostics,Diagnostik yang disertakan
-Includes all Morphe diagnostic events.,Mencakup semua peristiwa diagnostik Morphe.
+Includes all diagnostic events.,Termasuk semua peristiwa diagnostik.
 Interface,Tampilan
 Invalid SIM preset,Pratata SIM tidak sah
 Keep a local record of what you have watched and drop those videos from later feed pages.,Simpan catatan tontonanmu di perangkat dan buang video itu dari halaman feed berikutnya.
@@ -550,6 +550,20 @@ Find a setting by title or description,Temukan setelan berdasarkan judul atau de
 No matching settings,Tidak ada setelan yang cocok
 "Search a title, description or category.","Cari judul, deskripsi, atau kategori."
 Search settings,Cari setelan
+"%1$s: %2$d found, %3$d missing","%1$s: %2$d ditemukan, %3$d hilang"
+"%1$s: %2$d found, %3$d missing, and more it stopped counting","%1$s: %2$d ditemukan, %3$d hilang, dan sisanya berhenti dihitung"
+"%1$s: %2$d found, %3$d missing. First missing: %4$s","%1$s: %2$d ditemukan, %3$d hilang. Yang pertama hilang: %4$s"
+"%1$s: %2$d found, %3$d missing, and more it stopped counting. First missing: %4$s","%1$s: %2$d ditemukan, %3$d hilang, dan sisanya berhenti dihitung. Yang pertama hilang: %4$s"
+Include diagnostic events,Sertakan peristiwa diagnostik
+Apply,Terapkan
+All events,Semua peristiwa
+Follow probe,Uji ikuti
+Feed and navigation,Feed dan navigasi
+Errors,Kesalahan
+Other,Lainnya
+Saved. Restart TikTok to apply this.,Tersimpan. Mulai ulang TikTok agar berlaku.
+Diagnostic data cleared.,Data diagnostik dihapus.
+Includes %1$s events.,Termasuk peristiwa %1$s.
 Gate details,Detail gate
 This catalog entry is no longer available. Refresh the Lab and try again.,Entri katalog ini sudah tidak tersedia. Segarkan Lab dan coba lagi.
 An override changes the value returned by the getter. It does not rewrite TikTok's cached value or prove the named feature changed.,Penggantian mengubah nilai yang dikembalikan getter. Ini tidak menulis ulang nilai cache TikTok dan tidak membuktikan fitur yang disebut berubah.

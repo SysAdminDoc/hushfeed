@@ -311,7 +311,7 @@ Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops wo
 Ignore the creator's choice so the Duet and Stitch entries appear. Everything else the app checks still applies, and whether the upload is accepted is the server's decision.	Ignorar la decisión del creador para que aparezcan las entradas de Dúo y Unir. Todo lo demás que comprueba la app sigue aplicándose, y que se acepte la subida lo decide el servidor.
 Inbox	Bandeja de entrada
 Included diagnostics	Diagnóstico incluido
-Includes all Morphe diagnostic events.	Incluye todos los eventos de diagnóstico de Morphe.
+Includes all diagnostic events.	Incluye todos los eventos de diagnóstico.
 Inserted cards	Tarjetas insertadas
 Interface	Interfaz
 Invalid SIM preset	Ajuste preestablecido de SIM no válido
@@ -479,6 +479,20 @@ Search a title, description or category.	Busca un título, una descripción o un
 Search and override gate flags	Buscar y sustituir marcas de interruptores
 Search hidden creators	Buscar creadores ocultos
 Search settings	Buscar en los ajustes
+%1$s: %2$d found, %3$d missing	%1$s: %2$d encontrados, %3$d faltan
+%1$s: %2$d found, %3$d missing, and more it stopped counting	%1$s: %2$d encontrados, %3$d faltan, y más que dejó de contar
+%1$s: %2$d found, %3$d missing. First missing: %4$s	%1$s: %2$d encontrados, %3$d faltan. El primero que faltó: %4$s
+%1$s: %2$d found, %3$d missing, and more it stopped counting. First missing: %4$s	%1$s: %2$d encontrados, %3$d faltan, y más que dejó de contar. El primero que faltó: %4$s
+Include diagnostic events	Incluir eventos de diagnóstico
+Apply	Aplicar
+All events	Todos los eventos
+Follow probe	Comprobación de seguir
+Feed and navigation	Feed y navegación
+Errors	Errores
+Other	Otros
+Saved. Restart TikTok to apply this.	Guardado. Reinicia TikTok para que se aplique.
+Diagnostic data cleared.	Datos de diagnóstico borrados.
+Includes %1$s events.	Incluye eventos de %1$s.
 Gate details	Detalles del interruptor
 This catalog entry is no longer available. Refresh the Lab and try again.	Esta entrada del catálogo ya no está disponible. Actualiza el Laboratorio e inténtalo otra vez.
 An override changes the value returned by the getter. It does not rewrite TikTok's cached value or prove the named feature changed.	Una sustitución cambia el valor que devuelve el lector. No reescribe el valor que TikTok tiene en caché ni demuestra que la función nombrada haya cambiado.

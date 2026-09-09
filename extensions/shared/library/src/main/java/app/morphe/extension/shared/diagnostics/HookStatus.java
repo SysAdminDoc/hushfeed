@@ -153,19 +153,44 @@ public final class HookStatus {
      * hook that has not run cannot be called broken. A family that stopped counting says so,
      * rather than letting a catastrophically broken build read like a mildly broken one.
      */
+    /**
+     * One family's line, written as a whole sentence.
+     *
+     * <p>It used to be five pieces glued together here, and no translation table can hold a
+     * fragment: a language that puts the count somewhere else in the sentence had nowhere to
+     * go. A bundle with a table sets one of these; a bundle without gets the English below.
+     */
+    public interface LineWriter {
+        String line(String family, int found, int missing, boolean truncated, String firstMiss);
+    }
+
+    private static final LineWriter ENGLISH = (family, found, missing, truncated, firstMiss) -> {
+        StringBuilder line = new StringBuilder(family)
+                .append(": ").append(found).append(" found, ").append(missing).append(" missing");
+        if (truncated) line.append(", and more it stopped counting");
+        if (firstMiss != null) line.append(". First missing: ").append(firstMiss);
+        return line.toString();
+    };
+
+    private static volatile LineWriter lineWriter;
+
+    /** Set once by a bundle that can translate the line. */
+    public static void setLineWriter(LineWriter writer) {
+        lineWriter = writer;
+    }
+
     public static List<String> report() {
         List<String> lines = new ArrayList<>();
         for (String name : SEEN) {
             Family entry = FAMILIES.get(name);
             if (entry == null) continue;
-            StringBuilder line = new StringBuilder(name)
-                    .append(": ").append(entry.bound.size()).append(" bound, ")
-                    .append(entry.order.size()).append(" unbound");
-            if (entry.truncated || entry.boundTruncated) {
-                line.append(" and more it stopped counting");
-            }
-            if (!entry.order.isEmpty()) line.append("; first miss: ").append(entry.order.get(0));
-            lines.add(line.toString());
+            LineWriter writer = lineWriter;
+            lines.add((writer == null ? ENGLISH : writer).line(
+                    name,
+                    entry.bound.size(),
+                    entry.order.size(),
+                    entry.truncated || entry.boundTruncated,
+                    entry.order.isEmpty() ? null : entry.order.get(0)));
         }
         return lines;
     }

@@ -11,6 +11,10 @@ source,target
 %1$s on,%1$s on
 %1$s to %2$s,%1$s to %2$s
 "%1$s, selected","%1$s, selected"
+"%1$s: %2$d found, %3$d missing","%1$s: %2$d found, %3$d missing"
+"%1$s: %2$d found, %3$d missing, and more it stopped counting","%1$s: %2$d found, %3$d missing, and more it stopped counting"
+"%1$s: %2$d found, %3$d missing, and more it stopped counting. First missing: %4$s","%1$s: %2$d found, %3$d missing, and more it stopped counting. First missing: %4$s"
+"%1$s: %2$d found, %3$d missing. First missing: %4$s","%1$s: %2$d found, %3$d missing. First missing: %4$s"
 1 gate selected,1 gate selected
 A creator pattern is taking too long and was switched off: %1$s,A creator pattern is taking too long and was switched off: %1$s
 "A good place to stop, if you want one.","A good place to stop, if you want one."
@@ -30,6 +34,7 @@ Ads,Ads
 Advance when a video ends,Advance when a video ends
 Advanced JSON value,Advanced JSON value
 All available languages,All available languages
+All events,All events
 All loaded tabs,All loaded tabs
 Allow Duet and Stitch anyway,Allow Duet and Stitch anyway
 Allow screenshots and Circle to Search,Allow screenshots and Circle to Search
@@ -47,6 +52,7 @@ Animated sticker format,Animated sticker format
 App behavior,App behavior
 Applies saved rules at supported getters,Applies saved rules at supported getters
 Applies to both video and photo downloads.,Applies to both video and photo downloads.
+Apply,Apply
 Arrange your feed and bottom tabs,Arrange your feed and bottom tabs
 Audio,Audio
 Auto translate comments,Auto translate comments
@@ -155,6 +161,7 @@ Dark,Dark
 Default playback speed,Default playback speed
 Delete the local record of the videos you have watched.,Delete the local record of the videos you have watched.
 "Device language, then original","Device language, then original"
+Diagnostic data cleared.,Diagnostic data cleared.
 Diagnostics,Diagnostics
 Disable analytics and tracking,Disable analytics and tracking
 Disable the long press quick share,Disable the long press quick share
@@ -178,10 +185,12 @@ Enter a creator handle or id,Enter a creator handle or id
 Enter a valid two-letter country code,Enter a valid two-letter country code
 "Enter a whole number, or one like 20K, 1.5M or 2B","Enter a whole number, or one like 20K, 1.5M or 2B"
 Enter up to 8 comma-separated speeds from 0.5 to 3,Enter up to 8 comma-separated speeds from 0.5 to 3
+Errors,Errors
 Expand activity list,Expand activity list
 Export diagnostic report,Export diagnostic report
 Fade the feed out before the hold,Fade the feed out before the hold
 Feature Gate Lab,Feature Gate Lab
+Feed and navigation,Feed and navigation
 Feed filter,Feed filter
 Feed navigation,Feed navigation
 Filter bottom tabs,Filter bottom tabs
@@ -193,6 +202,7 @@ Filter: %1$s,Filter: %1$s
 "Filters, translation and copy options","Filters, translation and copy options"
 Find a setting by title or description,Find a setting by title or description
 Fit the video to the screen,Fit the video to the screen
+Follow probe,Follow probe
 For You,For You
 For com.deniscerri.ytdl only. Ask YTDLnis for audio or video when the save button hands it a link.,For com.deniscerri.ytdl only. Ask YTDLnis for audio or video when the save button hands it a link.
 For com.deniscerri.ytdl only. Hide its download card and start the handoff in the background.,For com.deniscerri.ytdl only. Hide its download card and start the handoff in the background.
@@ -329,8 +339,10 @@ Hushfeed filtered this batch,Hushfeed filtered this batch
 Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working.,Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working.
 "Ignore the creator's choice so the Duet and Stitch entries appear. Everything else the app checks still applies, and whether the upload is accepted is the server's decision.","Ignore the creator's choice so the Duet and Stitch entries appear. Everything else the app checks still applies, and whether the upload is accepted is the server's decision."
 Inbox,Inbox
+Include diagnostic events,Include diagnostic events
 Included diagnostics,Included diagnostics
-Includes all Morphe diagnostic events.,Includes all Morphe diagnostic events.
+Includes %1$s events.,Includes %1$s events.
+Includes all diagnostic events.,Includes all diagnostic events.
 Inserted cards,Inserted cards
 Interface,Interface
 Invalid SIM preset,Invalid SIM preset
@@ -430,6 +442,7 @@ Open the story again and try once more,Open the story again and try once more
 Operator MCC/MNC,Operator MCC/MNC
 Operator name,Operator name
 Original language,Original language
+Other,Other
 Other feed filters,Other feed filters
 Override SIM details,Override SIM details
 Override saved but off,Override saved but off
@@ -505,6 +518,7 @@ Save videos without sound,Save videos without sound
 Saved %1$s of %2$s photos before the story failed,Saved %1$s of %2$s photos before the story failed
 Saved %1$s original photos,Saved %1$s original photos
 "Saved %1$s photos. The rest failed, so try again.","Saved %1$s photos. The rest failed, so try again."
+Saved. Restart TikTok to apply this.,Saved. Restart TikTok to apply this.
 Saving %1$s original photos,Saving %1$s original photos
 Saving settings backup,Saving settings backup
 Saving sticker,Saving sticker

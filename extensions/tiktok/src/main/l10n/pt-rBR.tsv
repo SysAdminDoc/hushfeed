@@ -311,7 +311,7 @@ Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops wo
 Ignore the creator's choice so the Duet and Stitch entries appear. Everything else the app checks still applies, and whether the upload is accepted is the server's decision.	Ignorar a escolha do criador para que as entradas de Dueto e Costura apareçam. Todo o resto que o app verifica continua valendo, e se o envio é aceito quem decide é o servidor.
 Inbox	Caixa de entrada
 Included diagnostics	Diagnóstico incluído
-Includes all Morphe diagnostic events.	Inclui todos os eventos de diagnóstico do Morphe.
+Includes all diagnostic events.	Inclui todos os eventos de diagnóstico.
 Inserted cards	Cards inseridos
 Interface	Interface
 Invalid SIM preset	Predefinição de SIM inválida
@@ -479,6 +479,20 @@ Search a title, description or category.	Busque um título, uma descrição ou u
 Search and override gate flags	Buscar e substituir marcas de gates
 Search hidden creators	Buscar criadores escondidos
 Search settings	Buscar nas configurações
+%1$s: %2$d found, %3$d missing	%1$s: %2$d encontrados, %3$d faltando
+%1$s: %2$d found, %3$d missing, and more it stopped counting	%1$s: %2$d encontrados, %3$d faltando, e mais que parou de contar
+%1$s: %2$d found, %3$d missing. First missing: %4$s	%1$s: %2$d encontrados, %3$d faltando. O primeiro que faltou: %4$s
+%1$s: %2$d found, %3$d missing, and more it stopped counting. First missing: %4$s	%1$s: %2$d encontrados, %3$d faltando, e mais que parou de contar. O primeiro que faltou: %4$s
+Include diagnostic events	Incluir eventos de diagnóstico
+Apply	Aplicar
+All events	Todos os eventos
+Follow probe	Verificação de seguir
+Feed and navigation	Feed e navegação
+Errors	Erros
+Other	Outros
+Saved. Restart TikTok to apply this.	Salvo. Reinicie o TikTok para valer.
+Diagnostic data cleared.	Dados de diagnóstico apagados.
+Includes %1$s events.	Inclui eventos de %1$s.
 Gate details	Detalhes do gate
 This catalog entry is no longer available. Refresh the Lab and try again.	Esta entrada do catálogo não está mais disponível. Atualize o Laboratório e tente de novo.
 An override changes the value returned by the getter. It does not rewrite TikTok's cached value or prove the named feature changed.	Uma substituição muda o valor devolvido pelo leitor. Ela não reescreve o valor que o TikTok tem em cache nem prova que o recurso citado mudou.

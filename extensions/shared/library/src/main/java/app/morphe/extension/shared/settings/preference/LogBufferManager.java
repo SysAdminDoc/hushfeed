@@ -40,6 +40,12 @@ import app.morphe.extension.shared.settings.BaseSettings;
 
 /** Bounded structured event storage and latest sanitized crash storage. */
 public final class LogBufferManager {
+    /**
+     * What clearing says, so a bundle with a translation table can set its own. Null means the
+     * English below, which is what a bundle carrying no table gets.
+     */
+    public static CharSequence clearedMessage;
+
     private static final int BUFFER_MAX_CHARS = 250_000;
     private static final int BUFFER_MAX_SIZE = 10_000;
     private static final int CLIPBOARD_MAX_CHARS = 60_000;
@@ -446,7 +452,9 @@ public final class LogBufferManager {
         clearLogBufferData();
         app.morphe.extension.shared.diagnostics.HookStatus.clear();
         clearCrashReports(Utils.getContext());
-        Utils.showToastShort("Morphe diagnostic data cleared.");
+        Utils.showToastShort(clearedMessage == null
+                ? "Morphe diagnostic data cleared."
+                : clearedMessage.toString());
     }
 
     private static void clearLogBufferData() {

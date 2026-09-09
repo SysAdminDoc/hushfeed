@@ -47,7 +47,7 @@ public class HookStatusTest {
         HookStatus.bound("comments", "dislike_button");
 
         assertFalse("a surface with no miss was called broken", HookStatus.anyMissing());
-        assertEquals(List.of("comments: 2 bound, 0 unbound"), HookStatus.report());
+        assertEquals(List.of("comments: 2 found, 0 missing"), HookStatus.report());
     }
 
     @Test public void theSameLookupTwiceCountsOnce() {
@@ -57,7 +57,7 @@ public class HookStatusTest {
         HookStatus.missingViewId("inbox", "avatar");
 
         // Both run on every bind, so counting repeats would report thousands within a scroll.
-        assertEquals(List.of("inbox: 1 bound, 1 unbound; first miss: view id 'avatar'"),
+        assertEquals(List.of("inbox: 1 found, 1 missing. First missing: view id 'avatar'"),
                 HookStatus.report());
     }
 
@@ -66,7 +66,7 @@ public class HookStatusTest {
         HookStatus.missingViewId("share sheet", "action_label");
 
         assertTrue(HookStatus.anyMissing());
-        assertEquals(List.of("share sheet: 0 bound, 2 unbound; first miss: view id 'action_row'"),
+        assertEquals(List.of("share sheet: 0 found, 2 missing. First missing: view id 'action_row'"),
                 HookStatus.report());
         assertEquals(List.of("share sheet"), HookStatus.familiesMissingSomething());
     }
@@ -77,10 +77,10 @@ public class HookStatusTest {
         HookStatus.missingViewId("comments", "dislike_button");
 
         assertEquals(
-                List.of("overlay: 1 bound, 0 unbound",
-                        "feed models: 0 bound, 1 unbound; "
-                                + "first miss: method com.example.Card#isAdOrContainAd",
-                        "comments: 0 bound, 1 unbound; first miss: view id 'dislike_button'"),
+                List.of("overlay: 1 found, 0 missing",
+                        "feed models: 0 found, 1 missing. "
+                                + "First missing: method com.example.Card#isAdOrContainAd",
+                        "comments: 0 found, 1 missing. First missing: view id 'dislike_button'"),
                 HookStatus.report());
         assertEquals(List.of("feed models", "comments"), HookStatus.familiesMissingSomething());
     }
@@ -110,7 +110,7 @@ public class HookStatusTest {
         String report = LogBufferManager.buildExportText();
         assertTrue("the export carried no hook table: " + report, report.contains("[HOOK STATUS]"));
         assertTrue("the export did not name the surface: " + report,
-                report.contains("comments: 1 bound, 1 unbound; first miss: view id 'dislike_button'"));
+                report.contains("comments: 1 found, 1 missing. First missing: view id 'dislike_button'"));
     }
 
     @Test public void theTableFollowsTheIncludedDiagnosticsChoice() {
@@ -161,5 +161,50 @@ public class HookStatusTest {
     @Test public void anEmptyRegistryExportsNothing() {
         assertEquals("a report was built with nothing to put in it", "",
                 LogBufferManager.buildExportText());
+    }
+
+    /**
+     * The report line on a German phone.
+     *
+     * <p>It used to be five pieces glued together in the shared library, which no table row can
+     * hold: a language that puts the counts elsewhere in the sentence had nowhere to go. It is
+     * one sentence now, and this bundle hands the shared library a writer for it.
+     */
+    @Test
+    public void theReportLineReadsGermanOnAGermanPhone() throws Exception {
+        HookStatus.clear();
+        try {
+            android.content.Context german = germanContext();
+            HookStatus.setLineWriter((family, found, missing, truncated, firstMiss) ->
+                    firstMiss == null
+                            ? app.morphe.extension.tiktok.settings.L10n.f(german,
+                                    "%1$s: %2$d found, %3$d missing", family, found, missing)
+                            : app.morphe.extension.tiktok.settings.L10n.f(german,
+                                    "%1$s: %2$d found, %3$d missing. First missing: %4$s",
+                                    family, found, missing, firstMiss));
+
+            HookStatus.bound("comments", "like_button");
+            HookStatus.missingViewId("comments", "dislike_button");
+
+            String line = HookStatus.report().get(0);
+            assertTrue("the report line is still English: " + line,
+                    line.contains("gefunden") && line.contains("fehlen"));
+            assertTrue("the family and the counts did not survive the translation: " + line,
+                    line.startsWith("comments: 1 ") && line.contains("dislike_button"));
+        } finally {
+            HookStatus.setLineWriter(null);
+            HookStatus.clear();
+        }
+    }
+
+    /** The words the shipped table holds, under a German configuration. */
+    private static android.content.Context germanContext() {
+        android.content.res.Configuration configuration =
+                new android.content.res.Configuration(
+                        org.robolectric.RuntimeEnvironment.getApplication()
+                                .getResources().getConfiguration());
+        configuration.setLocale(java.util.Locale.GERMANY);
+        return org.robolectric.RuntimeEnvironment.getApplication()
+                .createConfigurationContext(configuration);
     }
 }

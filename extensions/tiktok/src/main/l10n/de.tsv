@@ -292,7 +292,7 @@ Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops wo
 Ignore the creator's choice so the Duet and Stitch entries appear. Everything else the app checks still applies, and whether the upload is accepted is the server's decision.	Die Wahl der erstellenden Person übergehen, damit die Einträge Duett und Stitch erscheinen. Alle übrigen Prüfungen der App gelten weiterhin, und ob der Upload angenommen wird, entscheidet der Server.
 Inbox	Posteingang
 Included diagnostics	Enthaltene Diagnosedaten
-Includes all Morphe diagnostic events.	Enthält alle Morphe-Diagnoseereignisse.
+Includes all diagnostic events.	Enthält alle Diagnoseereignisse.
 Interface	Oberfläche
 Invalid SIM preset	Ungültige SIM-Vorlage
 Keep a local record of what you have watched and drop those videos from later feed pages.	Lokal festhalten, was du gesehen hast, und diese Videos aus späteren Feed-Seiten entfernen.
@@ -552,6 +552,20 @@ Find a setting by title or description	Einstellung nach Titel oder Beschreibung 
 No matching settings	Keine passenden Einstellungen
 Search a title, description or category.	Titel, Beschreibung oder Kategorie durchsuchen.
 Search settings	Einstellungen durchsuchen
+%1$s: %2$d found, %3$d missing	%1$s: %2$d gefunden, %3$d fehlen
+%1$s: %2$d found, %3$d missing, and more it stopped counting	%1$s: %2$d gefunden, %3$d fehlen, und weitere, die nicht mehr gezählt wurden
+%1$s: %2$d found, %3$d missing. First missing: %4$s	%1$s: %2$d gefunden, %3$d fehlen. Zuerst fehlte: %4$s
+%1$s: %2$d found, %3$d missing, and more it stopped counting. First missing: %4$s	%1$s: %2$d gefunden, %3$d fehlen, und weitere, die nicht mehr gezählt wurden. Zuerst fehlte: %4$s
+Include diagnostic events	Diagnoseereignisse einschließen
+Apply	Übernehmen
+All events	Alle Ereignisse
+Follow probe	Folgen-Prüfung
+Feed and navigation	Feed und Navigation
+Errors	Fehler
+Other	Sonstiges
+Saved. Restart TikTok to apply this.	Gespeichert. TikTok neu starten, damit das gilt.
+Diagnostic data cleared.	Diagnosedaten gelöscht.
+Includes %1$s events.	Enthält Ereignisse: %1$s.
 Gate details	Schalterdetails
 This catalog entry is no longer available. Refresh the Lab and try again.	Dieser Katalogeintrag ist nicht mehr verfügbar. Das Labor aktualisieren und es erneut versuchen.
 An override changes the value returned by the getter. It does not rewrite TikTok's cached value or prove the named feature changed.	Eine Überschreibung ändert den Wert, den der Getter zurückgibt. Sie schreibt TikToks zwischengespeicherten Wert nicht um und beweist nicht, dass sich die genannte Funktion geändert hat.

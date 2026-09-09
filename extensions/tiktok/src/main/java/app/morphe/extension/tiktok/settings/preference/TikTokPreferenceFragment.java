@@ -230,6 +230,33 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         // own item on the roadmap.
         confirmDialogTitle = null;
 
+        // The two sentences the shared library says on this bundle's behalf. It cannot reach a
+        // translation table itself, so they are handed to it once, from here, where the
+        // settings screen is being built and a context is at hand.
+        savedMessage = L10n.t(context, "Saved. Restart TikTok to apply this.");
+        app.morphe.extension.shared.settings.preference.LogBufferManager.clearedMessage =
+                L10n.t(context, "Diagnostic data cleared.");
+        // Four whole sentences rather than five fragments, so each one is a row a translator
+        // can move the numbers around inside. The context is asked for when a line is written
+        // rather than captured here: this writer is a static and outlives the screen.
+        app.morphe.extension.shared.diagnostics.HookStatus.setLineWriter(
+                (family, found, missing, truncated, firstMiss) -> {
+                    Context lineContext = app.morphe.extension.shared.Utils.getContext();
+                    if (firstMiss == null) {
+                        return truncated
+                                ? L10n.f(lineContext, "%1$s: %2$d found, %3$d missing, and more it "
+                                        + "stopped counting", family, found, missing)
+                                : L10n.f(lineContext, "%1$s: %2$d found, %3$d missing",
+                                        family, found, missing);
+                    }
+                    return truncated
+                            ? L10n.f(lineContext, "%1$s: %2$d found, %3$d missing, and more it "
+                                    + "stopped counting. First missing: %4$s",
+                                    family, found, missing, firstMiss)
+                            : L10n.f(lineContext, "%1$s: %2$d found, %3$d missing. First missing: "
+                                    + "%4$s", family, found, missing, firstMiss);
+                });
+
         Utils.setIsDarkModeEnabled(isDarkModeEnabled(context));
 
         PreferenceScreen preferenceScreen = getPreferenceManager().createPreferenceScreen(context);

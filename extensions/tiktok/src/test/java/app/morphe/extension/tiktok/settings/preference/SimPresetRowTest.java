@@ -140,6 +140,49 @@ public class SimPresetRowTest {
         }
     }
 
+    /**
+     * The diagnostics picker on a German phone. It lives in the shared library, which cannot
+     * reach a translation table because it is shared with bundles that carry none, so this
+     * bundle hands it the words through the hooks the row already used for its own title.
+     */
+    @Test
+    @Config(sdk = 28, qualifiers = "de-rDE")
+    public void theDiagnosticsPickerReadsGermanOnAGermanPhone() throws Exception {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            // body below
+            Utils.setContext(controller.get());
+            // The page only carries this row on a bundle with the diagnostics patch in it.
+            app.morphe.extension.tiktok.settings.SettingsStatus.diagnosticsEnabled = true;
+            android.preference.PreferenceScreen screen =
+                    controller.get().getPreferenceManager().createPreferenceScreen(
+                            controller.get());
+            new app.morphe.extension.tiktok.settings.preference.categories
+                    .DebugPreferenceCategory(controller.get(), screen);
+
+            android.preference.Preference row = screen.findPreference("action_included_diagnostics");
+            assertNotNull("the diagnostics picker is not on the page", row);
+            row.getOnPreferenceClickListener().onPreferenceClick(row);
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+
+            android.app.Dialog dialog = org.robolectric.shadows.ShadowDialog.getLatestDialog();
+            assertNotNull("the picker did not open", dialog);
+            var shadow = org.robolectric.Shadows.shadowOf((android.app.AlertDialog) dialog);
+            assertEquals("the picker title is still English",
+                    germanFor("Include diagnostic events"), shadow.getTitle());
+            java.util.List<String> items = new ArrayList<>();
+            for (CharSequence item : shadow.getItems()) items.add(item.toString());
+            assertTrue("the picker options are still English: " + items,
+                    items.contains(germanFor("All events")));
+            assertEquals("the Apply button is still English",
+                    germanFor("Apply"),
+                    ((android.app.AlertDialog) dialog)
+                            .getButton(android.app.AlertDialog.BUTTON_POSITIVE).getText()
+                            .toString());
+        } finally {
+            app.morphe.extension.tiktok.settings.SettingsStatus.diagnosticsEnabled = false;
+        }
+    }
+
     private static SimPresetPreference build(Context context) {
         return new SimPresetPreference(
                 context,

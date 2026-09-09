@@ -305,10 +305,21 @@ public abstract class AbstractPreferenceFragment extends PreferenceFragment {
         }
     }
 
+    /**
+     * What a saved setting says, so a bundle with a translation table can set its own.
+     *
+     * <p>Static because the caller is: this is reached from the settings framework rather than
+     * from an instance. Null means the English below, which is what a bundle that carries no
+     * table gets.
+     */
+    protected static CharSequence savedMessage;
+
     public static void showRestartDialog(Context context) {
         Utils.verifyOnMainThread();
         // Keep the existing entry point for callers; saving never prompts or restarts the app.
-        Utils.showToastLong("Saved. Restart TikTok to apply this change.");
+        Utils.showToastLong(savedMessage == null
+                ? "Saved. Restart TikTok to apply this change."
+                : savedMessage.toString());
     }
 
     @SuppressLint("ResourceType")
