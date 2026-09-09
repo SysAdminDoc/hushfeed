@@ -848,7 +848,7 @@ public final class StickerGallerySaver {
             Object directValue = invokeNoArg(sticker, "getUrl");
             if (directValue instanceof String) {
                 String directUrl = ((String) directValue).trim();
-                if (!directUrl.isEmpty() && !"null".equalsIgnoreCase(directUrl)) {
+                if (directUrl.startsWith("https://")) {
                     Object typeValue = invokeNoArg(sticker, "getType");
                     String type = typeValue == null
                             ? ""
