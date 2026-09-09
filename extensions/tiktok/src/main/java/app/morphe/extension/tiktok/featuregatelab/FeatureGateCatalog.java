@@ -39,6 +39,17 @@ public final class FeatureGateCatalog {
     private static volatile List<Entry> staticEntries;
     private static volatile Snapshot cachedSnapshot;
 
+    /**
+     * AB key to the type the catalogue declares for it, and nothing else.
+     *
+     * <p>The runtime's AB fallback asks the catalogue one question: does this key's declared type
+     * match the type the saved rule carries. Answering it through {@link #cachedSnapshot} meant a
+     * phone with one AB rule saved held all 16,052 entries for the life of the process, on a
+     * launch where the Lab screen was never opened. This holds one string pair per AB key, and
+     * the type strings are shared rather than one per line.
+     */
+    private static volatile Map<String, String> cachedAbTypes;
+
     private FeatureGateCatalog() {
     }
 
@@ -46,6 +57,43 @@ public final class FeatureGateCatalog {
         void onLoaded(Snapshot snapshot);
 
         void onError(String message);
+    }
+
+    public interface AbTypesCallback {
+        void onLoaded(Map<String, String> abTypes);
+
+        void onError(String message);
+    }
+
+    /**
+     * Loads {@link #cachedAbTypes} without building a snapshot.
+     *
+     * <p>It reads the same two places {@link #merge} does for AB entries, in the same order: the
+     * static catalogue first, then TikTok's own AB store for keys the catalogue does not carry,
+     * so a key answers with the same type either way.
+     */
+    public static void loadAbTypesAsync(AbTypesCallback callback) {
+        Map<String, String> cached = cachedAbTypes;
+        if (cached != null) {
+            MAIN.post(() -> callback.onLoaded(cached));
+            return;
+        }
+        EXECUTOR.execute(() -> {
+            try {
+                Map<String, String> types = readAbTypes();
+                cachedAbTypes = types;
+                MAIN.post(() -> callback.onLoaded(types));
+                Log.i(TAG, "catalog ab_types=" + types.size());
+            } catch (Throwable throwable) {
+                String message = throwable.getClass().getSimpleName()
+                        + ": " + String.valueOf(throwable.getMessage());
+                MAIN.post(() -> callback.onError(message));
+            }
+        });
+    }
+
+    public static Map<String, String> cachedAbTypes() {
+        return cachedAbTypes;
     }
 
     public static void loadAsync(boolean refreshCurrentCache, Callback callback) {
@@ -74,6 +122,7 @@ public final class FeatureGateCatalog {
                 long catalogReadyAt = System.currentTimeMillis();
                 Snapshot snapshot = merge(base, current, true);
                 cachedSnapshot = snapshot;
+                cachedAbTypes = abTypesOf(snapshot);
                 MAIN.post(() -> callback.onLoaded(snapshot));
                 Log.i(TAG, "catalog current_ms=" + (currentReadyAt - startedAt)
                         + " static_ms=" + (catalogReadyAt - currentReadyAt)
@@ -98,6 +147,91 @@ public final class FeatureGateCatalog {
     static void resetForTests() {
         staticEntries = null;
         cachedSnapshot = null;
+        cachedAbTypes = null;
+    }
+
+    /** The AB half of a loaded snapshot, so both paths answer a key the same way. */
+    private static Map<String, String> abTypesOf(Snapshot snapshot) {
+        String prefix = FeatureGateLabStore.MANAGER_ABMOCK + "\n";
+        Map<String, String> result = new HashMap<>();
+        Map<String, String> shared = new HashMap<>();
+        for (Map.Entry<String, Entry> item : snapshot.byIdentity.entrySet()) {
+            if (!item.getKey().startsWith(prefix)) {
+                continue;
+            }
+            result.put(item.getValue().key, share(shared, item.getValue().type));
+        }
+        return Collections.unmodifiableMap(result);
+    }
+
+    private static Map<String, String> readAbTypes() throws Exception {
+        Map<String, String> result = new HashMap<>();
+        Map<String, String> shared = new HashMap<>();
+        appendStaticAbTypes(result, shared, GeneratedFeatureGateCatalog.GZIP_BASE64);
+        appendStaticAbTypes(result, shared, GeneratedPlayerFeatureGateCatalog.GZIP_BASE64);
+        appendStaticAbTypes(result, shared, GeneratedVeFeatureGateCatalog.GZIP_BASE64);
+
+        // A key TikTok's AB store carries that the catalogue does not becomes an entry of its own
+        // in a snapshot, typed from the value that is there. The static type wins where both have
+        // the key, which is what merge does by removing the key as it walks the static entries.
+        for (Map.Entry<String, Object> item
+                : readKevaMapSafely("libra_config_center_repo").entrySet()) {
+            if (result.containsKey(item.getKey())) {
+                continue;
+            }
+            String dynamicType = runtimeType(item.getValue());
+            if (!FeatureGateLabStore.supportsOverride(
+                    FeatureGateLabStore.MANAGER_ABMOCK, dynamicType)) {
+                continue;
+            }
+            result.put(item.getKey(), share(shared, dynamicType));
+        }
+        return Collections.unmodifiableMap(result);
+    }
+
+    private static void appendStaticAbTypes(
+            Map<String, String> result,
+            Map<String, String> shared,
+            String[] chunks
+    ) throws Exception {
+        try (BufferedReader reader = openCatalog(chunks)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] fields = line.split("\\t", -1);
+                if (fields.length != 10) {
+                    continue;
+                }
+                // The same three conditions an Entry would have to meet to reach byIdentity:
+                // the AB manager, actionable, and a type the Lab can override.
+                if (!FeatureGateLabStore.MANAGER_ABMOCK.equals(fields[1])
+                        || !"1".equals(fields[3])
+                        || !FeatureGateLabStore.supportsOverride(fields[1], fields[2])) {
+                    continue;
+                }
+                result.put(fields[0], share(shared, fields[2]));
+            }
+        }
+    }
+
+    /** One instance per distinct type, rather than one per line of the catalogue. */
+    private static String share(Map<String, String> shared, String type) {
+        String existing = shared.get(type);
+        if (existing != null) {
+            return existing;
+        }
+        shared.put(type, type);
+        return type;
+    }
+
+    private static BufferedReader openCatalog(String[] chunks) throws Exception {
+        StringBuilder encoded = new StringBuilder();
+        for (String chunk : chunks) {
+            encoded.append(chunk);
+        }
+        byte[] compressed = Base64.decode(encoded.toString(), Base64.DEFAULT);
+        return new BufferedReader(new InputStreamReader(
+                new GZIPInputStream(new ByteArrayInputStream(compressed)),
+                StandardCharsets.UTF_8));
     }
 
     private static List<Entry> readStaticCatalog() throws Exception {
@@ -115,14 +249,7 @@ public final class FeatureGateCatalog {
     }
 
     private static void appendStaticCatalog(List<Entry> result, String[] chunks) throws Exception {
-        StringBuilder encoded = new StringBuilder();
-        for (String chunk : chunks) {
-            encoded.append(chunk);
-        }
-        byte[] compressed = Base64.decode(encoded.toString(), Base64.DEFAULT);
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                new GZIPInputStream(new ByteArrayInputStream(compressed)),
-                StandardCharsets.UTF_8))) {
+        try (BufferedReader reader = openCatalog(chunks)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split("\\t", -1);
@@ -156,14 +283,7 @@ public final class FeatureGateCatalog {
             List<Entry> result,
             String[] chunks
     ) throws Exception {
-        StringBuilder encoded = new StringBuilder();
-        for (String chunk : chunks) {
-            encoded.append(chunk);
-        }
-        byte[] compressed = Base64.decode(encoded.toString(), Base64.DEFAULT);
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                new GZIPInputStream(new ByteArrayInputStream(compressed)),
-                StandardCharsets.UTF_8))) {
+        try (BufferedReader reader = openCatalog(chunks)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split("\\t", -1);

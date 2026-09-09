@@ -664,12 +664,15 @@ public final class FeatureGateLabRuntime {
         if (rule == null) {
             return null;
         }
-        FeatureGateCatalog.Snapshot catalog = FeatureGateCatalog.cachedSnapshot();
-        if (catalog == null) {
+        // One string per AB key rather than the whole 16,052 entry snapshot. This runs on a
+        // launch where the Lab screen may never be opened, and whatever it holds it holds for
+        // the life of the process. The Lab screen still loads the snapshot, and that fills this.
+        Map<String, String> catalogTypes = FeatureGateCatalog.cachedAbTypes();
+        if (catalogTypes == null) {
             if (catalogRequested.compareAndSet(false, true)) {
-                // Nothing to do when it lands: the next read reads the cache it fills.
-                FeatureGateCatalog.loadAsync(false, new FeatureGateCatalog.Callback() {
-                    @Override public void onLoaded(FeatureGateCatalog.Snapshot loaded) { }
+                // Nothing to do when it lands: the next read reads the map it fills.
+                FeatureGateCatalog.loadAbTypesAsync(new FeatureGateCatalog.AbTypesCallback() {
+                    @Override public void onLoaded(Map<String, String> abTypes) { }
 
                     @Override public void onError(String message) {
                         // Let the next read ask again. Left set, one failed load would have put
@@ -681,14 +684,13 @@ public final class FeatureGateLabRuntime {
             }
             return rule;
         }
-        FeatureGateCatalog.Entry entry =
-                catalog.byIdentity.get(FeatureGateLabStore.MANAGER_ABMOCK + "\n" + key);
-        if (entry == null) {
+        String catalogType = catalogTypes.get(key);
+        if (catalogType == null) {
             return refuse(rule, "Not in the catalogue, so the type cannot be checked");
         }
-        if (!FeatureGateLabStore.normalizeType(entry.type)
+        if (!FeatureGateLabStore.normalizeType(catalogType)
                 .equals(FeatureGateLabStore.normalizeType(rule.type))) {
-            return refuse(rule, "Catalogue says " + entry.type + ", this rule is " + rule.type);
+            return refuse(rule, "Catalogue says " + catalogType + ", this rule is " + rule.type);
         }
         structuredFailures.remove(rule.id);
         return rule;

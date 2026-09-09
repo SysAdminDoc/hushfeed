@@ -1,5 +1,7 @@
 ## Unreleased
 
+* A saved gate override no longer costs 19 MB on every launch. The check that refuses an override whose type TikTok's own catalogue disagrees with used to load the whole catalogue, 17,393 entries, and hold it for as long as the app was running, on launches where the Feature Gate Lab was never opened. It now loads the one thing it reads, a type per AB key, which measured 1.9 MB against 19.1 MB. The Lab screen still loads the whole thing when you open it, and refuses exactly what it refused before.
+
 * With a SIM preset on, TikTok no longer reports your SIM changing. Swap a SIM, or change which one carries data, and a startup check sends one event: how many SIMs the phone has, how long since it last looked, and the country and carrier before and after. The preset covers the country and the carrier, so both halves read as the preset, but the SIM count comes from a part of Android the preset never reached, and the event still says the hardware changed. With a preset on the check is skipped. Nothing else in the app reads what it stored.
 
 * "Resume videos after scrolling" works on the Following and Friends tabs. TikTok kept a position for every feed it played, then handed one back only for a short list of places it built into the app, and the Following tab is not on that list. The switch looked broken there while the position was being stored all along. With the switch on, any feed that has a stored position now uses it.

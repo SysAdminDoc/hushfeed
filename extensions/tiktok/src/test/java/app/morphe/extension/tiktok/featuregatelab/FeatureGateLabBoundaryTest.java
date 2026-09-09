@@ -12,6 +12,7 @@ import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -59,14 +60,28 @@ public class FeatureGateLabBoundaryTest {
         SettingsStatus.featureGateRecorderEnabled = recorderEnabled;
     }
 
-    /** Publishes a catalogue the runtime can consult without the Lab's screen loading one. */
+    /**
+     * Publishes a catalogue the runtime can consult without the Lab's screen loading one.
+     *
+     * <p>Both caches, because that is what a real load leaves behind: the Lab screen fills the
+     * snapshot and the AB type map together, and the runtime's check reads only the map.
+     */
     private static void publishCatalog(FeatureGateCatalog.Entry... entries) throws Exception {
         java.util.Map<String, FeatureGateCatalog.Entry> byIdentity = new java.util.HashMap<>();
-        for (FeatureGateCatalog.Entry entry : entries) byIdentity.put(entry.identity(), entry);
+        java.util.Map<String, String> abTypes = new java.util.HashMap<>();
+        for (FeatureGateCatalog.Entry entry : entries) {
+            byIdentity.put(entry.identity(), entry);
+            if (FeatureGateLabStore.MANAGER_ABMOCK.equals(entry.manager)) {
+                abTypes.put(entry.key, entry.type);
+            }
+        }
         var field = FeatureGateCatalog.class.getDeclaredField("cachedSnapshot");
         field.setAccessible(true);
         field.set(null, new FeatureGateCatalog.Snapshot(
                 List.of(entries), byIdentity, entries.length, 0L, true));
+        var types = FeatureGateCatalog.class.getDeclaredField("cachedAbTypes");
+        types.setAccessible(true);
+        types.set(null, java.util.Collections.unmodifiableMap(abTypes));
     }
 
     private static FeatureGateCatalog.Entry abEntry(String key, String type) {
@@ -226,36 +241,79 @@ public class FeatureGateLabBoundaryTest {
                 FeatureGateLabRuntime.overrideRawAbValue("stranger_gate", null, false));
 
         FeatureGateCatalog.awaitForTests();
-        FeatureGateCatalog.Snapshot loaded = FeatureGateCatalog.cachedSnapshot();
+        Map<String, String> loaded = FeatureGateCatalog.cachedAbTypes();
         assertNotNull("the fallback did not ask for the catalogue", loaded);
+
+        // What it asked for is the AB key to type map and not the whole catalogue. The snapshot
+        // is 16,052 entries and this launch never opened the Lab screen, so holding it for the
+        // life of the process buys nothing the check uses.
+        assertNull("the fallback loaded the whole snapshot, not just the types it reads",
+                FeatureGateCatalog.cachedSnapshot());
+        assertTrue("the AB type map came back empty", loaded.size() > 1000);
 
         // The branch this whole check exists for, reached without the Lab screen ever opening:
         // a key the catalogue does carry, with a rule whose type it disagrees with. Taken from
-        // the catalogue that was just loaded rather than named here, so this keeps meaning the
-        // same thing when the catalogue is regenerated.
-        FeatureGateCatalog.Entry known = anAbEntry(loaded);
-        String wrongType = "BOOLEAN".equals(FeatureGateLabStore.normalizeType(known.type))
+        // the map that was just loaded rather than named here, so this keeps meaning the same
+        // thing when the catalogue is regenerated.
+        Map.Entry<String, String> known = anAbEntry(loaded);
+        String wrongType = "BOOLEAN".equals(FeatureGateLabStore.normalizeType(known.getValue()))
                 ? "STRING" : "BOOLEAN";
         FeatureGateLabStore.saveRule(
-                FeatureGateLabStore.MANAGER_ABMOCK, known.key, wrongType, "true", true);
+                FeatureGateLabStore.MANAGER_ABMOCK, known.getKey(), wrongType, "true", true);
         assertNull("a rule the catalogue disagrees with was handed to the host",
-                FeatureGateLabRuntime.overrideRawAbValue(known.key, null, false));
+                FeatureGateLabRuntime.overrideRawAbValue(known.getKey(), null, false));
         assertTrue("the refusal did not say the catalogue disagreed: "
                         + FeatureGateLabRuntime.structuredFailure(
-                                FeatureGateLabStore.MANAGER_ABMOCK, known.key, wrongType),
+                                FeatureGateLabStore.MANAGER_ABMOCK, known.getKey(), wrongType),
                 String.valueOf(FeatureGateLabRuntime.structuredFailure(
-                        FeatureGateLabStore.MANAGER_ABMOCK, known.key, wrongType))
+                        FeatureGateLabStore.MANAGER_ABMOCK, known.getKey(), wrongType))
                         .startsWith("Catalogue says "));
 
         // And a key it has never heard of is refused for the other reason.
         assertNull(FeatureGateLabRuntime.overrideRawAbValue("stranger_gate", null, false));
     }
 
-    /** Any AB entry the loaded catalogue carries, so the type check has something real to read. */
-    private static FeatureGateCatalog.Entry anAbEntry(FeatureGateCatalog.Snapshot loaded) {
-        for (FeatureGateCatalog.Entry entry : loaded.entries) {
-            if (FeatureGateLabStore.MANAGER_ABMOCK.equals(entry.manager)
-                    && entry.type != null && !entry.type.isEmpty()) {
+    @Test
+    public void theTypeMapAgreesWithTheCatalogueTheLabScreenLoads() throws Exception {
+        // Two ways in, one answer. The Lab screen builds a whole snapshot; the runtime's check
+        // reads a map built from the same two places, in the same order. A key that answered
+        // differently depending on which had run would refuse a rule on one launch and apply it
+        // on the next.
+        FeatureGateCatalog.loadAbTypesAsync(new FeatureGateCatalog.AbTypesCallback() {
+            @Override public void onLoaded(Map<String, String> abTypes) { }
+
+            @Override public void onError(String message) { }
+        });
+        FeatureGateCatalog.awaitForTests();
+        Map<String, String> lean = new HashMap<>(FeatureGateCatalog.cachedAbTypes());
+
+        FeatureGateCatalog.resetForTests();
+        FeatureGateCatalog.loadAsync(false, new FeatureGateCatalog.Callback() {
+            @Override public void onLoaded(FeatureGateCatalog.Snapshot snapshot) { }
+
+            @Override public void onError(String message) { }
+        });
+        FeatureGateCatalog.awaitForTests();
+        FeatureGateCatalog.Snapshot snapshot = FeatureGateCatalog.cachedSnapshot();
+        assertNotNull("the whole catalogue did not load", snapshot);
+
+        Map<String, String> fromSnapshot = new HashMap<>();
+        for (FeatureGateCatalog.Entry entry : snapshot.entries) {
+            if (FeatureGateLabStore.MANAGER_ABMOCK.equals(entry.manager)) {
+                fromSnapshot.put(entry.key, entry.type);
+            }
+        }
+        assertEquals("the two ways of reading the catalogue disagree", fromSnapshot, lean);
+
+        // And the map the Lab screen's load leaves behind is that same map, so a check after it
+        // reads what a check before it would have.
+        assertEquals(fromSnapshot, FeatureGateCatalog.cachedAbTypes());
+    }
+
+    /** Any AB entry the loaded map carries, so the type check has something real to read. */
+    private static Map.Entry<String, String> anAbEntry(Map<String, String> loaded) {
+        for (Map.Entry<String, String> entry : loaded.entrySet()) {
+            if (entry.getValue() != null && !entry.getValue().isEmpty()) {
                 return entry;
             }
         }
