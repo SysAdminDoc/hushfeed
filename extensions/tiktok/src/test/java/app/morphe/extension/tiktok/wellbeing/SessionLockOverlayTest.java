@@ -47,6 +47,7 @@ public class SessionLockOverlayTest {
         Settings.SESSION_BUDGET_VIDEOS.resetToDefault();
         Settings.SESSION_BUDGET_LOCK_MINUTES.resetToDefault();
         Settings.SESSION_BUDGET_LOCK.resetToDefault();
+        Settings.SESSION_BUDGET_PASSES_PER_DAY.resetToDefault();
         Settings.SESSION_BUDGET_STATE.resetToDefault();
         now.set(at(2026, Calendar.SEPTEMBER, 7, 12, 0));
         SessionBudget.setClockForTests(now::get);
@@ -157,6 +158,67 @@ public class SessionLockOverlayTest {
             assertTrue("the panel does not say when the feed comes back: " + hint.getText(),
                     hint.getText().toString().contains(SessionLockOverlay.resetTimeLabel()));
         }
+    }
+
+    @Test public void aSpentCapCountsDownAndThenTakesTheWayOutAway() throws Exception {
+        // Between the way out always being there and Lock today, which removes it. The control
+        // says how many are left, and once they are gone it is as absent as it is on a locked
+        // day. The hint below still says what does work, so the panel is not a dead end.
+        Settings.SESSION_BUDGET_VIDEOS.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(5);
+        Settings.SESSION_BUDGET_PASSES_PER_DAY.save(2);
+        SessionBudget.noteVideo("a");
+        assertTrue(SessionBudget.claimNotice());
+
+        try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setActivity(activity);
+            SessionLockOverlay.sync();
+
+            // Looked up again after every sync: a hold that ends detaches the panel, so the
+            // next one is a different view and a held reference reads the old text for ever.
+            assertEquals(View.VISIBLE, wayOut(activity).getVisibility());
+            assertEquals("Open the feed anyway, 2 left today",
+                    wayOut(activity).getText().toString());
+            assertEquals("a screen reader would not hear the count",
+                    wayOut(activity).getText().toString(),
+                    wayOut(activity).getContentDescription().toString());
+
+            // Spend the first. The next hold is a raised budget away, which is what a reader
+            // who carries on scrolling does.
+            wayOut(activity).performClick();
+            assertTrue("the way out did not open the feed", !SessionBudget.isLocked());
+            reachTheHoldAgain("b", 2);
+            SessionLockOverlay.sync();
+            assertEquals("Open the feed anyway, the last time today",
+                    wayOut(activity).getText().toString());
+
+            // Spend the last, and it is gone for the rest of the day.
+            wayOut(activity).performClick();
+            assertTrue(!SessionBudget.isLocked());
+            reachTheHoldAgain("c", 3);
+            SessionLockOverlay.sync();
+            assertEquals("a spent cap left the way out on the panel",
+                    View.GONE, wayOut(activity).getVisibility());
+
+            wayOut(activity).performClick();
+            assertTrue("a tap got through a spent cap", SessionBudget.isLocked());
+        }
+    }
+
+    /** The way out on whichever panel is up now. */
+    private static android.widget.TextView wayOut(Activity activity) {
+        ViewGroup root = activity.findViewById(android.R.id.content);
+        ViewGroup panel = (ViewGroup) root.getChildAt(root.getChildCount() - 1);
+        return (android.widget.TextView) panel.getChildAt(3);
+    }
+
+    /** Raises the budget past today's count so the notice arms and the next hold starts. */
+    private static void reachTheHoldAgain(String awemeId, int budget) {
+        Settings.SESSION_BUDGET_VIDEOS.save(budget);
+        SessionBudget.claimNotice();
+        SessionBudget.noteVideo(awemeId);
+        assertTrue("the hold did not come back", SessionBudget.claimNotice());
     }
 
     @Test public void theHoldIsAnnouncedAndTakesTheFeedOutOfTheReadingOrder() throws Exception {

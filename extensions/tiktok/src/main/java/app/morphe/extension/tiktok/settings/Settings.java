@@ -231,6 +231,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting SESSION_BUDGET_LOCK = new BooleanSetting(
             "session_budget_lock", FALSE, true);
     /**
+     * How many times the hold may be opened in one day. Zero means no cap, which is what the
+     * hold has always done, and the setting sits between that and {@link #SESSION_BUDGET_LOCK},
+     * which takes the way out away entirely. Ignored while the lock is on, because there is then
+     * nothing to cap.
+     */
+    public static final IntegerSetting SESSION_BUDGET_PASSES_PER_DAY = new IntegerSetting(
+            "session_budget_passes_per_day", 0).withRange(0, 20);
+    /**
      * Today's counts and any running hold, so both survive the process being killed. Kept out
      * of backups: it is a record of one day, and restoring last week's would either hand back a
      * day or take one away, neither of which anyone asked for.

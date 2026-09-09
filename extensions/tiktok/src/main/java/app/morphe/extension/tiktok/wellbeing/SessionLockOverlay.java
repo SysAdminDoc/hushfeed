@@ -162,7 +162,14 @@ public final class SessionLockOverlay {
     private static void applyLockedState() {
         boolean locked = SessionBudget.lockedToday();
         TextView release = releaseReference.get();
-        if (release != null) release.setVisibility(locked ? View.GONE : View.VISIBLE);
+        if (release != null) {
+            int left = SessionBudget.passesLeftToday();
+            // Spent is the same as locked as far as this control goes: there is no way through
+            // today. The hint below still says what does work, so the panel is not a dead end.
+            release.setVisibility(locked || left == 0 ? View.GONE : View.VISIBLE);
+            release.setText(releaseLabel(left));
+            release.setContentDescription(release.getText());
+        }
         TextView hint = hintReference.get();
         if (hint == null) return;
         // One literal, because the translation gate reads the literal handed to L10n and a
@@ -170,6 +177,19 @@ public final class SessionLockOverlay {
         hint.setText(locked
                 ? L10n.f("Today's budget is locked. The feed opens again at %1$s. Messages, profiles and search still work.", resetTimeLabel())
                 : L10n.t("Messages, profiles and search still work."));
+    }
+
+    /**
+     * What the way out says, which is how many are left when the reader capped them.
+     *
+     * <p>Each form is its own literal rather than a label with a count appended, because the
+     * translation gate reads the literal handed to L10n and a sentence built from two of them is
+     * two entries it cannot find.
+     */
+    static String releaseLabel(int passesLeft) {
+        if (passesLeft == Integer.MAX_VALUE) return L10n.t("Open the feed anyway");
+        if (passesLeft == 1) return L10n.t("Open the feed anyway, the last time today");
+        return L10n.f("Open the feed anyway, %1$d left today", passesLeft);
     }
 
     /** The hour the locked day ends, on the reader's own clock. */
@@ -280,10 +300,14 @@ public final class SessionLockOverlay {
         releaseParams.topMargin = SettingsUi.dp(activity, 28);
         release.setLayoutParams(releaseParams);
         release.setOnClickListener(view -> {
-            // The model refuses this on a locked day. Checked here too, so the tap is answered
-            // rather than doing nothing at all.
+            // The model refuses this on a locked day and on a day whose passes are spent.
+            // Checked through its answer, so a refused tap says nothing rather than claiming
+            // the feed opened.
             if (SessionBudget.lockedToday()) return;
-            SessionBudget.releaseLock();
+            if (!SessionBudget.releaseLock()) {
+                sync();
+                return;
+            }
             sync();
             Utils.showToastShort(L10n.t("The feed is open again"));
         });

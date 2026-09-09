@@ -78,6 +78,14 @@ public final class SessionBudget {
     private static volatile boolean lockedToday;
 
     /**
+     * How many times the hold has been opened today. Only ever compared against
+     * {@link Settings#SESSION_BUDGET_PASSES_PER_DAY}, so it costs nothing while that is zero,
+     * but it is counted either way: a reader who sets a cap part way through a day should not
+     * get the day's passes back for having set it.
+     */
+    private static int passesUsed;
+
+    /**
      * What "start today over" cleared, so the next tap can put it back. Held in memory rather
      * than in the record: it is the way back from a tap a moment ago, not a second day's worth
      * of state, and writing it would double what every clear costs.
@@ -311,16 +319,39 @@ public final class SessionBudget {
     /**
      * Lifts a running hold without touching the counts. The budget stays reached, so the notice
      * does not come back until a new day or a raised budget puts the reader under it again.
+     *
+     * @return false when nothing was lifted, which is a locked day, no hold running, or a day
+     *         whose passes are spent.
      */
-    public static void releaseLock() {
+    public static boolean releaseLock() {
         synchronized (LOCK) {
             load();
             rollOver(clock.now());
             // The one exit the hold has, and the whole point of the lock is that today has none.
-            if (lockedToday) return;
-            if (lockUntilMs == 0) return;
+            if (lockedToday) return false;
+            if (lockUntilMs == 0) return false;
+            int cap = Settings.SESSION_BUDGET_PASSES_PER_DAY.get();
+            if (cap > 0 && passesUsed >= cap) return false;
             lockUntilMs = 0;
+            passesUsed++;
             save();
+            return true;
+        }
+    }
+
+    /**
+     * How many more times the hold may be opened today.
+     *
+     * @return {@link Integer#MAX_VALUE} when no cap is set, which is the default and what the
+     *         hold has always done.
+     */
+    public static int passesLeftToday() {
+        int cap = Settings.SESSION_BUDGET_PASSES_PER_DAY.get();
+        if (cap <= 0) return Integer.MAX_VALUE;
+        synchronized (LOCK) {
+            load();
+            rollOver(clock.now());
+            return Math.max(0, cap - passesUsed);
         }
     }
 
@@ -499,6 +530,7 @@ public final class SessionBudget {
         writtenWatchedMs = 0;
         lockUntilMs = 0;
         lockedToday = false;
+        passesUsed = 0;
         undoAvailable = false;
         lastCountedId = null;
         noticeShown = false;
@@ -528,6 +560,9 @@ public final class SessionBudget {
                     // A record written before the lock existed has five fields, and a day it
                     // describes was never locked, so its absence reads as false.
                     lockedToday = parts.length >= 6 && "1".equals(parts[5]);
+                    // Same again for the pass count, which arrived after both. A day recorded
+                    // before it existed had no cap to spend, so zero is the honest answer.
+                    passesUsed = parts.length >= 7 ? Integer.parseInt(parts[6]) : 0;
                 }
             }
         } catch (RuntimeException malformed) {
@@ -544,7 +579,8 @@ public final class SessionBudget {
         writtenWatchedMs = watchedMs;
         final String record = day + "|" + videos + "|" + watchedMs + "|"
                 + lockUntilMs + "|" + (noticeShown ? "1" : "0")
-                + "|" + (lockedToday ? "1" : "0");
+                + "|" + (lockedToday ? "1" : "0")
+                + "|" + passesUsed;
         try {
             WRITER.execute(() -> Settings.SESSION_BUDGET_STATE.save(record));
         } catch (RejectedExecutionException stopped) {
@@ -595,6 +631,7 @@ public final class SessionBudget {
             writtenWatchedMs = 0;
             lockUntilMs = 0;
             lockedToday = false;
+            passesUsed = 0;
             undoAvailable = false;
             lastTickMs = 0;
             lastCountedId = null;

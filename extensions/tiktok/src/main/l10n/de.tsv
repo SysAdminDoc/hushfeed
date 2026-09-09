@@ -635,6 +635,9 @@ The smallest value is above the largest	Der kleinste Wert liegt über dem größ
 That is %1$d minutes today	Das sind %1$d Minuten heute
 One minute left	Noch eine Minute
 Open the feed anyway	Feed trotzdem öffnen
+Open the feed anyway, the last time today	Feed trotzdem öffnen, heute zum letzten Mal
+Open the feed anyway, %1$d left today	Feed trotzdem öffnen, heute noch %1$d Mal
+Times you can open the feed anyway	Wie oft du den Feed trotzdem öffnen kannst
 Start today over	Heute neu beginnen
 Forget what has been counted today and end any hold. The budgets themselves are left alone.	Vergessen, was heute gezählt wurde, und jede Sperre beenden. Die Budgets selbst bleiben unverändert.
 Today starts again	Heute beginnt neu

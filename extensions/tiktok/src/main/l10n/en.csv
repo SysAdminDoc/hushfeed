@@ -391,6 +391,8 @@ Open external links directly,Open external links directly
 Open feed filter settings,Open feed filter settings
 Open profile and story website links in your system browser instead of TikTok's in-app browser.,Open profile and story website links in your system browser instead of TikTok's in-app browser.
 Open the feed anyway,Open the feed anyway
+"Open the feed anyway, %1$d left today","Open the feed anyway, %1$d left today"
+"Open the feed anyway, the last time today","Open the feed anyway, the last time today"
 Open the profile again and try once more,Open the profile again and try once more
 Open the story again and try once more,Open the story again and try once more
 Operator MCC/MNC,Operator MCC/MNC
@@ -600,6 +602,7 @@ TikTok default,TikTok default
 "TikTok default (2x hold, quick share)","TikTok default (2x hold, quick share)"
 TikTok didn't accept the feedback. Try again later.,TikTok didn't accept the feedback. Try again later.
 TikTok refused the follow: %1$s,TikTok refused the follow: %1$s
+Times you can open the feed anyway,Times you can open the feed anyway
 "Today has moved on, so there is nothing to put back","Today has moved on, so there is nothing to put back"
 Today is back where it was,Today is back where it was
 Today starts again,Today starts again

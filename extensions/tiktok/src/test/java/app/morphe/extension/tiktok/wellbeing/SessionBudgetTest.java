@@ -40,6 +40,7 @@ public class SessionBudgetTest {
         Settings.SESSION_BUDGET_LOCK_MINUTES.resetToDefault();
         Settings.SESSION_BUDGET_RESET_HOUR.resetToDefault();
         Settings.SESSION_BUDGET_LOCK.resetToDefault();
+        Settings.SESSION_BUDGET_PASSES_PER_DAY.resetToDefault();
         Settings.SESSION_BUDGET_STATE.resetToDefault();
         Settings.AUTO_ADVANCE_LIMIT.resetToDefault();
         now.set(at(2026, Calendar.SEPTEMBER, 7, 12, 0));
@@ -49,6 +50,7 @@ public class SessionBudgetTest {
 
     @After public void tearDown() throws Exception {
         Settings.SESSION_BUDGET_LOCK.resetToDefault();
+        Settings.SESSION_BUDGET_PASSES_PER_DAY.resetToDefault();
         SessionBudget.setClockForTests(null);
         SessionBudget.awaitWritesForTests();
         SessionBudget.resetForTests();
@@ -231,6 +233,85 @@ public class SessionBudgetTest {
         assertEquals("lifting the hold forgot the day", 1, SessionBudget.videosSeen());
         assertTrue(SessionBudget.reachedLimit());
         assertFalse("the notice came back after the hold was lifted", SessionBudget.claimNotice());
+    }
+
+    @Test public void aCapSpendsTheWayOutAndTheDayPutsItBack() throws Exception {
+        // Between a way out that is always there and Lock today, which takes it away entirely.
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(10);
+        Settings.SESSION_BUDGET_PASSES_PER_DAY.save(2);
+
+        assertEquals(2, SessionBudget.passesLeftToday());
+        assertTrue(reachTheHold("a"));
+        assertEquals(1, SessionBudget.passesLeftToday());
+        assertTrue(reachTheHold("b"));
+        assertEquals(0, SessionBudget.passesLeftToday());
+
+        // The third is refused, and the hold it was asked to lift is still up.
+        startTheHold("c");
+        assertFalse("a third pass was allowed on a cap of two", SessionBudget.releaseLock());
+        assertTrue("the refused pass lifted the hold anyway", SessionBudget.isLocked());
+
+        // It survives the process being killed, so a restart is not a way round the cap.
+        SessionBudget.awaitWritesForTests();
+        SessionBudget.resetForTests();
+        assertEquals(0, SessionBudget.passesLeftToday());
+        assertFalse(SessionBudget.releaseLock());
+
+        // And the day starting over puts them back.
+        now.set(at(2026, Calendar.SEPTEMBER, 8, 12, 0));
+        assertEquals(2, SessionBudget.passesLeftToday());
+    }
+
+    @Test public void withNoCapNothingChanges() {
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(10);
+        Settings.SESSION_BUDGET_PASSES_PER_DAY.save(0);
+
+        assertEquals(Integer.MAX_VALUE, SessionBudget.passesLeftToday());
+        for (String id : new String[]{"a", "b", "c", "d", "e"}) {
+            assertTrue("a pass was refused with no cap set", reachTheHold(id));
+        }
+        assertEquals(Integer.MAX_VALUE, SessionBudget.passesLeftToday());
+    }
+
+    @Test public void aLockedDayIgnoresTheCapBecauseItHasNoWayOutAtAll() {
+        Settings.SESSION_BUDGET_VIDEOS.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(10);
+        Settings.SESSION_BUDGET_PASSES_PER_DAY.save(3);
+        Settings.SESSION_BUDGET_LOCK.save(true);
+
+        SessionBudget.noteVideo("a");
+        assertTrue(SessionBudget.claimNotice());
+        assertTrue(SessionBudget.lockedToday());
+        assertFalse("a locked day let someone through", SessionBudget.releaseLock());
+        // Refused before the cap was consulted, so none of the day's passes was spent.
+        assertEquals(3, SessionBudget.passesLeftToday());
+    }
+
+    /** How many videos the budget has been raised to so far in one case. */
+    private int budgetSoFar;
+
+    /**
+     * Spends today's budget so the hold starts.
+     *
+     * <p>The notice fires once per budget, so a second hold in one day needs the budget raised
+     * first. That is what a reader does when they lift the hold and keep going: the count is not
+     * forgotten, so the next hold costs one more video than the last.
+     */
+    private void startTheHold(String awemeId) {
+        budgetSoFar++;
+        Settings.SESSION_BUDGET_VIDEOS.save(budgetSoFar);
+        // Raising the budget only arms the notice once something asks, which is what the feed
+        // does on its next video. Without this the second hold never starts.
+        SessionBudget.claimNotice();
+        SessionBudget.noteVideo(awemeId);
+        assertTrue("the notice did not fire", SessionBudget.claimNotice());
+        assertTrue("the hold did not start", SessionBudget.isLocked());
+    }
+
+    /** Spends the budget, takes the hold that follows, and lifts it. */
+    private boolean reachTheHold(String awemeId) {
+        startTheHold(awemeId);
+        return SessionBudget.releaseLock();
     }
 
     @Test public void theCountAndTheHoldSurviveTheProcessBeingKilled() throws Exception {

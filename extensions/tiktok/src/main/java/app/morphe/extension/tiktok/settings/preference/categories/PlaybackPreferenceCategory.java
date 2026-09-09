@@ -79,6 +79,12 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
                         + "be changed again until the day starts over. Switch it off any time "
                         + "before the budget runs out.",
                 Settings.SESSION_BUDGET_LOCK));
+        addPreference(new NumberInputPreference(context, "Times you can open the feed anyway",
+                "Zero leaves the way out of the hold there every time, which is what it has "
+                        + "always done. Anything else is how many times a day it works, and once "
+                        + "they are gone the hold stays up until the day starts over. Ignored "
+                        + "while the budget is locked, which takes the way out away entirely.",
+                Settings.SESSION_BUDGET_PASSES_PER_DAY, "time", "times").zeroMeansOff());
 
         // Everything the budget is made of, refused for the rest of a locked day. A commitment
         // anyone can edit their way out of in two taps is a suggestion.
@@ -91,7 +97,8 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
         };
         for (String key : new String[]{Settings.SESSION_BUDGET_VIDEOS.key,
                 Settings.SESSION_BUDGET_MINUTES.key, Settings.SESSION_BUDGET_LOCK_MINUTES.key,
-                Settings.SESSION_BUDGET_RESET_HOUR.key}) {
+                Settings.SESSION_BUDGET_RESET_HOUR.key,
+                Settings.SESSION_BUDGET_PASSES_PER_DAY.key}) {
             Preference row = findPreference(key);
             if (row != null) row.setOnPreferenceChangeListener(refuseWhileLocked);
         }
