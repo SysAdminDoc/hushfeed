@@ -1,24 +1,18 @@
-## Unreleased
+## 0.27.0
 
-* The list under the diagnostics picker reads correctly in every language. It used to be "Includes downloads, errors events.", built by lower-casing each kind, which is right for English and wrong for German. Making it leave the kind alone moved the fault rather than fixing it: every table capitalises these labels, so English, Spanish, Indonesian and Portuguese all read them mid-sentence with a capital. The list comes after a colon now, "Includes these events: Downloads, Errors", and each language keeps its own spelling.
+* The settings screens are done being half English. Around eighty strings still went out in English whatever your phone was set to, nearly all of them in the Feature Gate Lab: the gate details page top to bottom, both override switches and the sentences under them, the overflow menu, the filter, the three buttons that reset or force a selection, and nineteen of its messages. The close button on the Lab's search box and the three buttons under the tab picker went with them. All of it is in the four tables now.
 
-* Spanish and Portuguese write maximum as "máx.", and the period belongs to the word. A check that reads a trailing period as the end of a sentence had it taken off ten rows, which left one abbreviation with its period and the identical one beside it without. The check knows an abbreviation from a sentence now.
+* Two of the Lab's lines count things, and they were built from a verb, a number and a couple of tails. No table row can hold half a sentence, and the plural rule of the language never got a say. Those are whole sentences now with the counts as placeholders, and so are the export count and the four-part import summary.
 
-* Every message the Feature Gate Lab shows now speaks your language. Nineteen of them were English on every phone: what it says after a save or a reset, when a file picker will not open, when an export or an import fails, when a change is already running, and the line asking you to restart. Two of those counted things and were assembled from pieces, which no translation can hold, so they are whole sentences with the counts as placeholders. The check that catches this had been told to skip the Lab back when the Lab was English on purpose. It reads the Lab now, so the next one cannot slip through.
+* The list under the diagnostics picker reads correctly in every language. It was "Includes downloads, errors events.", lower-cased from labels that every table capitalises, which suits English and nothing else. The list comes after a colon now: "Includes these events: Downloads, Errors".
 
-* The Feature Gate Lab's overflow menu and its filter speak your language. The six actions behind the button beside the title, and the five choices in the filter, were English wherever your phone was set. So were the two lines that say how many gates a reset or a force actually changed. Those were built from a verb, a number and a couple of tails, which no translation can hold, and each is one sentence now with the count as a placeholder.
+* An undo of a settings backup says it's an undo. If the copy it put back held Feature Gate Lab rules for another TikTok build, the line on screen said your settings had been restored, and that's a different thing.
 
-* Thirty more strings speak your language. The Feature Gate Lab's gate details page was English throughout its current state and technical details rows, both override switches and their explanations, and the three buttons that reset or force a selection. So were the close button on the Lab's search box, the overflow button beside the title, and the three buttons under the tab picker. The check that catches this reads what is handed to a view, and each of these went through a helper of its own first, so it read straight past them. It follows the helpers now, whichever file they live in.
+* Thirteen wrong translations. Brazilian Portuguese said to restart TikTok "para valer", which means for real rather than to take effect. German and Indonesian pointed at two settings by names those settings don't carry, and both called a video's caption a subtitle. Spanish and Portuguese write maximum as "máx.", and ten rows had lost the period that belongs to the word.
 
-* The translation shape check reads every table. It compared placeholders, sentence endings and quote pairs in German and Indonesian only, which is what there was when it was written. Spanish and Brazilian Portuguese came later and nothing checked them.
+* The README named two patches by names they lost in 0.26.0, so looking either one up in Morphe Manager found nothing. The 0.26.0 notes also said seven patches were renamed when ten were, and gave the wrong number for how long a caption problem goes unreported.
 
-* An undo of a settings backup says it is an undo. If the copy it put back held Feature Gate Lab rules for another TikTok build, the line on screen said your settings had been restored, and that's a different thing from putting the last change back.
-
-* The sentence under the diagnostics picker keeps its capitals. German writes its nouns with a capital letter, and every kind was lower-cased on its way into that sentence, so Einstellungen came out as einstellungen.
-
-* Nine wrong translations. Brazilian Portuguese said to restart TikTok "para valer", which means for real rather than to take effect. German and Indonesian pointed at two settings by names those settings don't have, and both called a video's caption a subtitle, which is the other thing on the screen.
-
-* A patch-time helper that overrides the result of a call refuses one more case rather than guessing. A wide instruction names only the low half of the register pair it writes, so a write into the register below the literal was invisible to it. Nothing in the bundle reaches that case today.
+* Four of the checks meant to catch all of this were letting it through themselves, and each now has its own failing case pinned in front of it, because a check that has only ever seen code it passes proves nothing. A patch-time helper that overrides the result of a call reads what an instruction writes more carefully too: five comparison opcodes were in no write set at all, and a conversion away from a long was read as though its answer took two registers.
 
 ## 0.26.0
 
