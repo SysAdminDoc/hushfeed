@@ -154,7 +154,27 @@ public final class SettingsUi {
 
     public static Drawable groupedRow(Context context, boolean first, boolean last) {
         return new RippleDrawable(ColorStateList.valueOf((accent() & 0x00ffffff) | 0x26000000),
-                new GroupRowDrawable(context, first, last), new ColorDrawable(Color.WHITE));
+                new GroupRowDrawable(context, first, last), groupRowMask(context, first, last));
+    }
+
+    /**
+     * The shape a press is allowed to fill, which has to be the shape the row draws.
+     *
+     * <p>A plain rectangle let the ripple fill the transparent notches a card's first and last
+     * row leave at the corners, so a press at the corner of a card spilled outside it. The
+     * corners are rounded on the same two edges {@link GroupRowDrawable} rounds and square on
+     * the others, where the row meets its neighbour.
+     */
+    public static Drawable groupRowMask(Context context, boolean first, boolean last) {
+        float radius = dp(context, 10);
+        float top = first ? radius : 0f;
+        float bottom = last ? radius : 0f;
+        GradientDrawable mask = new GradientDrawable();
+        mask.setShape(GradientDrawable.RECTANGLE);
+        mask.setColor(Color.WHITE);
+        // Clockwise from the top left, two values per corner.
+        mask.setCornerRadii(new float[]{top, top, top, top, bottom, bottom, bottom, bottom});
+        return mask;
     }
 
     private static final class GroupRowDrawable extends Drawable {
@@ -432,9 +452,27 @@ public final class SettingsUi {
         button.setTypeface(button.getTypeface(), primary ? Typeface.BOLD : Typeface.NORMAL);
     }
 
+    /**
+     * A dialog's flat action, which is a TextView with a click listener.
+     *
+     * <p>TalkBack reads one of those as text, so every Save, Cancel and Apply in a hand built
+     * dialog here was announced as a label rather than as something to press. The role is set
+     * here so every consumer inherits it, and 48dp each way is Android's own guidance for
+     * anything a finger has to land on.
+     */
     public static void styleTextAction(TextView button, boolean primary) {
         button.setTextColor(primary ? accent() : textSecondary());
         button.setTypeface(button.getTypeface(), primary ? Typeface.BOLD : Typeface.NORMAL);
+        button.setMinimumHeight(dp(button.getContext(), 48));
+        button.setMinimumWidth(dp(button.getContext(), 48));
+        button.setGravity(android.view.Gravity.CENTER);
+        button.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            @Override public void onInitializeAccessibilityNodeInfo(
+                    View host, android.view.accessibility.AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                info.setClassName(android.widget.Button.class.getName());
+            }
+        });
     }
 
     public static void styleEditText(EditText editText) {

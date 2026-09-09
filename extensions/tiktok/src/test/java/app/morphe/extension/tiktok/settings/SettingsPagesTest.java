@@ -380,6 +380,64 @@ public class SettingsPagesTest {
         }
     }
 
+    @Test public void aPressStaysInsideTheCardTheRowIsPartOf() throws Exception {
+        // The ripple mask was an opaque rectangle while the row draws a rounded card, so a press
+        // at the corner of a card's first or last row filled the transparent notch outside it.
+        // The mask has to be the shape the row draws: rounded where the card is, square where
+        // the row meets its neighbour.
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            float radius = app.morphe.extension.tiktok.settings.preference.SettingsUi
+                    .dp(activity, 10);
+
+            for (boolean[] ends : new boolean[][]{{true, false}, {false, true},
+                    {true, true}, {false, false}}) {
+                var mask = (android.graphics.drawable.GradientDrawable)
+                        app.morphe.extension.tiktok.settings.preference.SettingsUi
+                                .groupRowMask(activity, ends[0], ends[1]);
+                float[] radii = mask.getCornerRadii();
+                assertNotNull("the mask went back to a plain rectangle", radii);
+                float top = ends[0] ? radius : 0f;
+                float bottom = ends[1] ? radius : 0f;
+                assertEquals("the top of a first=" + ends[0] + " row", top, radii[0], 0.01f);
+                assertEquals(top, radii[3], 0.01f);
+                assertEquals("the bottom of a last=" + ends[1] + " row", bottom, radii[4], 0.01f);
+                assertEquals(bottom, radii[7], 0.01f);
+            }
+        }
+    }
+
+    @Test public void everyDialogActionIsPressableAndReadsAsAButton() throws Exception {
+        // The flat actions in the hand built dialogs are TextViews with a click listener, so
+        // TalkBack read them as labels rather than as something to press, and the two pickers
+        // gave them about 35dp of touch height against a 48dp guideline. Asserted at the one
+        // point every one of them goes through.
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+
+            for (boolean primary : new boolean[]{true, false}) {
+                android.widget.TextView action = new android.widget.TextView(activity);
+                action.setText("Save");
+                app.morphe.extension.tiktok.settings.preference.SettingsUi
+                        .styleTextAction(action, primary);
+
+                int expected = app.morphe.extension.tiktok.settings.preference.SettingsUi
+                        .dp(activity, 48);
+                assertEquals("a dialog action under the touch guideline",
+                        expected, action.getMinimumHeight());
+                assertEquals(expected, action.getMinimumWidth());
+
+                var info = android.view.accessibility.AccessibilityNodeInfo.obtain();
+                action.onInitializeAccessibilityNodeInfo(info);
+                assertEquals("a screen reader would read this as text",
+                        android.widget.Button.class.getName(),
+                        String.valueOf(info.getClassName()));
+            }
+        }
+    }
+
     @Test public void renderedControlsSaveAndOpenTheirNativeEditors() throws Exception {
         try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
             Activity activity = owner.get();

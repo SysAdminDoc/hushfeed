@@ -46,7 +46,10 @@ import java.lang.ref.WeakReference;
  */
 public final class BlockAuthorOverlay {
     private static final String SOUND_GLYPH = "♪";
-    private static final int BUTTON_SIZE_DP = 44;
+    // 44 clears WCAG 2.5.5 and is under Android's own 48dp guidance, and these four have no
+    // TouchDelegate to make up the difference. They sit in a column on the feed, where a
+    // miss is a like or a follow on somebody's video.
+    private static final int BUTTON_SIZE_DP = 48;
     private static final int BUTTON_GAP_DP = 8;
     private static final long UNDO_VISIBLE_MS = 6_000L;
 
@@ -298,9 +301,12 @@ public final class BlockAuthorOverlay {
         button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
         button.setGravity(Gravity.CENTER);
         button.setContentDescription(L10n.t(activity, "Not interested in this video"));
+        // The same round shape and the same scrim as the three it shares the rail with. It was
+        // a rounded rectangle over a darker scrim, which on a column of four reads as a mistake
+        // rather than as a distinction.
         GradientDrawable background = new GradientDrawable();
-        background.setColor(Color.argb(180, 0, 0, 0));
-        background.setCornerRadius(SettingsUi.dp(activity, 8));
+        background.setShape(GradientDrawable.OVAL);
+        background.setColor(Color.argb(140, 0, 0, 0));
         background.setStroke(SettingsUi.dp(activity, 1), Color.argb(90, 255, 255, 255));
         button.setBackground(background);
         button.setOnClickListener(view -> NotInterested.submit());

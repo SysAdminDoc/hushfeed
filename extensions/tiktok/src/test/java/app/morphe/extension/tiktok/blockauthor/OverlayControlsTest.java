@@ -94,6 +94,47 @@ public class OverlayControlsTest {
         }
     }
 
+    @Test public void allFourFeedButtonsAreOneSizeAndOneShape() throws Exception {
+        // They sit in a column on the feed, where a miss is a like or a follow on somebody's
+        // video, and 44dp is under Android's own guidance with no TouchDelegate to make up the
+        // difference. Not interested was also the only rounded rectangle of the four, over a
+        // darker scrim, which on a column of four reads as a mistake rather than a distinction.
+        Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
+        Utils.setContext(activity);
+        Utils.setActivity(activity);
+        Method attach = BlockAuthorOverlay.class.getDeclaredMethod("attach", VideoAuthor.class);
+        attach.setAccessible(true);
+        attach.invoke(null, new VideoAuthor("1", "sec", "someone", "7712345"));
+
+        int expected = app.morphe.extension.tiktok.settings.preference.SettingsUi
+                .dp(activity, 48);
+        String[] buttons = {"buttonReference", "localHideReference", "soundButtonReference",
+                "notInterestedReference"};
+        for (String name : buttons) {
+            java.lang.reflect.Field held = BlockAuthorOverlay.class.getDeclaredField(name);
+            held.setAccessible(true);
+            View view = ((java.lang.ref.WeakReference<View>) held.get(null)).get();
+            assertNotNull(name + " was never attached", view);
+
+            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) view.getLayoutParams();
+            assertEquals(name + " is not 48dp wide", expected, params.width);
+            assertEquals(name + " is not 48dp tall", expected, params.height);
+
+            // The block button draws its symbol over the disc rather than setting it as text,
+            // because the font TikTok is using may not carry it, so its background is a layer
+            // list with the disc underneath.
+            android.graphics.drawable.Drawable background = view.getBackground();
+            if (background instanceof android.graphics.drawable.LayerDrawable) {
+                background = ((android.graphics.drawable.LayerDrawable) background)
+                        .getDrawable(0);
+            }
+            android.graphics.drawable.GradientDrawable disc =
+                    (android.graphics.drawable.GradientDrawable) background;
+            assertEquals(name + " is not the round shape the others are",
+                    android.graphics.drawable.GradientDrawable.OVAL, disc.getShape());
+        }
+    }
+
     @Test public void placingTheFeedButtonsTwiceOverDoesNotAskForAnotherLayout() throws Exception {
         // placeSoundButton runs from an OnGlobalLayoutListener, which the framework dispatches
         // after layout inside the same traversal. setLayoutParams calls requestLayout whatever

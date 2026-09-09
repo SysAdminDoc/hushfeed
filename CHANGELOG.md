@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Three small things on screens you actually touch. The four buttons on the feed are 48dp instead of 44, and "Not interested" is the same round shape over the same shade as the three it sits with, rather than a rounded rectangle over a darker one. Pressing a settings row at the corner of a card no longer paints outside the card. And every flat action in a dialog, the Saves and Cancels and Applies, is at least 48dp and is announced by a screen reader as a button rather than as a label.
+
 * A quiet reminder partway through, if you want one. "Remind me every" takes a number of minutes and says something short after that much watching, then again after the same again. It counts feed time only, so messages and profiles do not bring one on, and nothing appears while the feed is on hold. Three wordings take turns, because one sentence stops being read. Zero, the default, means none.
 
 * The Feature Gate Lab acts on a whole selection at once. Press and hold a gate to start one, tap to add and remove, then Enable, Disable or Reset the lot. It goes through as a single change, so one Undo puts all of it back rather than the last one you touched. Gates that do not take a true or false value are skipped and it says how many.
