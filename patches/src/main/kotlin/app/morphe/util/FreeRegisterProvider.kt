@@ -31,7 +31,6 @@ import app.morphe.util.FreeRegisterProvider.Companion.returnOpcodes
 import app.morphe.util.FreeRegisterProvider.Companion.switchOpcodes
 import app.morphe.util.FreeRegisterProvider.Companion.unconditionalBranchOpcodes
 import app.morphe.util.FreeRegisterProvider.Companion.writeOpcodes
-import com.android.tools.smali.dexlib2.Format
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.Opcode.*
 import com.android.tools.smali.dexlib2.iface.Method
@@ -318,16 +317,11 @@ private fun Method.findFreeRegisters(
 
     if (logFreeRegisterSearch) println(" final free registers found: $freeRegisters")
 
-    // Use 4-bit registers first, but keep sorting stable among 4-bit vs not 4-bit.
-    return freeRegisters.sortedWith { first, second ->
-        val firstIsFourBit = first < 16
-        val secondIsFourBit = second < 16
-        if (firstIsFourBit == secondIsFourBit) {
-            return@sortedWith 0
-        }
-
-        if (firstIsFourBit) -1 else 1
-    }
+    // 4-bit registers first, and the lowest of each class first within it. The comparator
+    // here used to answer 0 for any two registers of the same class, and the set behind it
+    // keeps discovery order, so what came back was the first one found rather than the lowest
+    // one, which is what every caller reads and what the documentation above promises.
+    return freeRegisters.sortedWith(compareBy({ it >= 16 }, { it }))
 }
 
 /**
@@ -380,9 +374,14 @@ private fun Method.findFreeRegistersInternal(
             // Check if this register is ONLY written to (not also read)
             // Count occurrences of writeRegister in instructionRegisters.
             val occurrences = instructionRegisters.count { it == writeRegister }
+            // An opcode like add-int/2addr writes its destination and reads it in the same
+            // breath, but the destination appears once in the register list, so counting
+            // occurrences alone called it write-only and handed out a register the host was
+            // still accumulating into.
+            val readsItsDestination = instruction.opcode.name.endsWith("/2addr")
             // If it appears only once, it's write-only (to write).
             // If it appears more than once, it's also read.
-            if (occurrences <= 1) {
+            if (occurrences <= 1 && !readsItsDestination) {
                 if (logFreeRegisterSearch) println(" found free register at $i: $writeRegister " +
                         "opcode: " + instruction.opcode + " reference: " + (instruction.getReference()))
                 freeRegisters.add(writeRegister)
@@ -470,22 +469,16 @@ private fun Method.buildInstructionOffsetArray(): IntArray {
 
     for (i in 0 until instructionCount) {
         val instruction = getInstruction(i)
-        val format = instruction.opcode.format
 
-        if (!format.isPayloadFormat) {
+        // A payload gets no offset of its own, because nothing branches to one directly: the
+        // switch instruction that owns it does. It still occupies code units though, and
+        // stepping over it without counting them left every later instruction at an offset
+        // short by however long the payload was, so a branch past it resolved to the wrong
+        // instruction or to none at all.
+        if (!instruction.opcode.format.isPayloadFormat) {
             offsetArray[i] = currentOffset
-
-            // Get size in bytes from format.
-            val sizeInBytes = format.size
-            val sizeInCodeUnits = when {
-                sizeInBytes > 0 -> sizeInBytes / 2  // Normal instruction
-                format == Format.UnresolvedOdexInstruction -> 1  // Default size
-                else -> 1  // Fallback for any other edge case
-            }
-
-            currentOffset += sizeInCodeUnits
         }
-        // Skip payloads
+        currentOffset += instruction.codeUnits
     }
 
     return offsetArray
@@ -503,7 +496,9 @@ private fun Method.getBranchTargetInstructionIndex(
     index: Int,
     offsetArray: IntArray
 ): Int {
-    check (index >0 && index < offsetArray.size) {
+    // Not `index > 0`: a method whose first instruction is a branch is ordinary, and this
+    // threw on it rather than following it.
+    check(index >= 0 && index < offsetArray.size) {
         "Invalid index: $index"
     }
     val currentOffset = offsetArray[index]
