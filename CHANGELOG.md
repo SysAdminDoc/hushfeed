@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The patched app carries about 45 KB less code. Seventeen classes inherited from ReVanced were compiled into the shared payload of every build and nothing in this project called any of them, including a second settings backup, a network helper and an environment nag screen that had been switched off and left in place. They are gone. Nothing reachable changes.
+
 * The two caption settings say so when a TikTok build moves them. Caption text size and the strip behind the captions found their views by a number baked into this project, which the next TikTok build is free to reassign. Both settings would then have done nothing while the Hook status row reported everything fine. They look the views up by name now, the way every other lookup here does, and a build without them shows up under "captions" in the diagnostics.
 
 * The five Min and Max rows show the range they actually hold. Reset settings, restore a backup or undo one, and rows like "Views" kept the old "20K to 1.5M" under them while the stored value had already gone back to its default. Only closing the dialog rebuilt that line; every path that changes the value rebuilds it now.
