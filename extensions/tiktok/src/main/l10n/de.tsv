@@ -565,7 +565,7 @@ Errors	Fehler
 Other	Sonstiges
 Saved. Restart TikTok to apply this.	Gespeichert. TikTok neu starten, damit das gilt.
 Diagnostic data cleared.	Diagnosedaten gelöscht.
-Includes %1$s events.	Enthält Ereignisse: %1$s.
+Includes these events: %1$s	Enthält diese Ereignisse: %1$s
 Gate details	Schalterdetails
 This catalog entry is no longer available. Refresh the Lab and try again.	Dieser Katalogeintrag ist nicht mehr verfügbar. Das Labor aktualisieren und es erneut versuchen.
 An override changes the value returned by the getter. It does not rewrite TikTok's cached value or prove the named feature changed.	Eine Überschreibung ändert den Wert, den der Getter zurückgibt. Sie schreibt TikToks zwischengespeicherten Wert nicht um und beweist nicht, dass sich die genannte Funktion geändert hat.

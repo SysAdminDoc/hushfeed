@@ -683,9 +683,11 @@ private fun MutableMethod.indexOfLiteralCallResult(literalIndex: Int): Int {
         // Anything that writes the register again ends the literal's life. An invoke past
         // that point reads whatever was written last, which is not what was loaded here. A wide
         // write names only its low half, so one into the register below covers this one too.
+        // Wide here means the destination is a pair, not that the mnemonic says long: long-to-int
+        // and cmp-long both read a pair and answer in one register.
         val written = instruction.writeRegister
         if (written == literalRegister) break
-        if (written != null && instruction.touchesWideRegisters && written + 1 == literalRegister) {
+        if (written != null && instruction.writesAWideRegister && written + 1 == literalRegister) {
             break
         }
     }

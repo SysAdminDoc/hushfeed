@@ -341,7 +341,14 @@ public class SettingsL10nTest {
                             + " in: " + key);
                 }
 
-                if (terminator(key) != terminator(value)) {
+                // A full stop the key does not have is usually a sentence the translator ended
+                // differently. Sometimes it is the abbreviation the language requires: Spanish
+                // and Portuguese write maximum as "máx.", and the period belongs to the word.
+                // Reading it as a terminator and taking it off produced "mín./máx", one
+                // abbreviation with its period and the identical one beside it without.
+                boolean abbreviated = terminator(key) == ' ' && terminator(value) == '.'
+                        && endsInAnAbbreviation(value);
+                if (terminator(key) != terminator(value) && !abbreviated) {
                     problems.add(language + " ends the sentence with '" + terminator(value)
                             + "' where the key ends with '" + terminator(key) + "' in: " + key);
                 }
@@ -373,6 +380,15 @@ public class SettingsL10nTest {
         assertNotEquals("a dropped full stop", terminator("Hide the caption."),
                 terminator("Beschreibung ausblenden"));
         assertNotEquals("a changed terminator", terminator("Really?"), terminator("Wirklich."));
+        // And the one full stop that is not a terminator, against the sentence it must not
+        // excuse. The relaxation reads the length of the last word, so a sentence that happens
+        // to end in a short word is the case worth pinning.
+        assertTrue("an abbreviation was read as a sentence ending",
+                endsInAnAbbreviation("Comentarios mín./máx."));
+        assertFalse("a real sentence ending was excused as an abbreviation",
+                endsInAnAbbreviation("No está en la caché actual."));
+        assertFalse("a value with no full stop was called an abbreviation",
+                endsInAnAbbreviation("Komentar min/maks"));
     }
 
     /** Every placeholder in order, numbered or bare, so a change of either kind shows up. */
@@ -381,6 +397,25 @@ public class SettingsL10nTest {
         var match = java.util.regex.Pattern.compile("%(?:\\d+\\$)?[a-zA-Z]").matcher(text);
         while (match.find()) found.add(match.group());
         return found;
+    }
+
+    /**
+     * Whether a trailing full stop belongs to an abbreviation rather than to a sentence.
+     *
+     * <p>Read from the length of the last word: "máx." is three letters and an abbreviation,
+     * "the current cache." is not. Four letters is the ceiling, which covers every shortened
+     * form in these tables and leaves the shortest real sentence ending alone.
+     */
+    private static boolean endsInAnAbbreviation(String text) {
+        String trimmed = text.trim();
+        if (!trimmed.endsWith(".")) return false;
+        int at = trimmed.length() - 1;
+        int letters = 0;
+        while (at > 0 && Character.isLetter(trimmed.charAt(at - 1))) {
+            at--;
+            letters++;
+        }
+        return letters > 0 && letters <= 4;
     }
 
     /** The character a string ends a sentence with, or a space when it ends with none. */
@@ -768,17 +803,23 @@ public class SettingsL10nTest {
             while (end < to && kind[end] == LITERAL) end++;
             // The run covers both quotes, so the closing one is not part of the text.
             int contentEnd = end > at + 1 && text.charAt(end - 1) == '"' ? end - 1 : end;
-            // A literal something is called on is a comparison, not words on a screen.
-            // "OBJECT".equals(entry.type) sits in an argument that does show text.
-            int after = end;
-            while (after < text.length() && Character.isWhitespace(text.charAt(after))) after++;
-            if (after >= text.length() || text.charAt(after) != '.') {
+            // A literal being compared against is a value, not words on a screen:
+            // "OBJECT".equals(entry.type) sits in an argument that does show text. Only the
+            // comparisons, named one by one. Excluding every literal with a dot after it also
+            // excused setText("A whole sentence".trim()), and a builder chain wrapped onto the
+            // next line with it.
+            if (!COMPARED.matcher(text).region(end, text.length()).lookingAt()) {
                 parts.add(unescape(text.substring(at + 1, contentEnd)));
             }
             at = end - 1;
         }
         return parts;
     }
+
+    /** What a literal can be asked, directly after its closing quote, without being words. */
+    private static final java.util.regex.Pattern COMPARED = java.util.regex.Pattern.compile(
+            "\\s*\\.\\s*(equals|equalsIgnoreCase|contentEquals|compareTo|compareToIgnoreCase)"
+                    + "\\s*\\(");
 
     private static String unescape(String literal) {
         StringBuilder plain = new StringBuilder();
@@ -826,11 +867,28 @@ public class SettingsL10nTest {
             sources.put(file, new String(java.nio.file.Files.readAllBytes(file),
                     java.nio.charset.StandardCharsets.UTF_8));
         }
+        List<String> unwrapped = unwrappedProseIn(sources);
+        assertTrue("no call to any of these was found, so this proves nothing", callsChecked > 20);
+        assertEquals("text handed straight to a view in English, wrap it in L10n.t: "
+                + unwrapped, 0, unwrapped.size());
+    }
+
+    /** How many showing calls the last scan looked inside. A scan of nothing proves nothing. */
+    private static int callsChecked;
+
+    /**
+     * Every prose literal that reaches a view in these sources without going through L10n.
+     *
+     * <p>Separate from the test so a synthetic source can be put in front of the same code.
+     * A scan whose only input is a tree that already passes says nothing about what it would
+     * catch, and four shapes walked past the first version of it.
+     */
+    private static List<String> unwrappedProseIn(Map<java.nio.file.Path, String> sources) {
         Set<String> helpers = helpersThatPutTextOnTheScreen(sources);
         java.util.regex.Pattern call = java.util.regex.Pattern.compile(
                 VIEW_TEXT_CALLS + helperAlternation(namesIn(helpers)));
         List<String> unwrapped = new ArrayList<>();
-        int checked = 0;
+        callsChecked = 0;
         for (Map.Entry<java.nio.file.Path, String> source : sources.entrySet()) {
             java.nio.file.Path file = source.getKey();
             String text = source.getValue();
@@ -842,7 +900,7 @@ public class SettingsL10nTest {
                 int open = match.end() - 1;
                 int close = closingBracket(text, kind, open);
                 if (close < 0) continue;
-                checked++;
+                callsChecked++;
                 String helper = calledName(text, match.start(), open);
                 List<int[]> arguments = argumentsOf(text, kind, open, close);
                 for (int index = 0; index < arguments.size(); index++) {
@@ -859,9 +917,64 @@ public class SettingsL10nTest {
                 }
             }
         }
-        assertTrue("no call to any of these was found, so this proves nothing", checked > 20);
-        assertEquals("text handed straight to a view in English, wrap it in L10n.t: "
-                + unwrapped, 0, unwrapped.size());
+        return unwrapped;
+    }
+
+    /**
+     * The shapes this check has already been blind to, put in front of it on purpose.
+     *
+     * <p>Each of these went past it while the real tree was green, so a green run over the
+     * real tree is not evidence that the analysis works. The sentence is the same in every
+     * case and it must be reported every time.
+     */
+    @Test
+    public void theViewTextCheckCanActuallyFail() {
+        String sentence = "A whole sentence of English";
+        Map<String, String> shapes = new LinkedHashMap<>();
+        shapes.put("straight to setText",
+                "class A { void a(android.widget.TextView v) { v.setText(\"" + sentence + "\"); } }");
+        shapes.put("through a helper of its own",
+                "class A {\n"
+                        + "  void a() { show(\"" + sentence + "\"); }\n"
+                        + "  void show(String caption) { SettingsUi.text(null, caption, 1, 2, 3); }\n"
+                        + "}");
+        shapes.put("a method that trims the literal first",
+                "class A { void a(android.widget.TextView v) { v.setText(\"" + sentence
+                        + "\".trim()); } }");
+        shapes.put("a builder chain wrapped onto the next line",
+                "class A { void a(android.widget.TextView v) { v.setText(\"" + sentence + "\"\n"
+                        + "        .toUpperCase()); } }");
+        shapes.put("a helper whose first parameter is a generic type",
+                "class A {\n"
+                        + "  void a() { counted(null, \"" + sentence + "\"); }\n"
+                        + "  void counted(Map<String, Integer> counts, String caption) {\n"
+                        + "    SettingsUi.text(null, caption, 1, 2, 3);\n"
+                        + "  }\n"
+                        + "}");
+        shapes.put("a helper whose parameter carries an annotation",
+                "class A {\n"
+                        + "  void a() { noted(\"" + sentence + "\"); }\n"
+                        + "  void noted(@SuppressWarnings(\"x\") String caption) {\n"
+                        + "    SettingsUi.text(null, caption, 1, 2, 3);\n"
+                        + "  }\n"
+                        + "}");
+
+        for (Map.Entry<String, String> shape : shapes.entrySet()) {
+            Map<java.nio.file.Path, String> source = new LinkedHashMap<>();
+            source.put(java.nio.file.Paths.get("A.java"), shape.getValue());
+            List<String> found = unwrappedProseIn(source);
+            assertEquals(shape.getKey() + " was not reported",
+                    java.util.Collections.singletonList("A.java: " + sentence), found);
+        }
+
+        // And the one shape that must stay quiet, because it is a value being compared.
+        Map<java.nio.file.Path, String> comparison = new LinkedHashMap<>();
+        comparison.put(java.nio.file.Paths.get("B.java"),
+                "class B { void a(android.widget.TextView v) {\n"
+                        + "  v.setText(\"OBJECT\".equals(type) ? one : two);\n"
+                        + "} }");
+        assertEquals("a literal being compared against was read as words",
+                java.util.Collections.emptyList(), unwrappedProseIn(comparison));
     }
 
     /**
@@ -1052,10 +1165,13 @@ public class SettingsL10nTest {
         return starts;
     }
 
-    // A name, a bracket with no bracket inside it, and an opening brace. A lambda's parameters
-    // carry no type, so a lambda never has a String parameter by this reading and is skipped.
+    // A name and an opening bracket. Where that bracket ends is counted rather than matched,
+    // because a parameter list can hold brackets of its own: an annotation with an argument,
+    // @SuppressWarnings("x") String caption, made a pattern of "no bracket inside" walk past
+    // the declaration entirely, and a helper it never saw is a helper it never derives.
+    // A lambda's parameters carry no type, so a lambda has no String parameter by this reading.
     private static final java.util.regex.Pattern DECLARATION = java.util.regex.Pattern.compile(
-            "(\\w+)\\s*\\(([^()]*)\\)\\s*(?:throws\\s+[\\w.,\\s]+?)?\\{");
+            "(\\w+)\\s*\\(");
 
     /** Every method in a file that takes a String or a CharSequence. */
     private static List<Method> methodsIn(String text, byte[] kind) {
@@ -1065,32 +1181,83 @@ public class SettingsL10nTest {
             if (kind[match.start()] != CODE) continue;
             String name = match.group(1);
             if (NOT_A_HELPER.contains(name)) continue;
-            List<String> parameters = parametersOf(match.group(2));
-            Set<String> strings = stringParametersOf(match.group(2));
+            int open = match.end() - 1;
+            int close = closingBracket(text, kind, open);
+            if (close < 0) continue;
+            int brace = openingBraceAfter(text, kind, close);
+            if (brace < 0) continue;
+            List<int[]> parts = parameterPartsOf(text, kind, open, close);
+            List<String> parameters = parametersOf(text, parts);
+            Set<String> strings = stringParametersOf(text, parts);
+            // A generic type carries a comma of its own, so Map<String, Integer> counts read
+            // as two parameters and every parameter after it was recorded one place too far
+            // to the right. The call side is then checked at the wrong argument.
             if (strings.isEmpty()) continue;
-            int open = text.lastIndexOf('{', match.end() - 1);
-            int end = closingBrace(text, kind, open);
+            int end = closingBrace(text, kind, brace);
             if (end < 0) continue;
-            methods.add(new Method(name, parameters, strings, open, end));
+            methods.add(new Method(name, parameters, strings, brace, end));
         }
         return methods;
     }
 
+    /**
+     * The brace that opens a method body, when the only thing between it and the bracket is a
+     * throws clause. Anything else, a call or a control statement, has no body here.
+     */
+    private static int openingBraceAfter(String text, byte[] kind, int close) {
+        StringBuilder between = new StringBuilder();
+        for (int at = close + 1; at < text.length(); at++) {
+            if (kind[at] != CODE) return -1;
+            char c = text.charAt(at);
+            if (c == '{') {
+                return between.toString().trim().matches("(?:throws\\s+[\\w.,\\s]+)?") ? at : -1;
+            }
+            between.append(c);
+            if (between.length() > 200) return -1;
+        }
+        return -1;
+    }
+
+    /**
+     * A declaration's parameters, as the ranges they occupy.
+     *
+     * <p>Like {@link #argumentsOf} but counting angle brackets too, which a declaration has and
+     * a call site does not: at a call site a {@code <} is a comparison and counting it would
+     * run the depth away.
+     */
+    private static List<int[]> parameterPartsOf(String text, byte[] kind, int open, int close) {
+        List<int[]> parts = new ArrayList<>();
+        int depth = 0;
+        int start = open + 1;
+        for (int at = open + 1; at < close; at++) {
+            if (kind[at] != CODE) continue;
+            char c = text.charAt(at);
+            if (c == '(' || c == '[' || c == '{' || c == '<') depth++;
+            else if (c == ')' || c == ']' || c == '}' || c == '>') depth--;
+            else if (c == ',' && depth == 0) {
+                parts.add(new int[]{start, at});
+                start = at + 1;
+            }
+        }
+        parts.add(new int[]{start, close});
+        return parts;
+    }
+
     /** Every parameter name in a declaration's bracket, in order. */
-    private static List<String> parametersOf(String declaration) {
+    private static List<String> parametersOf(String text, List<int[]> parts) {
         List<String> names = new ArrayList<>();
-        for (String part : declaration.split(",")) {
-            String[] words = part.trim().split("\\s+");
+        for (int[] part : parts) {
+            String[] words = text.substring(part[0], part[1]).trim().split("\\s+");
             names.add(words.length < 2 ? "" : words[words.length - 1]);
         }
         return names;
     }
 
     /** The names of the String and CharSequence parameters inside a declaration's bracket. */
-    private static Set<String> stringParametersOf(String declaration) {
+    private static Set<String> stringParametersOf(String text, List<int[]> parts) {
         Set<String> names = new LinkedHashSet<>();
-        for (String part : declaration.split(",")) {
-            String[] words = part.trim().split("\\s+");
+        for (int[] part : parts) {
+            String[] words = text.substring(part[0], part[1]).trim().split("\\s+");
             if (words.length < 2) continue;
             String type = words[words.length - 2];
             String name = words[words.length - 1];

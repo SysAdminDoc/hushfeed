@@ -1,5 +1,9 @@
 ## Unreleased
 
+* The list under the diagnostics picker reads correctly in every language. It used to be "Includes downloads, errors events.", built by lower-casing each kind, which is right for English and wrong for German. Making it leave the kind alone moved the fault rather than fixing it: every table capitalises these labels, so English, Spanish, Indonesian and Portuguese all read them mid-sentence with a capital. The list comes after a colon now, "Includes these events: Downloads, Errors", and each language keeps its own spelling.
+
+* Spanish and Portuguese write maximum as "máx.", and the period belongs to the word. A check that reads a trailing period as the end of a sentence had it taken off ten rows, which left one abbreviation with its period and the identical one beside it without. The check knows an abbreviation from a sentence now.
+
 * Every message the Feature Gate Lab shows now speaks your language. Nineteen of them were English on every phone: what it says after a save or a reset, when a file picker will not open, when an export or an import fails, when a change is already running, and the line asking you to restart. Two of those counted things and were assembled from pieces, which no translation can hold, so they are whole sentences with the counts as placeholders. The check that catches this had been told to skip the Lab back when the Lab was English on purpose. It reads the Lab now, so the next one cannot slip through.
 
 * The Feature Gate Lab's overflow menu and its filter speak your language. The six actions behind the button beside the title, and the five choices in the filter, were English wherever your phone was set. So were the two lines that say how many gates a reset or a force actually changed. Those were built from a verb, a number and a couple of tails, which no translation can hold, and each is one sentence now with the count as a placeholder.
@@ -12,7 +16,7 @@
 
 * The sentence under the diagnostics picker keeps its capitals. German writes its nouns with a capital letter, and every kind was lower-cased on its way into that sentence, so Einstellungen came out as einstellungen.
 
-* Nine wrong translations. Brazilian Portuguese said to restart TikTok "para valer", which means for real rather than to take effect. German and Indonesian pointed at two settings by names those settings don't have, and both called a video's caption a subtitle, which is the other thing on the screen. Five Spanish rows ended in a full stop their English does not have.
+* Nine wrong translations. Brazilian Portuguese said to restart TikTok "para valer", which means for real rather than to take effect. German and Indonesian pointed at two settings by names those settings don't have, and both called a video's caption a subtitle, which is the other thing on the screen.
 
 * A patch-time helper that overrides the result of a call refuses one more case rather than guessing. A wide instruction names only the low half of the register pair it writes, so a write into the register below the literal was invisible to it. Nothing in the bundle reaches that case today.
 

@@ -185,16 +185,31 @@ public class SimPresetRowTest {
     }
 
     /**
-     * The sentence under the diagnostics picker on a German phone.
+     * The sentence under the diagnostics picker, in German and in English.
      *
-     * <p>The shared library lower-cased each kind before joining it into the sentence, which is
-     * right for English and wrong for a language that capitalises its nouns: Einstellungen came
-     * out as einstellungen. The labels became translatable and the lower-casing ran over the
-     * translations with them.
+     * <p>The shared library lower-cased each kind before joining it into the sentence, which
+     * reads right for English and wrong for a language that capitalises its nouns:
+     * Einstellungen came out as einstellungen. Overriding that to leave the label alone moved
+     * the fault rather than fixing it, because every table capitalises these labels and only
+     * German wanted them that way mid-sentence. The list comes after a colon now, so each
+     * language keeps its own capital, and both phones are checked here: a German-only test is
+     * what let the English regression through.
      */
     @Test
     @Config(sdk = 28, qualifiers = "de-rDE")
     public void theDiagnosticsSummaryKeepsTheCapitalsGermanNounsHave() throws Exception {
+        assertSummaryKeepsItsCapitals(SimPresetRowTest::germanFor);
+    }
+
+    @Test
+    @Config(sdk = 28, qualifiers = "en-rUS")
+    public void theDiagnosticsSummaryKeepsTheCapitalsInEnglishToo() throws Exception {
+        // No table answers for English, so the label is its own key, capital and all.
+        assertSummaryKeepsItsCapitals(english -> english);
+    }
+
+    private static void assertSummaryKeepsItsCapitals(
+            java.util.function.UnaryOperator<String> translate) throws Exception {
         try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
             Utils.setContext(controller.get());
             app.morphe.extension.tiktok.settings.SettingsStatus.diagnosticsEnabled = true;
@@ -211,11 +226,11 @@ public class SimPresetRowTest {
             String summary = String.valueOf(row.getSummary());
 
             for (String english : new String[]{"Settings", "Errors"}) {
-                String german = germanFor(english);
+                String label = translate.apply(english);
                 assertTrue("the kind is missing from the sentence: " + summary,
-                        summary.contains(german));
+                        summary.contains(label));
                 assertFalse("the kind was lower-cased on its way into the sentence: " + summary,
-                        summary.contains(german.toLowerCase(java.util.Locale.ROOT)));
+                        summary.contains(label.toLowerCase(java.util.Locale.ROOT)));
             }
         } finally {
             app.morphe.extension.tiktok.settings.SettingsStatus.diagnosticsEnabled = false;

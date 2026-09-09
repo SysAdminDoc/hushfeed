@@ -370,8 +370,8 @@ Import loaded values,Import loaded values
 Inbox,Inbox
 Include diagnostic events,Include diagnostic events
 Included diagnostics,Included diagnostics
-Includes %1$s events.,Includes %1$s events.
 Includes all diagnostic events.,Includes all diagnostic events.
+Includes these events: %1$s,Includes these events: %1$s
 Inserted cards,Inserted cards
 Interface,Interface
 Invalid SIM preset,Invalid SIM preset

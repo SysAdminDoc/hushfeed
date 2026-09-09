@@ -102,25 +102,19 @@ public class LogExportFilterPreference extends Preference {
     }
 
     /**
-     * One kind as it reads inside the sentence.
-     *
-     * <p>Lower case in English, where "Includes downloads, errors events." is how it reads. A
-     * language that capitalises its nouns keeps them: this ran over the translated labels the
-     * moment they could be translated, and turned Einstellungen into einstellungen.
-     */
-    protected String summaryLabel(String label) {
-        return label.toLowerCase(java.util.Locale.ROOT);
-    }
-
-    /**
      * The whole sentence, with the kinds already joined into it.
      *
      * <p>One sentence rather than a prefix and a suffix around a list: a table row holds a
      * sentence, and a language that puts the list somewhere else in it has nowhere to go if
      * the pieces are glued together here.
+     *
+     * <p>The list comes last, after a colon, so each kind can keep the capital its own
+     * language gives it. Reading "Includes X events." meant lower-casing every kind, which is
+     * right for English and wrong for German, and the labels became translatable while the
+     * lower-casing stayed: Einstellungen came out as einstellungen.
      */
     protected CharSequence includesSummary(String kinds) {
-        return "Includes " + kinds + " events.";
+        return "Includes these events: " + kinds;
     }
 
     private void showPicker() {
@@ -197,7 +191,7 @@ public class LogExportFilterPreference extends Preference {
             if (!selected.contains(VALUES[i])) continue;
 
             if (labelCount > 0) builder.append(", ");
-            builder.append(summaryLabel(labels()[i]));
+            builder.append(labels()[i]);
             labelCount++;
         }
 

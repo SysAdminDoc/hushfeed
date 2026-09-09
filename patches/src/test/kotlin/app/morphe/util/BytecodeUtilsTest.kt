@@ -11,6 +11,8 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction10x
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction11n
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction11x
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction12x
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction23x
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction21s
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction35c
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
@@ -231,6 +233,50 @@ class BytecodeUtilsTest {
             "I",
             ImmutableInstruction21s(Opcode.CONST_16, 1, 1234),
             ImmutableInstruction21s(Opcode.CONST_WIDE_16, 0, 5678),
+            ImmutableInstruction35c(Opcode.INVOKE_STATIC, 1, 1, 0, 0, 0, 0, other),
+            ImmutableInstruction11x(Opcode.MOVE_RESULT, 1),
+            ImmutableInstruction11x(Opcode.RETURN, 1),
+        )
+
+        assertThrows(IllegalStateException::class.java) {
+            body.insertLiteralOverride(0, true)
+        }
+    }
+
+    @Test
+    fun `a conversion away from a wide value does not end the literal's life`() {
+        // long-to-int reads a pair and writes one register, but its mnemonic says long, so a
+        // check that asked whether the opcode mentions a wide value refused this method. The
+        // literal in v2 is untouched: nothing here writes v1 or v2.
+        val other = ImmutableMethodReference(
+            "Lcom/example/Other;", "take", listOf("I"), "I",
+        )
+        val body = method(
+            "I",
+            ImmutableInstruction21s(Opcode.CONST_16, 2, 1234),
+            ImmutableInstruction12x(Opcode.LONG_TO_INT, 1, 0),
+            ImmutableInstruction35c(Opcode.INVOKE_STATIC, 1, 2, 0, 0, 0, 0, other),
+            ImmutableInstruction11x(Opcode.MOVE_RESULT, 2),
+            ImmutableInstruction11x(Opcode.RETURN, 2),
+        )
+
+        body.insertLiteralOverride(0, true)
+
+        assertEquals(Opcode.MOVE_RESULT, opcodeAt(body, 3))
+        assertEquals(Opcode.CONST, opcodeAt(body, 4))
+    }
+
+    @Test
+    fun `a comparison that lands on the literal is refused`() {
+        // cmp-long reads two pairs and writes one narrow register. It was in none of the write
+        // opcodes, so writeRegister answered null and the walk never saw v1 being destroyed.
+        val other = ImmutableMethodReference(
+            "Lcom/example/Other;", "take", listOf("I"), "I",
+        )
+        val body = method(
+            "I",
+            ImmutableInstruction21s(Opcode.CONST_16, 1, 1234),
+            ImmutableInstruction23x(Opcode.CMP_LONG, 1, 2, 2),
             ImmutableInstruction35c(Opcode.INVOKE_STATIC, 1, 1, 0, 0, 0, 0, other),
             ImmutableInstruction11x(Opcode.MOVE_RESULT, 1),
             ImmutableInstruction11x(Opcode.RETURN, 1),

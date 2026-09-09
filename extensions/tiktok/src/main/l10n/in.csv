@@ -563,7 +563,7 @@ Errors,Kesalahan
 Other,Lainnya
 Saved. Restart TikTok to apply this.,Tersimpan. Mulai ulang TikTok agar berlaku.
 Diagnostic data cleared.,Data diagnostik dihapus.
-Includes %1$s events.,Termasuk peristiwa %1$s.
+Includes these events: %1$s,Termasuk peristiwa berikut: %1$s
 Gate details,Detail gate
 This catalog entry is no longer available. Refresh the Lab and try again.,Entri katalog ini sudah tidak tersedia. Segarkan Lab dan coba lagi.
 An override changes the value returned by the getter. It does not rewrite TikTok's cached value or prove the named feature changed.,Penggantian mengubah nilai yang dikembalikan getter. Ini tidak menulis ulang nilai cache TikTok dan tidak membuktikan fitur yang disebut berubah.

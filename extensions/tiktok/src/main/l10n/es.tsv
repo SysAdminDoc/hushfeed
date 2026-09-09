@@ -345,11 +345,11 @@ Maximum video length	Duración máxima del vídeo
 Maximum views per like	Visualizaciones máximas por me gusta
 Media	Contenido
 Messages, profiles and search still work.	Los mensajes, los perfiles y la búsqueda siguen funcionando.
-Min/Max comments	Comentarios mín./máx
-Min/Max favorites	Favoritos mín./máx
-Min/Max likes	Me gusta mín./máx
-Min/Max shares	Veces compartido mín./máx
-Min/Max views	Visualizaciones mín./máx
+Min/Max comments	Comentarios mín./máx.
+Min/Max favorites	Favoritos mín./máx.
+Min/Max likes	Me gusta mín./máx.
+Min/Max shares	Veces compartido mín./máx.
+Min/Max views	Visualizaciones mín./máx.
 Minimum	Mínimo
 Never from these countries	Nunca desde estos países
 No account to block on this video	No hay ninguna cuenta que bloquear en este vídeo
@@ -492,7 +492,7 @@ Errors	Errores
 Other	Otros
 Saved. Restart TikTok to apply this.	Guardado. Reinicia TikTok para que se aplique.
 Diagnostic data cleared.	Datos de diagnóstico borrados.
-Includes %1$s events.	Incluye eventos de %1$s.
+Includes these events: %1$s	Incluye estos eventos: %1$s
 Gate details	Detalles del interruptor
 This catalog entry is no longer available. Refresh the Lab and try again.	Esta entrada del catálogo ya no está disponible. Actualiza el Laboratorio e inténtalo otra vez.
 An override changes the value returned by the getter. It does not rewrite TikTok's cached value or prove the named feature changed.	Una sustitución cambia el valor que devuelve el lector. No reescribe el valor que TikTok tiene en caché ni demuestra que la función nombrada haya cambiado.

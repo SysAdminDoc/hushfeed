@@ -827,10 +827,10 @@ public final class L10nTranslations {
                 "Diagnoseereignisse einschließen");
         table.put("Included diagnostics",
                 "Enthaltene Diagnosedaten");
-        table.put("Includes %1$s events.",
-                "Enthält Ereignisse: %1$s.");
         table.put("Includes all diagnostic events.",
                 "Enthält alle Diagnoseereignisse.");
+        table.put("Includes these events: %1$s",
+                "Enthält diese Ereignisse: %1$s");
         table.put("Inserted cards",
                 "Eingefügte Karten");
         table.put("Interface",
@@ -2536,10 +2536,10 @@ public final class L10nTranslations {
                 "Incluir eventos de diagnóstico");
         table.put("Included diagnostics",
                 "Diagnóstico incluido");
-        table.put("Includes %1$s events.",
-                "Incluye eventos de %1$s.");
         table.put("Includes all diagnostic events.",
                 "Incluye todos los eventos de diagnóstico.");
+        table.put("Includes these events: %1$s",
+                "Incluye estos eventos: %1$s");
         table.put("Inserted cards",
                 "Tarjetas insertadas");
         table.put("Interface",
@@ -2627,18 +2627,18 @@ public final class L10nTranslations {
         table.put("Messages, profiles and search still work.",
                 "Los mensajes, los perfiles y la búsqueda siguen funcionando.");
         table.put("Min/Max comments",
-                "Comentarios mín./máx");
+                "Comentarios mín./máx.");
         table.put("Min/Max favorites",
-                "Favoritos mín./máx");
+                "Favoritos mín./máx.");
         table.put("Min/Max likes",
-                "Me gusta mín./máx");
+                "Me gusta mín./máx.");
         table.put("Min/Max shares",
-                "Veces compartido mín./máx");
+                "Veces compartido mín./máx.");
     }
 
     private static void fillEs7(Map<String, String> table) {
         table.put("Min/Max views",
-                "Visualizaciones mín./máx");
+                "Visualizaciones mín./máx.");
         table.put("Minimum",
                 "Mínimo");
         table.put("More options",
@@ -4245,10 +4245,10 @@ public final class L10nTranslations {
                 "Sertakan peristiwa diagnostik");
         table.put("Included diagnostics",
                 "Diagnostik yang disertakan");
-        table.put("Includes %1$s events.",
-                "Termasuk peristiwa %1$s.");
         table.put("Includes all diagnostic events.",
                 "Termasuk semua peristiwa diagnostik.");
+        table.put("Includes these events: %1$s",
+                "Termasuk peristiwa berikut: %1$s");
         table.put("Inserted cards",
                 "Kartu yang disisipkan");
         table.put("Interface",
@@ -5954,10 +5954,10 @@ public final class L10nTranslations {
                 "Incluir eventos de diagnóstico");
         table.put("Included diagnostics",
                 "Diagnóstico incluído");
-        table.put("Includes %1$s events.",
-                "Inclui eventos de %1$s.");
         table.put("Includes all diagnostic events.",
                 "Inclui todos os eventos de diagnóstico.");
+        table.put("Includes these events: %1$s",
+                "Inclui estes eventos: %1$s");
         table.put("Inserted cards",
                 "Cards inseridos");
         table.put("Interface",
@@ -6045,18 +6045,18 @@ public final class L10nTranslations {
         table.put("Messages, profiles and search still work.",
                 "As mensagens, os perfis e a busca continuam funcionando.");
         table.put("Min/Max comments",
-                "Comentários mín./máx");
+                "Comentários mín./máx.");
         table.put("Min/Max favorites",
-                "Favoritos mín./máx");
+                "Favoritos mín./máx.");
         table.put("Min/Max likes",
-                "Curtidas mín./máx");
+                "Curtidas mín./máx.");
         table.put("Min/Max shares",
-                "Compartilhamentos mín./máx");
+                "Compartilhamentos mín./máx.");
     }
 
     private static void fillPt_rbr7(Map<String, String> table) {
         table.put("Min/Max views",
-                "Visualizações mín./máx");
+                "Visualizações mín./máx.");
         table.put("Minimum",
                 "Mínimo");
         table.put("More options",

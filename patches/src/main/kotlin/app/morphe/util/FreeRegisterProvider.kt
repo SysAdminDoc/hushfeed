@@ -222,6 +222,12 @@ class FreeRegisterProvider internal constructor(
             SUB_INT, SUB_LONG_2ADDR, SUB_LONG,
             USHR_INT_2ADDR, USHR_INT_LIT8, USHR_INT, USHR_LONG_2ADDR, USHR_LONG,
             XOR_INT_2ADDR, XOR_INT_LIT16, XOR_INT_LIT8, XOR_INT, XOR_LONG_2ADDR, XOR_LONG,
+            // Comparisons. Each reads two wide or two float values and writes one narrow
+            // register with -1, 0 or 1. Leaving them out made writeRegister answer null for
+            // them, so nothing here knew they write at all: the free-register search never
+            // saw the register they free, and the literal walk never saw the literal they
+            // destroy.
+            CMP_LONG, CMPG_DOUBLE, CMPG_FLOAT, CMPL_DOUBLE, CMPL_FLOAT,
         )
 
         /**
@@ -584,6 +590,28 @@ private fun Method.findInstructionIndexByOffset(
 internal val Instruction.touchesWideRegisters: Boolean
     get() = opcode.name.let { name ->
         name.contains("wide") || name.contains("long") || name.contains("double")
+    }
+
+/** The result types that fit in one register, named after the last "-to-" of a conversion. */
+private val NARROW_RESULT_TYPES = setOf("int", "float", "byte", "char", "short")
+
+/**
+ * Whether the register this instruction writes is the low half of a pair.
+ *
+ * <p>[touchesWideRegisters] is deliberately over-wide, which is right where the cost is one
+ * register wrongly called busy and wrong where the cost is refusing to patch. Two families
+ * mention a wide value and answer in a single register: a conversion away from one, where the
+ * destination type is whatever follows the last "-to-", and a comparison of two, which answers
+ * with -1, 0 or 1. Reading long-to-int as a wide write made the literal walk give up on a
+ * method where nothing had touched the literal at all.
+ */
+internal val Instruction.writesAWideRegister: Boolean
+    get() {
+        val name = opcode.name
+        if (name.startsWith("cmp")) return false
+        val convertsAt = name.lastIndexOf("-to-")
+        if (convertsAt >= 0) return name.substring(convertsAt + 4) !in NARROW_RESULT_TYPES
+        return touchesWideRegisters
     }
 
 /** [registersUsed], with the high half of each register for an opcode that works in pairs. */
