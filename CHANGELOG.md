@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The two long-press copy choices now copy the current video or sound link. They were wired to double tap, whose settings never offered them. Default double tap is unchanged.
+
 * Turning Inbox hide and expansion options off now preserves TikTok's own decisions. Suggested accounts and stories aren't forced into otherwise unavailable layouts, and a list TikTok already expanded stays expanded.
 
 * Repeated taps on Inbox's Clear all control keep one paced run. Failed dismissals and a closing screen release the control so it can be used again.

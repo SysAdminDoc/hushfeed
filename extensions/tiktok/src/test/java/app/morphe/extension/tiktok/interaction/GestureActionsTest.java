@@ -1,6 +1,9 @@
 package app.morphe.extension.tiktok.interaction;
 
 import static org.junit.Assert.*;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
 import android.view.MotionEvent;
@@ -8,6 +11,9 @@ import android.view.View;
 import android.widget.FrameLayout;
 import app.morphe.extension.tiktok.SettingsContextRule;
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.shared.settings.BaseSettings;
+import app.morphe.extension.tiktok.blockauthor.BlockAuthorPatch;
+import app.morphe.extension.tiktok.settings.L10n;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.ChoicePreference;
@@ -20,6 +26,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
+import org.robolectric.shadows.ShadowToast;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
@@ -41,10 +48,18 @@ public class GestureActionsTest {
     public static final class Params {
         public final Clip aweme;
         Params(String id) { aweme = new Clip(id); }
+        Params(Clip clip) { aweme = clip; }
     }
     public static final class Clip {
         public final String aid;
-        Clip(String id) { aid = id; }
+        public final String shareUrl;
+        public final SoundStub music;
+        Clip(String id) { this(id, null, null); }
+        Clip(String id, String shareUrl, SoundStub music) {
+            aid = id;
+            this.shareUrl = shareUrl;
+            this.music = music;
+        }
     }
 
     /** A press at {@code x} across the screen, which is what decides the seek zone. */
@@ -188,6 +203,76 @@ public class GestureActionsTest {
             assertNotNull(screen.findPreference("edge_seek_seconds"));
         } finally {
             SettingsStatus.longPressEnabled = false;
+        }
+    }
+
+    @Test public void longPressCopyActionsWriteTheCurrentLinksAndLeaveDefaultDoubleTapAlone() {
+        try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            Settings.EDGE_SEEK.save(false);
+            Settings.DOUBLE_TAP_ACTION.save("default");
+            Settings.CUSTOM_SHARE_DOMAIN.save("");
+            BaseSettings.SANITIZE_SHARING_LINKS.save(true);
+            BlockAuthorPatch.setCurrentVideoParams(new Params(new Clip("copy-actions",
+                    "https://www.tiktok.com/@someone/video/7712345?sender=someone",
+                    new SoundStub("7712345678901234567"))));
+            BlockAuthorPatch.setPlayingAweme("copy-actions");
+            ClipboardManager clipboard =
+                    (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+            String[][] cases = {
+                    {"copy_link", "https://www.tiktok.com/@someone/video/7712345", "Link copied"},
+                    {"copy_sound_link", "https://www.tiktok.com/music/x-7712345678901234567",
+                            "Sound link copied"}
+            };
+            for (String[] testCase : cases) {
+                Settings.LONG_PRESS_ACTION.save(testCase[0]);
+                clipboard.setPrimaryClip(ClipData.newPlainText("before", "before"));
+                ShadowToast.reset();
+                assertTrue(testCase[0], GestureActions.onLongPress(middleOf(activity)));
+                org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+                assertEquals(testCase[1], String.valueOf(clipboard.getPrimaryClip().getItemAt(0).getText()));
+                assertEquals(L10n.t(testCase[2]), ShadowToast.getTextOfLatestToast());
+
+                clipboard.setPrimaryClip(ClipData.newPlainText("after", "after"));
+                ShadowToast.reset();
+                assertFalse(GestureActions.onDoubleTap());
+                org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+                assertEquals("after", String.valueOf(clipboard.getPrimaryClip().getItemAt(0).getText()));
+                assertNull(ShadowToast.getTextOfLatestToast());
+            }
+        } finally {
+            Settings.LONG_PRESS_ACTION.resetToDefault();
+            Settings.DOUBLE_TAP_ACTION.resetToDefault();
+            Settings.CUSTOM_SHARE_DOMAIN.resetToDefault();
+            BaseSettings.SANITIZE_SHARING_LINKS.resetToDefault();
+        }
+    }
+
+    @Test public void longPressCopyActionsReportMissingLinksWithoutReplacingTheClipboard() {
+        try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            Settings.EDGE_SEEK.save(false);
+            BlockAuthorPatch.setCurrentVideoParams(new Params("missing-links"));
+            BlockAuthorPatch.setPlayingAweme("missing-links");
+            ClipboardManager clipboard =
+                    (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
+            String[][] cases = {
+                    {"copy_link", "This video has no link to copy"},
+                    {"copy_sound_link", "This video has no sound of its own"}
+            };
+            for (String[] testCase : cases) {
+                Settings.LONG_PRESS_ACTION.save(testCase[0]);
+                clipboard.setPrimaryClip(ClipData.newPlainText("before", "before"));
+                ShadowToast.reset();
+                assertTrue(testCase[0], GestureActions.onLongPress(middleOf(activity)));
+                org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+                assertEquals("before", String.valueOf(clipboard.getPrimaryClip().getItemAt(0).getText()));
+                assertEquals(L10n.t(testCase[1]), ShadowToast.getTextOfLatestToast());
+            }
+        } finally {
+            Settings.LONG_PRESS_ACTION.resetToDefault();
         }
     }
 

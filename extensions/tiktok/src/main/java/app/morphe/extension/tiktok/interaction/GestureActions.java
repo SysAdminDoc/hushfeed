@@ -54,24 +54,6 @@ public final class GestureActions {
     public static boolean onDoubleTap() {
         String action = Settings.DOUBLE_TAP_ACTION.get();
         if ("nothing".equals(action)) return true;
-        if ("copy_link".equals(action)) {
-            String link = ExternalDownloader.shareUrl(CurrentVideoAuthor.getAweme());
-            // The same treatment a shared link gets: TikTok's own link carries the parameters
-            // that say who sent it, and the clipboard is somewhere else that goes.
-            String clean = link == null ? null : ShareUrlSanitizer.rewriteShareUrl(link);
-            String said = copyToClipboard("TikTok link", clean)
-                    ? L10n.t("Link copied")
-                    : L10n.t("This video has no link to copy");
-            Utils.showToastShort(said);
-            return true;
-        }
-        if ("copy_sound_link".equals(action)) {
-            String said = copyToClipboard("TikTok sound", soundLink(CurrentVideoAuthor.getAweme()))
-                    ? L10n.t("Sound link copied")
-                    : L10n.t("This video has no sound of its own");
-            Utils.showToastShort(said);
-            return true;
-        }
         if (!"comments".equals(action)) return false;
         if (!openComments(Reflect.string(CurrentVideoAuthor.getAweme(), "getAid", "aid"))) {
             Utils.showToastShort(L10n.t("Comments aren't available for this video"));
@@ -125,6 +107,24 @@ public final class GestureActions {
 
         String action = Settings.LONG_PRESS_ACTION.get();
         if ("nothing".equals(action)) return true;
+        if ("copy_link".equals(action)) {
+            String link = ExternalDownloader.shareUrl(CurrentVideoAuthor.getAweme());
+            // The same treatment a shared link gets: TikTok's own link carries the parameters
+            // that say who sent it, and the clipboard is somewhere else that goes.
+            String clean = link == null ? null : ShareUrlSanitizer.rewriteShareUrl(link);
+            String said = copyToClipboard("TikTok link", clean)
+                    ? L10n.t("Link copied")
+                    : L10n.t("This video has no link to copy");
+            Utils.showToastShort(said);
+            return true;
+        }
+        if ("copy_sound_link".equals(action)) {
+            String said = copyToClipboard("TikTok sound", soundLink(CurrentVideoAuthor.getAweme()))
+                    ? L10n.t("Sound link copied")
+                    : L10n.t("This video has no sound of its own");
+            Utils.showToastShort(said);
+            return true;
+        }
         if ("original_sound".equals(action)) {
             OriginalSoundDownloads.start(CurrentVideoAuthor.getAweme(), Utils.getActivity());
             return true;
