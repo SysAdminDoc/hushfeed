@@ -5,6 +5,7 @@
 
 package app.morphe.extension.tiktok.settings;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ public class TikTokActivityHook {
     private static final String SETTINGS_ACTION = "morphe_settings";
     private static final String SETTINGS_EXTRA = "morphe";
     private static final String SETTINGS_SECTION_EXTRA = "morphe_settings_section";
+    private static final String SETTINGS_ROOT_TAG = "hushfeed_settings_root";
 
     /***
      * Initialize the settings menu.
@@ -59,20 +61,26 @@ public class TikTokActivityHook {
 
         FrameLayout fragment = new FrameLayout(base);
         fragment.setLayoutParams(new FrameLayout.LayoutParams(-1, -1));
-        int fragmentId = View.generateViewId();
+        // The initial page stays findable by tag even while it sits on the back stack.
+        // Reuse its container so Android can attach the fragments restored by super.onCreate.
+        Fragment restoredRoot = base.getFragmentManager().findFragmentByTag(SETTINGS_ROOT_TAG);
+        int fragmentId = restoredRoot == null ? View.generateViewId() : restoredRoot.getId();
         fragment.setId(fragmentId);
 
         linearLayout.addView(fragment);
         base.setContentView(linearLayout);
 
-        PreferenceFragment preferenceFragment = new TikTokPreferenceFragment();
-        String section = intent.getStringExtra(SETTINGS_SECTION_EXTRA);
-        if (section != null && !section.isEmpty()) {
-            Bundle arguments = new Bundle();
-            arguments.putString(SETTINGS_SECTION_EXTRA, section);
-            preferenceFragment.setArguments(arguments);
+        if (restoredRoot == null) {
+            PreferenceFragment preferenceFragment = new TikTokPreferenceFragment();
+            String section = intent.getStringExtra(SETTINGS_SECTION_EXTRA);
+            if (section != null && !section.isEmpty()) {
+                Bundle arguments = new Bundle();
+                arguments.putString(SETTINGS_SECTION_EXTRA, section);
+                preferenceFragment.setArguments(arguments);
+            }
+            base.getFragmentManager().beginTransaction()
+                    .replace(fragmentId, preferenceFragment, SETTINGS_ROOT_TAG).commit();
         }
-        base.getFragmentManager().beginTransaction().replace(fragmentId, preferenceFragment).commit();
 
         // Back here rode entirely on the host's onBackPressed, which stops being called once
         // TikTok drops enableOnBackInvokedCallback="false" from its manifest at target 36. The
