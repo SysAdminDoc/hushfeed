@@ -6,13 +6,18 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.tiktok.feedfilter.SeenVideoFilter;
 import app.morphe.extension.tiktok.settings.Settings;
+import com.ss.android.ugc.aweme.feed.model.Aweme;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
@@ -123,6 +128,119 @@ public class SeenVideoHistoryTest {
         drain();
         Settings.HIDE_SEEN_VIDEOS.save(false);
         assertFalse(SeenVideoHistory.shouldHide("42"));
+    }
+
+    @Test public void initialFeedFilteringLoadsRetainedHistoryAndPrunesExpiredSqlRows() throws Exception {
+        Settings.SEEN_VIDEO_RETENTION_DAYS.save(7);
+        long now = System.currentTimeMillis();
+        insert("recent", now - TimeUnit.DAYS.toMillis(2));
+        insert("expired", now - TimeUnit.DAYS.toMillis(8));
+        resetLoadedMemory();
+        SeenVideoFilter filter = new SeenVideoFilter();
+        CountDownLatch ready = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        io().execute(() -> {
+            ready.countDown();
+            try { release.await(5, TimeUnit.SECONDS); }
+            catch (InterruptedException error) { Thread.currentThread().interrupt(); }
+        });
+        try {
+            assertTrue(ready.await(5, TimeUnit.SECONDS));
+            assertTrue(filter.getEnabled());
+            assertFalse("the first feed read must not wait for SQLite", filter.getFiltered(video("recent")));
+            assertEquals(Set.of("recent", "expired"), persistedIds());
+        } finally {
+            release.countDown();
+        }
+        drain();
+
+        assertEquals("initial loading must remove expired rows from SQLite",
+                Set.of("recent"), persistedIds());
+        assertTrue("the loaded record never reached the feed filter", filter.getFiltered(video("recent")));
+        assertFalse(filter.getFiltered(video("expired")));
+        assertFalse(filter.getFiltered(video("unwatched")));
+        assertEquals(1, SeenVideoHistory.size());
+    }
+
+    @Test public void filteringAnExpiredLoadedVideoRemovesOnlyItsPersistedRecord() throws Exception {
+        Settings.SEEN_VIDEO_RETENTION_DAYS.save(0);
+        long now = System.currentTimeMillis();
+        insert("expired", now - TimeUnit.DAYS.toMillis(2));
+        insert("recent", now);
+        resetLoadedMemory();
+        SeenVideoFilter filter = new SeenVideoFilter();
+        filter.getFiltered(video("expired"));
+        drain();
+        assertTrue("zero retention must preserve the older record", filter.getFiltered(video("expired")));
+        assertTrue(filter.getFiltered(video("recent")));
+        assertEquals(Set.of("expired", "recent"), persistedIds());
+
+        Settings.SEEN_VIDEO_RETENTION_DAYS.save(1);
+        assertFalse(filter.getFiltered(video("expired")));
+        assertTrue(filter.getFiltered(video("recent")));
+        drain();
+        assertEquals("filtering expiry must also delete its SQLite row",
+                Set.of("recent"), persistedIds());
+        assertEquals(1, SeenVideoHistory.size());
+    }
+
+    @Test public void theTwoHundredthRecordedProgressPrunesSqlAndMemoryWithoutPruningEarly() throws Exception {
+        Settings.SEEN_VIDEO_RETENTION_DAYS.save(0);
+        long now = System.currentTimeMillis();
+        insert("expired", now - TimeUnit.DAYS.toMillis(2));
+        insert("recent", now);
+        resetLoadedMemory();
+        SeenVideoFilter filter = new SeenVideoFilter();
+        filter.getFiltered(video("recent"));
+        drain();
+        assertTrue(filter.getFiltered(video("expired")));
+        ((AtomicInteger) field("writesSincePrune")).set(0);
+        Settings.SEEN_VIDEO_RETENTION_DAYS.save(1);
+
+        for (int number = 1; number <= 199; number++) {
+            SeenVideoHistory.onPlayProgressChange("watched-" + number, 1000, 10000);
+        }
+        // Later progress for the same video and a new video below the threshold are not writes.
+        SeenVideoHistory.onPlayProgressChange("watched-199", 9000, 10000);
+        SeenVideoHistory.onPlayProgressChange("watched-200", 999, 10000);
+        drain();
+        Set<String> before = persistedIds();
+        assertEquals(201, before.size());
+        assertTrue("the sweep ran before 200 recorded videos", before.contains("expired"));
+        assertFalse(before.contains("watched-200"));
+        assertEquals(201, SeenVideoHistory.size());
+
+        SeenVideoHistory.onPlayProgressChange("watched-200", 1000, 10000);
+        drain();
+        Set<String> after = persistedIds();
+        assertFalse("the 200th progress write never pruned expired SQLite history", after.contains("expired"));
+        assertEquals(201, after.size());
+        assertEquals("the same sweep must discard expired memory entries", 201, SeenVideoHistory.size());
+        assertTrue(filter.getFiltered(video("recent")));
+        assertTrue(filter.getFiltered(video("watched-1")));
+        assertTrue(filter.getFiltered(video("watched-200")));
+        assertFalse(filter.getFiltered(video("expired")));
+    }
+
+    private static Aweme video(String aid) {
+        return new Aweme() { @Override public String getAid() { return aid; } };
+    }
+
+    private static void insert(String aid, long seenAt) throws Exception {
+        database().execSQL("INSERT INTO seen_videos VALUES (?, ?)", new Object[]{aid, seenAt});
+    }
+
+    private static void resetLoadedMemory() throws Exception {
+        ((AtomicBoolean) field("LOAD_STARTED")).set(false);
+        ((java.util.Map<?, ?>) field("SEEN")).clear();
+    }
+
+    private static Set<String> persistedIds() throws Exception {
+        Set<String> result = new HashSet<>();
+        try (android.database.Cursor cursor = database().rawQuery("SELECT aid FROM seen_videos", null)) {
+            while (cursor.moveToNext()) result.add(cursor.getString(0));
+        }
+        return result;
     }
 
     @Test public void pendingLoadCannotRestoreClearedHistory() throws Exception {

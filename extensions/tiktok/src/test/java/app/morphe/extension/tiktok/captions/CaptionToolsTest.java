@@ -295,6 +295,92 @@ public class CaptionToolsTest {
             assertEquals(View.GONE, caption.getVisibility());
         }
     }
+
+    @Test public void preDrawTracksFocusAndSourceAttachmentWithoutAnotherCaption() {
+        try (var owner = Robolectric.buildActivity(CaptionActivity.class).setup().visible()) {
+            var activity = owner.get();
+            Utils.setContext(activity);
+            FrameLayout content = new FrameLayout(activity);
+            FrameLayout source = new FrameLayout(activity);
+            content.addView(source);
+            activity.setContentView(content);
+            owner.windowFocusChanged(true);
+            Settings.KEEP_CAPTIONS_CLEAR_DISPLAY.save(true);
+            CaptionTools.onVideoChanged("predraw-video");
+            CaptionTools.onCaption(source, "predraw-video", "EXPANDED", "A continuing cue", false);
+            CaptionTools.onClear(new Video("predraw-video"), true);
+            View decor = activity.getWindow().getDecorView();
+            TextView caption = find(decor, "A continuing cue");
+            assertNotNull(caption);
+            assertEquals(View.VISIBLE, caption.getVisibility());
+
+            owner.windowFocusChanged(false);
+            decor.getViewTreeObserver().dispatchOnPreDraw();
+            assertEquals(View.GONE, caption.getVisibility());
+            owner.windowFocusChanged(true);
+            decor.getViewTreeObserver().dispatchOnPreDraw();
+            assertEquals(View.VISIBLE, caption.getVisibility());
+
+            content.removeView(source);
+            assertFalse(source.isAttachedToWindow());
+            decor.getViewTreeObserver().dispatchOnPreDraw();
+            assertEquals("a detached renderer must stop lending its cue to the overlay",
+                    View.GONE, caption.getVisibility());
+            content.addView(source);
+            assertTrue(source.isAttachedToWindow());
+            decor.getViewTreeObserver().dispatchOnPreDraw();
+            assertEquals("reattaching the current renderer should restore its cue",
+                    View.VISIBLE, caption.getVisibility());
+        }
+    }
+
+    @Test public void replacingTheActivityMovesTheOverlayAndRetiresTheOldPreDrawListener() {
+        try (var firstOwner = Robolectric.buildActivity(CaptionActivity.class).setup().visible();
+             var secondOwner = Robolectric.buildActivity(CaptionActivity.class).setup().visible()) {
+            var first = firstOwner.get();
+            FrameLayout firstSource = new FrameLayout(first);
+            first.setContentView(firstSource);
+            firstOwner.windowFocusChanged(true);
+            Utils.setContext(first);
+            Settings.KEEP_CAPTIONS_CLEAR_DISPLAY.save(true);
+            CaptionTools.onVideoChanged("moving-video");
+            CaptionTools.onCaption(firstSource, "moving-video", "EXPANDED", "First window cue", false);
+            CaptionTools.onClear(new Video("moving-video"), true);
+            View firstDecor = first.getWindow().getDecorView();
+            TextView oldCaption = find(firstDecor, "First window cue");
+            assertNotNull(oldCaption);
+            assertEquals(View.VISIBLE, oldCaption.getVisibility());
+
+            var second = secondOwner.get();
+            FrameLayout secondSource = new FrameLayout(second);
+            second.setContentView(secondSource);
+            secondOwner.windowFocusChanged(true);
+            Utils.setContext(second);
+            CaptionTools.onCaption(secondSource, "moving-video", "EXPANDED", "Second window cue", false);
+            ViewGroup secondDecor = (ViewGroup) second.getWindow().getDecorView();
+            TextView caption = find(secondDecor, "Second window cue");
+            assertNotNull(caption);
+            assertNotSame(oldCaption, caption);
+            assertNull("the previous window still owns an overlay", oldCaption.getParent());
+            assertSame(secondDecor, caption.getRootView());
+            assertEquals(View.VISIBLE, caption.getVisibility());
+            int childCount = secondDecor.getChildCount();
+            CaptionTools.onCaption(secondSource, null, "EXPANDED", "Next window cue", false);
+            assertEquals(childCount, secondDecor.getChildCount());
+            assertEquals("Next window cue", caption.getText().toString());
+
+            // Only the new window's pre-draw may refresh its overlay. An old listener calls
+            // the same static refresh method and would incorrectly change the new caption.
+            Settings.KEEP_CAPTIONS_CLEAR_DISPLAY.save(false);
+            assertEquals(View.VISIBLE, caption.getVisibility());
+            firstDecor.getViewTreeObserver().dispatchOnPreDraw();
+            assertEquals("the detached overlay left a listener on its previous window",
+                    View.VISIBLE, caption.getVisibility());
+            secondDecor.getViewTreeObserver().dispatchOnPreDraw();
+            assertEquals(View.GONE, caption.getVisibility());
+        }
+    }
+
     @Test public void subtitlePatchExposesCaptionControls() throws Exception {
         try (var owner = Robolectric.buildActivity(app.morphe.extension.tiktok.interaction.GestureActionsTest.TestActivity.class).setup()) {
             var activity = owner.get();

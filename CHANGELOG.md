@@ -1,5 +1,7 @@
 ## Unreleased
 
+* New regressions press the installed search, Hook status and About controls, render the block symbol, and load all four generated gate catalogs. Caption checks drive real pre-draw callbacks through detach and activity replacement. Seen-history checks exercise initial loading, expired SQL records and the 200th progress-write cleanup.
+
 * Comment blocking recovers when the worker queue is full instead of leaving the button busy. Turning it off restores the original dislike touch handler and the actual comment cell's appearance. A press already started as a block can't become a native dislike, and discarded cells can be collected. Rebinding a row during a press also keeps that release away from a cancelled native gesture.
 
 * On Android 6 through 9, a profile-picture long press explains when storage permission prevents saving. Granting permission lets the same picture save. The message is translated into all four supported languages.

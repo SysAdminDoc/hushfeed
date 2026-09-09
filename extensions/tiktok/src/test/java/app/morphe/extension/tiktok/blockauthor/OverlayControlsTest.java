@@ -23,6 +23,35 @@ import org.robolectric.annotation.GraphicsMode;
 @Config(sdk = 28)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class OverlayControlsTest {
+    @Test public void theInstalledBlockButtonDrawsBothTheRingAndTheSlash() throws Exception {
+        Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
+        Utils.setContext(activity);
+        Method factory = BlockAuthorOverlay.class.getDeclaredMethod("createButton", Activity.class);
+        factory.setAccessible(true);
+        View button = (View) factory.invoke(null, activity);
+        android.graphics.drawable.LayerDrawable layers =
+                (android.graphics.drawable.LayerDrawable) button.getBackground();
+        assertTrue(layers.getDrawable(1) instanceof BlockGlyphDrawable);
+        int size = View.MeasureSpec.makeMeasureSpec(100, View.MeasureSpec.EXACTLY);
+        button.measure(size, size);
+        button.layout(0, 0, 100, 100);
+        Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+        button.draw(new Canvas(bitmap));
+        assertNearWhite("the block symbol lost its diagonal bar", bitmap.getPixel(50, 50));
+        assertNearWhite("the block symbol lost its ring", bitmap.getPixel(79, 50));
+        assertNotEquals("the symbol became a filled disc", Color.WHITE, bitmap.getPixel(50, 40));
+        assertEquals("the round button filled its transparent corner", 0, Color.alpha(bitmap.getPixel(0, 0)));
+        bitmap.recycle();
+        activity.finish();
+    }
+
+    private static void assertNearWhite(String message, int pixel) {
+        // Edge coverage is fractional at a diagonal even at the centre of a 2px stroke.
+        assertTrue(message + ": " + Integer.toHexString(pixel),
+                Color.alpha(pixel) >= 225 && Color.red(pixel) >= 225
+                        && Color.green(pixel) >= 225 && Color.blue(pixel) >= 225);
+    }
+
     @Test public void renderAccessibleOverlayControls() throws Exception {
         Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
         Utils.setContext(activity);
