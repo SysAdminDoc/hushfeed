@@ -9,7 +9,7 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$Root = (Split-Path -Parent $PSScriptRoot),
+    [string]$Root,
     [switch]$VerifyPublishedAsset,
     [string]$ArtifactPath,
     # The Morphe desktop CLI, the only thing that can read a patch list back out of a bundle
@@ -23,6 +23,12 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+
+# Not a parameter default. Windows PowerShell leaves $PSScriptRoot empty while it evaluates the
+# defaults of an advanced script started with -File, and any [CmdletBinding()] or
+# [Parameter(...)] attribute makes a script advanced. PowerShell 7 does not do this, and
+# the body reads $PSScriptRoot correctly in both.
+if (-not $Root) { $Root = Split-Path -Parent $PSScriptRoot }
 
 . (Join-Path $PSScriptRoot 'Resolve-Java.ps1')
 
@@ -75,14 +81,26 @@ function Require-Match {
 
 function Assert-AssetReachable {
     param([Uri]$Uri)
+    # -SkipHttpErrorCheck is PowerShell 7 only, and the pre-push hook runs whichever shell it
+    # found, so a 404 has to be read out of the thrown response instead. That is the answer this
+    # check exists for: the index once named a tag that did not exist yet.
+    $status = 0
     try {
+        # -UseBasicParsing because Windows PowerShell otherwise hands the reply to the IE
+        # parser, which throws a null reference on a HEAD with no body. PowerShell 7 accepts
+        # the switch and ignores it.
         $response = Invoke-WebRequest -Uri $Uri -Method Head -MaximumRedirection 5 `
-            -TimeoutSec 60 -SkipHttpErrorCheck
+            -TimeoutSec 60 -UseBasicParsing
+        $status = [int]$response.StatusCode
     } catch {
-        throw ("Could not reach the indexed bundle URL ${Uri}: $($_.Exception.Message). " +
-            'If the network is down, push with HUSHFEED_SKIP_PRE_PUSH=1 and run this again later.')
+        $failed = $_.Exception.Response
+        if ($failed -and $failed.StatusCode) {
+            $status = [int]$failed.StatusCode
+        } else {
+            throw ("Could not reach the indexed bundle URL ${Uri}: $($_.Exception.Message). " +
+                'If the network is down, push with HUSHFEED_SKIP_PRE_PUSH=1 and run this again later.')
+        }
     }
-    $status = [int]$response.StatusCode
     if ($status -ne 200) {
         throw ("The indexed bundle URL ${Uri} answered HTTP ${status}. " +
             'The Manager fetches that address, so the release it names has to exist first.')

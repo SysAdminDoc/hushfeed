@@ -24,10 +24,11 @@ param(
 $ErrorActionPreference = 'Stop'
 
 # Not a parameter default. Windows PowerShell leaves $PSScriptRoot empty while it evaluates the
-# defaults of a script that declares any [Parameter(Position = N)], so the default threw and the
-# hook failed before it checked anything. The hook prefers pwsh, which does not have this, and
-# falls back to Windows PowerShell wherever pwsh is off the PATH: a git hook runs with git's
-# environment, so that is the ordinary case rather than the rare one.
+# defaults of an advanced script started with -File, and any [CmdletBinding()] or [Parameter(...)]
+# attribute makes a script advanced, so the default threw and the hook failed before it checked
+# anything. The hook prefers pwsh, which does not have this, and falls back to Windows PowerShell
+# wherever pwsh is off the PATH: a git hook runs with git's environment, so that is the ordinary
+# case rather than the rare one.
 if (-not $Root) { $Root = Split-Path -Parent $PSScriptRoot }
 $zeroObject = '0' * 40
 

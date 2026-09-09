@@ -9,11 +9,17 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$Root = (Split-Path -Parent $PSScriptRoot),
+    [string]$Root,
     [switch]$Force
 )
 
 $ErrorActionPreference = 'Stop'
+
+# Not a parameter default. Windows PowerShell leaves $PSScriptRoot empty while it evaluates the
+# defaults of an advanced script started with -File, and any [CmdletBinding()] or
+# [Parameter(...)] attribute makes a script advanced. PowerShell 7 does not do this, and
+# the body reads $PSScriptRoot correctly in both.
+if (-not $Root) { $Root = Split-Path -Parent $PSScriptRoot }
 
 $hooksDirectory = & git -C $Root rev-parse --git-path hooks
 if ($LASTEXITCODE -ne 0) {
@@ -49,7 +55,14 @@ fi
 exec "`$shell" -NoProfile -ExecutionPolicy Bypass -File "`$script" "`$@"
 "@
 
-Set-Content -LiteralPath $hookPath -Value ($hook -replace "`r`n", "`n") -NoNewline -Encoding utf8NoBOM
+# Not Set-Content -Encoding utf8NoBOM: that value only exists in PowerShell 7, and this script
+# is the one a fresh checkout runs before it has decided which shell it has. A BOM would go to
+# git's sh as three bytes before the shebang.
+[System.IO.File]::WriteAllText(
+    $hookPath,
+    ($hook -replace "`r`n", "`n"),
+    (New-Object System.Text.UTF8Encoding $false)
+)
 if ($IsLinux -or $IsMacOS) {
     & chmod +x $hookPath
 }
