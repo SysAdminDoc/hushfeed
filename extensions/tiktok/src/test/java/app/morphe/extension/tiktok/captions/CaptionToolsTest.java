@@ -101,6 +101,25 @@ public class CaptionToolsTest {
         HookStatus.clear();
     }
 
+    @Test public void anIdThatResolvesToSomethingElseIsAMissToo() {
+        HookStatus.clear();
+        // What a reassigned name looks like from here: the id resolves, and the view it names is
+        // not the one in the caption container. Nothing used to be said about this at all.
+        CaptionStyle.resolveForTests("dfu", View.generateViewId());
+        CaptionStyle.resolveForTests("dfn", View.generateViewId());
+        Settings.CAPTION_TEXT_SIZE.save(32);
+        Settings.CAPTION_BACKGROUND.save("black");
+
+        CaptionStyle.apply(new FrameLayout(Utils.getContext()));
+
+        assertTrue(HookStatus.anyMissing());
+        assertEquals(
+                java.util.Arrays.asList(
+                        "view caption container#dfu", "view caption container#dfn"),
+                HookStatus.missing("captions"));
+        HookStatus.clear();
+    }
+
     @Test public void clearDisplayKeepsOnlyTheCurrentCueAndHidesOnFocusLossOrVideoChange() throws Exception {
         try (var owner = Robolectric.buildActivity(CaptionActivity.class).setup().visible()) {
             var activity = owner.get();

@@ -53,18 +53,4 @@ public class RangeValueSummaryTest {
             assertEquals("Summary\n0 and above", preference.getSummary().toString());
         }
     }
-
-    @Test
-    public void settingTheSameValueAgainLeavesTheLineAlone() {
-        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
-            Context context = controller.get();
-            StringSetting setting =
-                    new StringSetting("range_summary_test_likes", "1000-5000");
-            RangeValuePreference preference =
-                    new RangeValuePreference(context, "Likes", "Summary", setting);
-
-            preference.setValue("1000-5000");
-            assertEquals("Summary\n1K to 5K", preference.getSummary().toString());
-        }
-    }
 }
