@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Every number row says what it accepts, and says so when it moves what you typed. Twelve of the fourteen stated their range nowhere: type 5000 into "Daily time budget" and it came back "Current: 600" with no explanation. Each row now carries its range under its own wording, and a number outside it is reported rather than quietly pulled in. The seven rows whose text says zero turns them off read "Current: Off" at zero instead of "Current: 0 videos", which was a limit of none rather than no limit.
+
 * Each download destination dialog is headed by the row you tapped. Video, photo and sticker all opened a window titled "Download path", so nothing on the screen said which of the three you were editing, and the sentence under it stayed English on a German or Indonesian phone. Both follow the language now.
 
 * TalkBack says which box is which in the five Min and Max dialogs. It read them as "edit box" and "edit box, Unlimited": the headings above them are separate views and the only hint on either field was a value rather than a name, and that one vanished the moment anything was typed. Both fields are labelled now. The sentence above them still says an empty maximum means no upper bound.

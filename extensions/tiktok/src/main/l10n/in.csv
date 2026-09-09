@@ -661,3 +661,5 @@ Today is back where it was,Hari ini kembali seperti semula
 %1$d setting was not in that file and was left as it is.,%1$d pengaturan tidak ada di berkas itu dan dibiarkan apa adanya.
 %1$d settings were not in that file and were left as they are.,%1$d pengaturan tidak ada di berkas itu dan dibiarkan apa adanya.
 Choose a subfolder under %1$s.,Pilih subfolder di %1$s.
+Off,Mati
+"Kept to %1$s, the nearest value this row allows","Disetel ke %1$s, nilai terdekat yang diizinkan baris ini"

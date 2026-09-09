@@ -50,7 +50,7 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
                             + "started automatic advance; prefetches, manual swipes and native-only "
                             + "advance do not count. The count resets when the feed component is "
                             + "recreated and stays stopped across backgrounding until it is recreated "
-                            + "or the limit changes.", Settings.AUTO_ADVANCE_LIMIT, "video", "videos"));
+                            + "or the limit changes.", Settings.AUTO_ADVANCE_LIMIT, "video", "videos").zeroMeansOff());
         }
         // The counting hangs off the hook that tracks which video is on screen, which the
         // block author patch installs. Without it these would take a number and count nothing.
@@ -59,11 +59,11 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
                 "Zero switches this off. Count every video that comes up in the feed, however you "
                         + "got to it, and say so once the count is reached. This is separate from "
                         + "the auto-advance limit above, which only counts videos Hushfeed itself "
-                        + "advanced past.", Settings.SESSION_BUDGET_VIDEOS, "video", "videos"));
+                        + "advanced past.", Settings.SESSION_BUDGET_VIDEOS, "video", "videos").zeroMeansOff());
         addPreference(new NumberInputPreference(context, "Daily time budget",
                 "Zero switches this off. Count the minutes the player spends running in the feed. "
                         + "Time on messages, a profile or search does not count.",
-                Settings.SESSION_BUDGET_MINUTES, "minute", "minutes"));
+                Settings.SESSION_BUDGET_MINUTES, "minute", "minutes").zeroMeansOff());
         addPreference(new NumberInputPreference(context, "Hold the feed after the budget",
                 "Zero shows the notice and leaves the feed alone. Anything else covers the feed "
                         + "for that many minutes once a budget is reached. Messages, profiles and "

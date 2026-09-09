@@ -663,3 +663,5 @@ One of the quote marks in that list has nothing to close it, so the rest of the 
 %1$d setting was not in that file and was left as it is.	%1$d Einstellung stand nicht in dieser Datei und bleibt unverändert.
 %1$d settings were not in that file and were left as they are.	%1$d Einstellungen standen nicht in dieser Datei und bleiben unverändert.
 Choose a subfolder under %1$s.	Wähle einen Unterordner in %1$s.
+Off	Aus
+Kept to %1$s, the nearest value this row allows	Auf %1$s gesetzt, den nächsten Wert, den diese Zeile zulässt

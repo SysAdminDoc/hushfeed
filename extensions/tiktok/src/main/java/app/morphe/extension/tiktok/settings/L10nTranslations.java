@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1324);
+        Map<String, String> table = new HashMap<>(1328);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -722,6 +722,8 @@ public final class L10nTranslations {
                 "Uhr und Statussymbole ausblenden, solange TikTok geöffnet ist. Wische von oben nach unten, um sie kurz zu sehen.");
         table.put("Keep the screen's refresh rate",
                 "Bildwiederholrate des Bildschirms behalten");
+        table.put("Kept to %1$s, the nearest value this row allows",
+                "Auf %1$s gesetzt, den nächsten Wert, den diese Zeile zulässt");
         table.put("LIVE replays",
                 "LIVE-Wiederholungen");
         table.put("LIVE videos",
@@ -794,11 +796,11 @@ public final class L10nTranslations {
                 "Keine passenden Länder");
         table.put("No matching settings",
                 "Keine passenden Einstellungen");
-        table.put("No preset selected",
-                "Keine Vorgabe gewählt");
     }
 
     private static void fillDe6(Map<String, String> table) {
+        table.put("No preset selected",
+                "Keine Vorgabe gewählt");
         table.put("No share actions have been observed yet",
                 "Noch keine Share-Aktionen beobachtet");
         table.put("No share actions match this search",
@@ -825,6 +827,8 @@ public final class L10nTranslations {
                 "Bisher wurde nichts nachgeschlagen. Nutze die App einen Moment und komm dann zurück.");
         table.put("Nothing is playing to seek",
                 "Es läuft gerade nichts zum Springen");
+        table.put("Off",
+                "Aus");
         table.put("Off by default. Switched on, the hold that starts when today's budget runs out has no way out, and the budgets, the reset hour and this switch cannot be changed again until the day starts over. Switch it off any time before the budget runs out.",
                 "Standardmäßig aus. Eingeschaltet hat die Sperre, die beim Aufbrauchen des heutigen Budgets beginnt, keinen Ausweg, und die Budgets, die Rücksetzstunde und dieser Schalter lassen sich bis zum Tagesbeginn nicht mehr ändern. Vor dem Aufbrauchen des Budgets kann er jederzeit ausgeschaltet werden.");
         table.put("Offline videos limit",
@@ -915,13 +919,13 @@ public final class L10nTranslations {
                 "Aufgezeichnete Gate-Zugriffe (%d)");
         table.put("Recording gate reads. Use a feature, then return here to stop.",
                 "Gate-Zugriffe werden aufgezeichnet. Nutze eine Funktion und komm zum Beenden zurück.");
+    }
+
+    private static void fillDe7(Map<String, String> table) {
         table.put("Recover the settings saved before the last restore or reset.",
                 "Die vor der letzten Wiederherstellung oder Zurücksetzung gespeicherten Einstellungen zurückholen.");
         table.put("Recovered an interrupted settings change. Restart TikTok to apply it.",
                 "Eine unterbrochene Einstellungsänderung wurde wiederhergestellt. Starte TikTok neu, um sie anzuwenden.");
-    }
-
-    private static void fillDe7(Map<String, String> table) {
         table.put("Region rules",
                 "Regionsregeln");
         table.put("Region settings",
@@ -1038,13 +1042,13 @@ public final class L10nTranslations {
                 "Sprungweite");
         table.put("Seek from the edges",
                 "Von den Rändern springen");
+    }
+
+    private static void fillDe8(Map<String, String> table) {
         table.put("Seen video history cleared. Tap again to put it back.",
                 "Verlauf gesehener Videos gelöscht. Tippe erneut, um ihn zurückzuholen.");
         table.put("Seen video history put back",
                 "Verlauf gesehener Videos zurückgeholt");
-    }
-
-    private static void fillDe8(Map<String, String> table) {
         table.put("Seen videos",
                 "Bereits gesehene Videos");
         table.put("Send links to another app",
@@ -1161,13 +1165,13 @@ public final class L10nTranslations {
                 "Videoschleife beenden");
         table.put("Stop videos at the end instead of replaying them.",
                 "Videos am Ende anhalten, statt sie zu wiederholen.");
+    }
+
+    private static void fillDe9(Map<String, String> table) {
         table.put("Storage permission is needed to save a sound",
                 "Zum Speichern eines Sounds wird die Speicherberechtigung gebraucht");
         table.put("Storage permission is needed to save a story",
                 "Zum Speichern einer Story wird die Speicherberechtigung gebraucht");
-    }
-
-    private static void fillDe9(Map<String, String> table) {
         table.put("Stories",
                 "Storys");
         table.put("Story saved to %1$s",
@@ -1284,13 +1288,13 @@ public final class L10nTranslations {
                 "TikTok-Standard (2x halten, schnelles Teilen)");
         table.put("TikTok didn't accept the feedback. Try again later.",
                 "TikTok hat die Rückmeldung nicht angenommen. Versuche es später noch einmal.");
+    }
+
+    private static void fillDe10(Map<String, String> table) {
         table.put("TikTok refused the follow: %1$s",
                 "TikTok hat das Folgen abgelehnt: %1$s");
         table.put("Today has moved on, so there is nothing to put back",
                 "Der Tag ist weitergezogen, es gibt nichts zurückzuholen");
-    }
-
-    private static void fillDe10(Map<String, String> table) {
         table.put("Today is back where it was",
                 "Der heutige Tag ist wieder wie zuvor");
         table.put("Today starts again",
@@ -1407,13 +1411,13 @@ public final class L10nTranslations {
                 "Sekunde");
         table.put("seconds",
                 "Sekunden");
+    }
+
+    private static void fillDe11(Map<String, String> table) {
         table.put("sp",
                 "sp");
         table.put("videos",
                 "Videos");
-    }
-
-    private static void fillDe11(Map<String, String> table) {
         table.put("view per like",
                 "Aufruf pro Like");
         table.put("views per like",
@@ -1421,7 +1425,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1324);
+        Map<String, String> table = new HashMap<>(1328);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2099,6 +2103,8 @@ public final class L10nTranslations {
                 "Sembunyikan jam dan ikon status selama TikTok terbuka. Geser dari atas untuk mengintipnya.");
         table.put("Keep the screen's refresh rate",
                 "Pertahankan laju penyegaran layar");
+        table.put("Kept to %1$s, the nearest value this row allows",
+                "Disetel ke %1$s, nilai terdekat yang diizinkan baris ini");
         table.put("LIVE replays",
                 "Putar ulang LIVE");
         table.put("LIVE videos",
@@ -2171,11 +2177,11 @@ public final class L10nTranslations {
                 "Tidak ada negara yang cocok");
         table.put("No matching settings",
                 "Tidak ada setelan yang cocok");
-        table.put("No preset selected",
-                "Tidak ada praset yang dipilih");
     }
 
     private static void fillIn6(Map<String, String> table) {
+        table.put("No preset selected",
+                "Tidak ada praset yang dipilih");
         table.put("No share actions have been observed yet",
                 "Belum ada tindakan berbagi yang diamati");
         table.put("No share actions match this search",
@@ -2202,6 +2208,8 @@ public final class L10nTranslations {
                 "Belum ada yang dicari. Gunakan aplikasi sebentar, lalu kembali ke sini.");
         table.put("Nothing is playing to seek",
                 "Tidak ada yang diputar untuk dilompati");
+        table.put("Off",
+                "Mati");
         table.put("Off by default. Switched on, the hold that starts when today's budget runs out has no way out, and the budgets, the reset hour and this switch cannot be changed again until the day starts over. Switch it off any time before the budget runs out.",
                 "Mati secara bawaan. Bila dinyalakan, penahanan yang dimulai saat anggaran hari ini habis tidak punya jalan keluar, dan anggaran, jam mulai hari serta sakelar ini tidak bisa diubah lagi sampai hari berganti. Matikan kapan saja sebelum anggaran habis.");
         table.put("Offline videos limit",
@@ -2292,13 +2300,13 @@ public final class L10nTranslations {
                 "Pembacaan gate yang terekam (%d)");
         table.put("Recording gate reads. Use a feature, then return here to stop.",
                 "Merekam pembacaan gate. Pakai sebuah fitur, lalu kembali ke sini untuk berhenti.");
+    }
+
+    private static void fillIn7(Map<String, String> table) {
         table.put("Recover the settings saved before the last restore or reset.",
                 "Ambil kembali pengaturan yang tersimpan sebelum pemulihan atau penyetelan ulang terakhir.");
         table.put("Recovered an interrupted settings change. Restart TikTok to apply it.",
                 "Perubahan pengaturan yang terhenti telah dipulihkan. Mulai ulang TikTok untuk menerapkannya.");
-    }
-
-    private static void fillIn7(Map<String, String> table) {
         table.put("Region rules",
                 "Aturan wilayah");
         table.put("Region settings",
@@ -2415,13 +2423,13 @@ public final class L10nTranslations {
                 "Jarak lompatan");
         table.put("Seek from the edges",
                 "Lompat dari tepi layar");
+    }
+
+    private static void fillIn8(Map<String, String> table) {
         table.put("Seen video history cleared. Tap again to put it back.",
                 "Riwayat video yang sudah ditonton dihapus. Ketuk lagi untuk mengembalikannya.");
         table.put("Seen video history put back",
                 "Riwayat video yang sudah ditonton dikembalikan");
-    }
-
-    private static void fillIn8(Map<String, String> table) {
         table.put("Seen videos",
                 "Video yang sudah dilihat");
         table.put("Send links to another app",
@@ -2538,13 +2546,13 @@ public final class L10nTranslations {
                 "Hentikan pengulangan video");
         table.put("Stop videos at the end instead of replaying them.",
                 "Hentikan video di akhir, bukan memutarnya ulang.");
+    }
+
+    private static void fillIn9(Map<String, String> table) {
         table.put("Storage permission is needed to save a sound",
                 "Izin penyimpanan dibutuhkan untuk menyimpan suara");
         table.put("Storage permission is needed to save a story",
                 "Izin penyimpanan dibutuhkan untuk menyimpan Story");
-    }
-
-    private static void fillIn9(Map<String, String> table) {
         table.put("Stories",
                 "Cerita");
         table.put("Story saved to %1$s",
@@ -2661,13 +2669,13 @@ public final class L10nTranslations {
                 "Bawaan TikTok (tahan 2x, bagikan cepat)");
         table.put("TikTok didn't accept the feedback. Try again later.",
                 "TikTok tidak menerima masukannya. Coba lagi nanti.");
+    }
+
+    private static void fillIn10(Map<String, String> table) {
         table.put("TikTok refused the follow: %1$s",
                 "TikTok menolak permintaan mengikuti: %1$s");
         table.put("Today has moved on, so there is nothing to put back",
                 "Hari sudah berganti, jadi tidak ada yang bisa dikembalikan");
-    }
-
-    private static void fillIn10(Map<String, String> table) {
         table.put("Today is back where it was",
                 "Hari ini kembali seperti semula");
         table.put("Today starts again",
@@ -2784,13 +2792,13 @@ public final class L10nTranslations {
                 "detik");
         table.put("seconds",
                 "detik");
+    }
+
+    private static void fillIn11(Map<String, String> table) {
         table.put("sp",
                 "sp");
         table.put("videos",
                 "video");
-    }
-
-    private static void fillIn11(Map<String, String> table) {
         table.put("view per like",
                 "tayangan per like");
         table.put("views per like",

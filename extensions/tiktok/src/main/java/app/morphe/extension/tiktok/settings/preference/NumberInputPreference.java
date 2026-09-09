@@ -24,6 +24,8 @@ public class NumberInputPreference extends EditTextPreference {
     private final int maxValue;
     private final String singularUnit;
     private final String pluralUnit;
+    /** True where the row's own wording says that zero turns the setting off. */
+    private boolean zeroIsOff;
 
     public NumberInputPreference(Context context, String title, String summary,
                                  IntegerSetting setting) {
@@ -59,6 +61,20 @@ public class NumberInputPreference extends EditTextPreference {
         getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
     }
 
+    /**
+     * Says that zero means off on this row, so the summary reads "Current: Off".
+     *
+     * <p>Seven rows document zero that way in their own wording and then showed
+     * "Current: 0 videos" underneath, which reads as a limit of none rather than as no limit.
+     * Only the rows whose text says it are marked; zero means TikTok's own caption size on one
+     * row and no delay on another, and neither of those is off.
+     */
+    public NumberInputPreference zeroMeansOff() {
+        zeroIsOff = true;
+        setValue(getText());
+        return this;
+    }
+
     public String getValue() {
         return String.valueOf(parseAndClamp(getText()));
     }
@@ -67,11 +83,17 @@ public class NumberInputPreference extends EditTextPreference {
         int clampedValue = parseAndClamp(value);
         String text = String.valueOf(clampedValue);
         setText(text);
-        String shown = displayValue(clampedValue);
-        String unit = L10n.t(getContext(), unitForValue(clampedValue));
-        setSummary(L10n.t(getContext(), baseSummary) + "\n" + (unit.isEmpty()
-                ? L10n.f(getContext(), "Current: %1$s", shown)
-                : L10n.f(getContext(), "Current: %1$s %2$s", shown, unit)));
+        boolean off = zeroIsOff && clampedValue == 0;
+        String shown = off ? L10n.t(getContext(), "Off") : displayValue(clampedValue);
+        String unit = off ? "" : L10n.t(getContext(), unitForValue(clampedValue));
+        // The range is read off the setting, so every one of these rows states it without each
+        // of them growing a sentence of its own. Twelve of the fourteen said nothing about it
+        // and pulled an out of range number to the nearest end without a word.
+        setSummary(L10n.t(getContext(), baseSummary)
+                + "\n" + L10n.f(getContext(), "%1$s to %2$s", minValue, maxValue)
+                + "\n" + (unit.isEmpty()
+                        ? L10n.f(getContext(), "Current: %1$s", shown)
+                        : L10n.f(getContext(), "Current: %1$s %2$s", shown, unit)));
     }
 
     /**
@@ -155,12 +177,34 @@ public class NumberInputPreference extends EditTextPreference {
     @Override
     protected void onDialogClosed(boolean positiveResult) {
         if (positiveResult) {
-            int value = parseAndClamp(getEditText().getText().toString());
+            String typed = getEditText().getText().toString();
+            int value = parseAndClamp(typed);
             String text = String.valueOf(value);
+            sayIfPulledIntoRange(typed, value);
             if (callChangeListener(text)) {
                 setValue(text);
             }
         }
+    }
+
+    /**
+     * Says so when a number that could be read was outside the range and was moved.
+     *
+     * <p>Typing 5000 into a row that stops at 600 used to come back as "Current: 600" with no
+     * explanation. Nothing is said for an empty or unreadable box: that is already handled by
+     * keeping the stored value, and saying "kept at 600" for an empty field would be an answer
+     * to a question nobody asked.
+     */
+    private void sayIfPulledIntoRange(String typed, int stored) {
+        int asked;
+        try {
+            asked = Integer.parseInt(typed.trim());
+        } catch (Exception unreadable) {
+            return;
+        }
+        if (asked == stored) return;
+        app.morphe.extension.shared.Utils.showToastShort(L10n.f(getContext(),
+                "Kept to %1$s, the nearest value this row allows", displayValue(stored)));
     }
 
     @Override

@@ -61,11 +61,11 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
         addPreference(new CreatorListPreference(context, "Locally hidden creators",
                 "Creators hidden from later feed batches by the player action. Search the list and remove one entry at a time.",
                 Settings.LOCAL_HIDDEN_CREATORS));
-        addPreference(new NumberInputPreference(context, "Maximum video length", "Seconds. Zero keeps every length. If a whole batch would be filtered out, the video closest to your limit is kept so the feed is not empty.", Settings.MAX_VIDEO_SECONDS, "second", "seconds"));
+        addPreference(new NumberInputPreference(context, "Maximum video length", "Seconds. Zero keeps every length. If a whole batch would be filtered out, the video closest to your limit is kept so the feed is not empty.", Settings.MAX_VIDEO_SECONDS, "second", "seconds").zeroMeansOff());
         addPreference(new NumberInputPreference(context, "Maximum post age",
                 "Days. Zero keeps every age. Posts without a usable timestamp, including future posts, stay visible.",
-                Settings.MAX_PUBLICATION_AGE_DAYS, "day", "days"));
-        addPreference(new NumberInputPreference(context, "Maximum views per like", "Hide videos with a lot of views and few likes. Lower numbers are stricter, zero turns the rule off, and one video is kept back if a whole batch would go.", Settings.MAX_VIEWS_PER_LIKE, "view per like", "views per like"));
+                Settings.MAX_PUBLICATION_AGE_DAYS, "day", "days").zeroMeansOff());
+        addPreference(new NumberInputPreference(context, "Maximum views per like", "Hide videos with a lot of views and few likes. Lower numbers are stricter, zero turns the rule off, and one video is kept back if a whole batch would go.", Settings.MAX_VIEWS_PER_LIKE, "view per like", "views per like").zeroMeansOff());
         addPreference(new TogglePreference(context, "Hide promotional music", "Skip videos marked as using promotional music.", Settings.HIDE_PROMOTIONAL_MUSIC));
         addPreference(new TogglePreference(context, "Hide LIVE replays", "Skip recorded LIVE broadcasts in the feed.", Settings.HIDE_LIVE_REPLAYS));
         addPreference(new TogglePreference(
@@ -205,7 +205,7 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
                 "Forget seen videos after",
                 "Days to remember a video. Zero removes the age limit. History keeps at most 10,000 videos.",
                 Settings.SEEN_VIDEO_RETENTION_DAYS, "day", "days"
-        ));
+        ).zeroMeansOff());
         addPreference(new ClearSeenVideoHistoryPreference(context));
     }
 }
