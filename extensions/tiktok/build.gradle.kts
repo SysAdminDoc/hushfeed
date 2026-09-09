@@ -23,10 +23,7 @@ val trackedScreenshots = mapOf(
     "feed_filter.png" to "pages/dark/feed_filter.png",
     "feed_navigation.png" to "pages/dark/feed_navigation-end.png",
     "gate_details.png" to "pages/dark/gate_details.png",
-    // gate_recording.png is deliberately absent. The recorder's dialog renders the report JSON,
-    // whose fourth and fifth fields are started_at_ms and stopped_at_ms straight off the clock,
-    // so two captures of an unchanged tree differ and this task would report it as moved on
-    // every run. Refresh that one by hand until the report is made reproducible.
+    "gate_recording.png" to "gate-recording.png",
     "inbox.png" to "pages/dark/inbox.png",
     "interface.png" to "pages/dark/interface.png",
     "lab.png" to "pages/dark/lab.png",

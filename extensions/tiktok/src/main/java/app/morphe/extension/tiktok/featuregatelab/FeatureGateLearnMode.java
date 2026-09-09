@@ -18,6 +18,24 @@ public final class FeatureGateLearnMode {
     private static Map<String, String> baseline = new LinkedHashMap<>();
     private static volatile boolean recording;
     private static long startedAt;
+
+    /**
+     * So the screenshot of the report is the same twice.
+     *
+     * <p>The dialog renders the report JSON, and two of its fields are the times the recording
+     * started and stopped, so a capture of an unchanged tree differed on every run and the
+     * refreshScreenshots task could not hold that one picture. Same shape as
+     * {@link app.morphe.extension.tiktok.wellbeing.SessionBudget}'s clock.
+     */
+    private static Clock clock = System::currentTimeMillis;
+
+    interface Clock {
+        long now();
+    }
+
+    static synchronized void setClockForTests(Clock replacement) {
+        clock = replacement == null ? System::currentTimeMillis : replacement;
+    }
     private static int dropped;
     private static String lastReport = "";
     private static int lastCount;
@@ -93,7 +111,7 @@ public final class FeatureGateLearnMode {
         baseline = new LinkedHashMap<>(latest);
         reads.clear();
         dropped = 0;
-        startedAt = System.currentTimeMillis();
+        startedAt = clock.now();
         recording = true;
         sessionState = true;
     }
@@ -143,7 +161,7 @@ public final class FeatureGateLearnMode {
                             + "tokens are replaced, so a gate marked changed can show the same "
                             + "text twice. Everything else is the value as it was read, so read "
                             + "this through before attaching it to anything.")
-                    .put("started_at_ms", startedAt).put("stopped_at_ms", System.currentTimeMillis())
+                    .put("started_at_ms", startedAt).put("stopped_at_ms", clock.now())
                     .put("gate_count", gates.length()).put("new_count", added).put("changed_count", changed)
                     .put("dropped_reads", dropped).put("gates", gates).toString(2);
         } catch (JSONException error) {

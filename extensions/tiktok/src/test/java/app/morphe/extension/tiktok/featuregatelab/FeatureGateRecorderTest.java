@@ -101,6 +101,10 @@ public class FeatureGateRecorderTest {
     public void reportRemainsReadableInLightTheme() throws Exception { captureReport(false); }
 
     private void captureReport(boolean dark) throws Exception {
+        // The report carries the times the recording started and stopped, and those are drawn
+        // into the picture. Left on the wall clock, no two captures of an unchanged tree match
+        // and refreshScreenshots cannot hold this one.
+        FeatureGateLearnMode.setClockForTests(() -> 1_757_000_000_000L);
         try (var owner = Robolectric.buildActivity(
                 app.morphe.extension.tiktok.settings.SettingsPagesTest.PageActivity.class).setup().visible()) {
             var activity = owner.get();
@@ -120,6 +124,8 @@ public class FeatureGateRecorderTest {
             app.morphe.extension.tiktok.UiCapture.save(dialog.getWindow().getDecorView(),
                     dark ? "gate-recording.png" : "gate-recording-light.png");
             dialog.dismiss();
+        } finally {
+            FeatureGateLearnMode.setClockForTests(null);
         }
     }
 }
