@@ -17,11 +17,18 @@
 param(
     [Parameter(Position = 0)][string]$RemoteName,
     [Parameter(Position = 1)][string]$RemoteUrl,
-    [string]$Root = (Split-Path -Parent $PSScriptRoot),
+    [string]$Root,
     [string[]]$ChangedPaths
 )
 
 $ErrorActionPreference = 'Stop'
+
+# Not a parameter default. Windows PowerShell leaves $PSScriptRoot empty while it evaluates the
+# defaults of a script that declares any [Parameter(Position = N)], so the default threw and the
+# hook failed before it checked anything. The hook prefers pwsh, which does not have this, and
+# falls back to Windows PowerShell wherever pwsh is off the PATH: a git hook runs with git's
+# environment, so that is the ordinary case rather than the rare one.
+if (-not $Root) { $Root = Split-Path -Parent $PSScriptRoot }
 $zeroObject = '0' * 40
 
 function Write-Step {
