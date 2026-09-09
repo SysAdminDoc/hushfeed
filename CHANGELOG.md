@@ -1,5 +1,7 @@
 ## Unreleased
 
+* TalkBack says which box is which in the five Min and Max dialogs. It read them as "edit box" and "edit box, Unlimited": the headings above them are separate views and the only hint on either field was a value rather than a name, and that one vanished the moment anything was typed. Both fields are labelled now. The sentence above them still says an empty maximum means no upper bound.
+
 * A gate override whose type the catalogue disagrees with is refused on a fresh launch too. The check that catches a rule which would hand TikTok a word where its own code expects a number could only work while the catalogue happened to be loaded, and nothing loaded it until the Feature Gate Lab screen was opened, which is exactly the launch where the check was needed. Reaching that path now asks for the catalogue in the background, so one read goes through unchecked instead of all of them.
 
 * Restoring an older backup keeps the settings it predates. Anything added since the file was written went back to its default, so a backup taken before the download destinations were split put your video, photo and sticker folders back to DCIM/TikTok without a word, and so did every other setting added since. A backup is a set of values to apply now, not a picture of the whole app: what the file does not mention stays as you have it, the restore says how many that was, and a file carrying only the old single download folder fills in all three.

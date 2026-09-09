@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1324);
+        Map<String, String> table = new HashMap<>(1322);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -1327,8 +1327,6 @@ public final class L10nTranslations {
                 "Rückgängig");
         table.put("Undo last restore or reset",
                 "Letzte Wiederherstellung oder Zurücksetzung rückgängig machen");
-        table.put("Unlimited",
-                "Unbegrenzt");
         table.put("Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.",
                 "Bis zu 8 Geschwindigkeiten von 0.5 bis 3, durch Kommas getrennt. Beispiel: 0.5, 1, 1.5, 2, 2.5, 3. Leer lassen für TikToks Liste. Nach dem Ändern der Liste neu starten.");
         table.put("Updating settings",
@@ -1411,17 +1409,17 @@ public final class L10nTranslations {
                 "sp");
         table.put("videos",
                 "Videos");
+        table.put("view per like",
+                "Aufruf pro Like");
     }
 
     private static void fillDe11(Map<String, String> table) {
-        table.put("view per like",
-                "Aufruf pro Like");
         table.put("views per like",
                 "Aufrufe pro Like");
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1324);
+        Map<String, String> table = new HashMap<>(1322);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -2704,8 +2702,6 @@ public final class L10nTranslations {
                 "Urungkan");
         table.put("Undo last restore or reset",
                 "Urungkan pemulihan atau reset terakhir");
-        table.put("Unlimited",
-                "Tanpa batas");
         table.put("Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart after changing this list.",
                 "Sampai 8 kecepatan dari 0.5 hingga 3, dipisahkan koma. Contoh: 0.5, 1, 1.5, 2, 2.5, 3. Kosongkan untuk memakai daftar TikTok. Mulai ulang setelah mengubah daftar ini.");
         table.put("Updating settings",
@@ -2788,11 +2784,11 @@ public final class L10nTranslations {
                 "sp");
         table.put("videos",
                 "video");
+        table.put("view per like",
+                "tayangan per like");
     }
 
     private static void fillIn11(Map<String, String> table) {
-        table.put("view per like",
-                "tayangan per like");
         table.put("views per like",
                 "tayangan per like");
     }

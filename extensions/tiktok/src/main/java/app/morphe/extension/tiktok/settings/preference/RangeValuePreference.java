@@ -137,6 +137,13 @@ public class RangeValuePreference extends DialogPreference {
         // accepts 1.5M has to be typeable.
         minEditText.setInputType(InputType.TYPE_CLASS_TEXT);
         minEditText.setSingleLine(true);
+        // The hint is the label, which is the rule the rest of this package follows. Without one
+        // TalkBack read these two as "edit box" and "edit box, Unlimited" in all five of these
+        // dialogs: the visible headings above them are separate views and say nothing about the
+        // field. "Unlimited" was a value rather than a label anyway, and it disappeared as soon
+        // as anything was typed; the helper sentence above already says an empty maximum means
+        // no upper bound.
+        minEditText.setHint(L10n.t(context, "Minimum"));
         minEditText.setText(minValue);
         SettingsUi.styleEditText(minEditText);
         dialogView.addView(minEditText, new LinearLayout.LayoutParams(
@@ -155,7 +162,7 @@ public class RangeValuePreference extends DialogPreference {
         EditText maxEditText = new EditText(context);
         maxEditText.setInputType(InputType.TYPE_CLASS_TEXT);
         maxEditText.setSingleLine(true);
-        maxEditText.setHint(L10n.t(context, "Unlimited"));
+        maxEditText.setHint(L10n.t(context, "Maximum"));
         maxEditText.setText(Long.toString(Long.MAX_VALUE).equals(maxValue) ? "" : maxValue);
         SettingsUi.styleEditText(maxEditText);
         dialogView.addView(maxEditText, new LinearLayout.LayoutParams(

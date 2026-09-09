@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import android.content.Context;
 import android.preference.PreferenceActivity;
 import android.view.View;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
@@ -116,6 +117,36 @@ public class RangeValueSummaryTest {
             preference.onDialogClosed(true);
             assertEquals("300-900", preference.getValue());
         }
+    }
+
+    @Test
+    @Config(sdk = 29)
+    public void bothFieldsSayWhichOneTheyAreToAScreenReader() {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            Context context = controller.get();
+            StringSetting setting =
+                    new StringSetting("range_a11y_test_views", "20000-1500000");
+            RangeValuePreference preference =
+                    new RangeValuePreference(context, "Views", "Summary", setting);
+
+            List<EditText> fields = new ArrayList<>();
+            collect(preference.onCreateDialogView(), fields);
+            assertEquals(2, fields.size());
+
+            // TalkBack used to read these as "edit box" and "edit box, Unlimited": the visible
+            // headings are separate views and the only hint was a value, not a label.
+            assertEquals("Minimum", String.valueOf(fields.get(0).getHint()));
+            assertEquals("Maximum", String.valueOf(fields.get(1).getHint()));
+            assertEquals("Minimum", String.valueOf(describe(fields.get(0)).getHintText()));
+            assertEquals("Maximum", String.valueOf(describe(fields.get(1)).getHintText()));
+        }
+    }
+
+    /** What a screen reader would be handed for one field. */
+    private static AccessibilityNodeInfo describe(View field) {
+        AccessibilityNodeInfo info = AccessibilityNodeInfo.obtain();
+        field.onInitializeAccessibilityNodeInfo(info);
+        return info;
     }
 
     /** Types into the dialog's own two fields, so the preference sees it as a person typing. */
