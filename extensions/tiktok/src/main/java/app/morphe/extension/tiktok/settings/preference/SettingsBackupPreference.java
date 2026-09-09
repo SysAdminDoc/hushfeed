@@ -127,8 +127,12 @@ public final class SettingsBackupPreference extends Preference
                 } else if (action == RESET) SettingsBackup.reset(context);
                 else {
                     // An undo copy written before a retarget holds Lab rules for the older build,
-                    // and dropping them silently is the same surprise as on an import.
-                    labRulesSkipped = SettingsBackup.labRulesWereSkipped(SettingsBackup.undo(context));
+                    // and dropping them silently is the same surprise as on an import. An undo
+                    // copy older than a setting is the same case as a backup older than one, so
+                    // it is counted the same way.
+                    String undone = SettingsBackup.undo(context);
+                    labRulesSkipped = SettingsBackup.labRulesWereSkipped(undone);
+                    keptAsTheyWere = SettingsBackup.settingsNotInFile(undone);
                 }
                 // Said before the success line, so the success line is the one left on screen.
                 // Anything the file did not carry stayed as the device had it, which is worth

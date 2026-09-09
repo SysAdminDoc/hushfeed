@@ -25,9 +25,11 @@ public final class CaptionStyle {
      *
      * <p>These used to be written here as the numbers they resolve to on 46.2.3, so a build that
      * reshuffled the resource table left both caption settings doing nothing and said nothing.
-     * The names are obfuscated too and can be reassigned rather than removed, which is why the
-     * lookup is reported on both counts: a name this build does not have, and a name it does
-     * have that is not the view in the caption container.
+     * A name this build does not have is reported. A name it does have that is not the view in
+     * this container is not, and cannot be from here: the hook is installed on every way out of
+     * TikTok's render method, including the ones that rendered nothing, and it runs before the
+     * check that this renderer is the video on screen, so an empty container is an ordinary
+     * outcome rather than a broken build.
      */
     private static final String TEXT_ID = "dfu";
     private static final String BACKGROUND_ID = "dfn";
@@ -50,7 +52,6 @@ public final class CaptionStyle {
     static void apply(View root) {
         int textId = identifier(root, TEXT_ID);
         TextView text = textId == 0 ? null : root.findViewById(textId);
-        if (text == null && textId != 0) missingView(TEXT_ID);
         if (text != null) {
             if (size() > 0) {
                 // Not putIfAbsent: that is an API 24 default method on the Map interface, and
@@ -61,7 +62,6 @@ public final class CaptionStyle {
         }
         int backgroundId = identifier(root, BACKGROUND_ID);
         View background = backgroundId == 0 ? null : root.findViewById(backgroundId);
-        if (background == null && backgroundId != 0) missingView(BACKGROUND_ID);
         if (background == null) return;
         String color = Settings.CAPTION_BACKGROUND.get();
         if (!"default".equals(color) && !BACKGROUNDS.containsKey(background)) {
@@ -78,18 +78,6 @@ public final class CaptionStyle {
     /** Lets a test stand in for a TikTok resource id, which only the real APK resolves. */
     static void resolveForTests(String name, int id) {
         RESOURCE_IDS.putForTests(APP_PACKAGE, name, id);
-    }
-
-    /**
-     * Says once that a resolved id was not the view it was supposed to be.
-     *
-     * <p>The names here are obfuscated, so a build is free to hand one of them to something else
-     * rather than drop it. Then the id resolves, the lookup returns nothing, and the setting
-     * quietly does nothing. There is one caption renderer and one container, so a view that is
-     * not in it is a miss rather than a render this hook was not meant for.
-     */
-    private static void missingView(String name) {
-        HookStatus.missingMember("captions", "view", "caption container", name);
     }
 
     /** Resolves a caption view id, saying so once when this build does not have it. */

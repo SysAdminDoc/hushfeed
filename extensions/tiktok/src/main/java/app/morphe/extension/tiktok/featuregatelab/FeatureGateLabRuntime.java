@@ -672,6 +672,9 @@ public final class FeatureGateLabRuntime {
                     @Override public void onLoaded(FeatureGateCatalog.Snapshot loaded) { }
 
                     @Override public void onError(String message) {
+                        // Let the next read ask again. Left set, one failed load would have put
+                        // the process back to where it was before this existed, silently.
+                        catalogRequested.set(false);
                         Log.w(TAG, "catalog load for the AB fallback failed: " + message);
                     }
                 });

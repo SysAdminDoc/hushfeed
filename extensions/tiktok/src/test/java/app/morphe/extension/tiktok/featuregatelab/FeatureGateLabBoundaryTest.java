@@ -216,22 +216,50 @@ public class FeatureGateLabBoundaryTest {
         // The check could only refuse a rule while the catalogue happened to be loaded, and
         // nothing loaded it until the Lab's own screen was opened in that process, so on a fresh
         // launch the fallback behaved exactly as it had before the check existed.
-        FeatureGateLabStore.saveRule(FeatureGateLabStore.MANAGER_ABMOCK, "mistyped_gate",
+        FeatureGateLabStore.saveRule(FeatureGateLabStore.MANAGER_ABMOCK, "stranger_gate",
                 "STRING", "not a number", true);
         FeatureGateLabStore.setMasterEnabled(true);
         assertNull("the test started with a catalogue loaded", FeatureGateCatalog.cachedSnapshot());
 
         // This one read still has nothing to check against, and applies the rule as it always did.
         assertEquals("not a number",
-                FeatureGateLabRuntime.overrideRawAbValue("mistyped_gate", null, false));
+                FeatureGateLabRuntime.overrideRawAbValue("stranger_gate", null, false));
 
         FeatureGateCatalog.awaitForTests();
-        assertNotNull("the fallback did not ask for the catalogue",
-                FeatureGateCatalog.cachedSnapshot());
+        FeatureGateCatalog.Snapshot loaded = FeatureGateCatalog.cachedSnapshot();
+        assertNotNull("the fallback did not ask for the catalogue", loaded);
 
-        // The real catalogue has never heard of this key, so now there is something to check
-        // against the rule is refused rather than handed to the host.
-        assertNull(FeatureGateLabRuntime.overrideRawAbValue("mistyped_gate", null, false));
+        // The branch this whole check exists for, reached without the Lab screen ever opening:
+        // a key the catalogue does carry, with a rule whose type it disagrees with. Taken from
+        // the catalogue that was just loaded rather than named here, so this keeps meaning the
+        // same thing when the catalogue is regenerated.
+        FeatureGateCatalog.Entry known = anAbEntry(loaded);
+        String wrongType = "BOOLEAN".equals(FeatureGateLabStore.normalizeType(known.type))
+                ? "STRING" : "BOOLEAN";
+        FeatureGateLabStore.saveRule(
+                FeatureGateLabStore.MANAGER_ABMOCK, known.key, wrongType, "true", true);
+        assertNull("a rule the catalogue disagrees with was handed to the host",
+                FeatureGateLabRuntime.overrideRawAbValue(known.key, null, false));
+        assertTrue("the refusal did not say the catalogue disagreed: "
+                        + FeatureGateLabRuntime.structuredFailure(
+                                FeatureGateLabStore.MANAGER_ABMOCK, known.key, wrongType),
+                String.valueOf(FeatureGateLabRuntime.structuredFailure(
+                        FeatureGateLabStore.MANAGER_ABMOCK, known.key, wrongType))
+                        .startsWith("Catalogue says "));
+
+        // And a key it has never heard of is refused for the other reason.
+        assertNull(FeatureGateLabRuntime.overrideRawAbValue("stranger_gate", null, false));
+    }
+
+    /** Any AB entry the loaded catalogue carries, so the type check has something real to read. */
+    private static FeatureGateCatalog.Entry anAbEntry(FeatureGateCatalog.Snapshot loaded) {
+        for (FeatureGateCatalog.Entry entry : loaded.entries) {
+            if (FeatureGateLabStore.MANAGER_ABMOCK.equals(entry.manager)
+                    && entry.type != null && !entry.type.isEmpty()) {
+                return entry;
+            }
+        }
+        throw new AssertionError("the loaded catalogue carries no AB entry to check against");
     }
 
     @Test

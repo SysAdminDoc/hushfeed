@@ -20,6 +20,10 @@ $ErrorActionPreference = 'Stop'
 # [Parameter(...)] attribute makes a script advanced. PowerShell 7 does not do this, and
 # the body reads $PSScriptRoot correctly in both.
 if (-not $Root) { $Root = Split-Path -Parent $PSScriptRoot }
+# Resolved once, here, so everything below is absolute. WriteAllText further down resolves a
+# relative path against .NET's current directory, which PowerShell does not keep in step with
+# $PWD, so -Root with a relative path would have written the hook somewhere else.
+$Root = (Get-Item -LiteralPath $Root).FullName
 
 $hooksDirectory = & git -C $Root rev-parse --git-path hooks
 if ($LASTEXITCODE -ne 0) {
