@@ -239,6 +239,13 @@ public class Settings extends BaseSettings {
     public static final IntegerSetting SESSION_BUDGET_PASSES_PER_DAY = new IntegerSetting(
             "session_budget_passes_per_day", 0).withRange(0, 20);
     /**
+     * Brings the hold in gradually instead of dropping it on the feed. Off by default, and it
+     * only has anything to follow when {@link #SESSION_BUDGET_MINUTES} is set: a budget counted
+     * in videos has no "how long is left" to draw a ramp from.
+     */
+    public static final BooleanSetting SESSION_BUDGET_RAMP = new BooleanSetting(
+            "session_budget_ramp", FALSE, true);
+    /**
      * Minutes of watching between the quiet reminders, or zero for none.
      *
      * <p>The hold only ever fires once the day's budget has gone. This is the earlier check the

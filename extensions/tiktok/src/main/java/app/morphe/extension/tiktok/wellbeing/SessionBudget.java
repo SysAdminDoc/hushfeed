@@ -215,6 +215,24 @@ public final class SessionBudget {
         }
     }
 
+    /**
+     * How much of the day's watching budget is left, in milliseconds.
+     *
+     * <p>Negative when there is nothing counted in time to measure against, which is a
+     * different answer from zero: a budget counted only in videos never runs down in time, so
+     * anything drawing from the clock has nothing to draw.
+     */
+    public static long budgetRemainingMs() {
+        synchronized (LOCK) {
+            load();
+            rollOver(clock.now());
+            if (spent()) return 0;
+            int minuteBudget = Settings.SESSION_BUDGET_MINUTES.get();
+            if (minuteBudget <= 0) return -1;
+            return Math.max(0, minuteBudget * 60_000L - watchedMs);
+        }
+    }
+
     /** True once either budget that is switched on has been used up. */
     public static boolean reachedLimit() {
         synchronized (LOCK) {

@@ -615,6 +615,8 @@ No surface has looked anything up yet, so there is nothing to report.	Noch hat k
 Daily video budget	Tägliches Videobudget
 Daily time budget	Tägliches Zeitbudget
 Hold the feed after the budget	Feed nach dem Budget anhalten
+Fade the feed out before the hold	Feed vor dem Anhalten ausblenden
+Off by default. Switched on, the feed dims over the last three quarters of a minute of a time budget, most of it in the final half minute, so the hold is somewhere you arrive rather than somewhere you land. Needs a budget in minutes: a budget counted in videos has no time left to follow. Nothing fades if you have turned animations off.	Standardmäßig aus. Eingeschaltet wird der Feed über die letzten drei Viertelminuten eines Zeitbudgets dunkler, das meiste davon in der letzten halben Minute, damit das Anhalten kein Sprung ist. Braucht ein Budget in Minuten: ein Budget in Videos hat keine verbleibende Zeit. Es wird nichts ausgeblendet, wenn Animationen abgeschaltet sind.
 Start the day at	Tag beginnt um
 That is %1$d videos today	Das sind %1$d Videos heute
 The feed is open again	Der Feed ist wieder offen

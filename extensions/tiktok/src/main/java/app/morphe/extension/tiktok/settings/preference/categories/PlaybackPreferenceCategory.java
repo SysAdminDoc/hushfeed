@@ -95,6 +95,13 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
                         + "for that many minutes once a budget is reached. Messages, profiles and "
                         + "search keep working, and nothing in the feed is thrown away.",
                 Settings.SESSION_BUDGET_LOCK_MINUTES, "minute", "minutes"));
+        addPreference(new TogglePreference(context, "Fade the feed out before the hold",
+                "Off by default. Switched on, the feed dims over the last three quarters of a "
+                        + "minute of a time budget, most of it in the final half minute, so the "
+                        + "hold is somewhere you arrive rather than somewhere you land. Needs a "
+                        + "budget in minutes: a budget counted in videos has no time left to "
+                        + "follow. Nothing fades if you have turned animations off.",
+                Settings.SESSION_BUDGET_RAMP));
         addPreference(new ClockHourPreference(context, "Start the day at",
                 "The hour both budgets reset, on a 24 hour clock. Four in the morning by default, "
                         + "because someone still scrolling at one is having last night.",

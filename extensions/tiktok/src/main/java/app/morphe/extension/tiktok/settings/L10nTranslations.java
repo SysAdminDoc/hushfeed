@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1360);
+        Map<String, String> table = new HashMap<>(1364);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -405,6 +405,8 @@ public final class L10nTranslations {
                 "Aktivitätsliste ausklappen");
         table.put("Export diagnostic report",
                 "Diagnosebericht exportieren");
+        table.put("Fade the feed out before the hold",
+                "Feed vor dem Anhalten ausblenden");
         table.put("Feature Gate Lab",
                 "Feature Gate Lab");
         table.put("Feed filter",
@@ -425,11 +427,11 @@ public final class L10nTranslations {
                 "Filter, Übersetzung und Kopieroptionen");
         table.put("Find a setting by title or description",
                 "Einstellung nach Titel oder Beschreibung finden");
-        table.put("Fit the video to the screen",
-                "Video an den Bildschirm anpassen");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Fit the video to the screen",
+                "Video an den Bildschirm anpassen");
         table.put("Folder picker is not available",
                 "Ordnerauswahl ist nicht verfügbar");
         table.put("Folder picker is not available on this device",
@@ -548,11 +550,11 @@ public final class L10nTranslations {
                 "Suche ausblenden");
         table.put("Hide search suggestions",
                 "Suchvorschläge ausblenden");
-        table.put("Hide sharing apps",
-                "Apps zum Teilen ausblenden");
     }
 
     private static void fillDe4(Map<String, String> table) {
+        table.put("Hide sharing apps",
+                "Apps zum Teilen ausblenden");
         table.put("Hide stories tray",
                 "Story-Leiste ausblenden");
         table.put("Hide story",
@@ -671,11 +673,11 @@ public final class L10nTranslations {
                 "Videos von verifizierten Konten ausblenden.");
         table.put("Hide videos that belong to a paid Series.",
                 "Videos ausblenden, die zu einer bezahlten Serie gehören.");
-        table.put("Hide videos with a lot of views and few likes. Lower numbers are stricter, zero turns the rule off, and one video is kept back if a whole batch would go.",
-                "Videos mit vielen Aufrufen und wenigen Likes ausblenden. Kleinere Zahlen sind strenger, null schaltet die Regel ab, und ein Video bleibt übrig, wenn ein ganzer Schwung wegfiele.");
     }
 
     private static void fillDe5(Map<String, String> table) {
+        table.put("Hide videos with a lot of views and few likes. Lower numbers are stricter, zero turns the rule off, and one video is kept back if a whole batch would go.",
+                "Videos mit vielen Aufrufen und wenigen Likes ausblenden. Kleinere Zahlen sind strenger, null schaltet die Regel ab, und ein Video bleibt übrig, wenn ein ganzer Schwung wegfiele.");
         table.put("Hide videos you have already seen",
                 "Bereits gesehene Videos ausblenden");
         table.put("Hide visual search prompt",
@@ -794,11 +796,11 @@ public final class L10nTranslations {
                 "Keine ausgeblendeten Creator passen zu dieser Suche");
         table.put("No limit",
                 "Keine Grenze");
-        table.put("No matching countries",
-                "Keine passenden Länder");
     }
 
     private static void fillDe6(Map<String, String> table) {
+        table.put("No matching countries",
+                "Keine passenden Länder");
         table.put("No matching settings",
                 "Keine passenden Einstellungen");
         table.put("No preset selected",
@@ -831,6 +833,8 @@ public final class L10nTranslations {
                 "Es läuft gerade nichts zum Springen");
         table.put("Off",
                 "Aus");
+        table.put("Off by default. Switched on, the feed dims over the last three quarters of a minute of a time budget, most of it in the final half minute, so the hold is somewhere you arrive rather than somewhere you land. Needs a budget in minutes: a budget counted in videos has no time left to follow. Nothing fades if you have turned animations off.",
+                "Standardmäßig aus. Eingeschaltet wird der Feed über die letzten drei Viertelminuten eines Zeitbudgets dunkler, das meiste davon in der letzten halben Minute, damit das Anhalten kein Sprung ist. Braucht ein Budget in Minuten: ein Budget in Videos hat keine verbleibende Zeit. Es wird nichts ausgeblendet, wenn Animationen abgeschaltet sind.");
         table.put("Off by default. Switched on, the hold that starts when today's budget runs out has no way out, and the budgets, the reset hour and this switch cannot be changed again until the day starts over. Switch it off any time before the budget runs out.",
                 "Standardmäßig aus. Eingeschaltet hat die Sperre, die beim Aufbrauchen des heutigen Budgets beginnt, keinen Ausweg, und die Budgets, die Rücksetzstunde und dieser Schalter lassen sich bis zum Tagesbeginn nicht mehr ändern. Vor dem Aufbrauchen des Budgets kann er jederzeit ausgeschaltet werden.");
         table.put("Offline videos limit",
@@ -915,13 +919,13 @@ public final class L10nTranslations {
                 "Profilbild gespeichert unter %1$s");
         table.put("Promotional music",
                 "Werbemusik");
+    }
+
+    private static void fillDe7(Map<String, String> table) {
         table.put("Publication age",
                 "Beitragsalter");
         table.put("Put a box above the comments that narrows them to the ones matching what you type, by what they say or who said it. Clearing the box brings the rest back.",
                 "Ein Feld über den Kommentaren, das auf die passenden eingrenzt, nach Inhalt oder nach der Person. Feld leeren bringt die übrigen zurück.");
-    }
-
-    private static void fillDe7(Map<String, String> table) {
         table.put("Quality, files, subtitles and hand-off",
                 "Qualität, Dateien, Untertitel und Weitergabe");
         table.put("Quality, speed and automatic advance",
@@ -1038,13 +1042,13 @@ public final class L10nTranslations {
                 "Einstellungen durchsuchen");
         table.put("Search share actions",
                 "Share-Aktionen durchsuchen");
+    }
+
+    private static void fillDe8(Map<String, String> table) {
         table.put("Search the comments",
                 "Kommentare durchsuchen");
         table.put("Search these comments",
                 "Diese Kommentare durchsuchen");
-    }
-
-    private static void fillDe8(Map<String, String> table) {
         table.put("Search translated titles and descriptions, then open the original setting.",
                 "Übersetzte Titel und Beschreibungen durchsuchen und dann die ursprüngliche Einstellung öffnen.");
         table.put("Search without personalisation, whatever your account is set to.",
@@ -1161,13 +1165,13 @@ public final class L10nTranslations {
                 "Immer noch hier. Es wartet nichts.");
         table.put("Still reading the record. Tap again in a moment.",
                 "Der Verlauf wird noch gelesen. Tippe gleich noch einmal.");
+    }
+
+    private static void fillDe9(Map<String, String> table) {
         table.put("Still saving the last one",
                 "Das letzte wird noch gespeichert");
         table.put("Stop ByteDance AppLog events, AppsFlyer attribution, explicit Firebase screen reports and crash reporting from being sent. TikTok's own diagnostics go quiet with them.",
                 "ByteDance-AppLog-Ereignisse, AppsFlyer-Attribution, explizite Firebase-Bildschirmberichte und Absturzmeldungen nicht mehr senden. TikToks eigene Diagnose verstummt damit ebenfalls.");
-    }
-
-    private static void fillDe9(Map<String, String> table) {
         table.put("Stop TikTok asking the screen to run at the frame rate of the video it is playing. On a 90 or 120 Hz phone that ask slows the whole app down to the video's rate, scrolling included.",
                 "Verhindert, dass TikTok den Bildschirm auf die Bildrate des laufenden Videos herunterregelt. Auf einem 90 oder 120 Hz Telefon bremst diese Anfrage die ganze App auf die Rate des Videos aus, das Scrollen eingeschlossen.");
         table.put("Stop TikTok reporting that you viewed a story or a profile, that you are typing. Online status is unchanged. It cannot undo what the server has already recorded.",
@@ -1284,13 +1288,13 @@ public final class L10nTranslations {
                 "Diese Qualität gibt es nicht als vollständige Datei, also speichert TikTok selbst");
         table.put("This story isn't available to save",
                 "Diese Story lässt sich nicht speichern");
+    }
+
+    private static void fillDe10(Map<String, String> table) {
         table.put("This video has no link to copy",
                 "Dieses Video hat keinen Link zum Kopieren");
         table.put("This video has no link to send, so TikTok's own save runs instead",
                 "Dieses Video hat keinen Link zum Senden, also speichert TikTok selbst");
-    }
-
-    private static void fillDe10(Map<String, String> table) {
         table.put("This video has no original sound to save",
                 "Dieses Video hat keinen Originalsound zum Speichern");
         table.put("This video has no sound of its own",
@@ -1407,13 +1411,13 @@ public final class L10nTranslations {
                 "Fensterbreite, ab der das Layout aktiv wird. Nach dem Ändern neu starten.");
         table.put("Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.",
                 "Den Ton des Videos daneben als .m4a speichern. Ab Android 10 wird Audio getrennt abgelegt, also landet die Datei unter Music im Ordner mit dem Namen deines Videoordners.");
+    }
+
+    private static void fillDe11(Map<String, String> table) {
         table.put("YOUR EXPERIENCE",
                 "DEIN ERLEBNIS");
         table.put("YTDLnis background mode",
                 "YTDLnis-Hintergrundmodus");
-    }
-
-    private static void fillDe11(Map<String, String> table) {
         table.put("YTDLnis download type",
                 "YTDLnis-Downloadtyp");
         table.put("Your operator's name, like T-Mobile.",
@@ -1457,7 +1461,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1360);
+        Map<String, String> table = new HashMap<>(1364);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1818,6 +1822,8 @@ public final class L10nTranslations {
                 "Bentangkan daftar aktivitas");
         table.put("Export diagnostic report",
                 "Ekspor laporan diagnostik");
+        table.put("Fade the feed out before the hold",
+                "Redupkan feed sebelum feed ditahan");
         table.put("Feature Gate Lab",
                 "Feature Gate Lab");
         table.put("Feed filter",
@@ -1838,11 +1844,11 @@ public final class L10nTranslations {
                 "Filter, terjemahan, dan opsi salin");
         table.put("Find a setting by title or description",
                 "Temukan setelan berdasarkan judul atau deskripsi");
-        table.put("Fit the video to the screen",
-                "Sesuaikan video dengan layar");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Fit the video to the screen",
+                "Sesuaikan video dengan layar");
         table.put("Folder picker is not available",
                 "Pemilih folder tidak tersedia");
         table.put("Folder picker is not available on this device",
@@ -1961,11 +1967,11 @@ public final class L10nTranslations {
                 "Sembunyikan pencarian");
         table.put("Hide search suggestions",
                 "Sembunyikan saran pencarian");
-        table.put("Hide sharing apps",
-                "Sembunyikan aplikasi berbagi");
     }
 
     private static void fillIn4(Map<String, String> table) {
+        table.put("Hide sharing apps",
+                "Sembunyikan aplikasi berbagi");
         table.put("Hide stories tray",
                 "Sembunyikan deret Story");
         table.put("Hide story",
@@ -2084,11 +2090,11 @@ public final class L10nTranslations {
                 "Sembunyikan video yang diunggah akun terverifikasi.");
         table.put("Hide videos that belong to a paid Series.",
                 "Sembunyikan video yang termasuk Series berbayar.");
-        table.put("Hide videos with a lot of views and few likes. Lower numbers are stricter, zero turns the rule off, and one video is kept back if a whole batch would go.",
-                "Sembunyikan video dengan banyak penayangan dan sedikit suka. Angka lebih kecil lebih ketat, nol mematikan aturannya, dan satu video disisakan kalau satu batch penuh akan hilang.");
     }
 
     private static void fillIn5(Map<String, String> table) {
+        table.put("Hide videos with a lot of views and few likes. Lower numbers are stricter, zero turns the rule off, and one video is kept back if a whole batch would go.",
+                "Sembunyikan video dengan banyak penayangan dan sedikit suka. Angka lebih kecil lebih ketat, nol mematikan aturannya, dan satu video disisakan kalau satu batch penuh akan hilang.");
         table.put("Hide videos you have already seen",
                 "Sembunyikan video yang sudah kamu tonton");
         table.put("Hide visual search prompt",
@@ -2207,11 +2213,11 @@ public final class L10nTranslations {
                 "Tidak ada kreator tersembunyi yang cocok dengan pencarian ini");
         table.put("No limit",
                 "Tanpa batas");
-        table.put("No matching countries",
-                "Tidak ada negara yang cocok");
     }
 
     private static void fillIn6(Map<String, String> table) {
+        table.put("No matching countries",
+                "Tidak ada negara yang cocok");
         table.put("No matching settings",
                 "Tidak ada setelan yang cocok");
         table.put("No preset selected",
@@ -2244,6 +2250,8 @@ public final class L10nTranslations {
                 "Tidak ada yang diputar untuk dilompati");
         table.put("Off",
                 "Mati");
+        table.put("Off by default. Switched on, the feed dims over the last three quarters of a minute of a time budget, most of it in the final half minute, so the hold is somewhere you arrive rather than somewhere you land. Needs a budget in minutes: a budget counted in videos has no time left to follow. Nothing fades if you have turned animations off.",
+                "Mati secara bawaan. Saat aktif, feed meredup selama tiga perempat menit terakhir dari anggaran waktu, sebagian besar pada setengah menit terakhir, sehingga feed yang ditahan bukan kejutan. Perlu anggaran dalam menit: anggaran yang dihitung per video tidak punya sisa waktu untuk diikuti. Tidak ada yang meredup jika animasi dimatikan.");
         table.put("Off by default. Switched on, the hold that starts when today's budget runs out has no way out, and the budgets, the reset hour and this switch cannot be changed again until the day starts over. Switch it off any time before the budget runs out.",
                 "Mati secara bawaan. Bila dinyalakan, penahanan yang dimulai saat anggaran hari ini habis tidak punya jalan keluar, dan anggaran, jam mulai hari serta sakelar ini tidak bisa diubah lagi sampai hari berganti. Matikan kapan saja sebelum anggaran habis.");
         table.put("Offline videos limit",
@@ -2328,13 +2336,13 @@ public final class L10nTranslations {
                 "Foto profil disimpan ke %1$s");
         table.put("Promotional music",
                 "Musik promosi");
+    }
+
+    private static void fillIn7(Map<String, String> table) {
         table.put("Publication age",
                 "Usia kiriman");
         table.put("Put a box above the comments that narrows them to the ones matching what you type, by what they say or who said it. Clearing the box brings the rest back.",
                 "Kotak di atas komentar yang mempersempit ke komentar yang cocok dengan ketikanmu, berdasarkan isinya atau siapa yang menulis. Mengosongkan kotaknya mengembalikan sisanya.");
-    }
-
-    private static void fillIn7(Map<String, String> table) {
         table.put("Quality, files, subtitles and hand-off",
                 "Kualitas, berkas, subtitel, dan penerusan");
         table.put("Quality, speed and automatic advance",
@@ -2451,13 +2459,13 @@ public final class L10nTranslations {
                 "Cari setelan");
         table.put("Search share actions",
                 "Cari tindakan berbagi");
+    }
+
+    private static void fillIn8(Map<String, String> table) {
         table.put("Search the comments",
                 "Cari di komentar");
         table.put("Search these comments",
                 "Cari di komentar ini");
-    }
-
-    private static void fillIn8(Map<String, String> table) {
         table.put("Search translated titles and descriptions, then open the original setting.",
                 "Cari judul dan deskripsi terjemahan, lalu buka setelan asli.");
         table.put("Search without personalisation, whatever your account is set to.",
@@ -2574,13 +2582,13 @@ public final class L10nTranslations {
                 "Masih di sini. Tidak ada yang menunggu.");
         table.put("Still reading the record. Tap again in a moment.",
                 "Catatannya masih dibaca. Ketuk lagi sebentar lagi.");
+    }
+
+    private static void fillIn9(Map<String, String> table) {
         table.put("Still saving the last one",
                 "Yang sebelumnya masih disimpan");
         table.put("Stop ByteDance AppLog events, AppsFlyer attribution, explicit Firebase screen reports and crash reporting from being sent. TikTok's own diagnostics go quiet with them.",
                 "Hentikan pengiriman peristiwa AppLog ByteDance, atribusi AppsFlyer, laporan layar Firebase, dan laporan mogok. Diagnostik milik TikTok ikut diam bersamanya.");
-    }
-
-    private static void fillIn9(Map<String, String> table) {
         table.put("Stop TikTok asking the screen to run at the frame rate of the video it is playing. On a 90 or 120 Hz phone that ask slows the whole app down to the video's rate, scrolling included.",
                 "Hentikan TikTok meminta layar berjalan pada laju bingkai video yang sedang diputar. Di ponsel 90 atau 120 Hz, permintaan itu memperlambat seluruh aplikasi sampai ke laju videonya, termasuk saat menggulir.");
         table.put("Stop TikTok reporting that you viewed a story or a profile, that you are typing. Online status is unchanged. It cannot undo what the server has already recorded.",
@@ -2697,13 +2705,13 @@ public final class L10nTranslations {
                 "Kualitas ini tidak tersedia sebagai berkas utuh, jadi TikTok yang menyimpannya");
         table.put("This story isn't available to save",
                 "Story ini tidak bisa disimpan");
+    }
+
+    private static void fillIn10(Map<String, String> table) {
         table.put("This video has no link to copy",
                 "Video ini tidak punya tautan untuk disalin");
         table.put("This video has no link to send, so TikTok's own save runs instead",
                 "Video ini tidak punya tautan untuk dikirim, jadi TikTok yang menyimpannya");
-    }
-
-    private static void fillIn10(Map<String, String> table) {
         table.put("This video has no original sound to save",
                 "Video ini tidak punya suara asli untuk disimpan");
         table.put("This video has no sound of its own",
@@ -2820,13 +2828,13 @@ public final class L10nTranslations {
                 "Lebar jendela yang dibutuhkan agar tata letak ini aktif. Mulai ulang setelah mengubahnya.");
         table.put("Write the video's sound beside it as an .m4a. Android 10 and later file audio separately, so it lands in Music under the same folder name as your videos.",
                 "Simpan suara video di sebelahnya sebagai .m4a. Android 10 ke atas menyimpan audio secara terpisah, jadi berkasnya masuk ke Music dengan nama folder yang sama seperti folder videomu.");
+    }
+
+    private static void fillIn11(Map<String, String> table) {
         table.put("YOUR EXPERIENCE",
                 "PENGALAMANMU");
         table.put("YTDLnis background mode",
                 "Mode latar belakang YTDLnis");
-    }
-
-    private static void fillIn11(Map<String, String> table) {
         table.put("YTDLnis download type",
                 "Jenis unduhan YTDLnis");
         table.put("Your operator's name, like T-Mobile.",

@@ -168,6 +168,7 @@ Enter up to 8 comma-separated speeds from 0.5 to 3,Enter up to 8 comma-separated
 Every hook found what it needed across %1$d surfaces.,Every hook found what it needed across %1$d surfaces.
 Expand activity list,Expand activity list
 Export diagnostic report,Export diagnostic report
+Fade the feed out before the hold,Fade the feed out before the hold
 Feature Gate Lab,Feature Gate Lab
 Feed filter,Feed filter
 Feed navigation,Feed navigation
@@ -375,6 +376,7 @@ Not interested in this video,Not interested in this video
 "Nothing has been looked up yet. Use the app for a moment, then come back.","Nothing has been looked up yet. Use the app for a moment, then come back."
 Nothing is playing to seek,Nothing is playing to seek
 Off,Off
+"Off by default. Switched on, the feed dims over the last three quarters of a minute of a time budget, most of it in the final half minute, so the hold is somewhere you arrive rather than somewhere you land. Needs a budget in minutes: a budget counted in videos has no time left to follow. Nothing fades if you have turned animations off.","Off by default. Switched on, the feed dims over the last three quarters of a minute of a time budget, most of it in the final half minute, so the hold is somewhere you arrive rather than somewhere you land. Needs a budget in minutes: a budget counted in videos has no time left to follow. Nothing fades if you have turned animations off."
 "Off by default. Switched on, the hold that starts when today's budget runs out has no way out, and the budgets, the reset hour and this switch cannot be changed again until the day starts over. Switch it off any time before the budget runs out.","Off by default. Switched on, the hold that starts when today's budget runs out has no way out, and the budgets, the reset hour and this switch cannot be changed again until the day starts over. Switch it off any time before the budget runs out."
 Offline videos limit,Offline videos limit
 On mobile data,On mobile data

@@ -104,6 +104,10 @@ public final class CurrentVideoAuthor {
         // so it is the only thing that can measure how long the feed has been running.
         SessionBudget.noteWatching();
         SessionLockOverlay.ensureRunning();
+        // Follows the budget rather than a clock of its own, so it is redrawn from the same
+        // signal that measures the budget. Switched off, which is the default, it returns on
+        // the setting before it looks at anything.
+        app.morphe.extension.tiktok.wellbeing.HoldRamp.sync();
 
         if (awemeId.equals(playingAwemeId)) {
             return;

@@ -613,6 +613,8 @@ Every hook found what it needed across %1$d surfaces.,Setiap hook menemukan yang
 Daily video budget,Anggaran video harian
 Daily time budget,Anggaran waktu harian
 Hold the feed after the budget,Tahan feed setelah anggaran habis
+Fade the feed out before the hold,Redupkan feed sebelum feed ditahan
+"Off by default. Switched on, the feed dims over the last three quarters of a minute of a time budget, most of it in the final half minute, so the hold is somewhere you arrive rather than somewhere you land. Needs a budget in minutes: a budget counted in videos has no time left to follow. Nothing fades if you have turned animations off.","Mati secara bawaan. Saat aktif, feed meredup selama tiga perempat menit terakhir dari anggaran waktu, sebagian besar pada setengah menit terakhir, sehingga feed yang ditahan bukan kejutan. Perlu anggaran dalam menit: anggaran yang dihitung per video tidak punya sisa waktu untuk diikuti. Tidak ada yang meredup jika animasi dimatikan."
 Start the day at,Hari dimulai pukul
 That is %1$d videos today,Itu %1$d video hari ini
 The feed is open again,Feed terbuka lagi
