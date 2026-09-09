@@ -37,7 +37,7 @@ val inboxFilterPatch = bytecodePatch(
     name = "Hide inbox items",
     description = "Adds a switch for each row and header control on the Inbox tab, so " +
         "message requests, TikTok Tako, TikTok Shop, the stories tray and the rest can be " +
-        "hidden individually. Supports TikTok 46.2.3.",
+        "hidden individually.",
     default = false,
 ) {
     dependsOn(settingsPatch, sharedExtensionPatch)

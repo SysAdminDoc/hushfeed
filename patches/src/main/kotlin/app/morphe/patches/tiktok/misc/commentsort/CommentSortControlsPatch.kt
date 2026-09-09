@@ -27,7 +27,7 @@ val commentSortControlsPatch = bytecodePatch(
     name = "Comment sort controls",
     description = "Shows TikTok's own comment sort sheet on every post, with its hot, newest, " +
         "media and creator options, instead of the cut-down row an account outside the rollout " +
-        "is given. Supports TikTok 46.2.3.",
+        "is given.",
     // Off by default, unlike upstream. It changes a surface every comment sheet shows and
     // nobody here has watched it on a device yet.
     default = false,

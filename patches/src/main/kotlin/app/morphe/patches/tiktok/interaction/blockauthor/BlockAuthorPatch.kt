@@ -24,7 +24,7 @@ private const val VIDEO_ITEM_PARAMS_DESCRIPTOR =
 val blockAuthorPatch = bytecodePatch(
     name = "Block author button",
     description = "Adds a block button to the video player that blocks the account that posted the " +
-        "current video in one tap, with an undo action. Supports TikTok 46.2.3.",
+        "current video in one tap, with an undo action.",
     default = false,
 ) {
     dependsOn(settingsPatch, sharedExtensionPatch)

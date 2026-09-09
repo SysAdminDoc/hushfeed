@@ -22,8 +22,7 @@ val hideVideoOverlaysPatch = bytecodePatch(
     name = "Hide video overlays",
     description = "Hides the visual search prompt TikTok lays over videos, the Live " +
         "entrance in the top left corner, the caption, the music line, the action column on " +
-        "the right, the survey cards and the status bar, each with its own switch. Supports " +
-        "TikTok 46.2.3.",
+        "the right, the survey cards and the status bar, each with its own switch.",
     default = false,
 ) {
     dependsOn(settingsPatch, sharedExtensionPatch)

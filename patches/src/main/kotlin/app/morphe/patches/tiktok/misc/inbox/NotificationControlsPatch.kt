@@ -64,7 +64,7 @@ val notificationControlsPatch = bytecodePatch(
     description = "Adds a switch for the notification saying somebody new followed you, and " +
         "one for message streaks, neither of which TikTok lets you turn off. The follower " +
         "switch drops the notification before Android is asked to post it, so nothing else " +
-        "in the drawer is affected. Supports TikTok 46.2.3.",
+        "in the drawer is affected.",
     default = false,
 ) {
     dependsOn(settingsPatch, sharedExtensionPatch)

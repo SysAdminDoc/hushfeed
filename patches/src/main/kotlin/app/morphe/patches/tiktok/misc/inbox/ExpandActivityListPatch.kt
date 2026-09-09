@@ -37,7 +37,7 @@ private const val ATOMIC_BOOLEAN_DESCRIPTOR = "Ljava/util/concurrent/atomic/Atom
 val expandActivityListPatch = bytecodePatch(
     name = "Expand activity list",
     description = "Adds an option to show the full Activity and New followers lists instead " +
-        "of collapsing them behind a View all button. Supports TikTok 46.2.3.",
+        "of collapsing them behind a View all button.",
     default = false,
 ) {
     dependsOn(settingsPatch, sharedExtensionPatch)

@@ -45,7 +45,7 @@ val feedFilterPatch = bytecodePatch(
         "filtered by your own caption words, creator handles or patterns, sound names, length, " +
         "the country they were posted from and their view, like, comment, favourite and share " +
         "counts. Sponsored cards are dropped from the profile video viewer, the search grids " +
-        "and the Friends tab as well as the feed. Supports TikTok 46.2.3.",
+        "and the Friends tab as well as the feed.",
     default = true,
 ) {
     dependsOn(settingsPatch, 

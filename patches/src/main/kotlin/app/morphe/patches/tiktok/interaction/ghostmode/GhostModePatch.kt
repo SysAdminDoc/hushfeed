@@ -91,7 +91,7 @@ private fun MutableMethod.guardWith(extensionMethodName: String): Boolean {
 val ghostModePatch = bytecodePatch(
     name = "Ghost mode",
     description = "Adds an option to stop TikTok reporting that you viewed a story or a " +
-        "profile or that you are typing. Online status is unchanged. Supports TikTok 46.2.3.",
+        "profile or that you are typing. Online status is unchanged.",
     default = false,
 ) {
     dependsOn(settingsPatch, sharedExtensionPatch)

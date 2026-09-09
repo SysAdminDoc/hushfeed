@@ -80,7 +80,7 @@ val hideSearchSuggestionsPatch = bytecodePatch(
     name = "Hide search suggestions",
     description = "Hides the suggested searches TikTok offers on the search page before you " +
         "type, and stops the page asking for them. Your own search history is left alone. " +
-        "Supports TikTok 46.2.3.",
+        "",
     default = false,
 ) {
     dependsOn(settingsPatch, sharedExtensionPatch)

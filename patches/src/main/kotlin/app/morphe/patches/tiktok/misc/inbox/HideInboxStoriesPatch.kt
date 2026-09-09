@@ -22,7 +22,7 @@ private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/inb
 val hideInboxStoriesPatch = bytecodePatch(
     name = "Hide inbox stories",
     description = "Stops the stories tray at the top of the Inbox from being built. Shares " +
-        "its switch with Hide inbox items. Supports TikTok 46.2.3.",
+        "its switch with Hide inbox items.",
     default = false,
 ) {
     dependsOn(settingsPatch, sharedExtensionPatch)

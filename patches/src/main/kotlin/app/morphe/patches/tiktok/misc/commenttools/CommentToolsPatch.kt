@@ -41,7 +41,7 @@ val commentToolsPatch = bytecodePatch(
     description = "Hides comments that contain chosen words or come from chosen accounts, turns " +
         "the thumbs down on each comment into a block button, hides comments made of an image " +
         "or a sticker rather than words, and adds a box above the comments that narrows them " +
-        "by what they say or who said it. Supports TikTok 46.2.3.",
+        "by what they say or who said it.",
     default = false,
 ) {
     dependsOn(settingsPatch, sharedExtensionPatch)

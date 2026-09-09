@@ -65,7 +65,7 @@ val disableTelemetryPatch = bytecodePatch(
     name = "Disable telemetry",
     description = "Adds an App behavior toggle that stops ByteDance AppLog analytics, AppsFlyer " +
         "attribution, explicit Firebase screen reports and crash reporting. TikTok's own " +
-        "diagnostics go quiet with them. Off by default. Supports TikTok 46.2.3.",
+        "diagnostics go quiet with them. Off by default.",
     default = false,
 ) {
     dependsOn(

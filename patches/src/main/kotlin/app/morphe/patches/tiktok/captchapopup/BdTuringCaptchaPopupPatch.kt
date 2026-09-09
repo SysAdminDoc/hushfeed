@@ -36,7 +36,7 @@ val bdTuringCaptchaPopupPatch = bytecodePatch(
     description = "Hides TikTok's risk control CAPTCHA dialog, which the browsing CAPTCHA " +
         "patch does not cover. Answers the Hide CAPTCHA popups setting, never touches SMS or " +
         "two factor verification, and never hides a check the server raised over a follow, " +
-        "like, comment or repost. Off by default. Supports TikTok 46.2.3.",
+        "like, comment or repost. Off by default.",
     default = false,
 ) {
     // The recorder is what lets the gate tell a browsing puzzle from one raised over a write.

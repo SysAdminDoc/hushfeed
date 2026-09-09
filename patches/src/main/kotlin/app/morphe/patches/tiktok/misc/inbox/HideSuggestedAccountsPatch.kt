@@ -27,7 +27,7 @@ val hideSuggestedAccountsPatch = bytecodePatch(
     name = "Hide suggested accounts",
     description = "Stops the suggested accounts list from being built on the Activity, New " +
         "followers and Inbox pages. Shares its switch with Hide inbox items. " +
-        "Supports TikTok 46.2.3.",
+        "",
     default = false,
 ) {
     dependsOn(settingsPatch, sharedExtensionPatch)

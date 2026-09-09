@@ -17,7 +17,7 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 val enableVoiceCommentsPatch = bytecodePatch(
     name = "Enable voice comments",
     description = "Turns on TikTok's own voice comment recording and publishing entry points for " +
-        "accounts that do not have them. Supports TikTok 46.2.3.",
+        "accounts that do not have them.",
     default = false,
 ) {
     compatibleWith(*AppCompatibilities.tiktok4623())

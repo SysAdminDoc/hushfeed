@@ -39,7 +39,7 @@ val hideSeenVideosPatch = bytecodePatch(
     name = "Hide already seen videos",
     description = "Keeps a local record of the videos you have watched and drops them from " +
         "later feed pages. The record never leaves the device and can be cleared from " +
-        "settings. Supports TikTok 46.2.3.",
+        "settings.",
     default = false,
 ) {
     dependsOn(settingsPatch, sharedExtensionPatch, feedFilterPatch)

@@ -39,7 +39,7 @@ val videoFitPatch = bytecodePatch(
     description = "Puts the whole of a vertical video on screen instead of cropping it to " +
         "the window. On a 9:16 phone nothing changes, because the video already fills it. " +
         "On a Fold opened up, a squarer phone or a split view the sides or the ends stop " +
-        "being cut off. Supports TikTok 46.2.3.",
+        "being cut off.",
     default = false,
 ) {
     dependsOn(settingsPatch, sharedExtensionPatch)

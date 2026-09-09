@@ -22,7 +22,7 @@ val shareSheetToolsPatch = bytecodePatch(
     name = "Share sheet tools",
     description = "Asks for a second tap before a video is sent to a friend from the share " +
         "sheet, and hides chosen people or share options, or the whole Send to row. " +
-        "Supports TikTok 46.2.3.",
+        "",
     default = false,
 ) {
     dependsOn(settingsPatch, sharedExtensionPatch)

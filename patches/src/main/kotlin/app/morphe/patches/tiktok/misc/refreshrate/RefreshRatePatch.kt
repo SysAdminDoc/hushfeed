@@ -49,7 +49,7 @@ val refreshRatePatch = bytecodePatch(
     description = "Stops TikTok asking the screen to run slower than it can, which it does " +
         "by asking for the frame rate of the video it is playing. On a 90 or 120 Hz phone " +
         "that ask takes the whole app down to that rate, scrolling included. A request that " +
-        "is not slower than the screen is left alone. Supports TikTok 46.2.3.",
+        "is not slower than the screen is left alone.",
     default = false,
 ) {
     dependsOn(settingsPatch, sharedExtensionPatch)

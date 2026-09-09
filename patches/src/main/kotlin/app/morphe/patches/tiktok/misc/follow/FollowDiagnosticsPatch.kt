@@ -39,7 +39,7 @@ val followDiagnosticsPatch = bytecodePatch(
     name = "Follow diagnostics",
     description = "Reads what the server said about a follow. A follow TikTok turns down comes " +
         "back looking like a success, so this reports the refusal and its reason once per session " +
-        "and, with diagnostic logging on, writes the whole exchange to the report. Supports TikTok 46.2.3.",
+        "and, with diagnostic logging on, writes the whole exchange to the report.",
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)

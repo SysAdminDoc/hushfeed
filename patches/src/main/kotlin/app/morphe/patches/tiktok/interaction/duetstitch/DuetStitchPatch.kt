@@ -48,7 +48,7 @@ val duetStitchPatch = bytecodePatch(
         "videos that closed them. Everything else the app checks still applies: a photo " +
         "post, a private video or one with music it may not reuse is still refused, and " +
         "whether the upload is accepted is the server's decision, not the app's. " +
-        "Supports TikTok 46.2.3.",
+        "",
     default = false,
 ) {
     dependsOn(settingsPatch, sharedExtensionPatch)

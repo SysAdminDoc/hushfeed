@@ -26,7 +26,7 @@ private const val EXTENSION_CLASS_DESCRIPTOR =
 val showAuthorRegionPatch = bytecodePatch(
     name = "Show author region",
     description = "Adds an option to show the country a video was posted from next to the " +
-        "creator's name on the feed. Supports TikTok 46.2.3.",
+        "creator's name on the feed.",
     default = false,
 ) {
     dependsOn(settingsPatch, sharedExtensionPatch, blockAuthorPatch)

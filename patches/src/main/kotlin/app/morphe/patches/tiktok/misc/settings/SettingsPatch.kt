@@ -46,7 +46,7 @@ private data class OpenDebugTargets(
 @Suppress("unused")
 val settingsPatch = bytecodePatch(
     name = "Settings",
-    description = "Adds the Hushfeed settings screen to TikTok. Supports TikTok 46.2.3.",
+    description = "Adds the Hushfeed settings screen to TikTok.",
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
