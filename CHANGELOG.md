@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Turning Inbox hide and expansion options off now preserves TikTok's own decisions. Suggested accounts and stories aren't forced into otherwise unavailable layouts, and a list TikTok already expanded stays expanded.
+
 * Repeated taps on Inbox's Clear all control keep one paced run. Failed dismissals and a closing screen release the control so it can be used again.
 
 * Enabling or saving a Feature Gate Lab override keeps populated arrays intact, including arrays loaded from TikTok. An empty default no longer replaces the edited value.

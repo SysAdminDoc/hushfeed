@@ -11,6 +11,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
@@ -31,7 +32,7 @@ private const val ATOMIC_BOOLEAN_DESCRIPTOR = "Ljava/util/concurrent/atomic/Atom
  * Both containers keep a "collapsed" flag that decides whether the list stops at a few
  * rows behind a View all button. The flag's field is found through the method that logs
  * `expandNotification()` rather than by name, then every write of it is fed from the
- * setting instead.
+ * setting while preserving the native flag when expansion is off.
  */
 @Suppress("unused")
 val expandActivityListPatch = bytecodePatch(
@@ -66,13 +67,7 @@ val expandActivityListPatch = bytecodePatch(
                     opcode == Opcode.IPUT_BOOLEAN && getReference<FieldReference>() == collapsedField
                 }
 
-                addInstructions(
-                    index,
-                    """
-                        invoke-static {}, $EXTENSION_CLASS_DESCRIPTOR->shouldCollapseActivityList()Z
-                        move-result v${getInstruction<TwoRegisterInstruction>(index).registerA}
-                    """,
-                )
+                overrideCollapsedFlag(index, getInstruction<TwoRegisterInstruction>(index).registerA)
             }
         }
 
@@ -87,13 +82,17 @@ val expandActivityListPatch = bytecodePatch(
                     } == true
             }
 
-            addInstructions(
-                index,
-                """
-                    invoke-static {}, $EXTENSION_CLASS_DESCRIPTOR->shouldCollapseActivityList()Z
-                    move-result v${getInstruction<FiveRegisterInstruction>(index).registerD}
-                """,
-            )
+            overrideCollapsedFlag(index, getInstruction<FiveRegisterInstruction>(index).registerD)
         }
     }
+}
+
+internal fun MutableMethod.overrideCollapsedFlag(index: Int, flagRegister: Int) {
+    addInstructions(
+        index,
+        """
+            invoke-static/range { v$flagRegister .. v$flagRegister }, $EXTENSION_CLASS_DESCRIPTOR->shouldCollapseActivityList(Z)Z
+            move-result v$flagRegister
+        """,
+    )
 }

@@ -8,12 +8,16 @@
 package app.morphe.patches.tiktok.misc.inbox
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.util.getFreeRegisterProvider
 
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/inbox/InboxControls;"
 
@@ -47,14 +51,22 @@ val hideSuggestedAccountsPatch = bytecodePatch(
             NewFollowersRecommendUserSkeletonEnableFingerprint,
             InboxRecommendUserWidgetEnableFingerprint,
         ).forEach { fingerprint ->
-            fingerprint.method.addInstructions(
-                0,
-                """
-                    invoke-static {}, $EXTENSION_CLASS_DESCRIPTOR->shouldShowSuggestedAccounts()Z
-                    move-result v0
-                    return v0
-                """,
-            )
+            fingerprint.method.hideInboxWidget("shouldShowSuggestedAccounts")
         }
     }
+}
+
+/** A disabled hide switch must leave the native rollout and app-availability checks intact. */
+internal fun MutableMethod.hideInboxWidget(extensionMethod: String) {
+    val answerRegister = getFreeRegisterProvider(0, 1).getFreeRegister4Bit()
+    addInstructionsWithLabels(
+        0,
+        """
+            invoke-static {}, $EXTENSION_CLASS_DESCRIPTOR->$extensionMethod()Z
+            move-result v$answerRegister
+            if-nez v$answerRegister, :native_widget_gate
+            return v$answerRegister
+        """,
+        ExternalLabel("native_widget_gate", getInstruction(0)),
+    )
 }

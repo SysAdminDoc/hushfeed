@@ -26,7 +26,7 @@ public final class InboxControls {
         return !Settings.HIDE_INBOX_STORIES.get();
     }
 
-    public static boolean shouldCollapseActivityList() {
-        return !Settings.EXPAND_ACTIVITY_LIST.get();
+    public static boolean shouldCollapseActivityList(boolean original) {
+        return original && !Settings.EXPAND_ACTIVITY_LIST.get();
     }
 }

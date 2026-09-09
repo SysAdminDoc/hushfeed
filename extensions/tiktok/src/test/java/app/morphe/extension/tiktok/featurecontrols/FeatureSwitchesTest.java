@@ -70,15 +70,17 @@ public class FeatureSwitchesTest {
         Settings.EXPAND_ACTIVITY_LIST.save(false);
         assertTrue(InboxControls.shouldShowSuggestedAccounts());
         assertTrue(InboxControls.shouldShowInboxStories());
-        // Expanding is off, so the list keeps its View all button.
-        assertTrue(InboxControls.shouldCollapseActivityList());
+        // With the switch off, native expanded and collapsed lists retain their state.
+        assertFalse(InboxControls.shouldCollapseActivityList(false));
+        assertTrue(InboxControls.shouldCollapseActivityList(true));
 
         Settings.HIDE_INBOX_SUGGESTED_ACCOUNTS.save(true);
         Settings.HIDE_INBOX_STORIES.save(true);
         Settings.EXPAND_ACTIVITY_LIST.save(true);
         assertFalse(InboxControls.shouldShowSuggestedAccounts());
         assertFalse(InboxControls.shouldShowInboxStories());
-        assertFalse(InboxControls.shouldCollapseActivityList());
+        assertFalse(InboxControls.shouldCollapseActivityList(false));
+        assertFalse(InboxControls.shouldCollapseActivityList(true));
     }
 
     /** Only the coin pendant shapes are dropped, and only while the switch is on. */
