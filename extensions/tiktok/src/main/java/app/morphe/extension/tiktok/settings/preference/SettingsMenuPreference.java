@@ -219,6 +219,12 @@ public final class SettingsMenuPreference extends Preference {
         private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         public ChevronDrawable(Context context) {
+            // A view resolves its own direction when it is attached, and passes that on to
+            // a compound drawable. A spinner row comes back from an adapter unattached, so
+            // the chevron went out pointing away from the text an Arabic reader was
+            // reading. Starting from the configuration costs nothing where a view does
+            // resolve, because resolving sets it again.
+            setLayoutDirection(context.getResources().getConfiguration().getLayoutDirection());
             paint.setColor(SettingsUi.textSecondary());
             paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeWidth(SettingsUi.strokePx(context, 1.8f));

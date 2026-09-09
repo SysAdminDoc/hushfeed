@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import app.morphe.extension.shared.Utils;
@@ -257,6 +258,44 @@ public class FeatureGatePagesTest {
 
             assertEquals("the editors from the earlier views are still in the list",
                     editors, detail.objectEditorCountForTests());
+        }
+    }
+
+    /**
+     * The chevron on the value spinner is a compound drawable, and a compound drawable is only
+     * turned round when the view it hangs off resolves its own layout direction. An adapter
+     * hands its row back before anything attaches it, so on an Arabic or Hebrew phone the
+     * arrow sat at the reading end of the row still pointing the other way.
+     */
+    @Test @Config(sdk = 23, qualifiers = "ar-rEG-ldrtl-w480dp-h960dp-night-mdpi")
+    public void theValueSpinnersChevronTurnsRoundForARightToLeftReader() throws Exception {
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            assertEquals("the fixture is not a right to left screen, so this proves nothing",
+                    View.LAYOUT_DIRECTION_RTL,
+                    activity.getResources().getConfiguration().getLayoutDirection());
+            FeatureGateLabStore.resetAllLabData();
+            FeatureGateLabSession.begin();
+            FeatureGateLabStore.setMasterEnabled(true);
+            var entry = new FeatureGateCatalog.Entry("rtl_gate", "Rtl gate", "abmock", "INT",
+                    true, true, List.of(), List.of(), List.of(), "", "", false, null, null);
+            var cached = FeatureGateCatalog.class.getDeclaredField("cachedSnapshot");
+            cached.setAccessible(true);
+            cached.set(null, new FeatureGateCatalog.Snapshot(
+                    List.of(entry), Map.of(entry.identity(), entry), 0, 0, true));
+
+            attach(activity, FeatureGateDetailFragment.forEntry("abmock", "rtl_gate", "INT"));
+            Spinner values = find(
+                    activity.getFragmentManager().findFragmentById(android.R.id.content).getView(),
+                    Spinner.class);
+            assertNotNull("the detail screen has no value spinner, so this proves nothing", values);
+            View row = values.getAdapter().getView(0, null, values);
+            android.graphics.drawable.Drawable chevron =
+                    ((TextView) row).getCompoundDrawablesRelative()[2];
+            assertNotNull("the spinner row carries no chevron, so this proves nothing", chevron);
+            assertEquals("the chevron points the way a left to right reader reads",
+                    View.LAYOUT_DIRECTION_RTL, chevron.getLayoutDirection());
         }
     }
 

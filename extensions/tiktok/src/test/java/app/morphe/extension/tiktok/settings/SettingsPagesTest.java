@@ -436,9 +436,14 @@ public class SettingsPagesTest {
                     1.8f * density, strokeOf(chevron), 0.01f);
             assertTrue("the chevron is under 2dp wide", strokeOf(chevron) >= 2f);
 
-            // And the glyph itself turns round, rather than only its container.
-            assertEquals("the arrow points the same way in both directions",
-                    View.LAYOUT_DIRECTION_RTL, mirroredArrowDirection(back, activity));
+            // And the glyph itself turns round, rather than only its container. Declaring
+            // isAutoMirrored is a promise; this is the drawing that keeps it. Drawn both ways
+            // and compared against its own mirror image, which is what turning round means and
+            // needs no opinion about which end is the point.
+            assertTrue("the back arrow draws the same picture in both directions",
+                    isHorizontalMirror(back));
+            assertTrue("the chevron draws the same picture in both directions",
+                    isHorizontalMirror(chevron));
         }
     }
 
@@ -450,14 +455,46 @@ public class SettingsPagesTest {
     }
 
     /**
-     * Draws the arrow both ways round and answers which direction put its point on the right,
-     * which is where a mirrored back arrow points.
+     * Whether the glyph drawn in a mirrored layout is the mirror image of the one drawn plainly.
+     *
+     * <p>That is what turning round means, and it holds whichever end is the point, so the test
+     * does not have to have an opinion about the shape. Fails if either the negation in draw()
+     * or the mirroring itself is taken out.
      */
-    private static int mirroredArrowDirection(
-            android.graphics.drawable.Drawable arrow, Activity activity) {
-        arrow.setBounds(0, 0, 48, 48);
-        arrow.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
-        return arrow.getLayoutDirection();
+    private static boolean isHorizontalMirror(android.graphics.drawable.Drawable glyph) {
+        int size = 48;
+        int[] ltr = render(glyph, View.LAYOUT_DIRECTION_LTR, size);
+        int[] rtl = render(glyph, View.LAYOUT_DIRECTION_RTL, size);
+        for (int y = 0; y < size; y++) {
+            for (int x = 0; x < size; x++) {
+                int drawn = android.graphics.Color.alpha(ltr[y * size + x]);
+                int mirrored = android.graphics.Color.alpha(rtl[y * size + (size - 1 - x)]);
+                // Anti-aliasing along the diagonal costs a few levels. Measured on
+                // this fixture: 2302 of the 2304 pixels match exactly and the worst
+                // pair is 16 apart, so 24 is antialiasing and anything above it is
+                // a different picture.
+                if (Math.abs(drawn - mirrored) > 24) return false;
+            }
+        }
+        // And the two are not simply the same picture, which they would be for a glyph that
+        // never turned round and happens to be symmetric.
+        for (int index = 0; index < ltr.length; index++) {
+            if (ltr[index] != rtl[index]) return true;
+        }
+        return false;
+    }
+
+    private static int[] render(
+            android.graphics.drawable.Drawable glyph, int direction, int size) {
+        glyph.setBounds(0, 0, size, size);
+        glyph.setLayoutDirection(direction);
+        var bitmap = android.graphics.Bitmap.createBitmap(
+                size, size, android.graphics.Bitmap.Config.ARGB_8888);
+        glyph.draw(new android.graphics.Canvas(bitmap));
+        int[] pixels = new int[size * size];
+        bitmap.getPixels(pixels, 0, size, 0, 0, size, size);
+        bitmap.recycle();
+        return pixels;
     }
 
     @Test public void aLongPageTitleLeavesRoomForThePageAtAnyTextScale() throws Exception {
@@ -852,7 +889,13 @@ public class SettingsPagesTest {
             layout(page.getView(), 320, 800);
             Shadows.shadowOf(Looper.getMainLooper()).idle();
             forceRtl(page.getView());
-            assertEquals(View.LAYOUT_DIRECTION_RTL, configuration.getLayoutDirection());
+            // setLayoutDirection throws away the resolved direction and asks for another
+            // layout. Turning the tree round and then capturing it gave every view the left
+            // to right default back, and a view hands that on to its drawables, so the arrow
+            // in the picture pointed the way it came.
+            layout(page.getView(), 320, 800);
+assertEquals(View.LAYOUT_DIRECTION_RTL, configuration.getLayoutDirection());
+            assertBackArrowPointsTheWayTheReaderReads(page.getView());
             assertRowsReadable(page.getView().findViewById(android.R.id.list), 48);
             TextView heading = page.getView().findViewWithTag("metra_page_title");
             assertNotNull(heading);
@@ -894,8 +937,13 @@ public class SettingsPagesTest {
             layout(page.getView(), 320, 800);
             Shadows.shadowOf(Looper.getMainLooper()).idle();
             forceRtl(page.getView());
-
-            assertEquals(View.LAYOUT_DIRECTION_RTL, configuration.getLayoutDirection());
+            // setLayoutDirection throws away the resolved direction and asks for another
+            // layout. Turning the tree round and then capturing it gave every view the left
+            // to right default back, and a view hands that on to its drawables, so the arrow
+            // in the picture pointed the way it came.
+            layout(page.getView(), 320, 800);
+assertEquals(View.LAYOUT_DIRECTION_RTL, configuration.getLayoutDirection());
+            assertBackArrowPointsTheWayTheReaderReads(page.getView());
             TextView heading = page.getView().findViewWithTag("metra_page_title");
             assertNotNull(heading);
             assertTextFits(heading);
@@ -1029,6 +1077,27 @@ public class SettingsPagesTest {
             android.view.ViewGroup group = (android.view.ViewGroup) view;
             for (int i = 0; i < group.getChildCount(); i++) collectEditors(group.getChildAt(i), editors);
         }
+    }
+
+    /**
+     * The back arrow in the picture about to be captured turns round with the layout.
+     *
+     * <p>Turning the views round is not enough on its own. The glyph is a drawable, and a
+     * drawable takes its direction from the view it hangs off only once that view resolves,
+     * which is a thing a fixture assembled by hand does not always do. Without this the
+     * mirroring item's acceptance clause, which is about the captured picture, rested on
+     * nothing.
+     */
+    private static void assertBackArrowPointsTheWayTheReaderReads(View root) {
+        View toolbar = root.findViewWithTag("metra_toolbar");
+        assertNotNull("the page has no toolbar, so this proves nothing", toolbar);
+        View back = ((android.view.ViewGroup) toolbar).getChildAt(0);
+        assertTrue("the first thing in the toolbar is not the back button",
+                back instanceof android.widget.ImageView);
+        Drawable arrow = ((android.widget.ImageView) back).getDrawable();
+        assertNotNull("the back button carries no glyph", arrow);
+        assertEquals("the arrow in the captured picture still points the other way",
+                View.LAYOUT_DIRECTION_RTL, arrow.getLayoutDirection());
     }
 
     private static void forceRtl(View view) {
