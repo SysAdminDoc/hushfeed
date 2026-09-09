@@ -7,6 +7,8 @@
 package app.morphe.extension.tiktok.spoof.sim;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
@@ -78,6 +80,16 @@ public class SpoofSimPatchTest {
     @Test public void aCountryThatIsOneIsUsed() {
         Settings.SIM_SPOOF_ISO.save("jp");
         assertEquals("jp", SpoofSimPatch.getCountryIso(REAL_ISO));
+    }
+
+    @Test public void theSimChangeReportIsSkippedOnlyWhileThePresetIsOn() {
+        // The report names the carrier before and after, so the first one after the preset goes
+        // on says the carrier changed to the preset. It carries the phone's SIM count too, which
+        // comes from SubscriptionManager and so is the one value in it the spoof cannot reach.
+        assertTrue(SpoofSimPatch.shouldSkipSimChangeReport());
+
+        Settings.SIM_SPOOF.save(false);
+        assertFalse(SpoofSimPatch.shouldSkipSimChangeReport());
     }
 
     @Test public void nothingIsSpoofedWhileTheSwitchIsOff() {

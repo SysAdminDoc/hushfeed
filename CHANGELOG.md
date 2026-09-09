@@ -1,5 +1,7 @@
 ## Unreleased
 
+* With a SIM preset on, TikTok no longer reports that your SIM changed. Its startup check sends one event naming the carrier and country before and after, how many SIMs the phone has and how long since it last looked, so the first one after you pick a preset announces the preset itself. The SIM count in that event came from a part of Android the preset never covered. With a preset on, the check is skipped; nothing else in the app reads what it stored.
+
 * "Resume videos after scrolling" works on the Following and Friends tabs. TikTok kept a position for every feed it played, then handed one back only for a short list of places it built into the app, and the Following tab is not on that list. The switch looked broken there while the position was being stored all along. With the switch on, any feed that has a stored position now uses it.
 
 * Every number row says what it accepts, and says so when it moves what you typed. Twelve of the fourteen stated their range nowhere: type 5000 into "Daily time budget" and it came back "Current: 600" with no explanation. Each row now carries its range under its own wording, and a number outside it is reported rather than quietly pulled in. The seven rows whose text says zero turns them off read "Current: Off" at zero instead of "Current: 0 videos", which was a limit of none rather than no limit.
