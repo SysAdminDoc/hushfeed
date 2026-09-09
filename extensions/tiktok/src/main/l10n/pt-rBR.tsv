@@ -780,3 +780,26 @@ Disable	Desligar
 Enable	Ligar
 More options	Mais opções
 Reset to loaded	Voltar às carregadas
+Refresh values	Atualizar os valores
+Export loaded values	Exportar os valores carregados
+Import loaded values	Importar os valores carregados
+Reset all overrides	Redefinir todas as substituições
+Reset all Lab data	Redefinir todos os dados do Lab
+Undo last Lab change	Desfazer a última mudança do Lab
+All	Todos
+Boolean	Booleano
+Enabled	Ligados
+Disabled	Desligados
+Unloaded	Não carregados
+Reset 1 gate. Restart TikTok to apply this.	1 gate redefinido. Reinicie o TikTok para aplicar.
+Reset %1$d gates. Restart TikTok to apply this.	%1$d gates redefinidos. Reinicie o TikTok para aplicar.
+Reset 1 gate of %1$d. Restart TikTok to apply this.	1 de %1$d gates redefinido. Reinicie o TikTok para aplicar.
+Reset %1$d gates of %2$d. Restart TikTok to apply this.	%1$d de %2$d gates redefinidos. Reinicie o TikTok para aplicar.
+Forced 1 gate. Restart TikTok to apply this.	1 gate forçado. Reinicie o TikTok para aplicar.
+Forced %1$d gates. Restart TikTok to apply this.	%1$d gates forçados. Reinicie o TikTok para aplicar.
+Forced 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.	1 de %1$d gates forçado; os demais não aceitam um valor true ou false. Reinicie o TikTok para aplicar.
+Forced %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.	%1$d de %2$d gates forçados; os demais não aceitam um valor true ou false. Reinicie o TikTok para aplicar.
+Turned off 1 gate. Restart TikTok to apply this.	1 gate desligado. Reinicie o TikTok para aplicar.
+Turned off %1$d gates. Restart TikTok to apply this.	%1$d gates desligados. Reinicie o TikTok para aplicar.
+Turned off 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.	1 de %1$d gates desligado; os demais não aceitam um valor true ou false. Reinicie o TikTok para aplicar.
+Turned off %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.	%1$d de %2$d gates desligados; os demais não aceitam um valor true ou false. Reinicie o TikTok para aplicar.

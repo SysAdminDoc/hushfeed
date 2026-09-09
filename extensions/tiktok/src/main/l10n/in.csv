@@ -781,3 +781,26 @@ Disable,Matikan
 Enable,Hidupkan
 More options,Opsi lainnya
 Reset to loaded,Kembalikan ke yang dimuat
+Refresh values,Segarkan nilai
+Export loaded values,Ekspor nilai yang dimuat
+Import loaded values,Impor nilai yang dimuat
+Reset all overrides,Atur ulang semua penggantian
+Reset all Lab data,Atur ulang semua data Lab
+Undo last Lab change,Batalkan perubahan Lab terakhir
+All,Semua
+Boolean,Boolean
+Enabled,Aktif
+Disabled,Nonaktif
+Unloaded,Belum dimuat
+Reset 1 gate. Restart TikTok to apply this.,1 gate diatur ulang. Mulai ulang TikTok agar berlaku.
+Reset %1$d gates. Restart TikTok to apply this.,%1$d gate diatur ulang. Mulai ulang TikTok agar berlaku.
+Reset 1 gate of %1$d. Restart TikTok to apply this.,1 dari %1$d gate diatur ulang. Mulai ulang TikTok agar berlaku.
+Reset %1$d gates of %2$d. Restart TikTok to apply this.,%1$d dari %2$d gate diatur ulang. Mulai ulang TikTok agar berlaku.
+Forced 1 gate. Restart TikTok to apply this.,1 gate dipaksakan. Mulai ulang TikTok agar berlaku.
+Forced %1$d gates. Restart TikTok to apply this.,%1$d gate dipaksakan. Mulai ulang TikTok agar berlaku.
+Forced 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.,1 dari %1$d gate dipaksakan; sisanya tidak menerima nilai true atau false. Mulai ulang TikTok agar berlaku.
+Forced %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.,%1$d dari %2$d gate dipaksakan; sisanya tidak menerima nilai true atau false. Mulai ulang TikTok agar berlaku.
+Turned off 1 gate. Restart TikTok to apply this.,1 gate dimatikan. Mulai ulang TikTok agar berlaku.
+Turned off %1$d gates. Restart TikTok to apply this.,%1$d gate dimatikan. Mulai ulang TikTok agar berlaku.
+Turned off 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.,1 dari %1$d gate dimatikan; sisanya tidak menerima nilai true atau false. Mulai ulang TikTok agar berlaku.
+Turned off %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.,%1$d dari %2$d gate dimatikan; sisanya tidak menerima nilai true atau false. Mulai ulang TikTok agar berlaku.

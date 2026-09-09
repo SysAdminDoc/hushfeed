@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The Feature Gate Lab's overflow menu and its filter speak your language. The six actions behind the button beside the title, and the five choices in the filter, were English wherever your phone was set. So were the two lines that say how many gates a reset or a force actually changed. Those were built from a verb, a number and a couple of tails, which no translation can hold, and each is one sentence now with the count as a placeholder.
+
 * Thirty more strings speak your language. The Feature Gate Lab's gate details page was English throughout its current state and technical details rows, both override switches and their explanations, and the three buttons that reset or force a selection. So were the close button on the Lab's search box, the overflow button beside the title, and the three buttons under the tab picker. The check that catches this reads what is handed to a view, and each of these went through a helper of its own first, so it read straight past them. It follows the helpers now, whichever file they live in.
 
 * The translation shape check reads every table. It compared placeholders, sentence endings and quote pairs in German and Indonesian only, which is what there was when it was written. Spanish and Brazilian Portuguese came later and nothing checked them.

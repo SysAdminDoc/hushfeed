@@ -33,6 +33,7 @@ Add hidden creator,Add hidden creator
 Ads,Ads
 Advance when a video ends,Advance when a video ends
 Advanced JSON value,Advanced JSON value
+All,All
 All available languages,All available languages
 All events,All events
 All loaded tabs,All loaded tabs
@@ -78,6 +79,7 @@ Blocked creators,Blocked creators
 Blocked sound ids,Blocked sound ids
 Blocked sound names,Blocked sound names
 Blocked sounds,Blocked sounds
+Boolean,Boolean
 Browse,Browse
 Cancel,Cancel
 Caption background,Caption background
@@ -168,6 +170,7 @@ Disable,Disable
 Disable analytics and tracking,Disable analytics and tracking
 Disable the long press quick share,Disable the long press quick share
 Disable the long press repost,Disable the long press repost
+Disabled,Disabled
 Dismiss,Dismiss
 Dismissed %1$s suggested accounts,Dismissed %1$s suggested accounts
 Dismissed one suggested account,Dismissed one suggested account
@@ -185,6 +188,7 @@ Enable,Enable
 Enable diagnostic logging,Enable diagnostic logging
 Enable hold-and-slide 2x lock,Enable hold-and-slide 2x lock
 Enable overrides,Enable overrides
+Enabled,Enabled
 Enter a creator handle or id,Enter a creator handle or id
 Enter a valid two-letter country code,Enter a valid two-letter country code
 "Enter a whole number, or one like 20K, 1.5M or 2B","Enter a whole number, or one like 20K, 1.5M or 2B"
@@ -192,6 +196,7 @@ Enter up to 8 comma-separated speeds from 0.5 to 3,Enter up to 8 comma-separated
 Errors,Errors
 Expand activity list,Expand activity list
 Export diagnostic report,Export diagnostic report
+Export loaded values,Export loaded values
 Fade the feed out before the hold,Fade the feed out before the hold
 Feature Gate Lab,Feature Gate Lab
 Feed and navigation,Feed and navigation
@@ -211,6 +216,10 @@ Follow probe,Follow probe
 For You,For You
 For com.deniscerri.ytdl only. Ask YTDLnis for audio or video when the save button hands it a link.,For com.deniscerri.ytdl only. Ask YTDLnis for audio or video when the save button hands it a link.
 For com.deniscerri.ytdl only. Hide its download card and start the handoff in the background.,For com.deniscerri.ytdl only. Hide its download card and start the handoff in the background.
+Forced %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.,Forced %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.
+Forced %1$d gates. Restart TikTok to apply this.,Forced %1$d gates. Restart TikTok to apply this.
+Forced 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.,Forced 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.
+Forced 1 gate. Restart TikTok to apply this.,Forced 1 gate. Restart TikTok to apply this.
 Forced result,Forced result
 Forget seen videos after,Forget seen videos after
 Forget what has been counted today and end any hold. The budgets themselves are left alone.,Forget what has been counted today and end any hold. The budgets themselves are left alone.
@@ -346,6 +355,7 @@ Hushfeed cannot read the creator pattern %1$s,Hushfeed cannot read the creator p
 Hushfeed filtered this batch,Hushfeed filtered this batch
 Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working.,Hushfeed hid a TikTok puzzle. Turn off Hide CAPTCHA popups if something stops working.
 "Ignore the creator's choice so the Duet and Stitch entries appear. Everything else the app checks still applies, and whether the upload is accepted is the server's decision.","Ignore the creator's choice so the Duet and Stitch entries appear. Everything else the app checks still applies, and whether the upload is accepted is the server's decision."
+Import loaded values,Import loaded values
 Inbox,Inbox
 Include diagnostic events,Include diagnostic events
 Included diagnostics,Included diagnostics
@@ -493,6 +503,7 @@ Recorded gate reads (%1$d),Recorded gate reads (%1$d)
 "Recording gate reads. Use a feature, then return here to stop.","Recording gate reads. Use a feature, then return here to stop."
 Recover the settings saved before the last restore or reset.,Recover the settings saved before the last restore or reset.
 Recovered an interrupted settings change. Restart TikTok to apply it.,Recovered an interrupted settings change. Restart TikTok to apply it.
+Refresh values,Refresh values
 Refreshing current TikTok cache...,Refreshing current TikTok cache...
 Region rules,Region rules
 Region settings,Region settings
@@ -510,6 +521,12 @@ Report saved to %1$s,Report saved to %1$s
 Required,Required
 Researched values,Researched values
 Reset,Reset
+Reset %1$d gates of %2$d. Restart TikTok to apply this.,Reset %1$d gates of %2$d. Restart TikTok to apply this.
+Reset %1$d gates. Restart TikTok to apply this.,Reset %1$d gates. Restart TikTok to apply this.
+Reset 1 gate of %1$d. Restart TikTok to apply this.,Reset 1 gate of %1$d. Restart TikTok to apply this.
+Reset 1 gate. Restart TikTok to apply this.,Reset 1 gate. Restart TikTok to apply this.
+Reset all Lab data,Reset all Lab data
+Reset all overrides,Reset all overrides
 Reset override,Reset override
 Reset settings,Reset settings
 Reset to loaded,Reset to loaded
@@ -719,14 +736,20 @@ Too many media saves are already running. Try again shortly.,Too many media save
 Transparent,Transparent
 "Try a country name, or a two-letter code","Try a country name, or a two-letter code"
 Try a different word or clear the search.,Try a different word or clear the search.
+Turned off %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.,Turned off %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.
+Turned off %1$d gates. Restart TikTok to apply this.,Turned off %1$d gates. Restart TikTok to apply this.
+Turned off 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.,Turned off 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.
+Turned off 1 gate. Restart TikTok to apply this.,Turned off 1 gate. Restart TikTok to apply this.
 "Two letters, like us, gb or jp.","Two letters, like us, gb or jp."
 Type,Type
 Type to search settings,Type to search settings
 Unblock this commenter,Unblock this commenter
 Unblocked %1$s,Unblocked %1$s
 Undo,Undo
+Undo last Lab change,Undo last Lab change
 Undo last restore or reset,Undo last restore or reset
 Undoing the last change,Undoing the last change
+Unloaded,Unloaded
 "Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart TikTok to apply this.","Up to 8 speeds from 0.5 to 3, separated by commas. Example: 0.5, 1, 1.5, 2, 2.5, 3. Leave empty for TikTok's list. Restart TikTok to apply this."
 "Use 0 for TikTok's size, or 12 to 48. Applies to the next caption.","Use 0 for TikTok's size, or 12 to 48. Applies to the next caption."
 Use Save JSON for this large report,Use Save JSON for this large report

@@ -780,3 +780,26 @@ Disable	Desactivar
 Enable	Activar
 More options	Más opciones
 Reset to loaded	Restablecer a las cargadas
+Refresh values	Actualizar los valores
+Export loaded values	Exportar los valores cargados
+Import loaded values	Importar los valores cargados
+Reset all overrides	Restablecer todas las sustituciones
+Reset all Lab data	Restablecer todos los datos del Lab
+Undo last Lab change	Deshacer el último cambio del Lab
+All	Todos
+Boolean	Booleano
+Enabled	Activados
+Disabled	Desactivados
+Unloaded	Sin cargar
+Reset 1 gate. Restart TikTok to apply this.	1 interruptor restablecido. Reinicia TikTok para aplicar esto.
+Reset %1$d gates. Restart TikTok to apply this.	%1$d interruptores restablecidos. Reinicia TikTok para aplicar esto.
+Reset 1 gate of %1$d. Restart TikTok to apply this.	1 interruptor de %1$d restablecido. Reinicia TikTok para aplicar esto.
+Reset %1$d gates of %2$d. Restart TikTok to apply this.	%1$d interruptores de %2$d restablecidos. Reinicia TikTok para aplicar esto.
+Forced 1 gate. Restart TikTok to apply this.	1 interruptor forzado. Reinicia TikTok para aplicar esto.
+Forced %1$d gates. Restart TikTok to apply this.	%1$d interruptores forzados. Reinicia TikTok para aplicar esto.
+Forced 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.	1 interruptor de %1$d forzado; los demás no aceptan un valor true o false. Reinicia TikTok para aplicar esto.
+Forced %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.	%1$d interruptores de %2$d forzados; los demás no aceptan un valor true o false. Reinicia TikTok para aplicar esto.
+Turned off 1 gate. Restart TikTok to apply this.	1 interruptor apagado. Reinicia TikTok para aplicar esto.
+Turned off %1$d gates. Restart TikTok to apply this.	%1$d interruptores apagados. Reinicia TikTok para aplicar esto.
+Turned off 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.	1 interruptor de %1$d apagado; los demás no aceptan un valor true o false. Reinicia TikTok para aplicar esto.
+Turned off %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.	%1$d interruptores de %2$d apagados; los demás no aceptan un valor true o false. Reinicia TikTok para aplicar esto.

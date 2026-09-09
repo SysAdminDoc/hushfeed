@@ -783,3 +783,26 @@ Disable	Ausschalten
 Enable	Einschalten
 More options	Weitere Optionen
 Reset to loaded	Auf geladene zurücksetzen
+Refresh values	Werte aktualisieren
+Export loaded values	Geladene Werte exportieren
+Import loaded values	Geladene Werte importieren
+Reset all overrides	Alle Überschreibungen zurücksetzen
+Reset all Lab data	Alle Labordaten zurücksetzen
+Undo last Lab change	Letzte Lab-Änderung rückgängig machen
+All	Alle
+Boolean	Boolesch
+Enabled	Eingeschaltet
+Disabled	Ausgeschaltet
+Unloaded	Nicht geladen
+Reset 1 gate. Restart TikTok to apply this.	1 Schalter zurückgesetzt. TikTok neu starten, damit das gilt.
+Reset %1$d gates. Restart TikTok to apply this.	%1$d Schalter zurückgesetzt. TikTok neu starten, damit das gilt.
+Reset 1 gate of %1$d. Restart TikTok to apply this.	1 von %1$d Schaltern zurückgesetzt. TikTok neu starten, damit das gilt.
+Reset %1$d gates of %2$d. Restart TikTok to apply this.	%1$d von %2$d Schaltern zurückgesetzt. TikTok neu starten, damit das gilt.
+Forced 1 gate. Restart TikTok to apply this.	1 Schalter erzwungen. TikTok neu starten, damit das gilt.
+Forced %1$d gates. Restart TikTok to apply this.	%1$d Schalter erzwungen. TikTok neu starten, damit das gilt.
+Forced 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.	1 von %1$d Schaltern erzwungen; die übrigen nehmen kein true oder false. TikTok neu starten, damit das gilt.
+Forced %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.	%1$d von %2$d Schaltern erzwungen; die übrigen nehmen kein true oder false. TikTok neu starten, damit das gilt.
+Turned off 1 gate. Restart TikTok to apply this.	1 Schalter ausgeschaltet. TikTok neu starten, damit das gilt.
+Turned off %1$d gates. Restart TikTok to apply this.	%1$d Schalter ausgeschaltet. TikTok neu starten, damit das gilt.
+Turned off 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.	1 von %1$d Schaltern ausgeschaltet; die übrigen nehmen kein true oder false. TikTok neu starten, damit das gilt.
+Turned off %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.	%1$d von %2$d Schaltern ausgeschaltet; die übrigen nehmen kein true oder false. TikTok neu starten, damit das gilt.

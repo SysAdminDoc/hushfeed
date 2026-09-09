@@ -72,6 +72,20 @@ import app.morphe.extension.tiktok.settings.preference.SettingsUi;
 public final class FeatureGateLabFragment extends Fragment {
     private static final String[] VIEW_LABELS = {"Loaded", "All actionable", "Overrides"};
     private static final String[] FILTER_LABELS = {"All", "Boolean", "Enabled", "Disabled", "Unloaded"};
+
+    /**
+     * The five filter choices in the reader's language.
+     *
+     * <p>The button and the dialog it opens show the same five words, so they are translated
+     * from one place. Translating one without the other would read worse than leaving both.
+     */
+    private static String[] filterLabels(android.content.Context context) {
+        String[] translated = new String[FILTER_LABELS.length];
+        for (int index = 0; index < FILTER_LABELS.length; index++) {
+            translated[index] = L10n.t(context, FILTER_LABELS[index]);
+        }
+        return translated;
+    }
     private static final String[] SOURCE_LABELS = {
             "All", "App AB", "Config", "Player", "Live", "Media", "Activity"
     };
@@ -716,18 +730,15 @@ public final class FeatureGateLabFragment extends Fragment {
             indicator.setBackgroundColor(selected ? SettingsUi.accent() : Color.TRANSPARENT);
         }
         if (filterButton != null) {
-            // The label itself is left as it is: the same five words are the choices in the
-            // dialog this button opens, and translating one without the other would be worse
-            // than translating neither.
-            filterButton.setText(
-                    L10n.f(getContext(), "Filter: %1$s", FILTER_LABELS[selectedFilter]));
+            filterButton.setText(L10n.f(getContext(), "Filter: %1$s",
+                    filterLabels(getContext())[selectedFilter]));
         }
     }
 
     private void showFilterPicker() {
         AlertDialog dialog = new AlertDialog.Builder(getActivity())
                 .setTitle(L10n.t(getContext(), "Show gates"))
-                .setSingleChoiceItems(FILTER_LABELS, selectedFilter, (choiceDialog, which) -> {
+                .setSingleChoiceItems(filterLabels(getContext()), selectedFilter, (choiceDialog, which) -> {
                     onFilterSelected(which);
                     choiceDialog.dismiss();
                 })
@@ -846,11 +857,31 @@ public final class FeatureGateLabFragment extends Fragment {
             // The message says what happened rather than what was asked for. Reported as a
             // failure, which is what throwing here did, it said nothing went through on a run
             // where most of it had.
-            String did = (value ? "Forced " : "Turned off ")
-                    + (written == total ? countOfGates(written)
-                            : written + " of " + total + "; the rest do not take a true or "
-                                    + "false value");
-            return did + ". Restart TikTok to apply this.";
+            //
+            // Eight whole sentences rather than a verb, a count and two tails glued together.
+            // A table row holds a sentence: assembled here, the plural rule of the language
+            // never got a say and neither did the order the pieces go in.
+            android.content.Context context = Utils.getContext();
+            if (written == total) {
+                if (value) {
+                    return written == 1
+                            ? L10n.t(context, "Forced 1 gate. Restart TikTok to apply this.")
+                            : L10n.f(context, "Forced %1$d gates. Restart TikTok to apply this.",
+                                    written);
+                }
+                return written == 1
+                        ? L10n.t(context, "Turned off 1 gate. Restart TikTok to apply this.")
+                        : L10n.f(context, "Turned off %1$d gates. Restart TikTok to apply this.",
+                                written);
+            }
+            if (value) {
+                return written == 1
+                        ? L10n.f(context, "Forced 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.", total)
+                        : L10n.f(context, "Forced %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.", written, total);
+            }
+            return written == 1
+                    ? L10n.f(context, "Turned off 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.", total)
+                    : L10n.f(context, "Turned off %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.", written, total);
         });
         if (started) {
             selection.clear();
@@ -867,18 +898,25 @@ public final class FeatureGateLabFragment extends Fragment {
                 throw new IllegalStateException("None of these gates had an override to reset.");
             }
             // Dropped, not selected: choosing five gates of which two had an override resets two.
-            return "Reset " + countOfGates(dropped)
-                    + (dropped == total ? "" : " of " + total)
-                    + ". Restart TikTok to apply this.";
+            // One whole sentence per shape. Built from a count and three fragments it was four
+            // rows no table could hold, and the plural rule of the language never got a say.
+            android.content.Context context = Utils.getContext();
+            if (dropped == total) {
+                return dropped == 1
+                        ? L10n.t(context, "Reset 1 gate. Restart TikTok to apply this.")
+                        : L10n.f(context, "Reset %1$d gates. Restart TikTok to apply this.",
+                                dropped);
+            }
+            return dropped == 1
+                    ? L10n.f(context, "Reset 1 gate of %1$d. Restart TikTok to apply this.",
+                            total)
+                    : L10n.f(context, "Reset %1$d gates of %2$d. Restart TikTok to apply this.",
+                            dropped, total);
         });
         if (started) {
             selection.clear();
             onSelectionChanged();
         }
-    }
-
-    private static String countOfGates(int count) {
-        return count == 1 ? "1 gate" : count + " gates";
     }
 
     private void openDetail(FeatureGateCatalog.Entry entry) {
@@ -900,12 +938,12 @@ public final class FeatureGateLabFragment extends Fragment {
                 new ContextThemeWrapper(getActivity(), popupTheme),
                 anchor
         );
-        menu.getMenu().add(0, 1, 0, "Refresh values");
-        menu.getMenu().add(0, 2, 1, "Export loaded values");
-        menu.getMenu().add(0, 3, 2, "Import loaded values");
-        menu.getMenu().add(0, 4, 3, "Reset all overrides");
-        menu.getMenu().add(0, 5, 4, "Reset all Lab data");
-        menu.getMenu().add(0, 6, 5, "Undo last Lab change");
+        menu.getMenu().add(0, 1, 0, L10n.t(getContext(), "Refresh values"));
+        menu.getMenu().add(0, 2, 1, L10n.t(getContext(), "Export loaded values"));
+        menu.getMenu().add(0, 3, 2, L10n.t(getContext(), "Import loaded values"));
+        menu.getMenu().add(0, 4, 3, L10n.t(getContext(), "Reset all overrides"));
+        menu.getMenu().add(0, 5, 4, L10n.t(getContext(), "Reset all Lab data"));
+        menu.getMenu().add(0, 6, 5, L10n.t(getContext(), "Undo last Lab change"));
         menu.setOnMenuItemClickListener(item -> {
             switch (item.getItemId()) {
                 case 1:

@@ -876,7 +876,11 @@ public class SettingsL10nTest {
             "\\.\\s*(setText|setHint|setTitle|setMessage|setContentDescription|setPositiveButton"
                     + "|setNegativeButton|setNeutralButton)\\s*\\(|"
                     + "\\b(FeatureGateLabUi|SettingsUi)\\s*\\.\\s*"
-                    + "(text|label|body|header|title|caption)\\s*\\(";
+                    + "(text|label|body|header|title|caption)\\s*\\(|"
+                    // A menu item is a row a reader reads, and Menu.add takes its words as the
+                    // last of four arguments rather than through anything setText-shaped. Six
+                    // items in the Feature Gate Lab's overflow were English because of it.
+                    + "(?:[Mm]enu\\w*|getMenu\\s*\\(\\s*\\))\\s*\\.\\s*add\\s*\\(";
 
     /** Never a helper, whatever the block behind the bracket does with a String. */
     private static final Set<String> NOT_A_HELPER = new LinkedHashSet<>(java.util.Arrays.asList(
