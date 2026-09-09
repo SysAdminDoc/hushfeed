@@ -640,6 +640,21 @@ public final class BlockAuthorOverlay {
      * root is a parameter. Falls back to a plain toast when there is nowhere to draw it.
      */
     public static void showUndoBanner(ViewGroup root, String message, Runnable undoAction) {
+        showBanner(root, message, undoAction);
+    }
+
+    /**
+     * The same banner with nothing to press, for anything that only has something to say.
+     *
+     * <p>Everything worth having is in the shape rather than in the Undo: it takes no focus,
+     * takes itself away after six seconds, and announces itself once as a polite live region,
+     * which a toast does not.
+     */
+    public static void showNoticeBanner(ViewGroup root, String message) {
+        showBanner(root, message, null);
+    }
+
+    private static void showBanner(ViewGroup root, String message, Runnable undoAction) {
         Utils.runOnMainThread(() -> {
             try {
                 if (root == null) {
@@ -670,21 +685,7 @@ public final class BlockAuthorOverlay {
                 label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
                 banner.addView(label, new LinearLayout.LayoutParams(0, -2, 1f));
 
-                TextView undo = new TextView(activity);
-                undo.setText(L10n.t(activity, "Undo"));
-                undo.setContentDescription(L10n.t(activity, "Undo"));
-                undo.setTextColor(SettingsUi.OVERLAY_ACCENT);
-                undo.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-                // A banner that dismisses itself is the worst place for a small target.
-                undo.setPadding(SettingsUi.dp(activity, 16), SettingsUi.dp(activity, 12), SettingsUi.dp(activity, 16), SettingsUi.dp(activity, 12));
-                undo.setMinimumHeight(SettingsUi.dp(activity, 48));
-                undo.setMinimumWidth(SettingsUi.dp(activity, 48));
-                undo.setGravity(Gravity.CENTER);
-                undo.setOnClickListener(view -> {
-                    dismissUndo();
-                    undoAction.run();
-                });
-                banner.addView(undo, new LinearLayout.LayoutParams(-2, -2));
+                if (undoAction != null) addUndo(activity, banner, undoAction);
                 // Nothing announced this banner, so a reader using TalkBack never knew there
                 // was a way back at all.
                 banner.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
@@ -711,6 +712,25 @@ public final class BlockAuthorOverlay {
                 Utils.showToastShort(message);
             }
         });
+    }
+
+    private static void addUndo(Activity activity, LinearLayout banner, Runnable undoAction) {
+        TextView undo = new TextView(activity);
+        undo.setText(L10n.t(activity, "Undo"));
+        undo.setContentDescription(L10n.t(activity, "Undo"));
+        undo.setTextColor(SettingsUi.OVERLAY_ACCENT);
+        undo.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        // A banner that dismisses itself is the worst place for a small target.
+        undo.setPadding(SettingsUi.dp(activity, 16), SettingsUi.dp(activity, 12),
+                SettingsUi.dp(activity, 16), SettingsUi.dp(activity, 12));
+        undo.setMinimumHeight(SettingsUi.dp(activity, 48));
+        undo.setMinimumWidth(SettingsUi.dp(activity, 48));
+        undo.setGravity(Gravity.CENTER);
+        undo.setOnClickListener(view -> {
+            dismissUndo();
+            undoAction.run();
+        });
+        banner.addView(undo, new LinearLayout.LayoutParams(-2, -2));
     }
 
     private static void dismissUndo() {

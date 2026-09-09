@@ -135,6 +135,64 @@ public class FeatureGateLabActionsTest {
         assertEquals(empty, FeatureGateLabStore.exportSettings().toString());
     }
 
+    @Test public void aFailedCommitOnASelectionPutsNoneOfItThrough() throws Exception {
+        // The reason a selection goes through one replaceSettings rather than one per gate: a
+        // selection half applied is worse than one not applied. Same failing commit the
+        // single-gate path is held to below.
+        var app = Utils.getContext();
+        save("kept", "true", true);
+        String before = FeatureGateLabStore.exportSettings().toString();
+
+        // A fresh store each time: the proxy fails only its first commit, which is what leaves a
+        // rollback to succeed on the second.
+        try {
+            var gates = List.of(entry("alpha"), entry("beta"), entry("gamma"));
+            useFailingStore(app);
+            assertThrows(Exception.class, () -> FeatureGateLabUndo.forceBoolean(gates, false));
+            assertEquals("part of the selection was written by a commit that failed",
+                    before, FeatureGateLabStore.exportSettings().toString());
+
+            useFailingStore(app);
+            assertThrows(Exception.class,
+                    () -> FeatureGateLabUndo.resetAll(List.of(entry("kept"))));
+            assertEquals("a reset that failed dropped a rule anyway",
+                    before, FeatureGateLabStore.exportSettings().toString());
+        } finally { Utils.setContext(app); }
+    }
+
+    /** Points the Lab's storage at a store whose next commit reports failure. */
+    private static void useFailingStore(android.content.Context app) {
+        var failing = failingOnceStore(app);
+        Utils.setContext(new android.content.ContextWrapper(app) {
+            @Override public android.content.SharedPreferences getSharedPreferences(String name, int mode) {
+                return name.equals("morphe_feature_gate_lab")
+                        ? failing : super.getSharedPreferences(name, mode);
+            }
+        });
+    }
+
+    /** A settings store whose first commit reports failure, as the single-gate case uses. */
+    private static android.content.SharedPreferences failingOnceStore(android.content.Context app) {
+        var delegate = app.getSharedPreferences("morphe_feature_gate_lab", 0);
+        var commits = new java.util.concurrent.atomic.AtomicInteger();
+        return (android.content.SharedPreferences) java.lang.reflect.Proxy.newProxyInstance(
+                delegate.getClass().getClassLoader(),
+                new Class[]{android.content.SharedPreferences.class}, (proxy, method, args) -> {
+                    if (!method.getName().equals("edit")) return method.invoke(delegate, args);
+                    var editor = delegate.edit();
+                    return java.lang.reflect.Proxy.newProxyInstance(editor.getClass().getClassLoader(),
+                            new Class[]{android.content.SharedPreferences.Editor.class},
+                            (wrapped, call, values) -> {
+                                Object result = call.invoke(editor, values);
+                                if (call.getName().equals("commit")) {
+                                    return commits.incrementAndGet() != 1 && (Boolean) result;
+                                }
+                                return result instanceof android.content.SharedPreferences.Editor
+                                        ? wrapped : result;
+                            });
+                });
+    }
+
     @Test public void failedPreferenceCommitRecoversThePreviousConfigAndLeavesObservations() throws Exception {
         var app = Utils.getContext();
         save("gate", "true", true);

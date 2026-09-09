@@ -1,7 +1,7 @@
 /**
  * Which capture each tracked picture in assets/settings comes from.
  *
- * <p>The suite writes about ninety images under the capture directory; twenty-eight of them are
+ * <p>The suite writes about ninety images under the capture directory; twenty-nine of them are
  * published. The names do not line up on their own: the light twins are a `-light` suffix here
  * and a `pages/light` directory there, the dialogs are their own tree, Feed navigation publishes
  * the scrolled-to-the-end capture, and the gate recorder is at the top level with a hyphen where
@@ -34,6 +34,7 @@ val trackedScreenshots = mapOf(
     "rtl-large.png" to "pages/dark/rtl-large.png",
     "search.png" to "pages/dark/search.png",
     "settings.png" to "pages/dark/settings.png",
+    "session-reminder.png" to "session-reminder.png",
     "share.png" to "pages/dark/share.png",
     "two-times-text-light.png" to "pages/light/two-times-text.png",
     "two-times-text.png" to "pages/dark/two-times-text.png",

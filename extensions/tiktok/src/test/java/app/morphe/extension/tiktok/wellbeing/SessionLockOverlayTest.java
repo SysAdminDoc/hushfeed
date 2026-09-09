@@ -48,6 +48,7 @@ public class SessionLockOverlayTest {
         Settings.SESSION_BUDGET_LOCK_MINUTES.resetToDefault();
         Settings.SESSION_BUDGET_LOCK.resetToDefault();
         Settings.SESSION_BUDGET_PASSES_PER_DAY.resetToDefault();
+        Settings.SESSION_BUDGET_NOTICE_MINUTES.resetToDefault();
         Settings.SESSION_BUDGET_STATE.resetToDefault();
         now.set(at(2026, Calendar.SEPTEMBER, 7, 12, 0));
         SessionBudget.setClockForTests(now::get);
@@ -69,6 +70,7 @@ public class SessionLockOverlayTest {
         SessionBudget.setClockForTests(null);
         SessionBudget.awaitWritesForTests();
         SessionBudget.resetForTests();
+        Settings.SESSION_BUDGET_NOTICE_MINUTES.resetToDefault();
         Settings.SESSION_BUDGET_STATE.resetToDefault();
     }
 
@@ -343,6 +345,42 @@ public class SessionLockOverlayTest {
             assertEquals("the Inbox tab was not clicked", 1, taps.get());
             assertTrue("the hold ended when the reader went to messages",
                     SessionBudget.isLocked());
+        }
+    }
+
+    @Test public void theQuietReminderIsABannerThatAnnouncesItselfAndGoesOnItsOwn() throws Exception {
+        // A toast takes no focus and goes on its own too, but TalkBack does not read it as a
+        // live region, and it is outside the decor tree so it cannot be captured. This is the
+        // banner the block button's undo already uses, without anything to press.
+        Settings.SESSION_BUDGET_NOTICE_MINUTES.save(5);
+        SessionBudget.noteWatching();
+        for (int tick = 0; tick < 5 * 60; tick++) {
+            now.addAndGet(1_000L);
+            SessionBudget.noteWatching();
+        }
+
+        try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setActivity(activity);
+            ViewGroup root = activity.findViewById(android.R.id.content);
+            var looper = Shadows.shadowOf(android.os.Looper.getMainLooper());
+            int before = root.getChildCount();
+
+            app.morphe.extension.tiktok.wellbeing.SessionBudgetNotice.showIntervalNoticeIfDue();
+            looper.idle();
+            assertEquals("the reminder was not drawn", before + 1, root.getChildCount());
+
+            View banner = root.getChildAt(root.getChildCount() - 1);
+            assertEquals("a screen reader would never hear it",
+                    View.ACCESSIBILITY_LIVE_REGION_POLITE, banner.getAccessibilityLiveRegion());
+            assertTrue("the reminder took the focus", !banner.isFocusable());
+
+            layout(root, 480, 960);
+            app.morphe.extension.tiktok.UiCapture.save(banner, "session-reminder.png", 480, 96);
+
+            // And it takes itself away rather than waiting to be dismissed.
+            looper.idleFor(java.time.Duration.ofSeconds(7));
+            assertEquals("the reminder stayed on the feed", before, root.getChildCount());
         }
     }
 

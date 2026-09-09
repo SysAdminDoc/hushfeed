@@ -31,10 +31,10 @@ public final class SessionBudgetNotice {
     /**
      * The quiet reminder partway through, if one is due.
      *
-     * <p>A toast rather than a banner: it takes no focus, goes on its own, and TalkBack reads it
-     * once. That is the same shape the spent notice uses when no hold is set, and for the same
-     * reason. A banner over the feed would need a dismissal of its own and would be drawn under
-     * the hold panel on exactly the days the hold is up.
+     * <p>The same banner the block button's undo uses, without anything to press: it takes no
+     * focus, takes itself away after a few seconds, and announces itself once as a polite live
+     * region, which is the part a toast cannot do. It falls back to a toast where there is no
+     * view to draw in. It is never due while a hold is up, so it cannot end up under the panel.
      *
      * <p>Three wordings in rotation, because a fixed friction stops being read. None of them
      * names the reader or the count: an interrupt that does reads as being watched, and the one
@@ -43,7 +43,13 @@ public final class SessionBudgetNotice {
     public static void showIntervalNoticeIfDue() {
         int wording = SessionBudget.claimIntervalNotice();
         if (wording < 0) return;
-        Utils.showToastShort(intervalMessage(wording));
+        Utils.runOnMainThread(() -> {
+            android.app.Activity activity = Utils.getActivity();
+            android.view.ViewGroup root = activity == null
+                    ? null : activity.findViewById(android.R.id.content);
+            app.morphe.extension.tiktok.blockauthor.BlockAuthorOverlay.showNoticeBanner(
+                    root, intervalMessage(wording));
+        });
     }
 
     static String intervalMessage(int wording) {
