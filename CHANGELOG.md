@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Native graphics tests serialize font initialization across Android sandboxes. Graphics errors still fail the run, and every tested Android version remains enabled.
+
 * Feed tests now run all five count ranges through real responses, with lower and upper boundaries, missing counts and disabled settings. The content fixtures also fail if the runtime catches an unstubbed getter, so an incomplete fixture can't quietly pass.
 
 - Follow diagnostics now recognizes the same real follow write routes as the CAPTCHA gate, including nearby follows and follower removals. Diagnostic requests stay bounded after the session limit while refusal notices still work.
