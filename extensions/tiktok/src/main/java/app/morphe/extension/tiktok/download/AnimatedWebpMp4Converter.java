@@ -357,9 +357,9 @@ final class AnimatedWebpMp4Converter {
                         "void main(){gl_FragColor=texture2D(uTexture,vTexCoord);}";
 
         private final Surface surface;
-        private final EGLDisplay display;
-        private final EGLContext context;
-        private final EGLSurface eglSurface;
+        private EGLDisplay display = EGL14.EGL_NO_DISPLAY;
+        private EGLContext context = EGL14.EGL_NO_CONTEXT;
+        private EGLSurface eglSurface = EGL14.EGL_NO_SURFACE;
         private final int program;
         private final int texture;
         private final FloatBuffer vertices;
@@ -370,57 +370,67 @@ final class AnimatedWebpMp4Converter {
             this.surface = surface;
             this.width = width;
             this.height = height;
-            display = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
-            if (display == EGL14.EGL_NO_DISPLAY) throw new IllegalStateException("No EGL display");
-            int[] version = new int[2];
-            if (!EGL14.eglInitialize(display, version, 0, version, 1)) {
-                throw new IllegalStateException("Could not initialize EGL");
-            }
-            int[] configAttributes = {
-                    EGL14.EGL_RED_SIZE, 8,
-                    EGL14.EGL_GREEN_SIZE, 8,
-                    EGL14.EGL_BLUE_SIZE, 8,
-                    EGL14.EGL_ALPHA_SIZE, 8,
-                    EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
-                    0x3142, 1,
-                    EGL14.EGL_NONE
-            };
-            EGLConfig[] configs = new EGLConfig[1];
-            int[] configCount = new int[1];
-            if (!EGL14.eglChooseConfig(display, configAttributes, 0, configs, 0, 1, configCount, 0)
-                    || configCount[0] == 0) {
-                throw new IllegalStateException("No recordable EGL config");
-            }
-            int[] contextAttributes = {EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE};
-            context = EGL14.eglCreateContext(
-                    display, configs[0], EGL14.EGL_NO_CONTEXT, contextAttributes, 0
-            );
-            int[] surfaceAttributes = {EGL14.EGL_NONE};
-            eglSurface = EGL14.eglCreateWindowSurface(
-                    display, configs[0], surface, surfaceAttributes, 0
-            );
-            if (!EGL14.eglMakeCurrent(display, eglSurface, eglSurface, context)) {
-                throw new IllegalStateException("Could not make codec EGL surface current");
-            }
-            // The pixel cap above does not know what this GPU will take. A great many Android
-            // GPUs stop at 4096 a side, and 8192 by 2000 is well inside sixteen million pixels.
-            // Asked for anyway the upload sets GL_INVALID_VALUE, which nothing was reading, and
-            // the swap still succeeds, so the sticker saved as a black video.
-            requireFitsTexture(width, height, maxTextureSize());
+            try {
+                display = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
+                if (display == EGL14.EGL_NO_DISPLAY) throw new IllegalStateException("No EGL display");
+                int[] version = new int[2];
+                if (!EGL14.eglInitialize(display, version, 0, version, 1)) {
+                    throw new IllegalStateException("Could not initialize EGL");
+                }
+                int[] configAttributes = {
+                        EGL14.EGL_RED_SIZE, 8,
+                        EGL14.EGL_GREEN_SIZE, 8,
+                        EGL14.EGL_BLUE_SIZE, 8,
+                        EGL14.EGL_ALPHA_SIZE, 8,
+                        EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
+                        0x3142, 1,
+                        EGL14.EGL_NONE
+                };
+                EGLConfig[] configs = new EGLConfig[1];
+                int[] configCount = new int[1];
+                if (!EGL14.eglChooseConfig(display, configAttributes, 0, configs, 0, 1, configCount, 0)
+                        || configCount[0] == 0) {
+                    throw new IllegalStateException("No recordable EGL config");
+                }
+                int[] contextAttributes = {EGL14.EGL_CONTEXT_CLIENT_VERSION, 2, EGL14.EGL_NONE};
+                context = EGL14.eglCreateContext(
+                        display, configs[0], EGL14.EGL_NO_CONTEXT, contextAttributes, 0
+                );
+                int[] surfaceAttributes = {EGL14.EGL_NONE};
+                eglSurface = EGL14.eglCreateWindowSurface(
+                        display, configs[0], surface, surfaceAttributes, 0
+                );
+                if (!EGL14.eglMakeCurrent(display, eglSurface, eglSurface, context)) {
+                    throw new IllegalStateException("Could not make codec EGL surface current");
+                }
+                // The pixel cap above does not know what this GPU will take. A great many Android
+                // GPUs stop at 4096 a side, and 8192 by 2000 is well inside sixteen million pixels.
+                // Asked for anyway the upload sets GL_INVALID_VALUE, which nothing was reading, and
+                // the swap still succeeds, so the sticker saved as a black video.
+                requireFitsTexture(width, height, maxTextureSize());
 
-            program = createProgram(VERTEX_SHADER, FRAGMENT_SHADER);
-            int[] textures = new int[1];
-            GLES20.glGenTextures(1, textures, 0);
-            texture = textures[0];
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-            vertices = ByteBuffer.allocateDirect(VERTICES.length * 4)
-                    .order(ByteOrder.nativeOrder())
-                    .asFloatBuffer();
-            vertices.put(VERTICES).position(0);
+                program = createProgram(VERTEX_SHADER, FRAGMENT_SHADER);
+                int[] textures = new int[1];
+                GLES20.glGenTextures(1, textures, 0);
+                texture = textures[0];
+                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture);
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+                vertices = ByteBuffer.allocateDirect(VERTICES.length * 4)
+                        .order(ByteOrder.nativeOrder())
+                        .asFloatBuffer();
+                vertices.put(VERTICES).position(0);
+            } catch (RuntimeException | Error failure) {
+                // The caller only owns this object after construction has completed.
+                try {
+                    release();
+                } catch (RuntimeException | Error cleanupFailure) {
+                    failure.addSuppressed(cleanupFailure);
+                }
+                throw failure;
+            }
         }
 
         void draw(Bitmap bitmap, long presentationTimeNs) {
@@ -461,19 +471,34 @@ final class AnimatedWebpMp4Converter {
         }
 
         void release() {
-            if (display != EGL14.EGL_NO_DISPLAY) {
-                EGL14.eglMakeCurrent(
-                        display,
-                        EGL14.EGL_NO_SURFACE,
-                        EGL14.EGL_NO_SURFACE,
-                        EGL14.EGL_NO_CONTEXT
-                );
-                EGL14.eglDestroySurface(display, eglSurface);
-                EGL14.eglDestroyContext(display, context);
-                EGL14.eglReleaseThread();
-                EGL14.eglTerminate(display);
+            try {
+                if (display != EGL14.EGL_NO_DISPLAY) {
+                    try {
+                        try {
+                            EGL14.eglMakeCurrent(display, EGL14.EGL_NO_SURFACE,
+                                    EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT);
+                        } finally {
+                            try {
+                                if (eglSurface != EGL14.EGL_NO_SURFACE) {
+                                    EGL14.eglDestroySurface(display, eglSurface);
+                                }
+                            } finally {
+                                if (context != EGL14.EGL_NO_CONTEXT) {
+                                    EGL14.eglDestroyContext(display, context);
+                                }
+                            }
+                        }
+                    } finally {
+                        try {
+                            EGL14.eglReleaseThread();
+                        } finally {
+                            EGL14.eglTerminate(display);
+                        }
+                    }
+                }
+            } finally {
+                surface.release();
             }
-            surface.release();
         }
 
         private static int createProgram(String vertexSource, String fragmentSource) {

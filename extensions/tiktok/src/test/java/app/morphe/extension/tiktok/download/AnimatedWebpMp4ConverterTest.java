@@ -2,17 +2,36 @@ package app.morphe.extension.tiktok.download;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import android.graphics.SurfaceTexture;
+import android.opengl.EGL14;
+import android.opengl.EGLConfig;
+import android.opengl.EGLContext;
+import android.opengl.EGLDisplay;
+import android.opengl.EGLSurface;
+import android.opengl.GLES20;
+import android.view.Surface;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.shadows.ShadowEGL14;
+import org.robolectric.shadows.ShadowGLES20;
 
-/** Geometry, size and bitrate guards for animated sticker conversion before native codec setup. */
+/** Geometry guards and resource ownership for animated sticker codec setup. */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -149,6 +168,151 @@ public class AnimatedWebpMp4ConverterTest {
         AnimatedWebpMp4Converter.requireFitsTexture(4096, 4096, 4096);
         // A GPU that did not answer is not a reason to refuse a sticker on a number nobody gave.
         AnimatedWebpMp4Converter.requireFitsTexture(8192, 8192, 0);
+    }
+
+    @Test
+    @GraphicsMode(GraphicsMode.Mode.LEGACY)
+    @Config(shadows = {RecordingEgl.class, BoundedGles.class})
+    public void failedCodecSetupReleasesItsResourcesAndTheNextSetupSucceeds() throws Exception {
+        RecordingEgl.resetTracking();
+        Constructor<?> constructor = codecSurfaceConstructor();
+        SurfaceTexture texture = new SurfaceTexture(0);
+        Surface rejected = new Surface(texture);
+        try {
+            InvocationTargetException failure = assertThrows(InvocationTargetException.class,
+                    () -> constructor.newInstance(rejected, 8192, 2));
+            assertTrue(failure.getCause() instanceof IllegalStateException);
+            assertTrue(failure.getCause().getMessage().contains("4096"));
+            assertReleased(rejected, 1);
+
+            Surface accepted = new Surface(texture);
+            Object next = constructor.newInstance(accepted, 64, 64);
+            try {
+                assertTrue(accepted.isValid());
+                assertEquals(2, RecordingEgl.contextsCreated);
+                assertEquals(1, RecordingEgl.contextsDestroyed);
+                assertNotNull("successful setup must bind an allocated context", RecordingEgl.currentContext);
+                assertFalse(RecordingEgl.currentContext.equals(EGL14.EGL_NO_CONTEXT));
+            } finally {
+                Method release = next.getClass().getDeclaredMethod("release");
+                release.setAccessible(true);
+                release.invoke(next);
+            }
+            assertReleased(accepted, 2);
+        } finally {
+            rejected.release();
+            texture.release();
+        }
+    }
+
+    @Test
+    @GraphicsMode(GraphicsMode.Mode.LEGACY)
+    @Config(shadows = {RecordingEgl.class, BoundedGles.class})
+    public void codecSetupKeepsThePrimaryFailureWhenCleanupAlsoFails() throws Exception {
+        RecordingEgl.resetTracking();
+        RuntimeException cleanupFailure = new IllegalStateException("EGL surface release failed");
+        RecordingEgl.cleanupFailure = cleanupFailure;
+        SurfaceTexture texture = new SurfaceTexture(0);
+        Surface input = new Surface(texture);
+        try {
+            InvocationTargetException failure = assertThrows(InvocationTargetException.class,
+                    () -> codecSurfaceConstructor().newInstance(input, 8192, 2));
+            Throwable primary = failure.getCause();
+            assertTrue(primary instanceof IllegalStateException);
+            assertTrue(primary.getMessage().contains("4096"));
+            assertEquals(1, primary.getSuppressed().length);
+            assertSame(cleanupFailure, primary.getSuppressed()[0]);
+            assertReleased(input, 1);
+        } finally {
+            input.release();
+            texture.release();
+        }
+    }
+
+    private static Constructor<?> codecSurfaceConstructor() throws Exception {
+        // Conversion cannot assign its cleanup owner until this constructor returns.
+        Class<?> type = Class.forName(AnimatedWebpMp4Converter.class.getName() + "$CodecSurface");
+        Constructor<?> constructor = type.getDeclaredConstructor(Surface.class, int.class, int.class);
+        constructor.setAccessible(true);
+        return constructor;
+    }
+
+    private static void assertReleased(Surface input, int count) {
+        assertFalse("the encoder input surface leaked", input.isValid());
+        assertEquals(count, RecordingEgl.contextsCreated);
+        assertEquals(count, RecordingEgl.contextsDestroyed);
+        assertEquals(count, RecordingEgl.surfacesCreated);
+        assertEquals(count, RecordingEgl.surfacesDestroyed);
+        assertEquals(count, RecordingEgl.threadsReleased);
+        assertEquals(count, RecordingEgl.displaysTerminated);
+        assertEquals(EGL14.EGL_NO_CONTEXT, RecordingEgl.currentContext);
+    }
+
+    @Implements(EGL14.class)
+    public static class RecordingEgl extends ShadowEGL14 {
+        static int contextsCreated, contextsDestroyed, surfacesCreated, surfacesDestroyed;
+        static int threadsReleased, displaysTerminated;
+        static EGLContext currentContext;
+        static RuntimeException cleanupFailure;
+
+        static void resetTracking() {
+            contextsCreated = contextsDestroyed = surfacesCreated = surfacesDestroyed = 0;
+            threadsReleased = displaysTerminated = 0;
+            currentContext = EGL14.EGL_NO_CONTEXT;
+            cleanupFailure = null;
+        }
+
+        @Implementation protected static EGLContext eglCreateContext(EGLDisplay display,
+                EGLConfig config, EGLContext shareContext, int[] attributes, int offset) {
+            EGLContext result = ShadowEGL14.eglCreateContext(
+                    display, config, shareContext, attributes, offset);
+            contextsCreated++;
+            return result;
+        }
+
+        @Implementation protected static EGLSurface eglCreateWindowSurface(EGLDisplay display,
+                EGLConfig config, Object window, int[] attributes, int offset) {
+            EGLSurface result = ShadowEGL14.eglCreateWindowSurface(
+                    display, config, window, attributes, offset);
+            surfacesCreated++;
+            return result;
+        }
+
+        @Implementation protected static boolean eglMakeCurrent(EGLDisplay display,
+                EGLSurface draw, EGLSurface read, EGLContext context) {
+            currentContext = context;
+            return true;
+        }
+
+        @Implementation protected static boolean eglDestroySurface(EGLDisplay display,
+                EGLSurface surface) {
+            surfacesDestroyed++;
+            if (cleanupFailure != null) throw cleanupFailure;
+            return true;
+        }
+
+        @Implementation protected static boolean eglDestroyContext(EGLDisplay display,
+                EGLContext context) {
+            contextsDestroyed++;
+            return true;
+        }
+
+        @Implementation protected static boolean eglReleaseThread() {
+            threadsReleased++;
+            return true;
+        }
+
+        @Implementation protected static boolean eglTerminate(EGLDisplay display) {
+            displaysTerminated++;
+            return true;
+        }
+    }
+
+    @Implements(GLES20.class)
+    public static class BoundedGles extends ShadowGLES20 {
+        @Implementation protected static void glGetIntegerv(int name, int[] values, int offset) {
+            if (name == GLES20.GL_MAX_TEXTURE_SIZE) values[offset] = 4096;
+        }
     }
 
     @Test public void anOrdinaryStickerIsStillAccepted() {

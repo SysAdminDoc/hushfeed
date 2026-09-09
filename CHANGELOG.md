@@ -1,5 +1,7 @@
 ## Unreleased
 
+* An MP4 sticker that fails during graphics setup releases its encoder surface and graphics resources. Cleanup still runs if another release step fails, and the original error remains available.
+
 * The two long-press copy choices now copy the current video or sound link. They were wired to double tap, whose settings never offered them. Default double tap is unchanged.
 
 * Turning Inbox hide and expansion options off now preserves TikTok's own decisions. Suggested accounts and stories aren't forced into otherwise unavailable layouts, and a list TikTok already expanded stays expanded.
