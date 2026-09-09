@@ -11,6 +11,9 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction10x
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction11n
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction11x
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction21s
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction35c
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -63,6 +66,10 @@ class BytecodeUtilsTest {
             null,
         ),
     )
+
+    /** The opcode at an index, without dragging the patcher's instruction extensions in. */
+    private fun opcodeAt(body: MutableMethod, index: Int): Opcode =
+        body.implementation!!.instructions.toList()[index].opcode
 
     @Test
     fun `a double returning method takes a double`() {
@@ -136,5 +143,54 @@ class BytecodeUtilsTest {
         val one = field(AccessFlags.PRIVATE, AccessFlags.STATIC)
         one.removeFlags(AccessFlags.PRIVATE)
         assertEquals(AccessFlags.STATIC.value, one.accessFlags)
+    }
+
+    @Test
+    fun `the literal override edits the result of the literal's own call`() {
+        // A literal is loaded a few instructions before the call it is an argument to. Taking
+        // the first move-result anywhere after it took whichever call came first, so a call
+        // that lands in that gap had its own result overridden and the literal's was left
+        // alone. Here the literal is loaded at index 0, an unrelated call takes its result at
+        // index 2, and the literal's call is at index 3.
+        val unrelated = ImmutableMethodReference(
+            "Lcom/example/Other;", "first", emptyList(), "I",
+        )
+        val owner = ImmutableMethodReference(
+            "Lcom/example/Host;", "second", listOf("I"), "I",
+        )
+        val body = method(
+            "I",
+            ImmutableInstruction21s(Opcode.CONST_16, 0, 1234),
+            ImmutableInstruction35c(Opcode.INVOKE_STATIC, 0, 0, 0, 0, 0, 0, unrelated),
+            ImmutableInstruction11x(Opcode.MOVE_RESULT, 0),
+            ImmutableInstruction35c(Opcode.INVOKE_STATIC, 1, 0, 0, 0, 0, 0, owner),
+            ImmutableInstruction11x(Opcode.MOVE_RESULT, 0),
+            ImmutableInstruction11x(Opcode.RETURN, 0),
+        )
+
+        body.insertLiteralOverride(0, true)
+
+        // The override goes after the move-result at index 4, not the one at index 2.
+        assertEquals(Opcode.MOVE_RESULT, opcodeAt(body, 2))
+        assertEquals(Opcode.INVOKE_STATIC, opcodeAt(body, 3))
+        assertEquals(Opcode.MOVE_RESULT, opcodeAt(body, 4))
+        assertEquals(Opcode.CONST, opcodeAt(body, 5))
+    }
+
+    @Test
+    fun `a literal whose call does not take a result is refused rather than guessed at`() {
+        val voidCall = ImmutableMethodReference(
+            "Lcom/example/Other;", "consume", listOf("I"), "V",
+        )
+        val body = method(
+            "I",
+            ImmutableInstruction21s(Opcode.CONST_16, 0, 1234),
+            ImmutableInstruction35c(Opcode.INVOKE_STATIC, 1, 0, 0, 0, 0, 0, voidCall),
+            ImmutableInstruction11x(Opcode.RETURN, 0),
+        )
+
+        assertThrows(IllegalStateException::class.java) {
+            body.insertLiteralOverride(0, true)
+        }
     }
 }

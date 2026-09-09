@@ -11,6 +11,8 @@ import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstructio
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction10x
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction11n
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction12x
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction11x
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction21s
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction21t
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -97,5 +99,52 @@ class FreeRegisterProviderTest {
         val registers = writesHighFirst.getFreeRegisterProvider(0, 2)
         assertEquals(1, registers.getFreeRegister4Bit())
         assertEquals(3, registers.getFreeRegister4Bit())
+    }
+
+    @Test
+    fun `the high half of a wide value is not free`() {
+        // const-wide/16 v2 writes v2 and v3: a long lives in the register named and the one
+        // above it, and dexlib2 names only the low half. The search read the write as freeing
+        // one register and never looked at the other, so v2 came back as free while the return
+        // below was about to read the pair, and v3 was never counted as used at all.
+        val wide = method(
+            4,
+            ImmutableInstruction21s(Opcode.CONST_WIDE_16, 2, 0),
+            ImmutableInstruction11x(Opcode.RETURN_WIDE, 2),
+        )
+
+        assertEquals(0, wide.findFreeRegister(0))
+
+        val registers = wide.getFreeRegisterProvider(0, 2)
+        assertEquals(0, registers.getFreeRegister4Bit())
+        assertEquals(1, registers.getFreeRegister4Bit())
+    }
+
+    @Test
+    fun `an index reached twice answers the same both times`() {
+        // Two arms of a branch converge on index 5, which is itself a branch. A frame that ends
+        // in a branch answers with its own registers plus what its two sides agree on, but only
+        // the first half of that was published for the next visitor, so the second arm was told
+        // index 5 had nothing to offer. The intersection of the two arms then collapsed to one
+        // register where four were free.
+        val converging = method(
+            6,
+            ImmutableInstruction21t(Opcode.IF_EQZ, 0, 4),
+            ImmutableInstruction11n(Opcode.CONST_4, 1, 0),
+            ImmutableInstruction10t(Opcode.GOTO, 3),
+            ImmutableInstruction11n(Opcode.CONST_4, 2, 0),
+            ImmutableInstruction10t(Opcode.GOTO, 1),
+            ImmutableInstruction21t(Opcode.IF_EQZ, 0, 4),
+            ImmutableInstruction11n(Opcode.CONST_4, 3, 0),
+            ImmutableInstruction10x(Opcode.RETURN_VOID),
+            ImmutableInstruction11n(Opcode.CONST_4, 4, 0),
+            ImmutableInstruction10x(Opcode.RETURN_VOID),
+        )
+
+        val registers = converging.getFreeRegisterProvider(0, 4)
+        assertEquals(1, registers.getFreeRegister4Bit())
+        assertEquals(3, registers.getFreeRegister4Bit())
+        assertEquals(4, registers.getFreeRegister4Bit())
+        assertEquals(5, registers.getFreeRegister4Bit())
     }
 }

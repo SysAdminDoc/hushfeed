@@ -355,18 +355,36 @@ private fun Method.findFreeRegistersInternal(
 
     fun Collection<Int>.numberOf4BitRegisters() = this.count { it < 16 }
 
-    foundFreeRegistersAtIndex[startIndex]?.let {
-        // Recursive call to a branch index that has already been explored.
-        return (it - registersToExclude.toSet()).toList()
+    if (foundFreeRegistersAtIndex.containsKey(startIndex)) {
+        // Null means this index is still being explored further up the stack, which is what a
+        // loop looks like from here. Its answer is half worked out, so there is nothing honest
+        // to hand back: the registers it has recorded so far are the ones proved free before
+        // the branch, not the ones free around the whole loop.
+        val explored = foundFreeRegistersAtIndex[startIndex] ?: return emptyList()
+        // A branch index that has already been explored to the end.
+        return (explored - registersToExclude.toSet()).toList()
     }
+    foundFreeRegistersAtIndex[startIndex] = null
 
     val usedRegisters = registersToExclude.toMutableSet()
     val freeRegisters = mutableSetOf<Int>()
-    foundFreeRegistersAtIndex[startIndex] = freeRegisters
+
+    /**
+     * Records the whole answer for this index, not the part of it worked out before a branch.
+     *
+     * <p>The set used to be published as it was being filled. A frame that ends in a branch
+     * returns its own registers plus what the branches agree on, and only the first half was
+     * ever memoised, so the second visitor to that index got less than the truth and a search
+     * that should have found four registers found one.
+     */
+    fun remember(answer: List<Int>): List<Int> {
+        foundFreeRegistersAtIndex[startIndex] = answer.toSet()
+        return answer
+    }
 
     for (i in startIndex until instructions.count()) {
         val instruction = getInstruction(i)
-        val instructionRegisters = instruction.registersUsed
+        val instructionRegisters = instruction.registersUsedIncludingWideHalves
 
         // Check for write-only register.
         val writeRegister = instruction.writeRegister
@@ -379,9 +397,12 @@ private fun Method.findFreeRegistersInternal(
             // occurrences alone called it write-only and handed out a register the host was
             // still accumulating into.
             val readsItsDestination = instruction.opcode.name.endsWith("/2addr")
+            // A wide write covers two registers, and only the low half is named. Handing the
+            // named one out is handing out half of a value the host is about to read back.
+            val writesAPair = instruction.touchesWideRegisters
             // If it appears only once, it's write-only (to write).
             // If it appears more than once, it's also read.
-            if (occurrences <= 1 && !readsItsDestination) {
+            if (occurrences <= 1 && !readsItsDestination && !writesAPair) {
                 if (logFreeRegisterSearch) println(" found free register at $i: $writeRegister " +
                         "opcode: " + instruction.opcode + " reference: " + (instruction.getReference()))
                 freeRegisters.add(writeRegister)
@@ -391,7 +412,7 @@ private fun Method.findFreeRegistersInternal(
                 // because the intersection of free registers from different branches may be
                 // less than the requested number of registers.
                 if (currentDepth == 0 && freeRegisters.numberOf4BitRegisters() >= numberOfFreeRegistersNeeded) {
-                    return freeRegisters.toList()
+                    return remember(freeRegisters.toList())
                 }
             }
         }
@@ -405,27 +426,27 @@ private fun Method.findFreeRegistersInternal(
             val unusedRegisters = allRegisters - usedRegisters
             freeRegisters.addAll(unusedRegisters)
             if (logFreeRegisterSearch) println(" encountered return index: $i and found: $freeRegisters")
-            return freeRegisters.toList()
+            return remember(freeRegisters.toList())
         }
 
         if (instruction.isSwitchInstruction) {
             // For now, do not handle the complexity of a switch statement and handle as a leaf node.
             if (logFreeRegisterSearch) println(" encountered switch index: $i opcode: " + instruction.opcode)
-            return freeRegisters.toList()
+            return remember(freeRegisters.toList())
         }
 
         if (instruction.isUnconditionalBranchInstruction) {
             if (logFreeRegisterSearch) println(" encountered unconditional branch index: $i opcode: " + instruction.opcode)
 
             // Continue searching from the go-to index.
-            return (freeRegisters + findFreeRegistersInternal(
+            return remember((freeRegisters + findFreeRegistersInternal(
                 startIndex = getBranchTargetInstructionIndex(instruction, i, offsetArray),
                 numberOfFreeRegistersNeeded = numberOfFreeRegistersNeeded,
                 currentDepth = currentDepth, // Same depth since it's a continuation of single path.
                 foundFreeRegistersAtIndex = foundFreeRegistersAtIndex,
                 registersToExclude = usedRegisters.toList(),
                 offsetArray = offsetArray
-            )).toList()
+            )).toList())
         }
 
         if (instruction.isConditionalBranchInstruction) {
@@ -452,7 +473,10 @@ private fun Method.findFreeRegistersInternal(
             )
             if (logFreeRegisterSearch) println(" fall thru registers: $fallThruFreeRegisters")
 
-            return (freeRegisters + branchFreeRegisters.intersect(fallThruFreeRegisters.toSet())).toList()
+            return remember(
+                (freeRegisters + branchFreeRegisters.intersect(fallThruFreeRegisters.toSet()))
+                    .toList()
+            )
         }
     }
 
@@ -547,6 +571,28 @@ private fun Method.findInstructionIndexByOffset(
 /**
  * @return The registers used by this instruction.
  */
+/**
+ * Whether this opcode's registers hold a long or a double, each of which occupies the register
+ * named and the one above it.
+ *
+ * <p>Deliberately over-wide: it names every opcode whose mnemonic mentions a wide value at all,
+ * and both halves of every register such an opcode touches are then treated as busy, including
+ * the narrow ones (the destination of long-to-int, say). Marking a neighbour as busy costs at
+ * most one register that was in fact free. The other direction hands out the high half of a
+ * live long, and the host comes back to a number nobody wrote.
+ */
+internal val Instruction.touchesWideRegisters: Boolean
+    get() = opcode.name.let { name ->
+        name.contains("wide") || name.contains("long") || name.contains("double")
+    }
+
+/** [registersUsed], with the high half of each register for an opcode that works in pairs. */
+internal val Instruction.registersUsedIncludingWideHalves: List<Int>
+    get() {
+        val named = registersUsed
+        return if (touchesWideRegisters) named + named.map { it + 1 } else named
+    }
+
 val Instruction.registersUsed: List<Int>
     get() = when (this) {
         is FiveRegisterInstruction -> {

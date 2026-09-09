@@ -659,6 +659,31 @@ fun Method.findInstructionIndicesReversedOrThrow(filter: InstructionFilter): Lis
  * Overrides the first move result with an extension call.
  * Suitable for calls to extension code to override boolean and integer values.
  */
+/**
+ * The `move-result` belonging to the call the literal was loaded for.
+ *
+ * <p>Both overrides used to take the first `move-result` anywhere after the literal. A literal
+ * is usually loaded a few instructions before the call it is an argument to, and any other call
+ * that lands in that gap owns a `move-result` of its own, so the override could be written onto
+ * a value that has nothing to do with the literal. The call the literal belongs to is the first
+ * one that reads the register it was loaded into, and a `move-result` belongs to the invoke
+ * directly above it.
+ */
+private fun MutableMethod.indexOfLiteralCallResult(literalIndex: Int): Int {
+    val literalRegister = getInstruction<OneRegisterInstruction>(literalIndex).registerA
+    val invokeIndex = indexOfFirstInstructionOrThrow(literalIndex) {
+        opcode?.name?.startsWith("invoke-") == true && literalRegister in registersUsed
+    }
+    val resultIndex = invokeIndex + 1
+    check(
+        resultIndex < instructions.count() &&
+            getInstruction(resultIndex).opcode == MOVE_RESULT
+    ) {
+        "The call after the literal at index $literalIndex does not take its result"
+    }
+    return resultIndex
+}
+
 internal fun MutableMethod.insertLiteralOverride(literal: Long, extensionMethodDescriptor: String) {
     val literalIndex = indexOfFirstLiteralInstructionOrThrow(literal)
     insertLiteralOverride(literalIndex, extensionMethodDescriptor)
@@ -666,7 +691,7 @@ internal fun MutableMethod.insertLiteralOverride(literal: Long, extensionMethodD
 
 internal fun MutableMethod.insertLiteralOverride(literalIndex: Int, extensionMethodDescriptor: String) {
     // TODO: make this work with objects and wide primitive values.
-    val index = indexOfFirstInstructionOrThrow(literalIndex, MOVE_RESULT)
+    val index = indexOfLiteralCallResult(literalIndex)
     val register = getInstruction<OneRegisterInstruction>(index).registerA
 
     val operation = if (register < 16) {
@@ -696,7 +721,7 @@ internal fun MutableMethod.insertLiteralOverride(literal: Long, override: Boolea
  * Constant value override of the first MOVE_RESULT after the index parameter.
  */
 internal fun MutableMethod.insertLiteralOverride(literalIndex: Int, override: Boolean) {
-    val index = indexOfFirstInstructionOrThrow(literalIndex, MOVE_RESULT)
+    val index = indexOfLiteralCallResult(literalIndex)
     val register = getInstruction<OneRegisterInstruction>(index).registerA
     val overrideValue = if (override) "0x1" else "0x0"
 
