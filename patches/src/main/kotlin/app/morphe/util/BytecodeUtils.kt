@@ -1065,7 +1065,7 @@ fun MutableMethod.returnEarly(value: Void?) {
     check(returnType == 'L' || returnType == '[') {
         RETURN_TYPE_MISMATCH
     }
-    overrideReturnValue(false.toHexString(), false)
+    overrideReturnValue(false.toHexString(), false, nullReturn = true)
 }
 
 /**
@@ -1191,11 +1191,21 @@ fun MutableMethod.returnLate(value: Void?) {
         RETURN_TYPE_MISMATCH
     }
 
-    overrideReturnValue(false.toHexString(), true)
+    overrideReturnValue(false.toHexString(), true, nullReturn = true)
 }
 
-private fun MutableMethod.overrideReturnValue(value: String, returnLate: Boolean) {
-    val instructions = if (returnType == "Ljava/lang/String;" || returnType == "Ljava/lang/CharSequence;" ) {
+private fun MutableMethod.overrideReturnValue(
+    value: String,
+    returnLate: Boolean,
+    nullReturn: Boolean = false,
+) {
+    // A String or CharSequence return type takes the const-string path below, which is right for
+    // returnEarly(String) and wrong for returnEarly(null): it wrote the text "0x0" where the
+    // caller asked for null. A null return on those types is the same const/4 as any other
+    // object.
+    val stringValue = !nullReturn &&
+        (returnType == "Ljava/lang/String;" || returnType == "Ljava/lang/CharSequence;")
+    val instructions = if (stringValue) {
         """
             const-string v0, "$value"
             return-object v0

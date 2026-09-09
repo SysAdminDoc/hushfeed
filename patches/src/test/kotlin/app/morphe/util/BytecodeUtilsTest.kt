@@ -7,7 +7,10 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.immutable.ImmutableField
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction10x
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction11n
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction11x
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -21,7 +24,10 @@ import org.junit.Test
  * rather than read out of an APK, so a case says what shape it needs and no more.
  */
 class BytecodeUtilsTest {
-    private fun method(returnType: String): MutableMethod = MutableMethod(
+    private fun method(
+        returnType: String,
+        vararg instructions: Instruction = arrayOf(ImmutableInstruction10x(Opcode.RETURN_VOID)),
+    ): MutableMethod = MutableMethod(
         ImmutableMethod(
             "Lcom/example/Host;",
             "value",
@@ -32,11 +38,18 @@ class BytecodeUtilsTest {
             null,
             ImmutableMethodImplementation(
                 1,
-                listOf(ImmutableInstruction10x(Opcode.RETURN_VOID)),
+                instructions.toList(),
                 null,
                 null,
             ),
         ),
+    )
+
+    /** A body that hands an object back, which is what returnLate needs to find. */
+    private fun returnsAnObject(returnType: String): MutableMethod = method(
+        returnType,
+        ImmutableInstruction11n(Opcode.CONST_4, 0, 0),
+        ImmutableInstruction11x(Opcode.RETURN_OBJECT, 0),
     )
 
     private fun field(vararg flags: AccessFlags): MutableField = MutableField(
@@ -75,13 +88,34 @@ class BytecodeUtilsTest {
         array.returnEarly(null)
         assertEquals(Opcode.CONST_4, array.implementation!!.instructions.first().opcode)
 
-        // Not String: overrideReturnValue takes String and CharSequence down a const-string path
-        // before it looks at the first character, so a null return on one of those writes the
-        // text "0x0" rather than null. Its twin returnLate(Void?) does the same, so that is its
-        // own item rather than something this change alters.
         val obj = method("Ljava/util/List;")
         obj.returnEarly(null)
         assertEquals(Opcode.CONST_4, obj.implementation!!.instructions.first().opcode)
+
+        // String and CharSequence took a const-string path that is chosen before the first
+        // character is looked at, so a null return on either wrote the text "0x0" and the caller
+        // got a three character string where it asked for null. returnLate(Void?) did the same.
+        for (text in listOf("Ljava/lang/String;", "Ljava/lang/CharSequence;")) {
+            val early = method(text)
+            early.returnEarly(null)
+            assertEquals(
+                "returnEarly(null) on a method returning $text",
+                Opcode.CONST_4,
+                early.implementation!!.instructions.first().opcode,
+            )
+
+            val late = returnsAnObject(text)
+            late.returnLate(null)
+            assertTrue(
+                "returnLate(null) on a method returning $text wrote a string",
+                late.implementation!!.instructions.none { it.opcode == Opcode.CONST_STRING },
+            )
+            assertEquals(
+                "returnLate(null) on a method returning $text added no null",
+                2,
+                late.implementation!!.instructions.count { it.opcode == Opcode.CONST_4 },
+            )
+        }
 
         for (primitive in listOf("I", "V", "Z", "J")) {
             assertThrows(
