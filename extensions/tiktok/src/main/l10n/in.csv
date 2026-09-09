@@ -613,6 +613,11 @@ Every hook found what it needed across %1$d surfaces.,Setiap hook menemukan yang
 Daily video budget,Anggaran video harian
 Daily time budget,Anggaran waktu harian
 Hold the feed after the budget,Tahan feed setelah anggaran habis
+Quieten the feed while comments are open,Senyapkan feed saat komentar terbuka
+"Off by default. The video behind the comment sheet keeps playing, with sound, while you read. Switched on, Hushfeed asks for the sound the moment a sheet opens and hands it back when it closes, which is how one app tells another to stop.","Mati secara bawaan. Video di balik lembar komentar tetap berjalan, lengkap dengan suara, sementara Anda membaca. Saat aktif, Hushfeed meminta fokus audio begitu lembar komentar dibuka dan mengembalikannya saat ditutup. Begitulah satu aplikasi memberi tahu aplikasi lain untuk berhenti."
+Do not start the feed on returning,Jangan mulai feed saat kembali
+"Off by default. TikTok plays again by itself every time you come back to the app. Switched on, the feed waits for one tap first. The tab bar is left alone, so messages, a profile and search are still one tap away.","Mati secara bawaan. TikTok memutar sendiri setiap kali Anda kembali ke aplikasi. Saat aktif, feed menunggu satu ketukan lebih dulu. Bilah tab dibiarkan, jadi pesan, profil dan pencarian tetap sejauh satu ketukan."
+Tap to start the feed,Ketuk untuk memulai feed
 Fade the feed out before the hold,Redupkan feed sebelum feed ditahan
 "Off by default. Switched on, the feed dims over the last three quarters of a minute of a time budget, most of it in the final half minute, so the hold is somewhere you arrive rather than somewhere you land. Needs a budget in minutes: a budget counted in videos has no time left to follow. Nothing fades if you have turned animations off.","Mati secara bawaan. Saat aktif, feed meredup selama tiga perempat menit terakhir dari anggaran waktu, sebagian besar pada setengah menit terakhir, sehingga feed yang ditahan bukan kejutan. Perlu anggaran dalam menit: anggaran yang dihitung per video tidak punya sisa waktu untuk diikuti. Tidak ada yang meredup jika animasi dimatikan."
 Start the day at,Hari dimulai pukul

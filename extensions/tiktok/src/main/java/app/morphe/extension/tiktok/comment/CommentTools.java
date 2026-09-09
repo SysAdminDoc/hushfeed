@@ -135,6 +135,10 @@ public final class CommentTools {
         if (itemView == null || manager == null) {
             return;
         }
+        // Before the switches below: a sheet is open whichever of the comment tools are on,
+        // and this is the only callback that says so.
+        app.morphe.extension.tiktok.playback.PausePlayback.onCommentCellBound(itemView);
+
         boolean block = Settings.BLOCK_FROM_COMMENT.get();
         if (!block) {
             // The takeover used to be one way. A cell sitting in the RecyclerView's pool kept it

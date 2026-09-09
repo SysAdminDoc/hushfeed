@@ -29,7 +29,10 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
     public static boolean isAvailable() {
         return SettingsStatus.playbackQualityEnabled || SettingsStatus.playbackSpeedEnabled
                 || SettingsStatus.autoAdvanceEnabled || SettingsStatus.videoFitEnabled
-                || SettingsStatus.blockAuthorEnabled;
+                || SettingsStatus.blockAuthorEnabled
+                // The comment sheet switch is a playback switch, and on a bundle with the
+                // comment tools and none of the players it is the only thing on this page.
+                || SettingsStatus.commentToolsEnabled;
     }
 
     @Override
@@ -54,7 +57,21 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
         }
         // The counting hangs off the hook that tracks which video is on screen, which the
         // block author patch installs. Without it these would take a number and count nothing.
+        if (SettingsStatus.commentToolsEnabled) {
+            addPreference(new TogglePreference(context, "Quieten the feed while comments are open",
+                    "Off by default. The video behind the comment sheet keeps playing, with "
+                            + "sound, while you read. Switched on, Hushfeed asks for the sound "
+                            + "the moment a sheet opens and hands it back when it closes, which "
+                            + "is how one app tells another to stop.",
+                    Settings.PAUSE_ON_COMMENTS));
+        }
         if (SettingsStatus.blockAuthorEnabled) {
+            addPreference(new TogglePreference(context, "Do not start the feed on returning",
+                    "Off by default. TikTok plays again by itself every time you come back to "
+                            + "the app. Switched on, the feed waits for one tap first. The tab "
+                            + "bar is left alone, so messages, a profile and search are still "
+                            + "one tap away.",
+                    Settings.NO_RESUME_ON_FOREGROUND));
         // Both budgets carry how much of today has gone, which until now was only visible in
         // the one notice when it ran out. Read when the page is built, which is what a settings
         // screen shows: it is a figure for the day, not a ticker.

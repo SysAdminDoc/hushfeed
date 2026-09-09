@@ -10,6 +10,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
+import app.morphe.patches.tiktok.misc.inbox.MainActivityOnCreateFingerprint
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -36,6 +37,15 @@ val blockAuthorPatch = bytecodePatch(
             0,
             "invoke-static {}, " +
                 "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableBlockAuthor()V",
+        )
+
+        // The activity, so the pause switches can follow the app going away and coming back.
+        // p0 is the activity, and /range because a parameter register is usually above v15.
+        MainActivityOnCreateFingerprint.method.addInstruction(
+            0,
+            "invoke-static/range { p0 .. p0 }, " +
+                "Lapp/morphe/extension/tiktok/playback/PausePlayback;->" +
+                "install(Landroid/app/Activity;)V",
         )
 
         // Track the author of whichever video is currently on screen.

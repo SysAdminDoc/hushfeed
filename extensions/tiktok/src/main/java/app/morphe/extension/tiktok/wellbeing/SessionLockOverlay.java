@@ -395,7 +395,13 @@ public final class SessionLockOverlay {
      * which leaves the panel covering everything, because a hold that can be walked around is
      * worse than one that covers a tab bar.
      */
-    private static int navigationHeight(Activity activity, ViewGroup root) {
+    /**
+     * How much of the bottom of the screen belongs to TikTok's own navigation.
+     *
+     * <p>Visible because anything this project puts over the feed owes the tab bar the same
+     * courtesy the hold does: messages, a profile and search stay one tap away.
+     */
+    public static int navigationHeight(Activity activity, ViewGroup root) {
         View homeTab = FeedVisibility.homeTabView(activity);
         if (homeTab == null) return 0;
 

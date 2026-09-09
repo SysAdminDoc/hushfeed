@@ -210,6 +210,19 @@ public class Settings extends BaseSettings {
     public static final IntegerSetting AUTO_ADVANCE_LIMIT = new IntegerSetting(
             "auto_advance_limit", 0, false, Setting.parent(AUTO_ADVANCE)).withRange(0, 1000);
     /**
+     * Quietens the feed while a comment sheet is open, and gives the sound back when it closes.
+     * Off by default.
+     */
+    public static final BooleanSetting PAUSE_ON_COMMENTS = new BooleanSetting(
+            "pause_on_comments", FALSE, true);
+    /**
+     * Holds the feed on returning to the app until the reader taps. Off by default. TikTok
+     * starts playing again by itself on every return, which is the one moment nobody has asked
+     * for anything.
+     */
+    public static final BooleanSetting NO_RESUME_ON_FOREGROUND = new BooleanSetting(
+            "no_resume_on_foreground", FALSE, true);
+    /**
      * A daily budget for the feed, off at zero. The two counts are independent of
      * {@link #AUTO_ADVANCE_LIMIT}, which only ever counted videos Hushfeed itself advanced past.
      */
