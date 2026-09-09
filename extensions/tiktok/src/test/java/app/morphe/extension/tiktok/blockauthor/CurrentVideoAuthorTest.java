@@ -5,9 +5,11 @@ import static org.junit.Assert.assertNull;
 
 import android.preference.PreferenceActivity;
 
+import app.morphe.extension.tiktok.SettingsContextRule;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
 
+import org.junit.Rule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +25,7 @@ import org.robolectric.annotation.Config;
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
 public class CurrentVideoAuthorTest {
+    @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
     public static final class TestActivity extends PreferenceActivity {}
 
     @Before public void setUp() {

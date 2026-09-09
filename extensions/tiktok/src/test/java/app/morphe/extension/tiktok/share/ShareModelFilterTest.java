@@ -1,10 +1,12 @@
 package app.morphe.extension.tiktok.share;
 
 import static org.junit.Assert.*;
+import app.morphe.extension.tiktok.SettingsContextRule;
 import app.morphe.extension.tiktok.settings.Settings;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -21,6 +23,9 @@ public class ShareModelFilterTest {
         public String key() { return key; }
         public String getLabel() { return label; }
     }
+    // Every case here writes a Setting. Run this class first in a sandbox and all three
+    // failed, because Setting's static initialiser needs a context and only @After set one.
+    @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
     @After public void reset() {
         Settings.SHARE_HIDDEN_ITEMS.save("");
         Settings.HIDE_SHARE_CHANNELS.save(false);

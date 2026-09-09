@@ -6,11 +6,13 @@ import android.preference.PreferenceScreen;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
+import app.morphe.extension.tiktok.SettingsContextRule;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.ChoicePreference;
 import app.morphe.extension.tiktok.settings.preference.categories.InterfacePreferenceCategory;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.After;
 import org.junit.runner.RunWith;
@@ -23,6 +25,7 @@ import org.robolectric.annotation.GraphicsMode;
 @Config(sdk = 28)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class GestureActionsTest {
+    @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
     @After public void tearDown() {
         SettingsStatus.doubleTapEnabled = false;
         SettingsStatus.longPressEnabled = false;

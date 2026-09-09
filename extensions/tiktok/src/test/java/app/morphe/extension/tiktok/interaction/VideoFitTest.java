@@ -10,11 +10,13 @@ import android.preference.PreferenceScreen;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import app.morphe.extension.tiktok.SettingsContextRule;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.categories.PlaybackPreferenceCategory;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -25,6 +27,7 @@ import org.robolectric.annotation.Config;
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
 public class VideoFitTest {
+    @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
     public static final class TestActivity extends PreferenceActivity {
         @Override public void onCreate(android.os.Bundle state) {
             setTheme(android.R.style.Theme_Material_NoActionBar);

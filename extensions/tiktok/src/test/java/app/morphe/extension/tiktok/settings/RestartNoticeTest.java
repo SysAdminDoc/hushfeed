@@ -3,9 +3,11 @@ package app.morphe.extension.tiktok.settings;
 import static org.junit.Assert.*;
 import android.os.Bundle;
 import android.preference.SwitchPreference;
+import app.morphe.extension.tiktok.SettingsContextRule;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.preference.NumberInputPreference;
 import app.morphe.extension.tiktok.settings.preference.TikTokPreferenceFragment;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.After;
 import org.junit.runner.RunWith;
@@ -20,6 +22,7 @@ import org.robolectric.shadows.ShadowToast;
 @Config(sdk = 28, qualifiers = "night")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class RestartNoticeTest {
+    @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
     @After public void tearDownStatus() {
         SettingsStatus.foldableSplitViewEnabled = false;
     }

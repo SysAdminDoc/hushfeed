@@ -11,9 +11,11 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
 
+import app.morphe.extension.tiktok.SettingsContextRule;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
 
+import org.junit.Rule;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,6 +26,7 @@ import org.robolectric.annotation.Config;
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
 public class ShareActionChecklistTest {
+    @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
     @After public void reset() {
         Settings.SHARE_ACTION_CATALOG.save("");
         Settings.SHARE_HIDDEN_ITEMS.save("");

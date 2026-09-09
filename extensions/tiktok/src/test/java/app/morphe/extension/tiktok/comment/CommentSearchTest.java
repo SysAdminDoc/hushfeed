@@ -16,11 +16,13 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import app.morphe.extension.tiktok.SettingsContextRule;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.categories.CommentsPreferenceCategory;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -31,6 +33,7 @@ import org.robolectric.annotation.Config;
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
 public class CommentSearchTest {
+    @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
     public static final class TestActivity extends PreferenceActivity {
         @Override public void onCreate(android.os.Bundle state) {
             setTheme(android.R.style.Theme_Material_NoActionBar);

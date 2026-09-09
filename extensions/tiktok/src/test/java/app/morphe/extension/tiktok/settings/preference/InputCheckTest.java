@@ -15,10 +15,12 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.preference.Preference;
 
+import app.morphe.extension.tiktok.SettingsContextRule;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 
+import org.junit.Rule;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +44,7 @@ import java.lang.reflect.Modifier;
 @Config(sdk = 28, qualifiers = "night")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class InputCheckTest {
+    @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
     @After public void reset() throws Exception {
         for (Field field : SettingsStatus.class.getDeclaredFields()) {
             if (field.getType() == boolean.class && Modifier.isStatic(field.getModifiers())) {

@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.CheckBox;
 
+import app.morphe.extension.tiktok.SettingsContextRule;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
 
@@ -21,6 +22,7 @@ import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -37,6 +39,7 @@ import org.robolectric.annotation.Config;
 @Config(sdk = 29)
 @SuppressWarnings("deprecation")
 public class TabSelectionAccessibilityTest {
+    @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
     public static class Host extends android.preference.PreferenceActivity {}
 
     @Test public void aTabRowSaysWhetherItIsOnAndSaysSoAgainAfterATap() throws Exception {

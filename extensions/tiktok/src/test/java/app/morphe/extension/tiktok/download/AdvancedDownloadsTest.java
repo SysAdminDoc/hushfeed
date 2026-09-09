@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 import android.os.Environment;
 import android.os.Looper;
 import android.preference.PreferenceActivity;
+import app.morphe.extension.tiktok.SettingsContextRule;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
@@ -18,6 +19,7 @@ import java.util.Base64;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.After;
 import org.junit.runner.RunWith;
@@ -32,6 +34,7 @@ import org.robolectric.annotation.GraphicsMode;
 @Config(sdk = 28)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class AdvancedDownloadsTest {
+    @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
     @After public void tearDown() {
         SettingsStatus.advancedDownloadsEnabled = false;
     }

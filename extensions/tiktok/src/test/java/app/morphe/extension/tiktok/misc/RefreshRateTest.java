@@ -6,11 +6,13 @@ import static org.junit.Assert.assertNotNull;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
 
+import app.morphe.extension.tiktok.SettingsContextRule;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.categories.ExtensionPreferenceCategory;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -21,6 +23,7 @@ import org.robolectric.annotation.Config;
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
 public class RefreshRateTest {
+    @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
     public static final class TestActivity extends PreferenceActivity {
         @Override public void onCreate(android.os.Bundle state) {
             setTheme(android.R.style.Theme_Material_NoActionBar);

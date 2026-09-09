@@ -2,10 +2,12 @@ package app.morphe.extension.tiktok.share;
 
 import static org.junit.Assert.assertEquals;
 
+import app.morphe.extension.tiktok.SettingsContextRule;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.tiktok.settings.Settings;
 
+import org.junit.Rule;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,6 +19,7 @@ import org.robolectric.annotation.Config;
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
 public class ShareUrlSanitizerTest {
+    @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
 
     @After
     public void reset() {

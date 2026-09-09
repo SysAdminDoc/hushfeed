@@ -3,10 +3,12 @@ package app.morphe.extension.tiktok.capture;
 import static org.junit.Assert.*;
 import android.app.Activity;
 import android.view.WindowManager;
+import app.morphe.extension.tiktok.SettingsContextRule;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.categories.InterfacePreferenceCategory;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.After;
 import org.junit.runner.RunWith;
@@ -19,6 +21,7 @@ import org.robolectric.annotation.GraphicsMode;
 @Config(sdk = 28)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class ScreenCaptureTest {
+    @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
     @After public void tearDown() {
         SettingsStatus.screenCaptureEnabled = false;
     }
