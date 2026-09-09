@@ -110,6 +110,53 @@ public class FeatureGatePagesTest {
         }
     }
 
+    /**
+     * The search field at the top of the Lab was a fixed 48dp box around 16sp text. At double
+     * text size that is 32sp of glyphs in a box built for 16, so the tops and tails of what the
+     * reader had typed were cut off. 48dp is the floor a finger needs, not the height.
+     */
+    @Test @Config(qualifiers = "w360dp-h640dp-night-mdpi", fontScale = 2)
+    public void theLabSearchFieldGrowsWithTheTextAndKeepsItsFingerSizedFloor() throws Exception {
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            assertEquals("the font scale did not take, so this proves nothing",
+                    2f, activity.getResources().getConfiguration().fontScale, 0.01f);
+            FeatureGateLabStore.resetAllLabData();
+            FeatureGateLabSession.begin();
+            var entry = new FeatureGateCatalog.Entry("3p_login_optimization",
+                    "3p Login Optimization", "abmock", "INT", true, true,
+                    List.of(), List.of(), List.of(), "", "", false, null, null);
+            var cached = FeatureGateCatalog.class.getDeclaredField("cachedSnapshot");
+            cached.setAccessible(true);
+            cached.set(null, new FeatureGateCatalog.Snapshot(
+                    List.of(entry), Map.of(entry.identity(), entry), 0, 0, true));
+            FeatureGateLabFragment lab = new FeatureGateLabFragment();
+            attach(activity, lab);
+
+            EditText search = find(lab.getView(), EditText.class);
+            assertNotNull("the Lab has no search field, so this proves nothing", search);
+            assertEquals("the search field lost the floor a finger needs",
+                    FeatureGateLabUi.dp(activity, 48), search.getMinimumHeight());
+
+            search.setText("login");
+            View root = lab.getView();
+            root.measure(
+                    View.MeasureSpec.makeMeasureSpec(
+                            activity.getResources().getDisplayMetrics().widthPixels,
+                            View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+            root.layout(0, 0, root.getMeasuredWidth(), root.getMeasuredHeight());
+
+            android.text.Layout typed = search.getLayout();
+            assertNotNull("what was typed was never laid out", typed);
+            int needed = typed.getHeight() + search.getPaddingTop() + search.getPaddingBottom();
+            assertTrue("the search field is " + search.getHeight() + "px around " + needed
+                            + "px of text at double text size",
+                    search.getHeight() >= needed);
+        }
+    }
+
     private static List<TextView> labels(View view) {
         List<TextView> found = new java.util.ArrayList<>();
         if (view instanceof TextView) {
