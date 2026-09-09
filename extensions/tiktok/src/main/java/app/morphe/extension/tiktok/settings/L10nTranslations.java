@@ -48,7 +48,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1648);
+        Map<String, String> table = new HashMap<>(1650);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -1434,6 +1434,8 @@ public final class L10nTranslations {
                 "Videoschleife beenden");
         table.put("Stop videos at the end instead of replaying them.",
                 "Videos am Ende anhalten, statt sie zu wiederholen.");
+        table.put("Storage permission is needed to save a profile picture",
+                "Zum Speichern eines Profilbilds wird die Speicherberechtigung gebraucht");
         table.put("Storage permission is needed to save a sound",
                 "Zum Speichern eines Sounds wird die Speicherberechtigung gebraucht");
         table.put("Storage permission is needed to save a story",
@@ -1538,11 +1540,11 @@ public final class L10nTranslations {
                 "Es gab nichts zurückzuholen");
         table.put("This catalog entry is no longer available. Refresh the Lab and try again.",
                 "Dieser Katalogeintrag ist nicht mehr verfügbar. Das Labor aktualisieren und es erneut versuchen.");
-        table.put("This configuration has no fields that can be copied and changed safely on this build.",
-                "Diese Konfiguration hat keine Felder, die sich in diesem Build gefahrlos kopieren und ändern lassen.");
     }
 
     private static void fillDe12(Map<String, String> table) {
+        table.put("This configuration has no fields that can be copied and changed safely on this build.",
+                "Diese Konfiguration hat keine Felder, die sich in diesem Build gefahrlos kopieren und ändern lassen.");
         table.put("This line opens a rule and does not finish it: %1$s. Write two phrases as \"a\" & \"b\" for both, or \"a\" !& \"b\" for the first without the second.",
                 "Diese Zeile beginnt eine Regel und beendet sie nicht: %1$s. Schreiben Sie zwei Wendungen als \"a\" & \"b\" für beide oder als \"a\" !& \"b\" für die erste ohne die zweite.");
         table.put("This phone has no file picker, so there is no way to choose a file here.",
@@ -1661,11 +1663,11 @@ public final class L10nTranslations {
                 "Das gewählte Land und die Anbieterwerte verwenden. TikTok neu starten, damit das gilt.");
         table.put("Use the selected country. Restart TikTok to apply this.",
                 "Das gewählte Land verwenden. TikTok neu starten, damit das gilt.");
-        table.put("Use the split layout on wider screens. Restart TikTok to apply this, or unfold again if the old layout is still there.",
-                "Auf breiteren Bildschirmen das geteilte Layout verwenden. TikTok neu starten, damit das gilt, oder erneut aufklappen, wenn das alte Layout noch da ist.");
     }
 
     private static void fillDe13(Map<String, String> table) {
+        table.put("Use the split layout on wider screens. Restart TikTok to apply this, or unfold again if the old layout is still there.",
+                "Auf breiteren Bildschirmen das geteilte Layout verwenden. TikTok neu starten, damit das gilt, oder erneut aufklappen, wenn das alte Layout noch da ist.");
         table.put("Use value",
                 "Wert verwenden");
         table.put("Use your own offline videos limit",
@@ -1757,7 +1759,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(1648);
+        Map<String, String> table = new HashMap<>(1650);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -3143,6 +3145,8 @@ public final class L10nTranslations {
                 "Parar la repetición de los vídeos");
         table.put("Stop videos at the end instead of replaying them.",
                 "Parar los vídeos al final en vez de volver a reproducirlos.");
+        table.put("Storage permission is needed to save a profile picture",
+                "Hace falta permiso de almacenamiento para guardar una foto de perfil");
         table.put("Storage permission is needed to save a sound",
                 "Hace falta permiso de almacenamiento para guardar un sonido");
         table.put("Storage permission is needed to save a story",
@@ -3247,11 +3251,11 @@ public final class L10nTranslations {
                 "No había nada que recuperar");
         table.put("This catalog entry is no longer available. Refresh the Lab and try again.",
                 "Esta entrada del catálogo ya no está disponible. Actualiza el Laboratorio e inténtalo otra vez.");
-        table.put("This configuration has no fields that can be copied and changed safely on this build.",
-                "Esta configuración no tiene campos que se puedan copiar y cambiar con seguridad en esta compilación.");
     }
 
     private static void fillEs12(Map<String, String> table) {
+        table.put("This configuration has no fields that can be copied and changed safely on this build.",
+                "Esta configuración no tiene campos que se puedan copiar y cambiar con seguridad en esta compilación.");
         table.put("This line opens a rule and does not finish it: %1$s. Write two phrases as \"a\" & \"b\" for both, or \"a\" !& \"b\" for the first without the second.",
                 "Esta línea abre una regla y no la termina: %1$s. Escribe dos frases como \"a\" & \"b\" para pedir las dos, o \"a\" !& \"b\" para la primera sin la segunda.");
         table.put("This phone has no file picker, so there is no way to choose a file here.",
@@ -3370,11 +3374,11 @@ public final class L10nTranslations {
                 "Usar el país y los valores de operador seleccionados. Reinicia TikTok para que se aplique.");
         table.put("Use the selected country. Restart TikTok to apply this.",
                 "Usar el país seleccionado. Reinicia TikTok para que se aplique.");
-        table.put("Use the split layout on wider screens. Restart TikTok to apply this, or unfold again if the old layout is still there.",
-                "Usar el diseño dividido en pantallas más anchas. Reinicia TikTok para que se aplique, o vuelve a desplegar si sigue el diseño antiguo.");
     }
 
     private static void fillEs13(Map<String, String> table) {
+        table.put("Use the split layout on wider screens. Restart TikTok to apply this, or unfold again if the old layout is still there.",
+                "Usar el diseño dividido en pantallas más anchas. Reinicia TikTok para que se aplique, o vuelve a desplegar si sigue el diseño antiguo.");
         table.put("Use value",
                 "Usar el valor");
         table.put("Use your own offline videos limit",
@@ -3466,7 +3470,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1648);
+        Map<String, String> table = new HashMap<>(1650);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -4852,6 +4856,8 @@ public final class L10nTranslations {
                 "Hentikan pengulangan video");
         table.put("Stop videos at the end instead of replaying them.",
                 "Hentikan video di akhir, bukan memutarnya ulang.");
+        table.put("Storage permission is needed to save a profile picture",
+                "Izin penyimpanan dibutuhkan untuk menyimpan foto profil");
         table.put("Storage permission is needed to save a sound",
                 "Izin penyimpanan dibutuhkan untuk menyimpan suara");
         table.put("Storage permission is needed to save a story",
@@ -4956,11 +4962,11 @@ public final class L10nTranslations {
                 "Tidak ada yang bisa dikembalikan");
         table.put("This catalog entry is no longer available. Refresh the Lab and try again.",
                 "Entri katalog ini sudah tidak tersedia. Segarkan Lab dan coba lagi.");
-        table.put("This configuration has no fields that can be copied and changed safely on this build.",
-                "Konfigurasi ini tidak punya bidang yang bisa disalin dan diubah dengan aman di build ini.");
     }
 
     private static void fillIn12(Map<String, String> table) {
+        table.put("This configuration has no fields that can be copied and changed safely on this build.",
+                "Konfigurasi ini tidak punya bidang yang bisa disalin dan diubah dengan aman di build ini.");
         table.put("This line opens a rule and does not finish it: %1$s. Write two phrases as \"a\" & \"b\" for both, or \"a\" !& \"b\" for the first without the second.",
                 "Baris ini memulai sebuah aturan dan tidak menyelesaikannya: %1$s. Tulis dua frasa sebagai \"a\" & \"b\" untuk keduanya, atau \"a\" !& \"b\" untuk yang pertama tanpa yang kedua.");
         table.put("This phone has no file picker, so there is no way to choose a file here.",
@@ -5079,11 +5085,11 @@ public final class L10nTranslations {
                 "Gunakan negara dan nilai operator yang dipilih. Mulai ulang TikTok agar berlaku.");
         table.put("Use the selected country. Restart TikTok to apply this.",
                 "Gunakan negara yang dipilih. Mulai ulang TikTok agar berlaku.");
-        table.put("Use the split layout on wider screens. Restart TikTok to apply this, or unfold again if the old layout is still there.",
-                "Gunakan tata letak terbagi di layar yang lebih lebar. Mulai ulang TikTok agar berlaku, atau buka lipatan lagi jika tata letak lama masih muncul.");
     }
 
     private static void fillIn13(Map<String, String> table) {
+        table.put("Use the split layout on wider screens. Restart TikTok to apply this, or unfold again if the old layout is still there.",
+                "Gunakan tata letak terbagi di layar yang lebih lebar. Mulai ulang TikTok agar berlaku, atau buka lipatan lagi jika tata letak lama masih muncul.");
         table.put("Use value",
                 "Gunakan nilai");
         table.put("Use your own offline videos limit",
@@ -5175,7 +5181,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rbr() {
-        Map<String, String> table = new HashMap<>(1648);
+        Map<String, String> table = new HashMap<>(1650);
         fillPt_rbr0(table);
         fillPt_rbr1(table);
         fillPt_rbr2(table);
@@ -6561,6 +6567,8 @@ public final class L10nTranslations {
                 "Parar a repetição dos vídeos");
         table.put("Stop videos at the end instead of replaying them.",
                 "Parar os vídeos no fim em vez de tocá-los de novo.");
+        table.put("Storage permission is needed to save a profile picture",
+                "É preciso permissão de armazenamento para salvar uma foto de perfil");
         table.put("Storage permission is needed to save a sound",
                 "É preciso permissão de armazenamento para salvar um som");
         table.put("Storage permission is needed to save a story",
@@ -6665,11 +6673,11 @@ public final class L10nTranslations {
                 "Não havia nada para trazer de volta");
         table.put("This catalog entry is no longer available. Refresh the Lab and try again.",
                 "Esta entrada do catálogo não está mais disponível. Atualize o Laboratório e tente de novo.");
-        table.put("This configuration has no fields that can be copied and changed safely on this build.",
-                "Esta configuração não tem campos que dê para copiar e mudar com segurança nesta build.");
     }
 
     private static void fillPt_rbr12(Map<String, String> table) {
+        table.put("This configuration has no fields that can be copied and changed safely on this build.",
+                "Esta configuração não tem campos que dê para copiar e mudar com segurança nesta build.");
         table.put("This line opens a rule and does not finish it: %1$s. Write two phrases as \"a\" & \"b\" for both, or \"a\" !& \"b\" for the first without the second.",
                 "Esta linha abre uma regra e não a fecha: %1$s. Escreva duas frases como \"a\" & \"b\" para pedir as duas, ou \"a\" !& \"b\" para a primeira sem a segunda.");
         table.put("This phone has no file picker, so there is no way to choose a file here.",
@@ -6788,11 +6796,11 @@ public final class L10nTranslations {
                 "Usar o país e os valores de operadora selecionados. Reinicie o TikTok para aplicar.");
         table.put("Use the selected country. Restart TikTok to apply this.",
                 "Usar o país selecionado. Reinicie o TikTok para aplicar.");
-        table.put("Use the split layout on wider screens. Restart TikTok to apply this, or unfold again if the old layout is still there.",
-                "Usar o layout dividido em telas mais largas. Reinicie o TikTok para aplicar, ou desdobre de novo se o layout antigo ainda estiver lá.");
     }
 
     private static void fillPt_rbr13(Map<String, String> table) {
+        table.put("Use the split layout on wider screens. Restart TikTok to apply this, or unfold again if the old layout is still there.",
+                "Usar o layout dividido em telas mais largas. Reinicie o TikTok para aplicar, ou desdobre de novo se o layout antigo ainda estiver lá.");
         table.put("Use value",
                 "Usar o valor");
         table.put("Use your own offline videos limit",

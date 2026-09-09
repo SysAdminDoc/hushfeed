@@ -1,5 +1,7 @@
 ## Unreleased
 
+* On Android 6 through 9, a profile-picture long press explains when storage permission prevents saving. Granting permission lets the same picture save. The message is translated into all four supported languages.
+
 * Saving a video without sound preserves its rotation metadata before the muxer starts. Tests also check sample timestamps, flags and cancellation without deleting the input.
 
 * Native GIPHY sticker URLs now obey the same HTTPS restriction as other sticker sources. Rebinding the save button to an invalid source can't leave the previous sticker attached.

@@ -618,6 +618,7 @@ Stop video looping	Parar la repetición de los vídeos
 Stop videos at the end instead of replaying them.	Parar los vídeos al final en vez de volver a reproducirlos.
 Storage permission is needed to save a sound	Hace falta permiso de almacenamiento para guardar un sonido
 Storage permission is needed to save a story	Hace falta permiso de almacenamiento para guardar una historia
+Storage permission is needed to save a profile picture	Hace falta permiso de almacenamiento para guardar una foto de perfil
 Stories	Historias
 Story saved to %1$s	Historia guardada en %1$s
 Subtitle language	Idioma de los subtítulos

@@ -174,7 +174,10 @@ public final class ProfileAvatarSaver {
         final List<String> urlSnapshot = List.copyOf(urls);
         if (android.os.Build.VERSION.SDK_INT < 29
                 && context.checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != android.content.pm.PackageManager.PERMISSION_GRANTED) return;
+                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            Utils.showToastLong(L10n.t("Storage permission is needed to save a profile picture"));
+            return;
+        }
 
         Context app = context.getApplicationContext();
         String name = avatarName(user);
