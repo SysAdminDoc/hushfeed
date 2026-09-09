@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The cached-feed filter stops working in a register TikTok owns. It read its answer into the register holding the cache payload and then jumped back into TikTok's own code at two points, both of which are also reached with a reference in that register. On this build each of those points overwrites it before anything looks at it, so the app was never wrong; on a build that reads it first the feed would have refused to load. The filter has a register of its own now.
+
 * The comment image watermark keeps the position TikTok gave it. The patch read its own on/off answer into the register holding the watermark's x coordinate, then wrote a zero back before drawing. That is the same picture on this build, because TikTok moves the canvas first and draws at nothing but zero, and it would have pinned the watermark to the left edge on a build that draws anywhere else. The switch has a register of its own now.
 
 * The patched app carries less code. Twenty classes inherited from ReVanced were compiled into the shared payload of every build and nothing in this project called any of them, including a colour picker, a second settings backup, a network helper and an environment nag screen that had been switched off and left in place. They are gone. Nothing reachable changes.

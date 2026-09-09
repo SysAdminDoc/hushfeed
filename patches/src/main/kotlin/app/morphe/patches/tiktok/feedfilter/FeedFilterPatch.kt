@@ -20,6 +20,7 @@ import app.morphe.patches.tiktok.shared.callThroughLocals
 import app.morphe.patches.tiktok.shared.objectIn
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.findInstructionIndicesReversedOrThrow
+import app.morphe.util.getFreeRegisterProvider
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode
@@ -468,15 +469,27 @@ private fun MutableMethod.filterChainedCacheDelivery(
         throw PatchException("Chained cache delivery no longer branches on its payload")
     }
 
+    // The block used to do its work in the payload's own register, so both labels it re-enters
+    // at were reached with a boolean sitting in a register the native path holds a reference in.
+    // On 46.2.3 the instruction at each label writes that register before anything reads it
+    // (index 6 and index 8 of LX/0pqs;->LIZ), so nothing was actually wrong; the block no longer
+    // depends on the host doing that. A register of its own also leaves the payload read the
+    // patcher branched on exactly as the host wrote it.
+    val scratchRegister = getFreeRegisterProvider(
+        payloadReadIndex,
+        1,
+        listOf(payloadRegister, resultRegister),
+    ).getFreeRegister4Bit()
+
     addInstructionsWithLabels(
         payloadReadIndex,
         """
-            iget-object v$payloadRegister, v$resultRegister, $cachePayloadField
-            if-eqz v$payloadRegister, :morphe_cache_chain_native
-            iget-object v$payloadRegister, v$payloadRegister, $cachedAwemeField
-            invoke-static/range {v$payloadRegister .. v$payloadRegister}, $EXTENSION_CLASS_DESCRIPTOR->shouldKeepCachedAweme(Lcom/ss/android/ugc/aweme/feed/model/Aweme;)Z
-            move-result v$payloadRegister
-            if-eqz v$payloadRegister, :morphe_cache_chain_next_source
+            iget-object v$scratchRegister, v$resultRegister, $cachePayloadField
+            if-eqz v$scratchRegister, :morphe_cache_chain_native
+            iget-object v$scratchRegister, v$scratchRegister, $cachedAwemeField
+            invoke-static/range {v$scratchRegister .. v$scratchRegister}, $EXTENSION_CLASS_DESCRIPTOR->shouldKeepCachedAweme(Lcom/ss/android/ugc/aweme/feed/model/Aweme;)Z
+            move-result v$scratchRegister
+            if-eqz v$scratchRegister, :morphe_cache_chain_next_source
         """,
         ExternalLabel("morphe_cache_chain_native", getInstruction(payloadReadIndex)),
         ExternalLabel("morphe_cache_chain_next_source", getInstruction(nextSourceIndex)),
