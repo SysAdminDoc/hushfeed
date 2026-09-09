@@ -42,7 +42,13 @@ public class TabSelectionPreference extends Preference {
         this.bottomTabs = bottomTabs;
         setTitle(bottomTabs ? "Allowed bottom tabs" : "Allowed loaded tabs");
         setKey(setting.key);
-        setValue(setting.get());
+        // In memory only. setValue writes, and writing the tidied form of what is already
+        // stored, at the moment the row is built, made building the page a change to the
+        // reader's settings. Nothing needs it written: every reader of this setting parses it,
+        // and the tidied form is saved the moment the reader actually chooses something.
+        this.value = serializeEnabledKeys(parseEnabledKeys(setting.get()));
+        this.valueSet = true;
+        refreshSummary();
     }
 
     public String getValue() {

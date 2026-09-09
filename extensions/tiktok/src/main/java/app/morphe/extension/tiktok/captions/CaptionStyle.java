@@ -54,7 +54,6 @@ public final class CaptionStyle {
     static void apply(View root) {
         int textId = identifier(root, TEXT_ID);
         TextView text = textId == 0 ? null : root.findViewById(textId);
-        if (textId != 0) noteLookup(root, TEXT_ID, text != null);
         if (text != null) {
             if (size() > 0) {
                 // Not putIfAbsent: that is an API 24 default method on the Map interface, and
@@ -65,7 +64,7 @@ public final class CaptionStyle {
         }
         int backgroundId = identifier(root, BACKGROUND_ID);
         View background = backgroundId == 0 ? null : root.findViewById(backgroundId);
-        if (backgroundId != 0) noteLookup(root, BACKGROUND_ID, background != null);
+        noteLookup(root, text != null, background != null, textId != 0, backgroundId != 0);
         if (background == null) return;
         String color = Settings.CAPTION_BACKGROUND.get();
         if (!"default".equals(color) && !BACKGROUNDS.containsKey(background)) {
@@ -89,7 +88,7 @@ public final class CaptionStyle {
      * is not a bail-out; on a working build the first of those five finds the view and the
      * count is dropped.
      */
-    private static final int MISSES_BEFORE_REPORTING = 5;
+    private static final int MISSES_BEFORE_REPORTING = 20;
 
     /**
      * Consecutive misses per name, and the names that have ever been found.
@@ -107,20 +106,31 @@ public final class CaptionStyle {
      * once: a build where it works has nothing to report, and every later miss on it is another
      * bail-out.
      */
-    private static void noteLookup(View root, String name, boolean found) {
-        if (found) {
-            FOUND.add(name);
-            MISSES.remove(name);
+    private static void noteLookup(View root, boolean foundText, boolean foundBackground,
+                                   boolean textResolved, boolean backgroundResolved) {
+        if (foundText) FOUND.add(TEXT_ID);
+        if (foundBackground) FOUND.add(BACKGROUND_ID);
+        // Either one being there says this is a caption container, and apply() has always
+        // treated a missing background as ordinary. Only a container where neither is reachable
+        // is a container this build cannot use, so the two are counted as one thing.
+        if (foundText || foundBackground) {
+            MISSES.clear();
             return;
         }
-        if (FOUND.contains(name) || !hasChildren(root)) return;
-        Integer seen = MISSES.get(name);
-        int misses = (seen == null ? 0 : seen) + 1;
-        MISSES.put(name, misses);
-        if (misses >= MISSES_BEFORE_REPORTING) {
-            HookStatus.missingMember("captions", "view", "caption container", name);
+        if (!hasChildren(root)) return;
+        int misses = (MISSES.containsKey(FAMILY) ? MISSES.get(FAMILY) : 0) + 1;
+        MISSES.put(FAMILY, misses);
+        if (misses < MISSES_BEFORE_REPORTING) return;
+        if (textResolved && !FOUND.contains(TEXT_ID)) {
+            HookStatus.missingMember("captions", "view", "caption container", TEXT_ID);
+        }
+        if (backgroundResolved && !FOUND.contains(BACKGROUND_ID)) {
+            HookStatus.missingMember("captions", "view", "caption container", BACKGROUND_ID);
         }
     }
+
+    /** The two names are counted together, because either one found makes the other ordinary. */
+    private static final String FAMILY = "captions";
 
     private static boolean hasChildren(View root) {
         return root instanceof android.view.ViewGroup

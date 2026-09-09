@@ -292,6 +292,41 @@ public class HoldRampTest {
         }
     }
 
+    /**
+     * The throttle, on the path the player really uses. It used to stand aside whenever a cover
+     * was up, which is the whole forty-five seconds of the ramp: exactly when the callbacks
+     * arrive several times a second, every one of them took a lock, asked a content provider
+     * and walked the view tree.
+     */
+    @Test public void theBudgetIsAskedFourTimesASecondRatherThanOnEveryCallback() {
+        Settings.SESSION_BUDGET_RAMP.save(true);
+        Settings.SESSION_BUDGET_MINUTES.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(10);
+        try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setActivity(activity);
+            watch(30_000L);
+            sync();
+            int first = alphaOf(HoldRamp.coverForTests());
+
+            // Time moves for the budget but not for the clock the throttle reads, which is what
+            // a handful of callbacks inside the same quarter second look like.
+            watch(20_000L);
+            HoldRamp.sync();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            HoldRamp.sync();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+            assertEquals("the cover was redrawn for callbacks inside one quarter second",
+                    first, alphaOf(HoldRamp.coverForTests()));
+
+            // And the next quarter second does get through.
+            sync();
+            assertTrue("the ramp stopped following the budget altogether",
+                    alphaOf(HoldRamp.coverForTests()) > first);
+        }
+    }
+
     // ------------------------------------------------------------------------------- fixture
 
     private static void assertSame(Activity activity, View cover) {

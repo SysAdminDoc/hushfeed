@@ -127,11 +127,23 @@ public final class PausePlayback {
     static View sheetWindowOf(View cell) {
         View root = cell.getRootView();
         if (root == null || root == cell) return null;
-        Activity activity = Utils.getActivity();
-        View activityRoot = activity == null || activity.getWindow() == null
-                ? null
-                : activity.getWindow().getDecorView();
-        return root == activityRoot ? null : root;
+        // The activity this cell belongs to, not whichever one the extension last saw. Only the
+        // main activity is hooked, so asking Utils meant comparing a sheet in some other screen
+        // against the wrong decor view, and returning that screen's own root: a view that
+        // detaches when the whole screen goes, which is not what closing the comments means.
+        Activity activity = activityOf(cell);
+        if (activity == null || activity.getWindow() == null) return null;
+        return root == activity.getWindow().getDecorView() ? null : root;
+    }
+
+    /** The activity a view is in, or null when its context is not one. */
+    private static Activity activityOf(View view) {
+        Context context = view.getContext();
+        while (context instanceof android.content.ContextWrapper) {
+            if (context instanceof Activity) return (Activity) context;
+            context = ((android.content.ContextWrapper) context).getBaseContext();
+        }
+        return null;
     }
 
     // ------------------------------------------------------------------ coming back to the app
@@ -194,6 +206,12 @@ public final class PausePlayback {
 
     static void onForeground(Activity activity) {
         try {
+            // The sheet the reader left open is the sheet they are looking at again.
+            View sheet = sheetReference.get();
+            if (sheet != null && sheet.getWindowToken() != null
+                    && Settings.PAUSE_ON_COMMENTS.get() && !SessionBudget.isLocked()) {
+                quieten();
+            }
             if (!wasAway) return;
             wasAway = false;
             if (!Settings.NO_RESUME_ON_FOREGROUND.get()) return;
@@ -237,9 +255,15 @@ public final class PausePlayback {
         catcherReference = new WeakReference<>(catcher);
     }
 
-    /** Hands everything back: the sound, the catcher, and the sheet being followed. */
+    /**
+     * Hands the sound and the catcher back as the app goes away.
+     *
+     * <p>The sheet being followed is remembered rather than forgotten. A reader who switches
+     * apps with the comments open comes back to the same sheet, and nothing binds a cell in a
+     * list that is already full, so forgetting it here left the feed playing behind an open
+     * sheet for the rest of that sheet's life.
+     */
     private static void letGo() {
-        sheetReference = new WeakReference<>(null);
         removeCatcher();
         unquieten();
     }

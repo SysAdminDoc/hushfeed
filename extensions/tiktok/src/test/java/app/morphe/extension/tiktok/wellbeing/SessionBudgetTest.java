@@ -821,6 +821,30 @@ public class SessionBudgetTest {
     }
 
     /**
+     * One receiver for the process, and no activity held in a static field.
+     *
+     * <p>Utils.getContext() is not always the application: the main activity is handed to it,
+     * and it is wrapped again on every configuration change when an app language is set. Keying
+     * the registration on that identity registered another receiver for every wrapper and kept
+     * the last one alive for the life of the process.
+     */
+    @Test public void theZoneIsFollowedOnceForTheWholeProcess() {
+        Settings.SESSION_BUDGET_MINUTES.save(60);
+        var application = org.robolectric.RuntimeEnvironment.getApplication();
+        int before = org.robolectric.Shadows.shadowOf(application).getRegisteredReceivers().size();
+
+        for (int wrapper = 0; wrapper < 3; wrapper++) {
+            Utils.setContext(new android.content.ContextWrapper(application));
+            SessionBudget.dayOf(now.get());
+        }
+        Utils.setContext(application);
+
+        assertEquals("a receiver was registered for every context that came along",
+                before + 1,
+                org.robolectric.Shadows.shadowOf(application).getRegisteredReceivers().size());
+    }
+
+    /**
      * The positive control the two tests below need. They both assert that something does not
      * happen when the device moves zone, and that is worth nothing unless the move reaches the
      * memo at all: the memo no longer reads the zone, it is told, so a move sent in silence

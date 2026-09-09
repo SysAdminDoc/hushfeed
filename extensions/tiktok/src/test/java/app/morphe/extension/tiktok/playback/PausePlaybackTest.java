@@ -296,6 +296,60 @@ public class PausePlaybackTest {
         }
     }
 
+    /**
+     * A sheet that was open when the reader switched apps is open when they come back. Nothing
+     * binds a cell in a list that is already full, so handing the sound back on the way out and
+     * never taking it again left the feed playing behind the comments for the rest of that
+     * sheet's life.
+     */
+    @Test public void aSheetStillOpenOnTheWayBackTakesTheSoundAgain() {
+        Settings.PAUSE_ON_COMMENTS.save(true);
+        try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setActivity(activity);
+
+            Dialog sheet = openSheet(activity);
+            PausePlayback.onCommentCellBound(cellIn(sheet));
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertTrue(PausePlayback.quietenedForTests());
+
+            PausePlayback.onBackground();
+            assertFalse("the app went away still holding the sound",
+                    PausePlayback.quietenedForTests());
+
+            PausePlayback.onForeground(activity);
+            assertTrue("the feed played on behind a sheet that was still open",
+                    PausePlayback.quietenedForTests());
+
+            sheet.dismiss();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertFalse(PausePlayback.quietenedForTests());
+        }
+    }
+
+    /**
+     * A sheet in a screen that is not the one the extension hooked. Only the main activity is
+     * hooked, so asking the extension which activity is current compared this sheet against the
+     * wrong window and answered with the other screen's own root: a view that detaches when the
+     * whole screen goes, not when the comments close.
+     */
+    @Test public void aSheetInAnotherScreenIsMeasuredAgainstThatScreen() {
+        Settings.PAUSE_ON_COMMENTS.save(true);
+        try (var hooked = Robolectric.buildActivity(HostActivity.class).setup().visible();
+             var other = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Utils.setActivity(hooked.get());
+            Activity second = other.get();
+            ViewGroup root = second.findViewById(android.R.id.content);
+            FrameLayout inActivitySheet = new FrameLayout(second);
+            View cell = new View(second);
+            inActivitySheet.addView(cell);
+            root.addView(inActivitySheet);
+
+            assertNull("a panel drawn into another screen was taken for a window of its own",
+                    PausePlayback.sheetWindowOf(cell));
+        }
+    }
+
     // ------------------------------------------------------------------------------- fixture
 
     /** A comment sheet the way TikTok's is: a window of its own over the feed. */

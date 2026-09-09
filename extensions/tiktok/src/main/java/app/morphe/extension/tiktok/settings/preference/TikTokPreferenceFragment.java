@@ -414,42 +414,62 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
      * disagree about what is on the page.
      */
     private int countChangedSettings(Context context, Section section) {
-        PreferenceScreen scratch = getPreferenceManager().createPreferenceScreen(context);
-        PreferenceCategory category = createCategory(context, scratch, section);
-        if (category == null) {
-            return 0;
+        int count = 0;
+        // A plain loop: Collection.stream arrived in API 24 and the payload runs from 23.
+        for (Setting<?> setting : settingsOn(context, section)) {
+            // A setting this build cannot reach is not on the page, so it is not something the
+            // reader has turned on.
+            if (setting.isAvailable()
+                    && !java.util.Objects.equals(setting.get(), setting.defaultValue)) {
+                count++;
+            }
         }
-        int count = countChangedRows(category, new java.util.HashSet<>());
-        scratch.removePreference(category);
         return count;
     }
 
-    private static int countChangedRows(PreferenceGroup group, java.util.Set<String> seen) {
-        int count = 0;
+    /**
+     * The settings one section binds, worked out once and remembered.
+     *
+     * <p>Building the page is how this knows what is on it, and building eleven pages on every
+     * return to the master menu is 184 preferences of work for a number. The pages do not gain
+     * or lose rows while the screen is open: what changes is the values, and those are read
+     * again every time.
+     */
+    private List<Setting<?>> settingsOn(Context context, Section section) {
+        List<Setting<?>> known = sectionSettings.get(section);
+        if (known != null) {
+            return known;
+        }
+        List<Setting<?>> found = new ArrayList<>();
+        PreferenceScreen scratch = getPreferenceManager().createPreferenceScreen(context);
+        PreferenceCategory category = createCategory(context, scratch, section);
+        if (category != null) {
+            collectSettings(category, found, new java.util.HashSet<>());
+            scratch.removePreference(category);
+        }
+        sectionSettings.put(section, found);
+        return found;
+    }
+
+    private static void collectSettings(PreferenceGroup group, List<Setting<?>> found,
+            java.util.Set<String> seen) {
         for (int index = 0; index < group.getPreferenceCount(); index++) {
             Preference preference = group.getPreference(index);
             if (preference instanceof PreferenceGroup) {
-                count += countChangedRows((PreferenceGroup) preference, seen);
+                collectSettings((PreferenceGroup) preference, found, seen);
                 continue;
             }
             if (!preference.hasKey()) {
                 continue;
             }
             Setting<?> setting = Setting.getSettingFromPath(preference.getKey());
-            // A row with no setting behind it is an action, and a setting this build cannot
-            // reach is not on the page. Neither is something the reader has turned on.
-            if (setting == null || !setting.isAvailable()) {
+            // A row with no setting behind it is an action. Two rows can share one setting, and
+            // a page can bind the same row twice.
+            if (setting == null || !seen.add(setting.key)) {
                 continue;
             }
-            // Two rows can share one setting, and a page can bind the same row twice.
-            if (!seen.add(setting.key)) {
-                continue;
-            }
-            if (!java.util.Objects.equals(setting.get(), setting.defaultValue)) {
-                count++;
-            }
+            found.add(setting);
         }
-        return count;
     }
 
     /**
@@ -654,6 +674,10 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
     /** The master menu's rows and the section each one opens, for the badge refresh. */
     private final java.util.Map<SettingsMenuPreference, Section> menuSections =
             new java.util.LinkedHashMap<>();
+
+    /** What each section binds, so counting a badge does not build the page again. */
+    private final java.util.Map<Section, List<Setting<?>>> sectionSettings =
+            new java.util.EnumMap<>(Section.class);
 
     private void addMenu(
             PreferenceScreen screen,

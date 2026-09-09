@@ -911,12 +911,19 @@ public class SettingsL10nTest {
             new PlaybackPreferenceCategory(activity, screen);
             // "Start today over" says something different once it has been tapped, and that
             // sentence shipped in English on every translated phone because nothing here had
-            // ever tapped it. The page is built a second time with the undo armed.
+            // ever tapped it. The page is built a second time with the undo armed, and the tap
+            // is taken back afterwards: the undo flag is process wide and this method runs once
+            // per language, so leaving it armed meant the second language only ever saw the
+            // tapped wording and stopped checking the other one.
             app.morphe.extension.tiktok.wellbeing.SessionBudget.clear();
             PreferenceScreen afterStartingOver =
                     activity.getPreferenceManager().createPreferenceScreen(activity);
             new PlaybackPreferenceCategory(activity, afterStartingOver);
             collect(afterStartingOver, strings);
+            app.morphe.extension.tiktok.wellbeing.SessionBudget.undoClear();
+            assertFalse("the tap on Start today over was not taken back, so the next language"
+                            + " will not see the untapped wording",
+                    app.morphe.extension.tiktok.wellbeing.SessionBudget.canUndoClear());
             new InboxPreferenceCategory(activity, screen);
             new SharePreferenceCategory(activity, screen);
             new SimSpoofPreferenceCategory(activity, screen);

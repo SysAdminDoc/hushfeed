@@ -131,6 +131,11 @@ public final class SessionBudget {
      * time a budget was set. There is no allocation-free way to read it: getDefaultRef is
      * package private in java.util and ZoneId.systemDefault goes through the same clone. So
      * the memo is told instead.
+     *
+     * <p>The one thing this cannot see is the host calling TimeZone.setDefault itself, which
+     * sends no broadcast. The memo then answers with the old day until its window rolls, which
+     * is the trade the alternative was not worth: reading the zone caught that case and cost a
+     * clone on every frame the player reported.
      */
     private static android.content.Context watchedContext;
     private static int dayComputations;
@@ -549,13 +554,17 @@ public final class SessionBudget {
      */
     private static void watchTheZone() {
         synchronized (LOCK) {
-            android.content.Context context = Utils.getContext();
-            // Keyed on the context rather than on a flag. A flag registered against whichever
-            // application was current the first time this ran, and a test runner builds a new
-            // one for every case, so the broadcast then arrived at a receiver on a context
-            // nobody was using and the memo was never told.
-            if (context == null || context == watchedContext) return;
-            watchedContext = context;
+            android.content.Context given = Utils.getContext();
+            if (given == null) return;
+            // The application, not whatever was handed over. Utils.getContext() can be the main
+            // activity, and it is wrapped again on every configuration change when an app
+            // language is set, so keying on that identity registered a receiver per wrapper and
+            // held a destroyed activity in a static field. The application is one object for
+            // the life of the process, which is also how often this should register.
+            android.content.Context context = given.getApplicationContext() == null
+                    ? given
+                    : given.getApplicationContext();
+            if (context == watchedContext) return;
             try {
                 android.content.BroadcastReceiver receiver =
                         new android.content.BroadcastReceiver() {
@@ -575,6 +584,9 @@ public final class SessionBudget {
                 } else {
                     context.registerReceiver(receiver, filter);
                 }
+                // Only once it is registered. Assigning first meant a refusal was never
+                // tried again for that context.
+                watchedContext = context;
             } catch (Throwable refused) {
                 Logger.printDebug(() -> "The budget could not follow the device timezone");
             }

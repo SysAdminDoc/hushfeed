@@ -116,7 +116,10 @@ public final class HoldRamp {
             return;
         }
         long now = android.os.SystemClock.uptimeMillis();
-        if (now - lastAskedAt < ASK_EVERY_MS && coverReference.get() == null) return;
+        // The clause that used to be here, "and there is no cover yet", turned the throttle
+        // off for the whole ramp: the cover is up for all forty-five seconds of it, which is
+        // exactly when the callbacks are arriving several times a second.
+        if (now - lastAskedAt < ASK_EVERY_MS) return;
         lastAskedAt = now;
         // Every sibling on this callback hops to the main thread before it touches a view.
         // addView from the player's own thread throws, and the catch below would swallow it

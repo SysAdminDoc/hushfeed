@@ -121,7 +121,7 @@ public class CaptionToolsTest {
         FrameLayout root = new FrameLayout(Utils.getContext());
         // A container with something in it, which is what a render that rendered looks like.
         root.addView(new TextView(Utils.getContext()));
-        for (int render = 0; render < 5; render++) CaptionStyle.apply(root);
+        for (int render = 0; render < 20; render++) CaptionStyle.apply(root);
 
         assertTrue("a build where neither caption view is reachable says nothing",
                 HookStatus.anyMissing());
@@ -181,6 +181,75 @@ public class CaptionToolsTest {
         for (int render = 0; render < 50; render++) CaptionStyle.apply(bailOut);
 
         assertFalse("the renderers that rendered nothing were called a broken build",
+                HookStatus.anyMissing());
+        HookStatus.clear();
+        CaptionStyle.resetLookupsForTests();
+    }
+
+    /**
+     * A container holding the caption but not the strip behind it. apply() has always treated a
+     * missing background as ordinary one line later, and the two names are gated on the same
+     * signal, so counting them separately made one of them being there proof that the other was
+     * broken. They are counted as one thing now: either one found says this is a caption
+     * container this build can use.
+     */
+    @Test public void oneCaptionViewFoundMakesTheOtherOneOrdinary() {
+        HookStatus.clear();
+        CaptionStyle.resetLookupsForTests();
+        int textId = View.generateViewId();
+        CaptionStyle.resolveForTests("dfu", textId);
+        CaptionStyle.resolveForTests("dfn", View.generateViewId());
+        Settings.CAPTION_TEXT_SIZE.save(32);
+        Settings.CAPTION_BACKGROUND.save("black");
+
+        FrameLayout root = new FrameLayout(Utils.getContext());
+        TextView text = new TextView(Utils.getContext());
+        text.setId(textId);
+        text.setTextSize(16);
+        root.addView(text);
+        for (int render = 0; render < 40; render++) CaptionStyle.apply(root);
+
+        assertTrue("the caption was never restyled, so this proves nothing",
+                text.getTextSize() > 16);
+        assertFalse("a container holding the caption was called a broken build",
+                HookStatus.anyMissing());
+        HookStatus.clear();
+        CaptionStyle.resetLookupsForTests();
+    }
+
+    /**
+     * And a run of containers that hold somebody else's children before the first real render.
+     * The hook fires for renderers that are not the video on screen, so which arrives first is
+     * not this code's to choose, and HookStatus never forgets: one report and the row reads
+     * broken for the rest of the process while the feature works.
+     */
+    @Test public void aRunOfForeignContainersBeforeTheFirstRealRenderIsForgivenOnceItArrives() {
+        HookStatus.clear();
+        CaptionStyle.resetLookupsForTests();
+        int textId = View.generateViewId();
+        int backgroundId = View.generateViewId();
+        CaptionStyle.resolveForTests("dfu", textId);
+        CaptionStyle.resolveForTests("dfn", backgroundId);
+        Settings.CAPTION_TEXT_SIZE.save(32);
+        Settings.CAPTION_BACKGROUND.save("black");
+
+        FrameLayout foreign = new FrameLayout(Utils.getContext());
+        foreign.addView(new TextView(Utils.getContext()));
+        for (int render = 0; render < 19; render++) CaptionStyle.apply(foreign);
+        assertFalse("nineteen strangers were already enough to call the build broken",
+                HookStatus.anyMissing());
+
+        FrameLayout real = new FrameLayout(Utils.getContext());
+        FrameLayout background = new FrameLayout(Utils.getContext());
+        background.setId(backgroundId);
+        TextView text = new TextView(Utils.getContext());
+        text.setId(textId);
+        real.addView(background);
+        background.addView(text);
+        CaptionStyle.apply(real);
+
+        for (int render = 0; render < 40; render++) CaptionStyle.apply(foreign);
+        assertFalse("one good render did not clear what the strangers had counted up",
                 HookStatus.anyMissing());
         HookStatus.clear();
         CaptionStyle.resetLookupsForTests();

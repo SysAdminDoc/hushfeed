@@ -1057,6 +1057,32 @@ assertEquals(View.LAYOUT_DIRECTION_RTL, configuration.getLayoutDirection());
         }
     }
 
+    /**
+     * Counting what is on a page does not change it. The count is worked out by building the
+     * section, and one row wrote the tidied form of its own stored value the moment it was
+     * built, so opening the settings menu rewrote a setting the reader had never touched.
+     */
+    @Test public void countingTheBadgesWritesNothing() throws Exception {
+        try (var owner = Robolectric.buildActivity(PageActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            for (var setting : app.morphe.extension.shared.settings.Setting.allLoadedSettings()) {
+                setting.resetToDefault();
+            }
+            // Stored in an order the row would tidy, which is what made the write visible.
+            Settings.FEED_NAVIGATION_TABS.save("MALL,HOT");
+
+            TikTokPreferenceFragment home = attachHome(activity);
+            home.onResume();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+            assertEquals("opening the settings menu rewrote a setting nobody touched",
+                    "MALL,HOT", Settings.FEED_NAVIGATION_TABS.get());
+            assertTrue("the menu was never built", menuRows(home).size() > 3);
+            Settings.FEED_NAVIGATION_TABS.resetToDefault();
+        }
+    }
+
     private static java.util.List<app.morphe.extension.tiktok.settings.preference
             .SettingsMenuPreference> menuRows(TikTokPreferenceFragment fragment) {
         var found = new java.util.ArrayList<app.morphe.extension.tiktok.settings.preference
