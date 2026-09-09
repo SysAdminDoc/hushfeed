@@ -45,6 +45,7 @@ public class TikTokActivityHook {
         SettingsOperationJournal.initialize(base.getApplicationContext());
         SettingsOperationJournal.showRecoveryNotice(base);
         SettingsStatus.load();
+        SettingsUi.syncDarkMode(base);
 
         LinearLayout linearLayout = new LinearLayout(base);
         linearLayout.setLayoutParams(new LinearLayout.LayoutParams(-1, -1));

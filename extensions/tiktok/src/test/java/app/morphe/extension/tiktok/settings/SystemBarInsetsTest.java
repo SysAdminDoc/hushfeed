@@ -38,6 +38,7 @@ import org.robolectric.annotation.Config;
 public class SystemBarInsetsTest {
     @Before public void setUp() {
         Utils.setContext(RuntimeEnvironment.getApplication());
+        SettingsUi.syncDarkMode(RuntimeEnvironment.getApplication());
     }
 
     @Test public void theBarsAndTheCutoutAreBothPaddedFor() {
@@ -116,5 +117,35 @@ public class SystemBarInsetsTest {
                 root.getBackground() instanceof ColorDrawable);
         assertEquals("the strip behind the bars is the wrong colour",
                 SettingsUi.background(), ((ColorDrawable) root.getBackground()).getColor());
+    }
+
+    @Config(qualifiers = "notnight")
+    @Test public void aLightActivityPaintsTheBarsLightDespiteAStaleDarkOverride() {
+        assertThemeAfterOpening(true, SettingsUi.LIGHT_BACKGROUND, true);
+    }
+
+    @Config(qualifiers = "night")
+    @Test public void aDarkActivityPaintsTheBarsDarkDespiteAStaleLightOverride() {
+        assertThemeAfterOpening(false, SettingsUi.DARK_BACKGROUND, false);
+    }
+
+    private static void assertThemeAfterOpening(boolean staleDark, int background, boolean lightBars) {
+        Utils.setIsDarkModeEnabled(staleDark);
+        Intent intent = new Intent().putExtra("morphe", true);
+        AdPersonalizationActivity activity = Robolectric
+                .buildActivity(AdPersonalizationActivity.class, intent).setup().get();
+        assertTrue(TikTokActivityHook.initialize(activity));
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+        ViewGroup content = activity.findViewById(android.R.id.content);
+        View root = content.getChildAt(0);
+        assertEquals("the activity theme must decide the fragment colour", background, SettingsUi.background());
+        assertEquals("the strip was painted before the activity theme was known",
+                background, ((ColorDrawable) root.getBackground()).getColor());
+        int visibility = activity.getWindow().getDecorView().getSystemUiVisibility();
+        assertEquals("status icons must contrast with the strip", lightBars,
+                (visibility & View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR) != 0);
+        assertEquals("navigation icons must contrast with the strip", lightBars,
+                (visibility & View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR) != 0);
     }
 }

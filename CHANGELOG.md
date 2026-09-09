@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The settings screen uses TikTok's theme before painting behind the system bars. Light TikTok on a dark phone no longer leaves the clock and battery on a black strip, and the reverse combination is covered too.
+
 * The device helper starts correctly in Bash and refuses any serial except the S22 test phone. Failed device commands stop the step before it reports success.
 
 * The oversized animated-sticker check now closes its test file on Windows. It still rejects the canvas before allocation and checks the rejection reason.

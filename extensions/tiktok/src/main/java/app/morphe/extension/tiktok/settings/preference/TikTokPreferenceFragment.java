@@ -11,7 +11,6 @@ import android.app.FragmentManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -123,12 +122,6 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             }
             return category + " · " + summary;
         }
-    }
-
-    private static boolean isDarkModeEnabled(Context context) {
-        final int currentNightMode = context.getResources().getConfiguration().uiMode
-                & Configuration.UI_MODE_NIGHT_MASK;
-        return currentNightMode == Configuration.UI_MODE_NIGHT_YES;
     }
 
     public static void openDownloadPathFolderPicker(DownloadPathPreference preference) {
@@ -257,7 +250,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                                     + "%4$s", family, found, missing, firstMiss);
                 });
 
-        Utils.setIsDarkModeEnabled(isDarkModeEnabled(context));
+        SettingsUi.syncDarkMode(context);
 
         PreferenceScreen preferenceScreen = getPreferenceManager().createPreferenceScreen(context);
         setPreferenceScreen(preferenceScreen);

@@ -7,6 +7,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.ColorStateList;
+import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
@@ -36,6 +37,8 @@ import android.widget.Switch;
 
 import androidx.annotation.ColorInt;
 
+import app.morphe.extension.shared.Utils;
+
 public final class SettingsUi {
     public static final @ColorInt int ACCENT = Color.rgb(255, 79, 135);
     public static final @ColorInt int DARK_BACKGROUND = Color.BLACK;
@@ -59,6 +62,13 @@ public final class SettingsUi {
     public static final int LIGHT_ACCENT = Color.rgb(184, 22, 77);
 
     private SettingsUi() {
+    }
+
+    /** Sync before painting any surface, since TikTok's theme can differ from the system's. */
+    public static void syncDarkMode(Context context) {
+        int nightMode = context.getResources().getConfiguration().uiMode
+                & Configuration.UI_MODE_NIGHT_MASK;
+        Utils.setIsDarkModeEnabled(nightMode == Configuration.UI_MODE_NIGHT_YES);
     }
 
     public static boolean isDarkMode() {
