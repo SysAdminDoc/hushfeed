@@ -227,6 +227,79 @@ public class FollowDiagnosticsTest {
         assertEquals(0, ShadowToast.shownToastCount());
     }
 
+    /**
+     * The path is the gate. Every request TikTok makes goes through the same hook, and a
+     * refusal code on a feed or profile request is that request's business: it must not be
+     * read as a follow being refused. Without this the path test could match everything and
+     * the refusal notice would fire on any failed request in the app.
+     */
+    @Test
+    public void aRefusalOnARequestThatIsNotAFollowSaysNothing() {
+        ShadowToast.reset();
+        String refusal = "{\"status_code\":2098,\"status_msg\":\"Try again later.\"}";
+        for (String path : new String[]{
+                "/aweme/v1/feed/",
+                "/aweme/v1/user/profile/other/",
+                "/aweme/v1/user/",
+                "/aweme/v1/commit/item/digg/",
+                "/tiktok/v1/relation/list/",
+                "/aweme/v1/following/list/"}) {
+            FollowDiagnostics.logParsedResponse(
+                    new CaptchaGateRequest(path), new ParsedResponse(refusal));
+        }
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+        assertEquals(0, ShadowToast.shownToastCount());
+    }
+
+    /** Both shapes the follow endpoint takes are follows, and a request with no path is not. */
+    @Test
+    public void bothFollowEndpointShapesAreReadAndAPathlessRequestIsNot() {
+        String refusal = "{\"status_code\":2098,\"status_msg\":\"Try again later.\"}";
+
+        ShadowToast.reset();
+        FollowDiagnostics.resetForTests();
+        FollowDiagnostics.logParsedResponse(
+                new CaptchaGateRequest("/aweme/v1/commit/follow/user/"), new ParsedResponse(refusal));
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        assertEquals(1, ShadowToast.shownToastCount());
+
+        ShadowToast.reset();
+        FollowDiagnostics.resetForTests();
+        FollowDiagnostics.logParsedResponse(
+                new CaptchaGateRequest("/tiktok/v1/relation/follow/"), new ParsedResponse(refusal));
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        assertEquals(1, ShadowToast.shownToastCount());
+
+        ShadowToast.reset();
+        FollowDiagnostics.resetForTests();
+        FollowDiagnostics.logParsedResponse(new Object(), new ParsedResponse(refusal));
+        FollowDiagnostics.logParsedResponse(null, new ParsedResponse(refusal));
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        assertEquals(0, ShadowToast.shownToastCount());
+    }
+
+    /**
+     * A response the hook cannot read is not a refusal. The envelope is reached by
+     * reflection over obfuscated names, and the day TikTok renames them the read must fail
+     * quietly rather than throw into the network stack or invent a verdict.
+     */
+    @Test
+    public void anUnreadableResponseIsNeitherARefusalNorAnException() {
+        ShadowToast.reset();
+        FollowDiagnostics.logParsedResponse(
+                new CaptchaGateRequest("/aweme/v1/commit/follow/user/"), new Object());
+        FollowDiagnostics.logParsedResponse(
+                new CaptchaGateRequest("/aweme/v1/commit/follow/user/"), null);
+        FollowDiagnostics.logParsedResponse(
+                new CaptchaGateRequest("/aweme/v1/commit/follow/user/"), new ParsedResponse(null));
+        FollowDiagnostics.logParsedResponse(
+                new CaptchaGateRequest("/aweme/v1/commit/follow/user/"), new ParsedResponse("not json"));
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+        assertEquals(0, ShadowToast.shownToastCount());
+    }
+
     public static final class CaptchaGateRequest {
         private final String path;
         CaptchaGateRequest(String path) { this.path = path; }
