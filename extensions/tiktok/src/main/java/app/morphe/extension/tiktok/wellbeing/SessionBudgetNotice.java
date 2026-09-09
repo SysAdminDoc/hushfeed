@@ -28,6 +28,32 @@ public final class SessionBudgetNotice {
         Utils.showToastShort(spentMessage());
     }
 
+    /**
+     * The quiet reminder partway through, if one is due.
+     *
+     * <p>A toast rather than a banner: it takes no focus, goes on its own, and TalkBack reads it
+     * once. That is the same shape the spent notice uses when no hold is set, and for the same
+     * reason. A banner over the feed would need a dismissal of its own and would be drawn under
+     * the hold panel on exactly the days the hold is up.
+     *
+     * <p>Three wordings in rotation, because a fixed friction stops being read. None of them
+     * names the reader or the count: an interrupt that does reads as being watched, and the one
+     * lab study to measure it found that made people watch more, not less.
+     */
+    public static void showIntervalNoticeIfDue() {
+        int wording = SessionBudget.claimIntervalNotice();
+        if (wording < 0) return;
+        Utils.showToastShort(intervalMessage(wording));
+    }
+
+    static String intervalMessage(int wording) {
+        switch (wording) {
+            case 0: return L10n.t("Still here. Nothing is waiting.");
+            case 1: return L10n.t("A good place to stop, if you want one.");
+            default: return L10n.t("The feed does not end. This is a fine time to leave it.");
+        }
+    }
+
     /** What the day came to, in whichever budget ran out. */
     static String spentMessage() {
         int minuteBudget = Settings.SESSION_BUDGET_MINUTES.get();

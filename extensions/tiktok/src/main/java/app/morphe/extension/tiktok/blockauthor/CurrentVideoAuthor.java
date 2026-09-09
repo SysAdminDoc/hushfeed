@@ -127,6 +127,10 @@ public final class CurrentVideoAuthor {
         if (!Objects.equals(previousId, newId)) {
             SessionBudget.noteVideo(newId);
             if (SessionBudget.claimNotice()) SessionBudgetNotice.show();
+            // Checked where the day's own notice is checked, on the video change rather than on
+            // the progress callback: the reminder is measured in watched minutes but it should
+            // arrive between videos rather than over one.
+            SessionBudgetNotice.showIntervalNoticeIfDue();
             app.morphe.extension.tiktok.interaction.TapConfirmation.onVideoChanged();
             app.morphe.extension.tiktok.captions.CaptionTools.onVideoChanged(newId);
 

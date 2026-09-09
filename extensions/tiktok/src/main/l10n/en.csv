@@ -9,6 +9,7 @@ source,target
 %1$s to %2$s,%1$s to %2$s
 %s on,%s on
 A creator pattern is taking too long and was switched off: %1$s,A creator pattern is taking too long and was switched off: %1$s
+"A good place to stop, if you want one.","A good place to stop, if you want one."
 A hidden puzzle may be the cause.,A hidden puzzle may be the cause.
 "A host to put in place of tiktok.com when you share or copy a link, like vxtiktok.com. Leave it empty to share TikTok's own links. Only TikTok links are changed, and only the host: nothing is sent anywhere new.","A host to put in place of tiktok.com when you share or copy a link, like vxtiktok.com. Leave it empty to share TikTok's own links. Only TikTok links are changed, and only the host: nothing is sent anywhere new."
 A newer change replaced that undo. Tap Undo again.,A newer change replaced that undo. Tap Undo again.
@@ -426,6 +427,7 @@ Recover the settings saved before the last restore or reset.,Recover the setting
 Recovered an interrupted settings change. Restart TikTok to apply it.,Recovered an interrupted settings change. Restart TikTok to apply it.
 Region rules,Region rules
 Region settings,Region settings
+Remind me every,Remind me every
 Remove,Remove
 Remove %1$s,Remove %1$s
 Remove feed ads,Remove feed ads
@@ -533,6 +535,7 @@ Start today over,Start today over
 Sticker,Sticker
 Sticker destination,Sticker destination
 Sticker saved as %1$s,Sticker saved as %1$s
+Still here. Nothing is waiting.,Still here. Nothing is waiting.
 Still reading the record. Tap again in a moment.,Still reading the record. Tap again in a moment.
 Still saving the last one,Still saving the last one
 "Stop ByteDance AppLog events, AppsFlyer attribution, explicit Firebase screen reports and crash reporting from being sent. TikTok's own diagnostics go quiet with them.","Stop ByteDance AppLog events, AppsFlyer attribution, explicit Firebase screen reports and crash reporting from being sent. TikTok's own diagnostics go quiet with them."
@@ -571,6 +574,7 @@ That settings backup is damaged or only partly downloaded. Nothing was altered.,
 That settings change did not go through. Nothing was altered.,That settings change did not go through. Nothing was altered.
 That sticker is in a format Hushfeed cannot read,That sticker is in a format Hushfeed cannot read
 The destination contains an invalid folder name,The destination contains an invalid folder name
+The feed does not end. This is a fine time to leave it.,The feed does not end. This is a fine time to leave it.
 The feed is open again,The feed is open again
 The file picker is not available on this device.,The file picker is not available on this device.
 The minimum or maximum comments on a video to show.,The minimum or maximum comments on a video to show.

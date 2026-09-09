@@ -1,5 +1,7 @@
 ## Unreleased
 
+* A quiet reminder partway through, if you want one. "Remind me every" takes a number of minutes and says something short after that much watching, then again after the same again. It counts feed time only, so messages and profiles do not bring one on, and nothing appears while the feed is on hold. Three wordings take turns, because one sentence stops being read. Zero, the default, means none.
+
 * The Feature Gate Lab acts on a whole selection at once. Press and hold a gate to start one, tap to add and remove, then Enable, Disable or Reset the lot. It goes through as a single change, so one Undo puts all of it back rather than the last one you touched. Gates that do not take a true or false value are skipped and it says how many.
 
 * Both daily budgets show how much of today has gone. Set one to 200 videos and the row reads "Today: 57 videos" under it, so the day's progress is visible where you set the budget instead of only in the one notice when it runs out. With a budget of zero there is nothing to measure against and the line is absent.

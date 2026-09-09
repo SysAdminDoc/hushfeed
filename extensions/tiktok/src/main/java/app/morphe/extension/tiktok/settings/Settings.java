@@ -239,6 +239,15 @@ public class Settings extends BaseSettings {
     public static final IntegerSetting SESSION_BUDGET_PASSES_PER_DAY = new IntegerSetting(
             "session_budget_passes_per_day", 0).withRange(0, 20);
     /**
+     * Minutes of watching between the quiet reminders, or zero for none.
+     *
+     * <p>The hold only ever fires once the day's budget has gone. This is the earlier check the
+     * wellbeing tools that measured anything all have, and it is measured in watched minutes
+     * rather than wall clock so time on messages or a profile does not count towards it.
+     */
+    public static final IntegerSetting SESSION_BUDGET_NOTICE_MINUTES = new IntegerSetting(
+            "session_budget_notice_minutes", 0).withRange(0, 120);
+    /**
      * Today's counts and any running hold, so both survive the process being killed. Kept out
      * of backups: it is a record of one day, and restoring last week's would either hand back a
      * day or take one away, neither of which anyone asked for.

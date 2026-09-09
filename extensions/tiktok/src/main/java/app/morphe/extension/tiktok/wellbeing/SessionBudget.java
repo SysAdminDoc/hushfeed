@@ -86,6 +86,16 @@ public final class SessionBudget {
     private static int passesUsed;
 
     /**
+     * The watched time when the last quiet reminder went out, and how many have gone today.
+     *
+     * <p>Measured against {@link #watchedMs} rather than the clock, so the interval is minutes
+     * of feed rather than minutes of being awake, and time on messages or a profile does not
+     * bring one on. The count is what picks the wording, so the three do not repeat.
+     */
+    private static long noticeMarkMs;
+    private static int intervalNotices;
+
+    /**
      * What "start today over" cleared, so the next tap can put it back. Held in memory rather
      * than in the record: it is the way back from a tap a moment ago, not a second day's worth
      * of state, and writing it would double what every clear costs.
@@ -97,6 +107,8 @@ public final class SessionBudget {
     private static long undoLockUntilMs;
     private static boolean undoNoticeShown;
     private static int undoPassesUsed;
+    private static long undoNoticeMarkMs;
+    private static int undoIntervalNotices;
     private static long lastTickMs;
     private static String lastCountedId;
     private static boolean noticeShown;
@@ -129,7 +141,9 @@ public final class SessionBudget {
      */
     private static boolean counting() {
         return Settings.SESSION_BUDGET_VIDEOS.get() > 0
-                || Settings.SESSION_BUDGET_MINUTES.get() > 0;
+                || Settings.SESSION_BUDGET_MINUTES.get() > 0
+                // A reader who wants the reminders and no budget at all still has to be counted.
+                || Settings.SESSION_BUDGET_NOTICE_MINUTES.get() > 0;
     }
 
     // ---------------------------------------------------------------- what the feed reports
@@ -346,6 +360,34 @@ public final class SessionBudget {
      * @return {@link Integer#MAX_VALUE} when no cap is set, which is the default and what the
      *         hold has always done.
      */
+    /**
+     * Whether it is time for a quiet reminder, and which of the three wordings to use.
+     *
+     * <p>Never while a hold is up: the panel is the message then, and a toast underneath it
+     * would be one more thing to read on a screen that is already saying stop.
+     *
+     * @return 0, 1 or 2 for the wording, or -1 for nothing to say.
+     */
+    public static int claimIntervalNotice() {
+        int minutes = Settings.SESSION_BUDGET_NOTICE_MINUTES.get();
+        if (minutes <= 0) return -1;
+        synchronized (LOCK) {
+            load();
+            long now = clock.now();
+            rollOver(now);
+            if (lockUntilMs > now) return -1;
+            long interval = minutes * 60_000L;
+            if (watchedMs - noticeMarkMs < interval) return -1;
+            // Moved to a whole number of intervals rather than to now, so a reader who was away
+            // while the count stood still does not get the next one early.
+            noticeMarkMs += ((watchedMs - noticeMarkMs) / interval) * interval;
+            int wording = intervalNotices % 3;
+            intervalNotices++;
+            save();
+            return wording;
+        }
+    }
+
     public static int passesLeftToday() {
         int cap = Settings.SESSION_BUDGET_PASSES_PER_DAY.get();
         if (cap <= 0) return Integer.MAX_VALUE;
@@ -376,6 +418,8 @@ public final class SessionBudget {
             undoLockUntilMs = lockUntilMs;
             undoNoticeShown = noticeShown;
             undoPassesUsed = passesUsed;
+            undoNoticeMarkMs = noticeMarkMs;
+            undoIntervalNotices = intervalNotices;
             undoAvailable = true;
             day = dayOf(clock.now());
             videos = 0;
@@ -386,8 +430,12 @@ public final class SessionBudget {
             noticeShown = false;
             // A pass is one of today's counts, and this row's own wording is that today is
             // forgotten. Leaving it spent gave back the videos and the minutes and kept the way
-            // out of the hold gone, on a day the screen was showing as untouched.
+            // out of the hold gone, on a day the screen was showing as untouched. The reminders
+            // are counts of today for the same reason: the watched time they measure is going
+            // back to zero, so the mark they measure from has to as well.
             passesUsed = 0;
+            noticeMarkMs = 0;
+            intervalNotices = 0;
             save();
             return true;
         }
@@ -441,6 +489,8 @@ public final class SessionBudget {
             lockUntilMs = undoLockUntilMs;
             noticeShown = undoNoticeShown;
             passesUsed = undoPassesUsed;
+            noticeMarkMs = undoNoticeMarkMs;
+            intervalNotices = undoIntervalNotices;
             lastCountedId = null;
             undoAvailable = false;
             save();
@@ -538,6 +588,8 @@ public final class SessionBudget {
         lockUntilMs = 0;
         lockedToday = false;
         passesUsed = 0;
+        noticeMarkMs = 0;
+        intervalNotices = 0;
         undoAvailable = false;
         lastCountedId = null;
         noticeShown = false;
@@ -570,6 +622,10 @@ public final class SessionBudget {
                     // Same again for the pass count, which arrived after both. A day recorded
                     // before it existed had no cap to spend, so zero is the honest answer.
                     passesUsed = parts.length >= 7 ? Integer.parseInt(parts[6]) : 0;
+                    // Same again for the reminders, which arrived after the passes. A day
+                    // recorded before them had none, so zero is the honest answer.
+                    noticeMarkMs = parts.length >= 8 ? Long.parseLong(parts[7]) : 0;
+                    intervalNotices = parts.length >= 9 ? Integer.parseInt(parts[8]) : 0;
                 }
             }
         } catch (RuntimeException malformed) {
@@ -587,7 +643,8 @@ public final class SessionBudget {
         final String record = day + "|" + videos + "|" + watchedMs + "|"
                 + lockUntilMs + "|" + (noticeShown ? "1" : "0")
                 + "|" + (lockedToday ? "1" : "0")
-                + "|" + passesUsed;
+                + "|" + passesUsed
+                + "|" + noticeMarkMs + "|" + intervalNotices;
         try {
             WRITER.execute(() -> Settings.SESSION_BUDGET_STATE.save(record));
         } catch (RejectedExecutionException stopped) {
@@ -639,6 +696,8 @@ public final class SessionBudget {
             lockUntilMs = 0;
             lockedToday = false;
             passesUsed = 0;
+            noticeMarkMs = 0;
+            intervalNotices = 0;
             undoAvailable = false;
             lastTickMs = 0;
             lastCountedId = null;

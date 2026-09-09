@@ -85,6 +85,11 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
                         : L10n.f(getContext(), "Today: %1$d minutes", minutes);
             }
         }.zeroMeansOff());
+        addPreference(new NumberInputPreference(context, "Remind me every",
+                "Zero switches this off. A short reminder after that many minutes of watching, "
+                        + "and again after the same again. Time on messages, a profile or search "
+                        + "does not count, and nothing is shown while the feed is on hold.",
+                Settings.SESSION_BUDGET_NOTICE_MINUTES, "minute", "minutes").zeroMeansOff());
         addPreference(new NumberInputPreference(context, "Hold the feed after the budget",
                 "Zero shows the notice and leaves the feed alone. Anything else covers the feed "
                         + "for that many minutes once a budget is reached. Messages, profiles and "
@@ -119,7 +124,8 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
         for (String key : new String[]{Settings.SESSION_BUDGET_VIDEOS.key,
                 Settings.SESSION_BUDGET_MINUTES.key, Settings.SESSION_BUDGET_LOCK_MINUTES.key,
                 Settings.SESSION_BUDGET_RESET_HOUR.key,
-                Settings.SESSION_BUDGET_PASSES_PER_DAY.key}) {
+                Settings.SESSION_BUDGET_PASSES_PER_DAY.key,
+                Settings.SESSION_BUDGET_NOTICE_MINUTES.key}) {
             Preference row = findPreference(key);
             if (row != null) row.setOnPreferenceChangeListener(refuseWhileLocked);
         }

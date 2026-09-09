@@ -41,6 +41,7 @@ public class SessionBudgetTest {
         Settings.SESSION_BUDGET_RESET_HOUR.resetToDefault();
         Settings.SESSION_BUDGET_LOCK.resetToDefault();
         Settings.SESSION_BUDGET_PASSES_PER_DAY.resetToDefault();
+        Settings.SESSION_BUDGET_NOTICE_MINUTES.resetToDefault();
         Settings.SESSION_BUDGET_STATE.resetToDefault();
         Settings.AUTO_ADVANCE_LIMIT.resetToDefault();
         now.set(at(2026, Calendar.SEPTEMBER, 7, 12, 0));
@@ -51,6 +52,7 @@ public class SessionBudgetTest {
     @After public void tearDown() throws Exception {
         Settings.SESSION_BUDGET_LOCK.resetToDefault();
         Settings.SESSION_BUDGET_PASSES_PER_DAY.resetToDefault();
+        Settings.SESSION_BUDGET_NOTICE_MINUTES.resetToDefault();
         SessionBudget.setClockForTests(null);
         SessionBudget.awaitWritesForTests();
         SessionBudget.resetForTests();
@@ -277,6 +279,95 @@ public class SessionBudgetTest {
 
         assertTrue(SessionBudget.undoClear());
         assertEquals("undo did not put the spent pass back", 0, SessionBudget.passesLeftToday());
+    }
+
+    @Test public void aQuietReminderArrivesEveryNWatchedMinutesAndRotatesItsWording() {
+        // The hold only fires once the day's budget has gone. This is the earlier check, and it
+        // is measured in watched minutes so time on messages or a profile does not bring one on.
+        Settings.SESSION_BUDGET_NOTICE_MINUTES.save(5);
+
+        assertEquals("a reminder before anything had been watched", -1,
+                SessionBudget.claimIntervalNotice());
+        watch(5);
+        assertEquals("the first wording", 0, SessionBudget.claimIntervalNotice());
+        assertEquals("two in a row for the same five minutes", -1,
+                SessionBudget.claimIntervalNotice());
+
+        watch(4);
+        assertEquals(-1, SessionBudget.claimIntervalNotice());
+        watch(1);
+        assertEquals("the second wording", 1, SessionBudget.claimIntervalNotice());
+        watch(5);
+        assertEquals("the third wording", 2, SessionBudget.claimIntervalNotice());
+        watch(5);
+        assertEquals("the wordings did not come round again", 0,
+                SessionBudget.claimIntervalNotice());
+    }
+
+    @Test public void noReminderWithTheRowAtZeroOrWhileTheFeedIsHeld() {
+        Settings.SESSION_BUDGET_NOTICE_MINUTES.save(0);
+        watch(30);
+        assertEquals("a reminder from a row nobody set", -1, SessionBudget.claimIntervalNotice());
+
+        assertEquals("watching was counted for a reader who asked for none of this", 0,
+                SessionBudget.watchedMs());
+
+        // With a hold up the panel is the message; a toast underneath it is one more thing to
+        // read on a screen already saying stop.
+        Settings.SESSION_BUDGET_NOTICE_MINUTES.save(5);
+        Settings.SESSION_BUDGET_VIDEOS.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(10);
+        watch(5);
+        SessionBudget.noteVideo("a");
+        assertTrue(SessionBudget.claimNotice());
+        assertTrue(SessionBudget.isLocked());
+        assertEquals("a reminder arrived over the hold", -1, SessionBudget.claimIntervalNotice());
+
+        // And once the hold is lifted the reminder that was due arrives.
+        assertTrue(SessionBudget.releaseLock());
+        assertEquals(0, SessionBudget.claimIntervalNotice());
+    }
+
+    @Test public void timeAwayDoesNotBringTheNextReminderForward() {
+        // The mark moves to a whole number of intervals rather than to the moment the reminder
+        // went out, so the next one is still a full interval of watching away.
+        Settings.SESSION_BUDGET_NOTICE_MINUTES.save(5);
+        watch(12);
+        assertEquals(0, SessionBudget.claimIntervalNotice());
+
+        // Two intervals were watched through, so the mark stands at ten, not at twelve.
+        watch(2);
+        assertEquals("the second reminder came early", -1, SessionBudget.claimIntervalNotice());
+        watch(1);
+        assertEquals(1, SessionBudget.claimIntervalNotice());
+    }
+
+    @Test public void theReminderMarkSurvivesTheProcessAndRollsOverWithTheDay() throws Exception {
+        Settings.SESSION_BUDGET_NOTICE_MINUTES.save(5);
+        watch(5);
+        assertEquals(0, SessionBudget.claimIntervalNotice());
+
+        SessionBudget.awaitWritesForTests();
+        SessionBudget.resetForTests();
+        assertEquals("a restart handed back a reminder that had gone out", -1,
+                SessionBudget.claimIntervalNotice());
+        watch(5);
+        assertEquals("the wording restarted with the process", 1,
+                SessionBudget.claimIntervalNotice());
+
+        now.set(at(2026, Calendar.SEPTEMBER, 8, 12, 0));
+        watch(5);
+        assertEquals("a new day did not start the wordings again", 0,
+                SessionBudget.claimIntervalNotice());
+    }
+
+    /** Watches for that many minutes, one player report a second. */
+    private void watch(int minutes) {
+        SessionBudget.noteWatching();
+        for (int tick = 0; tick < minutes * 60; tick++) {
+            now.addAndGet(1_000L);
+            SessionBudget.noteWatching();
+        }
     }
 
     @Test public void withNoCapNothingChanges() {
