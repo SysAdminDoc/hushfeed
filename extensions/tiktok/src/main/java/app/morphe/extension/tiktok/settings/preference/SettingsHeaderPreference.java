@@ -21,6 +21,9 @@ import android.widget.TextView;
 
 @SuppressWarnings("deprecation")
 public final class SettingsHeaderPreference extends Preference {
+    /** The product name, which reads the same in every language and is not translated. */
+    private static final String BRAND_MARK = "HUSHFEED";
+
     private enum Kind {
         MASTER,
         SECTION,
@@ -123,7 +126,7 @@ public final class SettingsHeaderPreference extends Preference {
         // leading edge outside the header, where it is clipped and takes no touches.
         backParams.setMarginStart(SettingsUi.dp(context, -8));
         toolbar.addView(back, backParams);
-        TextView brand = SettingsUi.text(context, "HUSHFEED", 12, SettingsUi.accent(), 1);
+        TextView brand = SettingsUi.text(context, BRAND_MARK, 12, SettingsUi.accent(), 1);
         brand.setLetterSpacing(0.12f);
         LinearLayout.LayoutParams brandParams = new LinearLayout.LayoutParams(0, -2, 1);
         brandParams.setMarginStart(SettingsUi.dp(context, 8));

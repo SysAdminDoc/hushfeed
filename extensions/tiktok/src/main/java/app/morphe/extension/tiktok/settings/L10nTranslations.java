@@ -44,7 +44,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1322);
+        Map<String, String> table = new HashMap<>(1324);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -206,6 +206,8 @@ public final class L10nTranslations {
                 "Wähle 1 bis 1000 Videos. Werte außerhalb dieses Bereichs nutzen das nächstgelegene gültige Limit. Starte TikTok nach dem Speichern neu.");
         table.put("Choose a backup file. Your current settings are kept for Undo.",
                 "Wähle eine Sicherungsdatei. Deine aktuellen Einstellungen bleiben zum Rückgängigmachen erhalten.");
+        table.put("Choose a subfolder under %1$s.",
+                "Wähle einen Unterordner in %1$s.");
         table.put("Choose observed share actions to hide. The stable identifier is shown below each label; unknown saved identifiers stay in the manual list.",
                 "Wähle beobachtete Share-Aktionen zum Ausblenden. Die stabile Kennung steht unter jedem Namen; unbekannte gespeicherte Kennungen bleiben in der manuellen Liste.");
         table.put("Choose what reaches your feed",
@@ -302,11 +304,11 @@ public final class L10nTranslations {
                 "Einstellungsuche konnte nicht geöffnet werden");
         table.put("Could not open settings section",
                 "Einstellungsbereich konnte nicht geöffnet werden");
-        table.put("Could not put back the seen video history. Try again.",
-                "Der Verlauf gesehener Videos konnte nicht zurückgeholt werden. Versuche es erneut.");
     }
 
     private static void fillDe2(Map<String, String> table) {
+        table.put("Could not put back the seen video history. Try again.",
+                "Der Verlauf gesehener Videos konnte nicht zurückgeholt werden. Versuche es erneut.");
         table.put("Could not read who posted this comment",
                 "Konnte nicht lesen, wer diesen Kommentar geschrieben hat");
         table.put("Could not restore settings.",
@@ -425,11 +427,11 @@ public final class L10nTranslations {
                 "Video an den Bildschirm anpassen");
         table.put("Folder picker is not available",
                 "Ordnerauswahl ist nicht verfügbar");
-        table.put("Folder picker is not available on this device",
-                "Ordnerauswahl ist auf diesem Gerät nicht verfügbar");
     }
 
     private static void fillDe3(Map<String, String> table) {
+        table.put("Folder picker is not available on this device",
+                "Ordnerauswahl ist auf diesem Gerät nicht verfügbar");
         table.put("For You",
                 "Für dich");
         table.put("For com.deniscerri.ytdl only. Ask YTDLnis for audio or video when the save button hands it a link.",
@@ -548,11 +550,11 @@ public final class L10nTranslations {
                 "Apps zum Teilen ausblenden");
         table.put("Hide stories tray",
                 "Story-Leiste ausblenden");
-        table.put("Hide story",
-                "Storys ausblenden");
     }
 
     private static void fillDe4(Map<String, String> table) {
+        table.put("Hide story",
+                "Storys ausblenden");
         table.put("Hide story from feed.",
                 "Storys aus dem Feed ausblenden.");
         table.put("Hide suggested account rows.",
@@ -671,11 +673,11 @@ public final class L10nTranslations {
                 "Videos mit vielen Aufrufen und wenigen Likes ausblenden. Kleinere Zahlen sind strenger, null schaltet die Regel ab, und ein Video bleibt übrig, wenn ein ganzer Schwung wegfiele.");
         table.put("Hide videos you have already seen",
                 "Bereits gesehene Videos ausblenden");
-        table.put("Hide visual search prompt",
-                "Bildersuche-Hinweis ausblenden");
     }
 
     private static void fillDe5(Map<String, String> table) {
+        table.put("Hide visual search prompt",
+                "Bildersuche-Hinweis ausblenden");
         table.put("Highest",
                 "Höchste");
         table.put("Hold the feed after the budget",
@@ -794,11 +796,11 @@ public final class L10nTranslations {
                 "Keine passenden Einstellungen");
         table.put("No preset selected",
                 "Keine Vorgabe gewählt");
-        table.put("No share actions have been observed yet",
-                "Noch keine Share-Aktionen beobachtet");
     }
 
     private static void fillDe6(Map<String, String> table) {
+        table.put("No share actions have been observed yet",
+                "Noch keine Share-Aktionen beobachtet");
         table.put("No share actions match this search",
                 "Keine Share-Aktionen passen zu dieser Suche");
         table.put("No sound to block on this video",
@@ -917,11 +919,11 @@ public final class L10nTranslations {
                 "Die vor der letzten Wiederherstellung oder Zurücksetzung gespeicherten Einstellungen zurückholen.");
         table.put("Recovered an interrupted settings change. Restart TikTok to apply it.",
                 "Eine unterbrochene Einstellungsänderung wurde wiederhergestellt. Starte TikTok neu, um sie anzuwenden.");
-        table.put("Region rules",
-                "Regionsregeln");
     }
 
     private static void fillDe7(Map<String, String> table) {
+        table.put("Region rules",
+                "Regionsregeln");
         table.put("Region settings",
                 "Regionseinstellungen");
         table.put("Remove",
@@ -1040,11 +1042,11 @@ public final class L10nTranslations {
                 "Verlauf gesehener Videos gelöscht. Tippe erneut, um ihn zurückzuholen.");
         table.put("Seen video history put back",
                 "Verlauf gesehener Videos zurückgeholt");
-        table.put("Seen videos",
-                "Bereits gesehene Videos");
     }
 
     private static void fillDe8(Map<String, String> table) {
+        table.put("Seen videos",
+                "Bereits gesehene Videos");
         table.put("Send links to another app",
                 "Links an eine andere App senden");
         table.put("Sending feedback",
@@ -1163,11 +1165,11 @@ public final class L10nTranslations {
                 "Zum Speichern eines Sounds wird die Speicherberechtigung gebraucht");
         table.put("Storage permission is needed to save a story",
                 "Zum Speichern einer Story wird die Speicherberechtigung gebraucht");
-        table.put("Stories",
-                "Storys");
     }
 
     private static void fillDe9(Map<String, String> table) {
+        table.put("Stories",
+                "Storys");
         table.put("Story saved to %1$s",
                 "Story gespeichert unter %1$s");
         table.put("Subtitle language",
@@ -1286,11 +1288,11 @@ public final class L10nTranslations {
                 "TikTok hat das Folgen abgelehnt: %1$s");
         table.put("Today has moved on, so there is nothing to put back",
                 "Der Tag ist weitergezogen, es gibt nichts zurückzuholen");
-        table.put("Today is back where it was",
-                "Der heutige Tag ist wieder wie zuvor");
     }
 
     private static void fillDe10(Map<String, String> table) {
+        table.put("Today is back where it was",
+                "Der heutige Tag ist wieder wie zuvor");
         table.put("Today starts again",
                 "Heute beginnt neu");
         table.put("Today's budget is locked. The day starts over at %1$s.",
@@ -1409,17 +1411,17 @@ public final class L10nTranslations {
                 "sp");
         table.put("videos",
                 "Videos");
-        table.put("view per like",
-                "Aufruf pro Like");
     }
 
     private static void fillDe11(Map<String, String> table) {
+        table.put("view per like",
+                "Aufruf pro Like");
         table.put("views per like",
                 "Aufrufe pro Like");
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1322);
+        Map<String, String> table = new HashMap<>(1324);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -1581,6 +1583,8 @@ public final class L10nTranslations {
                 "Pilih 1 sampai 1000 video. Nilai di luar rentang ini memakai batas sah terdekat. Mulai ulang TikTok setelah menyimpan.");
         table.put("Choose a backup file. Your current settings are kept for Undo.",
                 "Pilih berkas cadangan. Pengaturanmu yang sekarang disimpan untuk Urungkan.");
+        table.put("Choose a subfolder under %1$s.",
+                "Pilih subfolder di %1$s.");
         table.put("Choose observed share actions to hide. The stable identifier is shown below each label; unknown saved identifiers stay in the manual list.",
                 "Pilih tindakan berbagi yang telah diamati untuk disembunyikan. Pengenal stabil ditampilkan di bawah setiap label; pengenal tersimpan yang tidak dikenal tetap ada di daftar manual.");
         table.put("Choose what reaches your feed",
@@ -1677,11 +1681,11 @@ public final class L10nTranslations {
                 "Pencarian setelan tidak bisa dibuka");
         table.put("Could not open settings section",
                 "Bagian pengaturan tidak bisa dibuka");
-        table.put("Could not put back the seen video history. Try again.",
-                "Riwayat video yang sudah ditonton tidak dapat dikembalikan. Coba lagi.");
     }
 
     private static void fillIn2(Map<String, String> table) {
+        table.put("Could not put back the seen video history. Try again.",
+                "Riwayat video yang sudah ditonton tidak dapat dikembalikan. Coba lagi.");
         table.put("Could not read who posted this comment",
                 "Tidak bisa membaca siapa yang menulis komentar ini");
         table.put("Could not restore settings.",
@@ -1800,11 +1804,11 @@ public final class L10nTranslations {
                 "Sesuaikan video dengan layar");
         table.put("Folder picker is not available",
                 "Pemilih folder tidak tersedia");
-        table.put("Folder picker is not available on this device",
-                "Pemilih folder tidak tersedia di perangkat ini");
     }
 
     private static void fillIn3(Map<String, String> table) {
+        table.put("Folder picker is not available on this device",
+                "Pemilih folder tidak tersedia di perangkat ini");
         table.put("For You",
                 "Untuk Kamu");
         table.put("For com.deniscerri.ytdl only. Ask YTDLnis for audio or video when the save button hands it a link.",
@@ -1923,11 +1927,11 @@ public final class L10nTranslations {
                 "Sembunyikan aplikasi berbagi");
         table.put("Hide stories tray",
                 "Sembunyikan deret Story");
-        table.put("Hide story",
-                "Sembunyikan Story");
     }
 
     private static void fillIn4(Map<String, String> table) {
+        table.put("Hide story",
+                "Sembunyikan Story");
         table.put("Hide story from feed.",
                 "Sembunyikan Story dari feed.");
         table.put("Hide suggested account rows.",
@@ -2046,11 +2050,11 @@ public final class L10nTranslations {
                 "Sembunyikan video dengan banyak penayangan dan sedikit suka. Angka lebih kecil lebih ketat, nol mematikan aturannya, dan satu video disisakan kalau satu batch penuh akan hilang.");
         table.put("Hide videos you have already seen",
                 "Sembunyikan video yang sudah kamu tonton");
-        table.put("Hide visual search prompt",
-                "Sembunyikan ajakan pencarian visual");
     }
 
     private static void fillIn5(Map<String, String> table) {
+        table.put("Hide visual search prompt",
+                "Sembunyikan ajakan pencarian visual");
         table.put("Highest",
                 "Tertinggi");
         table.put("Hold the feed after the budget",
@@ -2169,11 +2173,11 @@ public final class L10nTranslations {
                 "Tidak ada setelan yang cocok");
         table.put("No preset selected",
                 "Tidak ada praset yang dipilih");
-        table.put("No share actions have been observed yet",
-                "Belum ada tindakan berbagi yang diamati");
     }
 
     private static void fillIn6(Map<String, String> table) {
+        table.put("No share actions have been observed yet",
+                "Belum ada tindakan berbagi yang diamati");
         table.put("No share actions match this search",
                 "Tidak ada tindakan berbagi yang cocok dengan pencarian ini");
         table.put("No sound to block on this video",
@@ -2292,11 +2296,11 @@ public final class L10nTranslations {
                 "Ambil kembali pengaturan yang tersimpan sebelum pemulihan atau penyetelan ulang terakhir.");
         table.put("Recovered an interrupted settings change. Restart TikTok to apply it.",
                 "Perubahan pengaturan yang terhenti telah dipulihkan. Mulai ulang TikTok untuk menerapkannya.");
-        table.put("Region rules",
-                "Aturan wilayah");
     }
 
     private static void fillIn7(Map<String, String> table) {
+        table.put("Region rules",
+                "Aturan wilayah");
         table.put("Region settings",
                 "Pengaturan wilayah");
         table.put("Remove",
@@ -2415,11 +2419,11 @@ public final class L10nTranslations {
                 "Riwayat video yang sudah ditonton dihapus. Ketuk lagi untuk mengembalikannya.");
         table.put("Seen video history put back",
                 "Riwayat video yang sudah ditonton dikembalikan");
-        table.put("Seen videos",
-                "Video yang sudah dilihat");
     }
 
     private static void fillIn8(Map<String, String> table) {
+        table.put("Seen videos",
+                "Video yang sudah dilihat");
         table.put("Send links to another app",
                 "Kirim tautan ke aplikasi lain");
         table.put("Sending feedback",
@@ -2538,11 +2542,11 @@ public final class L10nTranslations {
                 "Izin penyimpanan dibutuhkan untuk menyimpan suara");
         table.put("Storage permission is needed to save a story",
                 "Izin penyimpanan dibutuhkan untuk menyimpan Story");
-        table.put("Stories",
-                "Cerita");
     }
 
     private static void fillIn9(Map<String, String> table) {
+        table.put("Stories",
+                "Cerita");
         table.put("Story saved to %1$s",
                 "Story disimpan ke %1$s");
         table.put("Subtitle language",
@@ -2661,11 +2665,11 @@ public final class L10nTranslations {
                 "TikTok menolak permintaan mengikuti: %1$s");
         table.put("Today has moved on, so there is nothing to put back",
                 "Hari sudah berganti, jadi tidak ada yang bisa dikembalikan");
-        table.put("Today is back where it was",
-                "Hari ini kembali seperti semula");
     }
 
     private static void fillIn10(Map<String, String> table) {
+        table.put("Today is back where it was",
+                "Hari ini kembali seperti semula");
         table.put("Today starts again",
                 "Hari ini dimulai lagi");
         table.put("Today's budget is locked. The day starts over at %1$s.",
@@ -2784,11 +2788,11 @@ public final class L10nTranslations {
                 "sp");
         table.put("videos",
                 "video");
-        table.put("view per like",
-                "tayangan per like");
     }
 
     private static void fillIn11(Map<String, String> table) {
+        table.put("view per like",
+                "tayangan per like");
         table.put("views per like",
                 "tayangan per like");
     }

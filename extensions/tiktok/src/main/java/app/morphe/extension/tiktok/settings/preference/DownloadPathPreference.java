@@ -88,7 +88,15 @@ public class DownloadPathPreference extends DialogPreference {
         int padding = SettingsUi.dp(context, 22);
         dialogView.setPadding(padding, padding, padding, SettingsUi.dp(context, 8));
 
-        TextView title = SettingsUi.text(context, "Download path", 20, SettingsUi.textPrimary(), Typeface.BOLD);
+        // The row's own title, not a literal. All three destinations opened a dialog headed
+        // "Download path", so nothing on the screen said which of the three was being edited.
+        TextView title = SettingsUi.text(
+                context,
+                getTitle() == null ? "" : getTitle().toString(),
+                20,
+                SettingsUi.textPrimary(),
+                Typeface.BOLD
+        );
         dialogView.addView(title, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -96,7 +104,8 @@ public class DownloadPathPreference extends DialogPreference {
 
         TextView helper = SettingsUi.text(
                 context,
-                "Choose a subfolder under " + DownloadDestination.allowedRoots(kind) + ".",
+                L10n.f(context, "Choose a subfolder under %1$s.",
+                        DownloadDestination.allowedRoots(kind)),
                 14,
                 SettingsUi.textSecondary(),
                 Typeface.NORMAL
@@ -111,6 +120,8 @@ public class DownloadPathPreference extends DialogPreference {
         EditText downloadPath = new EditText(context);
         downloadPath.setInputType(InputType.TYPE_CLASS_TEXT);
         downloadPath.setSingleLine(true);
+        // Left as it is on purpose. This is an example of what to type, and every part of it
+        // is a folder name Android fixes: "DCIM/TikTok" is the same on a German phone.
         downloadPath.setHint("DCIM/TikTok");
         downloadPath.setText(downloadPathValue);
         SettingsUi.styleEditText(downloadPath);

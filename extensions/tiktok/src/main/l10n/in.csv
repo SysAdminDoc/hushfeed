@@ -660,3 +660,4 @@ Today is back where it was,Hari ini kembali seperti semula
 "One of the quote marks in that list has nothing to close it, so the rest of the line reads as one phrase. Add the missing quote or take the stray one out.","Salah satu tanda kutip dalam daftar itu tidak ditutup, sehingga sisa barisnya terbaca sebagai satu frasa. Tambahkan tanda kutip yang hilang atau hapus yang berlebih."
 %1$d setting was not in that file and was left as it is.,%1$d pengaturan tidak ada di berkas itu dan dibiarkan apa adanya.
 %1$d settings were not in that file and were left as they are.,%1$d pengaturan tidak ada di berkas itu dan dibiarkan apa adanya.
+Choose a subfolder under %1$s.,Pilih subfolder di %1$s.

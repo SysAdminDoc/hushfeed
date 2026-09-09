@@ -662,3 +662,4 @@ This line opens a rule and does not finish it: %1$s. Write two phrases as "a" & 
 One of the quote marks in that list has nothing to close it, so the rest of the line reads as one phrase. Add the missing quote or take the stray one out.	Eines der Anführungszeichen in dieser Liste wird nicht geschlossen, deshalb liest sich der Rest der Zeile als eine einzige Wendung. Ergänzen Sie das fehlende Anführungszeichen oder entfernen Sie das überzählige.
 %1$d setting was not in that file and was left as it is.	%1$d Einstellung stand nicht in dieser Datei und bleibt unverändert.
 %1$d settings were not in that file and were left as they are.	%1$d Einstellungen standen nicht in dieser Datei und bleiben unverändert.
+Choose a subfolder under %1$s.	Wähle einen Unterordner in %1$s.

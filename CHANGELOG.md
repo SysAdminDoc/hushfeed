@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Each download destination dialog is headed by the row you tapped. Video, photo and sticker all opened a window titled "Download path", so nothing on the screen said which of the three you were editing, and the sentence under it stayed English on a German or Indonesian phone. Both follow the language now.
+
 * TalkBack says which box is which in the five Min and Max dialogs. It read them as "edit box" and "edit box, Unlimited": the headings above them are separate views and the only hint on either field was a value rather than a name, and that one vanished the moment anything was typed. Both fields are labelled now. The sentence above them still says an empty maximum means no upper bound.
 
 * A gate override whose type the catalogue disagrees with is refused on a fresh launch too. The check that catches a rule which would hand TikTok a word where its own code expects a number could only work while the catalogue happened to be loaded, and nothing loaded it until the Feature Gate Lab screen was opened, which is exactly the launch where the check was needed. Reaching that path now asks for the catalogue in the background, so one read goes through unchecked instead of all of them.

@@ -413,7 +413,7 @@ public class SettingsL10nTest {
         }
 
         assertTrue("the scan found no files to read", scanned > 20);
-        assertTrue("a toast is shown to the reader, so it belongs in the translation table. "
+        assertTrue("this text reaches the reader, so it belongs in the translation table. "
                         + "Wrap it in L10n.t, or L10n.f when it carries a value:\n"
                         + String.join("\n", offenders),
                 offenders.isEmpty());
@@ -433,7 +433,7 @@ public class SettingsL10nTest {
      * messages.
      */
     private static final String SHOWS_TEXT = "(?:\\b\\w*[Tt]oast\\w*|Toast\\s*\\.\\s*makeText|showUndoBanner"
-            + "|setContentDescription|setStateDescription)\\s*\\(";
+            + "|setContentDescription|setStateDescription|SettingsUi\\s*\\.\\s*text)\\s*\\(";
 
     /** Marks every character of a source file as code, inside a literal, or inside a comment. */
     private static final byte CODE = 0, LITERAL = 1, COMMENT = 2;
@@ -484,7 +484,10 @@ public class SettingsL10nTest {
                 if (kind[at] != LITERAL || text.charAt(at) != '"') continue;
                 int literalEnd = at + 1;
                 while (literalEnd < close && kind[literalEnd] == LITERAL) literalEnd++;
-                if (!throughTheTable(text, kind, at)) {
+                // An empty literal says nothing, so there is nothing to translate. Eight of
+                // these are the getTitle() == null ? "" : ... idiom on the hand built dialogs.
+                boolean empty = literalEnd == at + 2;
+                if (!empty && !throughTheTable(text, kind, at)) {
                     found.add(lineOf(text, at) + "  "
                             + text.substring(at, Math.min(literalEnd, at + 70)));
                 }
