@@ -5,6 +5,7 @@
 package app.morphe.patches.tiktok.interaction.resume
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.PatchException
@@ -15,8 +16,12 @@ import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.getReference
+import app.morphe.util.indexOfFirstInstructionOrThrow
 import app.morphe.util.indexOfFirstInstructionReversedOrThrow
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val EXTENSION_DESCRIPTOR =
@@ -73,6 +78,41 @@ val resumeVideoAfterScrollPatch = bytecodePatch(
                     sput-object v0, LX/0Lze;->LJFF:Ljava/lang/String;
                 """,
                 ExternalLabel("continue_completion", getInstruction(0)),
+            )
+        }
+
+        // TikTok records a position for every feed it plays, but it only hands one back when the
+        // feed's event type is in FeedPlayProgressContinueConfig.event_type_list. On 46.2.3 that
+        // list is built in the config's own constructor and holds homepage_hot, others_homepage,
+        // personal_homepage, landscape_mode, account_history and collection_video. The Following
+        // and Friends tabs are not in it, which is why the switch appeared to do nothing there
+        // while the position was being stored all along.
+        FeedProgressResumePositionFingerprint.method.apply {
+            val eventTypeListIndex = indexOfFirstInstructionOrThrow {
+                getReference<FieldReference>()?.name == "event_type_list"
+            }
+            val containsIndex = indexOfFirstInstructionOrThrow(eventTypeListIndex) {
+                val reference = getReference<MethodReference>()
+                reference?.definingClass == "Ljava/util/List;" && reference.name == "contains"
+            }
+            val resultInstruction = getInstruction(containsIndex + 1)
+            if (resultInstruction.opcode != Opcode.MOVE_RESULT) {
+                throw PatchException(
+                    "Resume video after scroll: the event type check does not keep its answer.",
+                )
+            }
+            val resultRegister = (resultInstruction as OneRegisterInstruction).registerA
+            check(resultRegister <= 15) {
+                "Resume video after scroll: the event type answer is above v15, which the " +
+                    "override cannot name."
+            }
+
+            addInstructions(
+                containsIndex + 2,
+                """
+                    invoke-static {v$resultRegister}, $EXTENSION_DESCRIPTOR->allowResumeInThisFeed(Z)Z
+                    move-result v$resultRegister
+                """,
             )
         }
 

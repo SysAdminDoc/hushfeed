@@ -1,5 +1,7 @@
 ## Unreleased
 
+* "Resume videos after scrolling" works on the Following and Friends tabs. TikTok kept a position for every feed it played, then handed one back only for a short list of places it built into the app, and the Following tab is not on that list. The switch looked broken there while the position was being stored all along. With the switch on, any feed that has a stored position now uses it.
+
 * Every number row says what it accepts, and says so when it moves what you typed. Twelve of the fourteen stated their range nowhere: type 5000 into "Daily time budget" and it came back "Current: 600" with no explanation. Each row now carries its range under its own wording, and a number outside it is reported rather than quietly pulled in. The seven rows whose text says zero turns them off read "Current: Off" at zero instead of "Current: 0 videos", which was a limit of none rather than no limit.
 
 * Each download destination dialog is headed by the row you tapped. Video, photo and sticker all opened a window titled "Download path", so nothing on the screen said which of the three you were editing, and the sentence under it stayed English on a German or Indonesian phone. Both follow the language now.
