@@ -19,7 +19,15 @@ param(
     [string]$Java,
     # Only for running the rest of the checks with no network. Nothing in the repo
     # passes it; the pre-push escape hatch is HUSHFEED_SKIP_PRE_PUSH=1.
-    [switch]$SkipUrlCheck
+    [switch]$SkipUrlCheck,
+    # The published bundle description quotes a test count, which is a fact about the release it
+    # describes rather than about the working tree. The two agree at the moment the description
+    # is written and drift apart with the next test anyone adds, so a push that only touches
+    # README would fail on it for the rest of the release cycle. scripts/pre-push.ps1 passes this
+    # when patches-bundle.json is not among the changed files; a release, which rewrites that
+    # file, does not. The rest of the test results check, that a run exists and carries no
+    # failures or skips, always runs, and a run by hand checks everything.
+    [switch]$SkipDescriptionTestCount
 )
 
 $ErrorActionPreference = 'Stop'
@@ -293,7 +301,12 @@ foreach ($file in $testFiles) {
     }
     $testCount += @($results.testsuite.testcase).Count
 }
-Require-Match -Text ([string]$bundle.description) -Pattern "\b$testCount runtime tests passed\b" -Description 'bundle description test count'
+if ($SkipDescriptionTestCount) {
+    Write-Host ("[release] patches-bundle.json did not change, so its description is left " +
+        "against the release it describes; " + $testCount + " tests ran here")
+} else {
+    Require-Match -Text ([string]$bundle.description) -Pattern "\b$testCount runtime tests passed\b" -Description 'bundle description test count'
+}
 
 if ($VerifyPublishedAsset) {
     if ([string]::IsNullOrWhiteSpace($ArtifactPath)) {

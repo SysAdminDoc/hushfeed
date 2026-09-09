@@ -150,6 +150,10 @@ try {
 
     if ($touchesRelease) {
         Write-Step 'a published file changed, checking the release facts'
+        # The description's test count belongs to the release it describes. Holding this tree to
+        # it only means something while the description is being rewritten, which is when
+        # patches-bundle.json is one of the files that moved.
+        $describesThisTree = @($paths | Where-Object { $_ -eq 'patches-bundle.json' }).Count -gt 0
         $validate = Join-Path $Root 'scripts/validate-release-facts.ps1'
         $global:LASTEXITCODE = 0
         # The sources and javadoc jars share the .mpp extension, so an unfiltered listing found
@@ -158,19 +162,25 @@ try {
         $artifacts = @(Get-ChildItem -LiteralPath (Join-Path $Root 'patches/build/libs') `
             -Filter '*.mpp' -File -ErrorAction SilentlyContinue |
             Where-Object { $_.Name -notmatch '(^|-)(sources|javadoc)\.mpp$' })
-        if ($artifacts.Count -eq 1) {
+        if ($artifacts.Count -eq 1 -and $describesThisTree) {
             # The bundle this checkout built, so the indexed URL, its hash and the hosted
-            # checksum entry can all be compared against something real.
+            # checksum entry can all be compared against something real. Only while the index is
+            # being rewritten, though: at any other time build/libs holds a bundle built from
+            # whatever the tree was at the time, and comparing that byte for byte against the
+            # published release fails as soon as any source changes, which is not a release fact
+            # going wrong.
             & $validate -Root $Root -VerifyPublishedAsset -ArtifactPath $artifacts[0].FullName
         } else {
             if ($artifacts.Count -gt 1) {
                 Write-Step "found $($artifacts.Count) bundles, so the hosted artifact is not compared"
+            } elseif ($artifacts.Count -eq 1) {
+                Write-Step 'patches-bundle.json did not change, so the local bundle is not compared'
             } else {
                 Write-Step 'no local bundle here, so the hosted artifact is not compared'
             }
             # The indexed URL is still fetched. Only the byte-for-byte hash comparison needs a
             # local bundle to compare against.
-            & $validate -Root $Root
+            & $validate -Root $Root -SkipDescriptionTestCount:(-not $describesThisTree)
         }
         if ($LASTEXITCODE -ne 0) {
             throw 'The release facts do not agree. Fix them or push with HUSHFEED_SKIP_PRE_PUSH=1.'
