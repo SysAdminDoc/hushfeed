@@ -70,8 +70,8 @@ The Settings patch adds the entry point and is selected by default. Deselect it 
 | `Copy comments without username` | Copies only the comment text without including the creator's username. |
 | `Custom offline videos limit` | Adds a custom entry to TikTok's offline videos menu with a configurable limit from 1 to 1000 videos. Values outside the range use the nearest valid limit. |
 | `Disable login requirement` | Removes TikTok's mandatory login gate from supported flows. |
-| `Disable long-press quick share` | Keeps long-pressing Share from opening TikTok's quick-share interaction. |
-| `Disable long-press repost` | Keeps holding Like from opening TikTok's repost action without disabling TikTok's wider repost and upvote systems. |
+| `Disable the long press quick share` | Keeps long-pressing Share from opening TikTok's quick-share interaction. |
+| `Disable the long press repost` | Keeps holding Like from opening TikTok's repost action without disabling TikTok's wider repost and upvote systems. |
 | `Disable screen capture detection` | Prevents TikTok from detecting screenshots and screen recordings. |
 | `Allow screenshots and Circle to Search` | Removes secure window flags and the native Circle to Search block. Off by default. Restart after changing the setting. |
 | `Diagnostic tools` | Adds optional structured Morphe logs, TikTok crash capture, and clipboard or file report export. |
@@ -318,7 +318,7 @@ Hushfeed stands on a lot of other people's work, and the licence asks that this 
 - [BlueDragon4251/tiktok-patches-for-morphe](https://github.com/BlueDragon4251/tiktok-patches-for-morphe) for the seen video filter, the gate recorder and the download quality ideas.
 - [eduardo3677-ai/tiktok-patches-for-morphe](https://github.com/eduardo3677-ai/tiktok-patches-for-morphe) for Ghost mode.
 - [@lyyako](https://github.com/lyyako) for the sanitize sharing links hook, the seekbar patch, the anti-recording patch, `Open external links directly` and `Always show publish date`.
-- [@oscski](https://github.com/oscski) for `Disable long-press repost`.
+- [@oscski](https://github.com/oscski) for `Disable the long press repost`.
 - The [Morphe](https://github.com/MorpheApp) team for the patcher, the manager and the patches template.
 
 Files that came from another project keep their original notices, and files written here say so in their header.

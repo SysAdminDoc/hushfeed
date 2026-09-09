@@ -119,6 +119,14 @@ dependencies {
 }
 
 tasks {
+    // ReadmePatchNamesTest reads the README, which is not a source file of this module, so
+    // nothing told Gradle the answer changes when it does. Without this the task stayed
+    // up to date over a README edit and the gate passed a table it had never looked at.
+    test {
+        inputs.file(rootProject.file("README.md"))
+            .withPropertyName("readme")
+            .withPathSensitivity(PathSensitivity.RELATIVE)
+    }
     val verifyBundle = register<JavaExec>("verifyBundle") {
         group = "verification"
         description = "Check the Android bundle and its published patch list without rebuilding it"
