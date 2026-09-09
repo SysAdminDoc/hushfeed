@@ -17,6 +17,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.util.findFreeRegister
 import app.morphe.util.findInstructionIndicesReversedOrThrow
 import app.morphe.util.getFreeRegisterProvider
 import app.morphe.util.getReference
@@ -141,17 +142,32 @@ val downloadsPatch = bytecodePatch(
             val yReg = drawInstr.registerF
             val paintReg = drawInstr.registerG
 
+            // The switch answer needs somewhere of its own to live. It used to be read into the
+            // x register and x then written back as a literal zero, which is only the same
+            // drawing because of what this build happens to do: on 46.2.3 the host translates
+            // the canvas first and passes one register holding zero as both x and y
+            // (const/4 v0 at 201, drawBitmap {v6, v3, v0, v0, v5} at 202 of LX/0owv;->LIZ).
+            // A build that draws at a computed x would have had the watermark moved to the
+            // left edge for everyone who keeps it, which is the default.
+            val flagReg = findFreeRegister(
+                drawBitmapIndex,
+                canvasReg,
+                bitmapReg,
+                xReg,
+                yReg,
+                paintReg,
+            )
+
             removeInstructions(drawBitmapIndex, 1)
 
             addInstructionsWithLabels(
                 drawBitmapIndex,
                 """
                     invoke-static {}, $EXTENSION_CLASS_DESCRIPTOR->shouldRemoveWatermark()Z
-                    move-result v$xReg
+                    move-result v$flagReg
 
-                    if-nez v$xReg, :skip_watermark
+                    if-nez v$flagReg, :skip_watermark
 
-                    const/4 v$xReg, 0x0
                     invoke-virtual {v$canvasReg, v$bitmapReg, v$xReg, v$yReg, v$paintReg}, Landroid/graphics/Canvas;->drawBitmap(Landroid/graphics/Bitmap;FFLandroid/graphics/Paint;)V
 
                     :skip_watermark

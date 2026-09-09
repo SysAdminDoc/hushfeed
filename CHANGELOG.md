@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The comment image watermark keeps the position TikTok gave it. The patch read its own on/off answer into the register holding the watermark's x coordinate, then wrote a zero back before drawing. That is the same picture on this build, because TikTok moves the canvas first and draws at nothing but zero, and it would have pinned the watermark to the left edge on a build that draws anywhere else. The switch has a register of its own now.
+
 * The patched app carries about 45 KB less code. Seventeen classes inherited from ReVanced were compiled into the shared payload of every build and nothing in this project called any of them, including a second settings backup, a network helper and an environment nag screen that had been switched off and left in place. They are gone. Nothing reachable changes.
 
 * The two caption settings say so when a TikTok build moves them. Caption text size and the strip behind the captions found their views by a number baked into this project, which the next TikTok build is free to reassign. Both settings would then have done nothing while the Hook status row reported everything fine. They look the views up by name now, the way every other lookup here does, and a build without them shows up under "captions" in the diagnostics.
