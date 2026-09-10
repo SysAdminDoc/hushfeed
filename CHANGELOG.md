@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Automatic video advance now works from a cold start. Two things stood in the way. TikTok builds its auto scroll component only once somebody opens the video panel and asks for it by hand, so with the setting already on, a fresh launch had nothing to work with. And the check for whether the feed was on screen asked TikTok's auto scroll indicator about itself, which TikTok keeps hidden until scrolling is already running, so the answer was always no. With the setting on, the component is now built alongside the ones TikTok always builds, and the feed it sits in is what answers for being on screen. With the setting off, TikTok's own choice is left alone.
+
 * Changing the auto-advance session limit now starts a fresh count on the same feed. The new session can count its current video and show its own stop notice. Saving the same limit, changing another setting or returning from settings keeps the existing count.
 
 * A final playback report can arrive before TikTok applies a daily hold's queued pause. That report now keeps the matching resume ready for audio focus to return. Playback after an observed pause still releases that ownership.

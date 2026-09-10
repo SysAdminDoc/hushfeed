@@ -18,6 +18,8 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.GraphicsMode;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28, qualifiers = "night")
@@ -36,6 +38,14 @@ public class AutoAdvanceTest {
         Settings.AUTO_ADVANCE_LIMIT.save(0);
     }
     enum State { AUTO_SCROLL_STATE_START, AUTO_SCROLL_STATE_STOP, AUTO_SCROLL_STATE_PAUSE }
+    /**
+     * A real view in a real hierarchy, so isShown() and getParent() answer for themselves.
+     * Only window focus is stubbed, because Robolectric grants none to a visible activity.
+     */
+    static final class IndicatorView extends View {
+        IndicatorView(android.content.Context context) { super(context); }
+        @Override public boolean hasWindowFocus() { return true; }
+    }
     static final class FeedView extends View {
         boolean attached = true, shown = true, focused = true;
         FeedView() { super(RuntimeEnvironment.getApplication()); }
@@ -50,6 +60,33 @@ public class AutoAdvanceTest {
         Settings.SESSION_BUDGET_LOCK_MINUTES.resetToDefault();
         SessionBudget.clear();
     }
+    /** The two constants the host chooses between, standing in for its own obfuscated enum. */
+    enum LoadStrategy { IMMEDIATE, LAZY }
+    /** What the patch writes into the bridge: the host's own immediate constant, nothing else. */
+    @Implements(AutoAdvance.class)
+    public static class ImmediateLoadBridge {
+        @Implementation protected static Object immediateLoad() { return LoadStrategy.IMMEDIATE; }
+    }
+
+    @Test @Config(shadows = ImmediateLoadBridge.class)
+    public void anEnabledSettingHasTheHostBuildTheComponentWithTheRest() {
+        Settings.AUTO_ADVANCE.save(true);
+        assertEquals(LoadStrategy.IMMEDIATE, AutoAdvance.loadStrategy(LoadStrategy.LAZY));
+    }
+
+    @Test @Config(shadows = ImmediateLoadBridge.class)
+    public void aDisabledSettingLeavesTheHostsOwnLazyRegistrationAlone() {
+        Settings.AUTO_ADVANCE.save(false);
+        assertEquals(LoadStrategy.LAZY, AutoAdvance.loadStrategy(LoadStrategy.LAZY));
+    }
+
+    @Test public void withoutTheNativeBridgeTheHostsOwnChoiceStands() {
+        // The bridge body only exists in a patched build. Unpatched it answers nothing, and
+        // answering nothing must not blank out the strategy the host registered.
+        Settings.AUTO_ADVANCE.save(true);
+        assertEquals(LoadStrategy.LAZY, AutoAdvance.loadStrategy(LoadStrategy.LAZY));
+    }
+
     @Test public void restartsNativeStopButPreservesPauseAndStopsWhenDisabled() {
         // The control holds the view weakly, so the test has to hold it strongly. Without
         // this the view can be collected part way through and every later update returns
@@ -167,6 +204,48 @@ public class AutoAdvanceTest {
         view.attached = view.shown = view.focused = true;
         control.update(() -> null, () -> fail("Unknown state"), () -> fail("Unknown state"));
     }
+    @Test public void theHostsHiddenIndicatorStillStartsWhileItsFeedIsOnScreen() {
+        // The component's own view is the host's auto scroll indicator, and the host keeps it
+        // GONE until scrolling is running. That is the state a cold start builds it in, so
+        // asking that view about itself stood in the way of ever starting.
+        try (var owner = Robolectric.buildActivity(
+                app.morphe.extension.tiktok.captions.CaptionToolsTest.CaptionActivity.class).setup().visible()) {
+            var feed = new android.widget.FrameLayout(owner.get());
+            owner.get().setContentView(feed);
+            var indicator = new IndicatorView(owner.get());
+            indicator.setVisibility(View.GONE);
+            feed.addView(indicator);
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+            assertFalse("the host keeps its indicator hidden", indicator.isShown());
+            assertTrue("the feed it sits in is on screen", feed.isShown());
+            assertTrue("the indicator is attached", indicator.isAttachedToWindow());
+
+            var control = new AutoAdvance.Control(indicator);
+            var started = new AtomicInteger();
+            control.update(() -> started.get() == 0 ? State.AUTO_SCROLL_STATE_STOP : State.AUTO_SCROLL_STATE_START,
+                    started::incrementAndGet, () -> fail("Nothing to stop"));
+            assertEquals(1, started.get());
+            assertTrue(control.owned);
+        }
+    }
+
+    @Test public void aFeedThatIsNotOnScreenCannotStartScrolling() {
+        try (var owner = Robolectric.buildActivity(
+                app.morphe.extension.tiktok.captions.CaptionToolsTest.CaptionActivity.class).setup().visible()) {
+            var feed = new android.widget.FrameLayout(owner.get());
+            owner.get().setContentView(feed);
+            var indicator = new IndicatorView(owner.get());
+            feed.addView(indicator);
+            feed.setVisibility(View.GONE);
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+
+            var control = new AutoAdvance.Control(indicator);
+            control.update(() -> State.AUTO_SCROLL_STATE_STOP,
+                    () -> fail("The feed is not on screen"), () -> fail("The feed is not on screen"));
+            assertFalse(control.owned);
+        }
+    }
+
     @Test public void nativeRefusalDoesNotClaimOwnershipAndSettingIsReachable() throws Exception {
         FeedView feed = new FeedView();
         var control = new AutoAdvance.Control(feed);

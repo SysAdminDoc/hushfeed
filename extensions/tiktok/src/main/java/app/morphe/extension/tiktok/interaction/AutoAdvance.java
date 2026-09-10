@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.view.ViewParent;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.Setting;
@@ -36,6 +37,21 @@ public final class AutoAdvance {
     private AutoAdvance() { }
 
     public static boolean available(boolean nativeValue) { return Settings.AUTO_ADVANCE.get() || nativeValue; }
+
+    /**
+     * Answers the load strategy the host records beside its auto scroll component. TikTok
+     * registers that component lazily, so nothing builds it until somebody opens the video panel
+     * and asks for Auto scroll by hand. On a cold start with this setting already on, none of the
+     * hooks below had a component to run against and the feature did nothing at all. With the
+     * setting on the registration carries the host's own immediate strategy, the one its start
+     * phase already uses for the components it always builds. With the setting off the host's own
+     * choice is handed straight back.
+     */
+    public static Object loadStrategy(Object lazy) {
+        if (!Settings.AUTO_ADVANCE.get()) return lazy;
+        Object immediate = immediateLoad();
+        return immediate != null ? immediate : lazy;
+    }
 
     public static void onView(Object component, View view) {
         if (Looper.myLooper() != Looper.getMainLooper() || component == null || view == null) return;
@@ -149,11 +165,26 @@ public final class AutoAdvance {
                 return;
             }
             View live = view.get();
-            if (live == null || !live.isAttachedToWindow() || !live.isShown() || !live.hasWindowFocus()) return;
+            if (live == null || !live.isAttachedToWindow() || !live.hasWindowFocus()) return;
+            if (!feedIsOnScreen(live)) return;
             if (!named(state.read(), "AUTO_SCROLL_STATE_STOP")) return;
             start.run();
             owned = !named(state.read(), "AUTO_SCROLL_STATE_STOP");
         }
+    }
+
+    /**
+     * Whether the feed this component belongs to is on screen.
+     *
+     * The component's own view is the host's auto scroll indicator, and the host keeps it GONE
+     * until scrolling is actually running. Asking that view whether it is shown answers a
+     * different question, and on a cold start it always answered no, so nothing ever started.
+     * What matters is the feed it sits in, which is what its parent reports. A view with no
+     * parent has nothing else to go on and answers for itself.
+     */
+    private static boolean feedIsOnScreen(View view) {
+        ViewParent parent = view.getParent();
+        return parent instanceof View ? ((View) parent).isShown() : view.isShown();
     }
 
     private static boolean named(Object state, String name) {
@@ -161,6 +192,7 @@ public final class AutoAdvance {
     }
 
     // Replaced with native calls when the patch is applied.
+    private static Object immediateLoad() { return null; }
     private static Object readAweme(Object component) { return null; }
     private static Object readState(Object component) { return null; }
     private static void start(Object component) { }
