@@ -54,7 +54,7 @@ class ProfileAvatarGestureHookTest {
         )).apply { addInstructions(nativeBody) }
         val original = method.implementation!!.instructions.toList()
 
-        method.interceptProfileAvatarLongPress()
+        method.interceptProfileAvatarLongPress("l0")
 
         val implementation = method.implementation!!
         val instructions = implementation.instructions.toList()

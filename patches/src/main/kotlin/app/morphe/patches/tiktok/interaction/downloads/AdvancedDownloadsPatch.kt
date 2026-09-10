@@ -4,31 +4,49 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
+import app.morphe.patcher.util.proxy.mutableTypes.MutableClass
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.util.getReference
 import app.morphe.util.numberOfParameterRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 private const val VIDEO = "Lcom/ss/android/ugc/aweme/feed/model/Video;"
 private const val URL = "Lcom/ss/android/ugc/aweme/base/model/UrlModel;"
 private const val EXTENSION = "Lapp/morphe/extension/tiktok/download/"
-private const val AVATAR_LISTENER = "LY/ACListenerS198S0100000_24;"
+private const val VIEW = "Landroid/view/View;"
 
-internal fun MutableMethod.interceptProfileAvatarLongPress() {
+/**
+ * The captured receiver, which R8 puts in the listener's one Object field.
+ *
+ * <p>It is called `l0` on 46.2.3, 46.7.3 and 46.8.3, and that name was written into the injected
+ * smali. The class holds exactly one Object field on all three, so it is read rather than named.
+ */
+private fun MutableClass.avatarCaptureField(): String =
+    fields.singleOrNull { it.type == "Ljava/lang/Object;" }?.name
+        ?: throw PatchException(
+            "Advanced downloads: $type does not hold exactly one captured Object.",
+        )
+
+internal fun MutableMethod.interceptProfileAvatarLongPress(captureField: String) {
     check(accessFlags and AccessFlags.STATIC.value != 0
-        && parameterTypes.map(CharSequence::toString) == listOf(definingClass, "Landroid/view/View;")
+        && parameterTypes.map(CharSequence::toString) == listOf(definingClass, VIEW)
         && returnType == "V") { "Advanced downloads: unexpected avatar callback signature." }
     val registers = implementation!!.registerCount
     check(registers - numberOfParameterRegisters >= 1 && registers <= 16) {
         "Advanced downloads: avatar callback registers no longer fit the native gesture hook."
     }
     addInstructionsWithLabels(0, """
-        iget-object v0, p0, $definingClass->l0:Ljava/lang/Object;
+        iget-object v0, p0, $definingClass->$captureField:Ljava/lang/Object;
         invoke-static { v0, p1 }, ${EXTENSION}ProfileAvatarSaver;->onAvatarLongPress(Ljava/lang/Object;Landroid/view/View;)Z
         move-result v0
         if-eqz v0, :native_avatar_hold
@@ -63,22 +81,40 @@ private object ProfileAvatarBindFingerprint : Fingerprint(
     custom = { method, _ -> method.accessFlags and AccessFlags.STATIC.value == 0 },
 )
 
+/**
+ * Both avatar press-and-hold handlers are a static `(theListener, View)V` on the synthetic
+ * click-listener class R8 builds for the profile header.
+ *
+ * <p>Everything that named them drifts. The class was `LY/ACListenerS198S0100000_24;` on 46.2.3,
+ * `LY/ACListenerS165S0100000_24;` on 46.7.3 and `LY/ACListenerS158S0100000_25;` on 46.8.3, and
+ * the two methods went from `onClick$43`/`onClick$46` to `onClick$117`/`onClick$120` and then to
+ * `onClick$76`/`onClick$79`. The serial numbers are R8's own counters.
+ *
+ * <p>What holds is the pair of strings each one reports its gesture with. Exactly two methods of
+ * this shape carry `long_press` and `long_hold_head` on all three builds, they are always on the
+ * same class, and only the one for the viewer's own profile also carries `photo` and `video`.
+ */
+private fun Method.isAvatarLongPressHandler(classDef: ClassDef) =
+    returnType == "V" &&
+        parameterTypes.map(CharSequence::toString) == listOf(classDef.type, VIEW)
+
+private fun Method.holdsString(value: String) =
+    implementation?.instructions?.any { it.getReference<StringReference>()?.string == value } == true
+
 private object OwnProfileAvatarLongPressFingerprint : Fingerprint(
-    definingClass = AVATAR_LISTENER,
-    name = "onClick\$43",
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC, AccessFlags.FINAL),
-    parameters = listOf(AVATAR_LISTENER, "Landroid/view/View;"),
     returnType = "V",
-    strings = listOf("photo", "video"),
+    strings = listOf("long_press", "long_hold_head", "photo", "video"),
+    custom = { method, classDef -> method.isAvatarLongPressHandler(classDef) },
 )
 
 private object OtherProfileAvatarLongPressFingerprint : Fingerprint(
-    definingClass = AVATAR_LISTENER,
-    name = "onClick\$46",
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC, AccessFlags.FINAL),
-    parameters = listOf(AVATAR_LISTENER, "Landroid/view/View;"),
     returnType = "V",
     strings = listOf("long_press", "long_hold_head"),
+    custom = { method, classDef ->
+        method.isAvatarLongPressHandler(classDef) && !method.holdsString("photo")
+    },
 )
 
 private const val AWEME = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
@@ -155,7 +191,10 @@ val advancedDownloadsPatch = bytecodePatch(
                 "attachAvatar(Landroid/view/View;)V",
         )
         listOf(OwnProfileAvatarLongPressFingerprint, OtherProfileAvatarLongPressFingerprint).forEach {
-            it.method.interceptProfileAvatarLongPress()
+            val handler = it.method
+            handler.interceptProfileAvatarLongPress(
+                mutableClassDefBy(handler.definingClass).avatarCaptureField(),
+            )
         }
 
         StoryPlayAreaViewFingerprint.method.addInstruction(
@@ -174,7 +213,7 @@ val advancedDownloadsPatch = bytecodePatch(
                 )
             }
 
-        StoryLongPressFingerprint.method.interceptStoryLongPress()
+        resolveStoryLongPressTimer().interceptStoryLongPress()
 
         SettingsStatusLoadFingerprint.method.addInstruction(0,
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableAdvancedDownloads()V")
