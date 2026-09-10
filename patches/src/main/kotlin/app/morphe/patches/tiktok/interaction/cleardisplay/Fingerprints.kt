@@ -13,16 +13,23 @@ internal object OnClearDisplayEventFingerprint : Fingerprint(
     },
 )
 
-/** The extracted body of PlayerController.onRenderFirstFrame in TikTok 46.2.3. */
+/**
+ * The body R8 outlined from PlayerController.onRenderFirstFrame: the static method on the same
+ * class taking the controller and the render event. onRenderFirstFrame keeps its name, so the
+ * event type is read off it, and there is exactly one such static on 46.2.3 (`LLILZIL`), 46.7.3
+ * (`LJL`) and 46.8.3 (`LLJIJIL`). The name was once written here and it is different on all three.
+ */
 internal object OnRenderFirstFrameBodyFingerprint : Fingerprint(
     definingClass = "/feed/controller/PlayerController;",
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
     returnType = "V",
-    parameters = listOf(
-        "Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;",
-        "LX/0pb0;",
-    ),
-    custom = { method, _ -> method.name == "LLILZIL" },
+    custom = { method, classDef ->
+        val event = classDef.methods
+            .firstOrNull { it.name == "onRenderFirstFrame" && it.parameterTypes.size == 1 }
+            ?.parameterTypes?.single()?.toString()
+        event != null &&
+            method.parameterTypes.map(CharSequence::toString) == listOf(classDef.type, event)
+    },
 )
 
 /**
