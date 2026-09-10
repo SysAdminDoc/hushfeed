@@ -431,8 +431,9 @@ public final class FeatureGateLabFragment extends Fragment {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
         ));
-        empty = FeatureGateLabUi.label(context,
-                L10n.t(context, "No gates match this search and filter."));
+        // Blank until the first load answers: a ListView shows its empty view while the adapter
+        // has nothing, so "No gates match" sat under "Loading..." before anything was looked at.
+        empty = FeatureGateLabUi.label(context, "");
         empty.setGravity(Gravity.CENTER);
         empty.setPadding(
                 FeatureGateLabUi.dp(context, 24),
@@ -777,8 +778,8 @@ public final class FeatureGateLabFragment extends Fragment {
         // the main thread, and a settings restore holding the journal lock froze the screen
         // until it finished. runLabChange puts the switch back for us either way.
         runLabChange(() -> FeatureGateLabUndo.setMasterEnabled(checked),
-                checked ? "Overrides enabled. Restart TikTok to apply saved values."
-                        : "Overrides disabled. Restart TikTok to restore native values.");
+                checked ? L10n.t(getContext(), "Overrides enabled. Restart TikTok to apply saved values.")
+                        : L10n.t(getContext(), "Overrides disabled. Restart TikTok to restore native values."));
     }
 
     /**
@@ -967,7 +968,8 @@ public final class FeatureGateLabFragment extends Fragment {
                     reset(true);
                     return true;
                 case 6:
-                    runLabChange(FeatureGateLabUndo::undo, "Restored the previous Lab settings. Restart TikTok.");
+                    runLabChange(FeatureGateLabUndo::undo,
+                            L10n.t(getContext(), "Restored the previous Lab settings. Restart TikTok."));
                     return true;
                 default:
                     return false;
@@ -1113,9 +1115,15 @@ public final class FeatureGateLabFragment extends Fragment {
         FeatureGateLabStore.ImportReview review = FeatureGateLabStore.reviewProfile(
                 profile.toString(), currentSnapshot.byIdentity);
 
-        String message = L10n.f(Utils.getContext(),
-                "Imported %1$d disabled values. %2$d already matched, %3$d unavailable, %4$d rejected. Undo last Lab change is in the menu.",
-                review.accepted.size(), same, unavailable, review.rejected.size() + malformed);
+        // An import that accepted nothing writes no undo copy, so a message offering Undo
+        // would point at whatever the previous Lab change was.
+        String message = review.accepted.isEmpty()
+                ? L10n.f(Utils.getContext(),
+                        "Nothing new was imported. %1$d already matched, %2$d unavailable, %3$d rejected.",
+                        same, unavailable, review.rejected.size() + malformed)
+                : L10n.f(Utils.getContext(),
+                        "Imported %1$d disabled values. %2$d already matched, %3$d unavailable, %4$d rejected. Undo last Lab change is in the menu.",
+                        review.accepted.size(), same, unavailable, review.rejected.size() + malformed);
         runLabChange(() -> FeatureGateLabUndo.importRules(review), message);
     }
 
@@ -1223,8 +1231,9 @@ public final class FeatureGateLabFragment extends Fragment {
     }
 
     private void reset(boolean allData) {
-        runLabChange(() -> FeatureGateLabUndo.reset(allData),
-                "Lab " + (allData ? "data" : "overrides") + " reset. Undo last Lab change is in the menu. Restart TikTok.");
+        runLabChange(() -> FeatureGateLabUndo.reset(allData), allData
+                ? L10n.t(getContext(), "Lab data reset. Undo last Lab change is in the menu. Restart TikTok.")
+                : L10n.t(getContext(), "Lab overrides reset. Undo last Lab change is in the menu. Restart TikTok."));
     }
 
     private interface LabChange { void run() throws Exception; }

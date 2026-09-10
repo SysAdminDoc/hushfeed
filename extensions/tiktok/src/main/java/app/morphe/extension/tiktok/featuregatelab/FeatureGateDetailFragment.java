@@ -190,6 +190,7 @@ public final class FeatureGateDetailFragment extends Fragment {
                     L10n.t(context, "Return a copied object with the selected fields changed")
             );
             force = new Switch(context);
+            force.setContentDescription(L10n.t(context, "Override this configuration"));
             forceRow.addView(force, new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     FeatureGateLabUi.dp(context, 48)
@@ -215,6 +216,7 @@ public final class FeatureGateDetailFragment extends Fragment {
                     L10n.t(context, "Off forces false; on forces true. Reset returns control to TikTok")
             );
             booleanValue = new Switch(context);
+            booleanValue.setContentDescription(L10n.t(context, "Forced result"));
             booleanValue.setChecked(Boolean.parseBoolean(rule == null ? bestInitialValue(entry) : rule.value));
             booleanValue.setEnabled(editable);
             valueRow.addView(booleanValue, new LinearLayout.LayoutParams(
@@ -229,6 +231,7 @@ public final class FeatureGateDetailFragment extends Fragment {
                     L10n.t(context, "When TikTok requests this key, return the selected value below")
             );
             force = new Switch(context);
+            force.setContentDescription(L10n.t(context, "Override this gate"));
             forceRow.addView(force, new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     FeatureGateLabUi.dp(context, 48)
@@ -671,6 +674,7 @@ public final class FeatureGateDetailFragment extends Fragment {
 
             if ("BOOLEAN".equals(kind)) {
                 Switch toggle = new Switch(root.getContext());
+                toggle.setContentDescription(fieldName);
                 toggle.setChecked(value instanceof Boolean
                         ? (Boolean) value
                         : Boolean.parseBoolean(String.valueOf(value)));

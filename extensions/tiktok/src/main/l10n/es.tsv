@@ -11,7 +11,6 @@ A creator pattern is taking too long and was switched off: %1$s	Un patrón de cr
 A good place to stop, if you want one.	Un buen momento para parar, si quieres uno.
 A hidden puzzle may be the cause.	Puede que la causa sea un rompecabezas oculto.
 A host to put in place of tiktok.com when you share or copy a link, like vxtiktok.com. Leave it empty to share TikTok's own links. Only TikTok links are changed, and only the host: nothing is sent anywhere new.	Un host que sustituya a tiktok.com al compartir o copiar un enlace, como vxtiktok.com. Déjalo vacío para compartir los enlaces de TikTok. Solo cambian los enlaces de TikTok, y solo el host: no se envía nada a ningún sitio nuevo.
-A newer change replaced that undo. Tap Undo again.	Un cambio más reciente sustituyó ese deshacer. Toca Deshacer otra vez.
 A settings operation is already running	Ya hay una operación de ajustes en marcha
 A tap on a person in the Send to row only selects them. A second tap on the same person within four seconds sends the video.	Al tocar a una persona en la fila Enviar a solo se la selecciona. Un segundo toque sobre la misma persona antes de cuatro segundos envía el vídeo.
 AI-generated posts	Publicaciones generadas por IA
@@ -26,7 +25,6 @@ All loaded tabs	Todas las pestañas cargadas
 Allow Duet and Stitch anyway	Permitir Dúo y Unir de todas formas
 Allow screenshots and Circle to Search	Permitir capturas de pantalla y Círculo para buscar
 Allowed bottom tabs	Pestañas inferiores permitidas
-Allowed loaded tabs	Pestañas cargadas permitidas
 Already marked as not interested	Ya marcado como no me interesa
 Also apply these filters to downloaded videos TikTok uses when the feed cannot load enough new items.	Aplicar también estos filtros a los vídeos descargados que TikTok usa cuando el feed no consigue cargar suficientes elementos nuevos.
 Also change the region TikTok reports internally. Keeps your interface language. Needs Override SIM details and a restart; your IP address and your account's own rules still apply.	Cambia también la región que TikTok informa internamente. Mantiene el idioma de la interfaz. Necesita Sustituir los datos de la SIM y reiniciar; tu dirección IP y las reglas de tu cuenta siguen aplicándose.
@@ -320,8 +318,6 @@ Invalid SIM preset	Ajuste preestablecido de SIM no válido
 Keep a local record of what you have watched and drop those videos from later feed pages.	Guardar en el dispositivo un registro de lo que has visto y quitar esos vídeos de las páginas siguientes del feed.
 Keep automatic advance enabled, and show TikTok's own Auto scroll action in the video panel even if your account never had it. Pauses and open dialogs still stop scrolling. Restart TikTok to apply this, then use this switch to turn it off.	Mantener el avance automático activado y mostrar la acción Desplazamiento automático de TikTok en el panel del vídeo aunque tu cuenta nunca la haya tenido. Las pausas y los diálogos abiertos siguen deteniendo el desplazamiento. Reinicia TikTok para que se aplique y luego usa este interruptor para desactivarlo.
 Keep captions in clear display	Mantener los subtítulos con los controles ocultos
-Keep pressing and holding Like from opening TikTok's repost action.	Evita que mantener pulsado Me gusta abra la acción de repost de TikTok.
-Keep pressing and holding Share from opening TikTok's quick share action.	Evita que mantener pulsado Compartir abra el compartir rápido de TikTok.
 Keep the clock and status icons off the screen while TikTok is open. Swipe down from the top to peek at them.	Mantener el reloj y los iconos de estado fuera de la pantalla mientras TikTok está abierto. Desliza desde arriba para verlos.
 Keep the screen's refresh rate	Mantener la tasa de refresco de la pantalla
 Kept to %1$s, the nearest value this row allows	Ajustado a %1$s, el valor más cercano que permite esta fila
@@ -564,8 +560,6 @@ Sending feedback	Enviando comentarios
 Series posts	Publicaciones de Series
 Settings	Ajustes
 Settings backup saved	Copia de seguridad de los ajustes guardada
-Settings recovery could not finish. Use Undo or restore your backup.	La recuperación de los ajustes no pudo terminar. Usa Deshacer o restaura tu copia de seguridad.
-Settings recovery needs attention. Use Undo or restore your backup.	La recuperación de los ajustes necesita tu atención. Usa Deshacer o restaura tu copia de seguridad.
 Settings restored. Restart TikTok to apply all changes.	Ajustes restaurados. Reinicia TikTok para aplicar todos los cambios.
 Settings restored. The Feature Gate Lab rules were for another TikTok version and were left out. Restart TikTok to apply all changes.	Ajustes restaurados. Las reglas del Laboratorio de interruptores eran de otra versión de TikTok y se dejaron fuera. Reinicia TikTok para aplicar todos los cambios.
 The last change is undone. The Feature Gate Lab rules were for another TikTok version and were left out. Restart TikTok to apply all changes.	El último cambio está deshecho. Las reglas del Laboratorio de interruptores eran de otra versión de TikTok y se dejaron fuera. Reinicia TikTok para aplicar todos los cambios.
@@ -633,7 +627,6 @@ Tap the like heart twice within four seconds. Removing a like stays immediate.	T
 Tap to start the feed	Toca para poner el feed en marcha
 That backup was written by a newer Hushfeed than this one. Nothing was altered.	Esa copia de seguridad la escribió un Hushfeed más nuevo que este. No se ha cambiado nada.
 That creator is already in the list	Ese creador ya está en la lista
-That creator pattern is too long to use, so it was skipped: %1$s	Ese patrón de creador es demasiado largo para usarlo, así que se saltó: %1$s
 That file is not readable text, so it may have been damaged in transit. Nothing was altered.	Ese archivo no es texto legible, así que puede haberse dañado por el camino. No se ha cambiado nada.
 That file is too large to be a settings backup. Nothing was altered.	Ese archivo es demasiado grande para ser una copia de seguridad de ajustes. No se ha cambiado nada.
 That is %1$d minutes today	Eso son %1$d minutos hoy
@@ -712,7 +705,6 @@ Use Save JSON for this large report	Usa Guardar JSON para este informe tan grand
 Use TikTok's native hold, slide down, and release gesture to lock 2x speed.	Usar el gesto nativo de TikTok de mantener, deslizar hacia abajo y soltar para bloquear la velocidad 2x.
 Use a default playback speed	Usar una velocidad de reproducción predeterminada
 Use non-personalized search	Usar la búsqueda sin personalizar
-Use the preset for the region TikTok reports for your account and its shop too. May affect search. Needs the language option and a restart.	Usar el ajuste preestablecido también para la región que TikTok informa de tu cuenta y de su tienda. Puede afectar a la búsqueda. Necesita la opción de idioma y reiniciar.
 Use the selected country and operator values. Restart TikTok to apply this.	Usar el país y los valores de operador seleccionados. Reinicia TikTok para que se aplique.
 Use the selected country. Restart TikTok to apply this.	Usar el país seleccionado. Reinicia TikTok para que se aplique.
 Use the split layout on wider screens. Restart TikTok to apply this, or unfold again if the old layout is still there.	Usar el diseño dividido en pantallas más anchas. Reinicia TikTok para que se aplique, o vuelve a desplegar si sigue el diseño antiguo.
@@ -723,7 +715,6 @@ Video destination	Destino de los vídeos
 Video download quality	Calidad de descarga del vídeo
 Video filename	Nombre de archivo del vídeo
 Video playback quality	Calidad de reproducción del vídeo
-Video quality	Calidad del vídeo
 Video saved	Vídeo guardado
 Video saved in %1$s, but only %2$s of %3$s subtitles came with it	Vídeo guardado en %1$s, pero solo llegaron %2$s de %3$s subtítulos
 Video saved with %1$s subtitles in %2$s	Vídeo guardado con %1$s subtítulos en %2$s
@@ -744,8 +735,6 @@ millisecond	milisegundo
 milliseconds	milisegundos
 ms	ms
 or	o
-pixel	píxel
-pixels	píxeles
 point	punto
 points	puntos
 second	segundo
@@ -782,7 +771,6 @@ Reset	Restablecer
 Disable	Desactivar
 Enable	Activar
 More options	Más opciones
-Reset to loaded	Restablecer a las cargadas
 Refresh values	Actualizar los valores
 Export loaded values	Exportar los valores cargados
 Import loaded values	Importar los valores cargados
@@ -825,3 +813,33 @@ Could not change Lab settings.	No se han podido cambiar los ajustes del Lab.
 None of these gates had an override to reset.	Ninguno de estos interruptores tenía una sustitución que restablecer.
 None of these gates takes a true or false value.	Ninguno de estos interruptores acepta un valor true o false.
 Restart TikTok to apply the Feature Gate Lab changes.	Reinicia TikTok para aplicar los cambios del Feature Gate Lab.
+Overrides enabled. Restart TikTok to apply saved values.	Sustituciones activadas. Reinicia TikTok para aplicar los valores guardados.
+Overrides disabled. Restart TikTok to restore native values.	Sustituciones desactivadas. Reinicia TikTok para volver a los valores nativos.
+Lab overrides reset. Undo last Lab change is in the menu. Restart TikTok.	Sustituciones del Lab restablecidas. Deshacer el último cambio del Lab está en el menú. Reinicia TikTok.
+Lab data reset. Undo last Lab change is in the menu. Restart TikTok.	Datos del Lab restablecidos. Deshacer el último cambio del Lab está en el menú. Reinicia TikTok.
+Restored the previous Lab settings. Restart TikTok.	Se restauraron los ajustes anteriores del Lab. Reinicia TikTok.
+Nothing new was imported. %1$d already matched, %2$d unavailable, %3$d rejected.	No se importó nada nuevo. %1$d ya coincidían, %2$d no están disponibles, %3$d se rechazaron.
+There is no Lab change to undo.	No hay ningún cambio del Lab que deshacer.
+The record of an interrupted settings change could not be read, so it was set aside. Check your settings.	No se pudo leer el registro de un cambio de ajustes interrumpido, así que se apartó. Revisa tus ajustes.
+An interrupted settings change could not be recovered, so its record was set aside. Check your settings or restore a backup.	No se pudo recuperar un cambio de ajustes interrumpido, así que su registro se apartó. Revisa tus ajustes o restaura una copia de seguridad.
+A newer clear replaced that undo. Tap the row again to put it back.	Un borrado más reciente sustituyó ese deshacer. Toca la fila otra vez para recuperarlo.
+That creator pattern is too long, so it was not added: %1$s	Ese patrón de creador es demasiado largo, así que no se añadió: %1$s
+Use the preset for the region TikTok reports for your account and its shop too. May affect search. Needs Override SIM details, Match locale and timezone to country, and a restart.	Usar el preajuste también para la región que TikTok informa de tu cuenta y su tienda. Puede afectar a la búsqueda. Necesita Sustituir los datos de la SIM, Ajustar idioma y zona horaria al país, y un reinicio.
+Saved one original photo	Se guardó una foto original
+Length and views per like	Duración y visualizaciones por me gusta
+Stop a long press on Share from opening TikTok's quick share action.	Impedir que mantener pulsado Compartir abra la acción de compartir rápido de TikTok.
+Stop a long press on Like from opening TikTok's repost action.	Impedir que mantener pulsado Me gusta abra la acción de republicar de TikTok.
+dp	dp
+Select every tab	Seleccionar todas las pestañas
+Tabs TikTok has loaded	Pestañas que TikTok ha cargado
+That creator pattern is too long to use, so it was skipped: %1$s	Ese patrón de creador es demasiado largo, así que se omitió: %1$s
+Nothing to undo yet.	Todavía no hay nada que deshacer.
+No matching diagnostics found.	No se encontraron diagnósticos que coincidan.
+Diagnostic report copied to the clipboard.	Informe de diagnóstico copiado al portapapeles.
+The diagnostic report could not be exported.	No se pudo exportar el informe de diagnóstico.
+The diagnostic report could not be saved yet. Try again in a moment.	Todavía no se pudo guardar el informe de diagnóstico. Inténtalo de nuevo en un momento.
+A diagnostic report is already being saved.	Ya se está guardando un informe de diagnóstico.
+Full report saved to %1$s	Informe completo guardado en %1$s
+Could not start the report export. Try again shortly.	No se pudo iniciar la exportación del informe. Inténtalo de nuevo en breve.
+Copy quick report	Copiar informe rápido
+Save full report	Guardar informe completo

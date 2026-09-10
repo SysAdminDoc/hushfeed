@@ -40,7 +40,7 @@ public class TabSelectionPreference extends Preference {
         super(context);
         this.setting = setting;
         this.bottomTabs = bottomTabs;
-        setTitle(bottomTabs ? "Allowed bottom tabs" : "Allowed loaded tabs");
+        setTitle(bottomTabs ? "Allowed bottom tabs" : "Tabs TikTok has loaded");
         setKey(setting.key);
         // In memory only. setValue writes, and writing the tidied form of what is already
         // stored, at the moment the row is built, made building the page a change to the
@@ -84,7 +84,7 @@ public class TabSelectionPreference extends Preference {
 
     private static final String ROW_TAG = "tab_option_";
 
-    /** The rows and the set they show, so "Reset to loaded" can tick them where they are. */
+    /** The rows and the set they show, so "Select every tab" can tick them where they are. */
     private LinearLayout optionsView;
     private Set<String> selectedKeys;
 
@@ -135,7 +135,7 @@ public class TabSelectionPreference extends Preference {
 
         TextView title = new TextView(context);
         title.setText(L10n.t(getContext(),
-                bottomTabs ? "Allowed bottom tabs" : "Allowed loaded tabs"));
+                bottomTabs ? "Allowed bottom tabs" : "Tabs TikTok has loaded"));
         title.setTextColor(getTitleTextColor());
         title.setTextSize(20);
         title.setTypeface(title.getTypeface(), Typeface.BOLD);
@@ -188,7 +188,7 @@ public class TabSelectionPreference extends Preference {
         actions.setGravity(Gravity.CENTER_VERTICAL);
 
         TextView showAllButton = createActionButton(context,
-                L10n.t(context, "Reset to loaded"), false);
+                L10n.t(context, "Select every tab"), false);
         TextView cancelButton = createActionButton(context, L10n.t(context, "Cancel"), false);
         TextView saveButton = createActionButton(context, L10n.t(context, "Save"), true);
 
@@ -281,7 +281,7 @@ public class TabSelectionPreference extends Preference {
         row.setPadding(dpToPx(10), dpToPx(10), dpToPx(10), dpToPx(10));
 
         CheckBox checkBox = new CheckBox(context);
-        // Tagged so "Reset to loaded" can tick them where they are, rather than closing the
+        // Tagged so "Select every tab" can tick them where they are, rather than closing the
         // dialog and saving to show what it did.
         checkBox.setTag(ROW_TAG + option.key);
         checkBox.setChecked(selected.contains(option.key));

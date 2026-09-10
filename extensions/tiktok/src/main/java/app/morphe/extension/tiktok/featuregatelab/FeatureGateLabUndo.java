@@ -4,6 +4,7 @@ import android.util.AtomicFile;
 
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.SettingsJson;
+import app.morphe.extension.tiktok.settings.L10n;
 import app.morphe.extension.tiktok.settings.SettingsBackup;
 import app.morphe.extension.tiktok.settings.SettingsOperationJournal;
 
@@ -173,6 +174,14 @@ final class FeatureGateLabUndo {
     }
 
     static synchronized void undo() throws Exception {
+        // Asked before the journal is taken: with nothing to undo the file is simply absent,
+        // and the reader was shown the private path of a file that does not exist.
+        AtomicFile undoFile = file();
+        if (!undoFile.getBaseFile().isFile()
+                && !new File(undoFile.getBaseFile().getPath() + ".bak").isFile()) {
+            throw new IllegalStateException(
+                    L10n.t(Utils.getContext(), "There is no Lab change to undo."));
+        }
         SettingsOperationJournal.Operation operation = SettingsOperationJournal.acquire(Utils.getContext());
         boolean closed = false;
         try {

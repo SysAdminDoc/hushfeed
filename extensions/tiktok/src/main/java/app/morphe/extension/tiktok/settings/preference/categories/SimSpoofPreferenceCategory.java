@@ -51,7 +51,7 @@ public class SimSpoofPreferenceCategory extends ConditionalPreferenceCategory {
             addPreference(new TogglePreference(context, "Match locale and timezone to country",
                     "Also change the region TikTok reports internally. Keeps your interface language. Needs Override SIM details and a restart; your IP address and your account's own rules still apply.", Settings.REGION_SPOOF));
             addPreference(new TogglePreference(context, "Override store region (experimental)",
-                    "Use the preset for the region TikTok reports for your account and its shop too. May affect search. Needs the language option and a restart.", Settings.REGION_STORE_SPOOF));
+                    "Use the preset for the region TikTok reports for your account and its shop too. May affect search. Needs Override SIM details, Match locale and timezone to country, and a restart.", Settings.REGION_STORE_SPOOF));
         }
         InputTextPreference countryIsoPreference = new InputTextPreference(
                 context,

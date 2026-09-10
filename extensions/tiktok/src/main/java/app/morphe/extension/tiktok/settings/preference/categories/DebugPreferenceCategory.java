@@ -88,6 +88,25 @@ public class DebugPreferenceCategory extends ConditionalPreferenceCategory {
             Utils.setTitleAndSummaryColor(view);
         }
 
+        // The dialog's own words. Without these a translated row opened an English dialog.
+        @Override
+        protected CharSequence dialogTitle() {
+            return L10n.t(getContext(), "Export diagnostic report");
+        }
+
+        @Override
+        protected CharSequence[] labels() {
+            return new CharSequence[]{
+                    L10n.t(getContext(), "Copy quick report"),
+                    L10n.t(getContext(), "Save full report"),
+            };
+        }
+
+        @Override
+        protected CharSequence negativeText() {
+            return L10n.t(getContext(), "Cancel");
+        }
+
 
         @Override
         protected void onDialogShown(AlertDialog dialog) {

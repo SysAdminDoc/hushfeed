@@ -46,6 +46,23 @@ public final class LogBufferManager {
      */
     public static CharSequence clearedMessage;
 
+    /**
+     * The other sentences the export path says. Each is null until a bundle with a translation
+     * table sets it, and then the English below is what a bundle with no table gets. The
+     * saved-file sentence carries the path as %1$s.
+     */
+    public static CharSequence nothingToExportMessage;
+    public static CharSequence copiedMessage;
+    public static CharSequence exportFailedMessage;
+    public static CharSequence noContextMessage;
+    public static CharSequence alreadySavingMessage;
+    public static CharSequence savedToMessage;
+    public static CharSequence couldNotStartMessage;
+
+    private static String say(CharSequence set, String fallback) {
+        return set == null ? fallback : set.toString();
+    }
+
     private static final int BUFFER_MAX_CHARS = 250_000;
     private static final int BUFFER_MAX_SIZE = 10_000;
     private static final int CLIPBOARD_MAX_CHARS = 60_000;
@@ -95,7 +112,7 @@ public final class LogBufferManager {
         try {
             String exportText = buildExportText();
             if (exportText.isEmpty()) {
-                Utils.showToastShort("No matching Morphe diagnostics found.");
+                Utils.showToastShort(say(nothingToExportMessage, "No matching diagnostics found."));
                 return;
             }
             if (exportText.length() > CLIPBOARD_MAX_CHARS) {
@@ -104,24 +121,25 @@ public final class LogBufferManager {
                         + exportText.substring(exportText.length() - CLIPBOARD_MAX_CHARS);
             }
             Utils.setClipboard(exportText);
-            Utils.showToastShort("Morphe diagnostic report copied to clipboard.");
+            Utils.showToastShort(say(copiedMessage, "Diagnostic report copied to the clipboard."));
         } catch (Exception ex) {
-            String message = "Failed to export Morphe diagnostics: " + ex.getMessage();
-            Utils.showToastLong(message);
-            Logger.printDebug(() -> message, ex);
+            // The exception's own text stays in the log. It can carry a path or a signed URL,
+            // and a reader on a phone cannot act on it from a toast.
+            Utils.showToastLong(say(exportFailedMessage, "The diagnostic report could not be exported."));
+            Logger.printException(() -> "Failed to export diagnostics", ex);
         }
     }
 
     public static void exportToFile() {
         Context context = Utils.getContext();
         if (context == null) {
-            Utils.showToastLong("Failed to save Morphe diagnostics: application context unavailable.");
+            Utils.showToastLong(say(noContextMessage, "The diagnostic report could not be saved yet. Try again in a moment."));
             return;
         }
         Context application = context.getApplicationContext();
         final Context app = application == null ? context : application;
         if (!FILE_EXPORT_RUNNING.compareAndSet(false, true)) {
-            Utils.showToastShort("A diagnostic report is already being saved.");
+            Utils.showToastShort(say(alreadySavingMessage, "A diagnostic report is already being saved."));
             return;
         }
         try {
@@ -129,14 +147,14 @@ public final class LogBufferManager {
                 try {
                     String exportText = buildExportText();
                     if (exportText.isEmpty()) {
-                        Utils.showToastShort("No matching Morphe diagnostics found.");
+                        Utils.showToastShort(say(nothingToExportMessage, "No matching diagnostics found."));
                     } else {
-                        Utils.showToastLong("Full report saved to " + writeToFile(app, exportText));
+                        String saved = writeToFile(app, exportText);
+                        Utils.showToastLong(String.format(say(savedToMessage, "Full report saved to %1$s"), saved));
                     }
                 } catch (Exception ex) {
-                    String message = "Failed to save Morphe diagnostics: " + ex.getMessage();
-                    Utils.showToastLong(message);
-                    Logger.printDebug(() -> message, ex);
+                    Utils.showToastLong(say(exportFailedMessage, "The diagnostic report could not be exported."));
+                    Logger.printException(() -> "Failed to save diagnostics", ex);
                 } finally {
                     FILE_EXPORT_RUNNING.set(false);
                 }
@@ -145,7 +163,7 @@ public final class LogBufferManager {
         } catch (RejectedExecutionException error) {
             FILE_EXPORT_RUNNING.set(false);
             Logger.printException(() -> "Could not start diagnostic export", error);
-            Utils.showToastLong("Could not start report export. Try again shortly.");
+            Utils.showToastLong(say(couldNotStartMessage, "Could not start the report export. Try again shortly."));
         }
     }
 
@@ -399,9 +417,27 @@ public final class LogBufferManager {
         persistCrashReport(context, NPTH_CRASH_FILE, report);
     }
 
+    /** What a report that had to be cut ends with, so a reader knows the end is missing. */
+    static final String CRASH_TRUNCATED_MARKER = "\n[report truncated]\n";
+
     private static void persistCrashReport(Context context, String fileName, String report) throws Exception {
         byte[] bytes = safe(report).getBytes(StandardCharsets.UTF_8);
         int length = Math.min(bytes.length, CRASH_MAX_BYTES);
+        if (length < bytes.length) {
+            // Cut on a character boundary, with room for a marker at the end: the report opens
+            // with "complete: true" and a stack trace can outrun the ceiling on its own, so a
+            // file cut in the middle of a byte sequence and claiming to be whole misled the
+            // reader twice. The block appended last is the one that goes, and the marker says
+            // so; a cut inside a multi-byte character read back as a replacement character.
+            byte[] marker = CRASH_TRUNCATED_MARKER.getBytes(StandardCharsets.UTF_8);
+            length = Math.max(0, CRASH_MAX_BYTES - marker.length);
+            while (length > 0 && (bytes[length] & 0xC0) == 0x80) length--;
+            byte[] cut = new byte[length + marker.length];
+            System.arraycopy(bytes, 0, cut, 0, length);
+            System.arraycopy(marker, 0, cut, length, marker.length);
+            bytes = cut;
+            length = cut.length;
+        }
         AtomicFile atomicFile = new AtomicFile(new File(context.getFilesDir(), fileName));
 
         synchronized (CRASH_FILE_LOCK) {
@@ -452,9 +488,7 @@ public final class LogBufferManager {
         clearLogBufferData();
         app.morphe.extension.shared.diagnostics.HookStatus.clear();
         clearCrashReports(Utils.getContext());
-        Utils.showToastShort(clearedMessage == null
-                ? "Morphe diagnostic data cleared."
-                : clearedMessage.toString());
+        Utils.showToastShort(say(clearedMessage, "Diagnostic data cleared."));
     }
 
     private static void clearLogBufferData() {

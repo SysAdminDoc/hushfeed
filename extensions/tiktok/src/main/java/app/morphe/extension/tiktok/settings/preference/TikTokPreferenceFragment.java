@@ -264,6 +264,23 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         savedMessage = L10n.t(context, "Saved. Restart TikTok to apply this.");
         app.morphe.extension.shared.settings.preference.LogBufferManager.clearedMessage =
                 L10n.t(context, "Diagnostic data cleared.");
+        // The rest of what the shared export path says, on a German phone in German. Every one
+        // of these reached the reader in English, branded for the library rather than the
+        // bundle, and two of them carried an exception's text.
+        app.morphe.extension.shared.settings.preference.LogBufferManager.nothingToExportMessage =
+                L10n.t(context, "No matching diagnostics found.");
+        app.morphe.extension.shared.settings.preference.LogBufferManager.copiedMessage =
+                L10n.t(context, "Diagnostic report copied to the clipboard.");
+        app.morphe.extension.shared.settings.preference.LogBufferManager.exportFailedMessage =
+                L10n.t(context, "The diagnostic report could not be exported.");
+        app.morphe.extension.shared.settings.preference.LogBufferManager.noContextMessage =
+                L10n.t(context, "The diagnostic report could not be saved yet. Try again in a moment.");
+        app.morphe.extension.shared.settings.preference.LogBufferManager.alreadySavingMessage =
+                L10n.t(context, "A diagnostic report is already being saved.");
+        app.morphe.extension.shared.settings.preference.LogBufferManager.savedToMessage =
+                L10n.t(context, "Full report saved to %1$s");
+        app.morphe.extension.shared.settings.preference.LogBufferManager.couldNotStartMessage =
+                L10n.t(context, "Could not start the report export. Try again shortly.");
         // Four whole sentences rather than five fragments, so each one is a row a translator
         // can move the numbers around inside. The context is asked for when a line is written
         // rather than captured here: this writer is a static and outlives the screen.

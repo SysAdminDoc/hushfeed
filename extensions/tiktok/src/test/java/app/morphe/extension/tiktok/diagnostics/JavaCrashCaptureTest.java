@@ -5,6 +5,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+
+import app.morphe.extension.shared.settings.preference.LogBufferManager;
 import java.lang.reflect.Method;
 
 import org.junit.Test;
@@ -88,5 +90,25 @@ public class JavaCrashCaptureTest {
         assertFalse("the message must not carry the address", report.contains("tiktokv.com"));
         assertFalse("nor the session", report.contains("abc123"));
         assertTrue(report.contains("[url omitted]"));
+    }
+
+    @Test public void aReportPastTheCeilingSaysSoAndIsCutOnACharacter() throws Exception {
+        var context = org.robolectric.RuntimeEnvironment.getApplication();
+        // Well past 64,000 bytes, and every character two bytes wide, so a cut at the byte
+        // ceiling lands inside one unless the writer steps back to a boundary.
+        StringBuilder wide = new StringBuilder("schema: 1\ncomplete: true\n");
+        while (wide.length() < 50_000) wide.append("\u00e9");
+        LogBufferManager.persistCrashReport(context, wide.toString());
+        String saved = LogBufferManager.readCrashReport(context);
+
+        assertTrue("the end says the report was cut", saved.endsWith("[report truncated]\n"));
+        assertFalse("nothing read back as a replacement character", saved.contains("\ufffd"));
+        assertTrue(saved.length() < wide.length());
+        assertTrue(saved.getBytes(java.nio.charset.StandardCharsets.UTF_8).length <= 64_000);
+
+        // A report that fits is written whole, with no marker.
+        String small = "schema: 1\ncomplete: true\nshort\n";
+        LogBufferManager.persistCrashReport(context, small);
+        assertEquals(small, LogBufferManager.readCrashReport(context));
     }
 }

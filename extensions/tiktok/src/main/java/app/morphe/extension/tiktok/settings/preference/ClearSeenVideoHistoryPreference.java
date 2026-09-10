@@ -48,7 +48,7 @@ public final class ClearSeenVideoHistoryPreference extends Preference
                     } else if (result == SeenVideoHistory.UndoResult.EMPTY) {
                         message = "There was nothing to put back";
                     } else if (result == SeenVideoHistory.UndoResult.SUPERSEDED) {
-                        message = "A newer change replaced that undo. Tap Undo again.";
+                        message = "A newer clear replaced that undo. Tap the row again to put it back.";
                     } else {
                         message = NOT_READY;
                     }

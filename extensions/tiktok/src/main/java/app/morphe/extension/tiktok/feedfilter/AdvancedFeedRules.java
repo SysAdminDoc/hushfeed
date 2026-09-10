@@ -200,7 +200,7 @@ public final class AdvancedFeedRules {
             String source = entry.substring(1, entry.length() - 1);
             if (source.length() > MAX_PATTERN_LENGTH) {
                 return L10n.f(
-                        "That creator pattern is too long to use, so it was skipped: %1$s",
+                        "That creator pattern is too long, so it was not added: %1$s",
                         entry);
             }
             try {

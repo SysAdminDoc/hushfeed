@@ -5,7 +5,6 @@
 %1$s isn't installed or doesn't take links	%1$s ist nicht installiert oder nimmt keine Links an
 %1$s on	%1$s aktiv
 A creator pattern is taking too long and was switched off: %1$s	Ein Kreator-Muster braucht zu lange und wurde abgeschaltet: %1$s
-A newer change replaced that undo. Tap Undo again.	Eine neuere Änderung hat dieses Rückgängig ersetzt. Erneut auf Rückgängig tippen.
 A hidden puzzle may be the cause.	Ein ausgeblendetes Rätsel kann die Ursache sein.
 A host to put in place of tiktok.com when you share or copy a link, like vxtiktok.com. Leave it empty to share TikTok's own links. Only TikTok links are changed, and only the host: nothing is sent anywhere new.	Ein Host, der beim Teilen oder Kopieren an die Stelle von tiktok.com tritt, zum Beispiel vxtiktok.com. Leer lassen, um TikToks eigene Links zu teilen. Geändert werden nur TikTok-Links und nur der Host, es wird nichts irgendwohin geschickt.
 A settings operation is already running	Es läuft bereits eine Einstellungsaktion
@@ -24,8 +23,6 @@ No videos remained after Hushfeed applied your feed filters to one batch. Most m
 Not blocked	Nicht blockiert
 Recovered an interrupted settings change. Restart TikTok to apply it.	Eine unterbrochene Einstellungsänderung wurde wiederhergestellt. Starte TikTok neu, um sie anzuwenden.
 Save media	Medien speichern
-Settings recovery needs attention. Use Undo or restore your backup.	Die Einstellungswiederherstellung benötigt Aufmerksamkeit. Nutze Rückgängig oder stelle deine Sicherung wieder her.
-Settings recovery could not finish. Use Undo or restore your backup.	Die Einstellungswiederherstellung konnte nicht abgeschlossen werden. Nutze Rückgängig oder stelle deine Sicherung wieder her.
 A tap on a person in the Send to row only selects them. A second tap on the same person within four seconds sends the video.	Ein Tippen auf eine Person in der Zeile „Senden an“ wählt sie nur aus. Ein zweites Tippen auf dieselbe Person innerhalb von vier Sekunden sendet das Video.
 Add a block button to the video player that blocks the account that posted the current video in one tap. An undo action is shown after each block.	Dem Videoplayer eine Schaltfläche hinzufügen, die das Konto hinter dem aktuellen Video mit einem Tippen blockiert. Nach jeder Blockierung wird eine Rückgängig-Aktion angezeigt.
 Add a button beside the block control to send feedback about the current video.	Neben der Blockieren-Schaltfläche eine Schaltfläche hinzufügen, um Feedback zum aktuellen Video zu senden.
@@ -35,7 +32,6 @@ All loaded tabs	Alle geladenen Tabs
 Allow Duet and Stitch anyway	Duett und Stitch trotzdem erlauben
 Allow screenshots and Circle to Search	Screenshots und Circle to Search erlauben
 Allowed bottom tabs	Erlaubte untere Tabs
-Allowed loaded tabs	Erlaubte geladene Tabs
 Already marked as not interested	Bereits als „nicht interessiert“ markiert
 Also apply these filters to downloaded videos TikTok uses when the feed cannot load enough new items.	Diese Filter auch auf heruntergeladene Videos anwenden, die TikTok nutzt, wenn der Feed nicht genug neue Beiträge laden kann.
 Also change the region TikTok reports internally. Keeps your interface language. Needs Override SIM details and a restart; your IP address and your account's own rules still apply.	Ändert außerdem die Region, die TikTok intern meldet. Die Sprache der Oberfläche bleibt. Braucht SIM-Angaben überschreiben und einen Neustart; deine IP-Adresse und die Regeln deines Kontos gelten weiterhin.
@@ -300,8 +296,6 @@ Invalid SIM preset	Ungültige SIM-Vorlage
 Keep a local record of what you have watched and drop those videos from later feed pages.	Lokal festhalten, was du gesehen hast, und diese Videos aus späteren Feed-Seiten entfernen.
 Keep automatic advance enabled, and show TikTok's own Auto scroll action in the video panel even if your account never had it. Pauses and open dialogs still stop scrolling. Restart TikTok to apply this, then use this switch to turn it off.	Den automatischen Weiterlauf aktiviert lassen und TikToks eigene Aktion Auto-Scrollen im Videomenü zeigen, auch wenn dein Konto sie nie hatte. Pausen und offene Dialoge stoppen das Scrollen weiterhin. TikTok neu starten, damit das gilt, und danach mit diesem Schalter wieder ausschalten.
 Keep captions in clear display	Untertitel in der freien Ansicht behalten
-Keep pressing and holding Like from opening TikTok's repost action.	Verhindert, dass langes Drücken auf Gefällt mir TikToks Repost-Aktion öffnet.
-Keep pressing and holding Share from opening TikTok's quick share action.	Verhindert, dass langes Drücken auf Teilen TikToks schnelles Teilen öffnet.
 Keep the clock and status icons off the screen while TikTok is open. Swipe down from the top to peek at them.	Uhr und Statussymbole ausblenden, solange TikTok geöffnet ist. Wische von oben nach unten, um sie kurz zu sehen.
 Keep the screen's refresh rate	Bildwiederholrate des Bildschirms behalten
 Leave maximum empty to keep it unlimited.	Lass das Maximum leer, damit es unbegrenzt bleibt.
@@ -478,7 +472,6 @@ Take away the streak button in a chat and the reminder message that goes with it
 Tap %1$s again to send	Zum Senden noch einmal auf %1$s tippen
 Tap the feed Follow button twice within four seconds.	Tippe die Folgen-Schaltfläche im Feed innerhalb von vier Sekunden zweimal an.
 Tap the like heart twice within four seconds. Removing a like stays immediate.	Tippe das Like-Herz innerhalb von vier Sekunden zweimal an. Das Entfernen eines Likes bleibt sofort.
-That creator pattern is too long to use, so it was skipped: %1$s	Dieses Kreator-Muster ist zu lang und wurde übersprungen: %1$s
 That is not an app name. Try something like com.example.downloader, or leave the box empty to keep saving in TikTok.	Das ist kein App-Name. Versuche etwas wie com.example.downloader, oder lass das Feld leer, damit weiter in TikTok gespeichert wird.
 That settings change did not go through. Nothing was altered.	Diese Änderung hat nicht geklappt. Es wurde nichts geändert.
 The settings backup was rejected. Nothing was altered.	Die Einstellungssicherung wurde abgelehnt. Es wurde nichts geändert.
@@ -524,7 +517,6 @@ Use 0 for TikTok's size, or 12 to 48. Applies to the next caption.	0 für TikTok
 Use a default playback speed	Standardgeschwindigkeit verwenden
 Use non-personalized search	Nicht personalisierte Suche verwenden
 Use Save JSON for this large report	Nutze für diesen großen Bericht „JSON speichern“
-Use the preset for the region TikTok reports for your account and its shop too. May affect search. Needs the language option and a restart.	Die Vorlage auch für die Region verwenden, die TikTok für dein Konto und seinen Shop meldet. Kann die Suche beeinflussen. Braucht die Sprachoption und einen Neustart.
 Use the selected country and operator values. Restart TikTok to apply this.	Das gewählte Land und die Anbieterwerte verwenden. TikTok neu starten, damit das gilt.
 Use the split layout on wider screens. Restart TikTok to apply this, or unfold again if the old layout is still there.	Auf breiteren Bildschirmen das geteilte Layout verwenden. TikTok neu starten, damit das gilt, oder erneut aufklappen, wenn das alte Layout noch da ist.
 Use TikTok's native hold, slide down, and release gesture to lock 2x speed.	TikToks eigene Geste „Halten, nach unten wischen, loslassen“ verwenden, um die 2x-Geschwindigkeit zu fixieren.
@@ -662,7 +654,6 @@ Promotional music	Werbemusik
 LIVE replays	LIVE-Wiederholungen
 Region rules	Regionsregeln
 Publication age	Beitragsalter
-Video quality	Videoqualität
 Other feed filters	Andere Feed-Filter
 Hushfeed filtered this batch	Hushfeed hat diese Ladung gefiltert
 No videos remained after Hushfeed applied your feed filters to %1$d batches. Most matches: %2$s.	Keine Videos blieben übrig, nachdem Hushfeed deine Feed-Filter auf %1$d Ladungen angewendet hatte. Am häufigsten: %2$s.
@@ -709,8 +700,6 @@ point	Punkt
 points	Punkte
 millisecond	Millisekunde
 milliseconds	Millisekunden
-pixel	Pixel
-pixels	Pixel
 Use the selected country. Restart TikTok to apply this.	Das gewählte Land verwenden. TikTok neu starten, damit das gilt.
 Remind me every	Erinnere mich alle
 Still here. Nothing is waiting.	Immer noch hier. Es wartet nichts.
@@ -785,7 +774,6 @@ Reset	Zurücksetzen
 Disable	Ausschalten
 Enable	Einschalten
 More options	Weitere Optionen
-Reset to loaded	Auf geladene zurücksetzen
 Refresh values	Werte aktualisieren
 Export loaded values	Geladene Werte exportieren
 Import loaded values	Geladene Werte importieren
@@ -828,3 +816,33 @@ Could not change Lab settings.	Die Lab-Einstellungen ließen sich nicht ändern.
 None of these gates had an override to reset.	Keiner dieser Schalter hatte eine Überschreibung zum Zurücksetzen.
 None of these gates takes a true or false value.	Keiner dieser Schalter nimmt einen true- oder false-Wert.
 Restart TikTok to apply the Feature Gate Lab changes.	TikTok neu starten, damit die Änderungen des Feature Gate Lab gelten.
+Overrides enabled. Restart TikTok to apply saved values.	Überschreibungen aktiviert. TikTok neu starten, damit die gespeicherten Werte gelten.
+Overrides disabled. Restart TikTok to restore native values.	Überschreibungen deaktiviert. TikTok neu starten, damit wieder die eigenen Werte gelten.
+Lab overrides reset. Undo last Lab change is in the menu. Restart TikTok.	Lab-Überschreibungen zurückgesetzt. Letzte Lab-Änderung rückgängig machen steht im Menü. TikTok neu starten.
+Lab data reset. Undo last Lab change is in the menu. Restart TikTok.	Lab-Daten zurückgesetzt. Letzte Lab-Änderung rückgängig machen steht im Menü. TikTok neu starten.
+Restored the previous Lab settings. Restart TikTok.	Die vorherigen Lab-Einstellungen sind wiederhergestellt. TikTok neu starten.
+Nothing new was imported. %1$d already matched, %2$d unavailable, %3$d rejected.	Nichts Neues importiert. %1$d stimmten bereits überein, %2$d sind nicht verfügbar, %3$d wurden abgelehnt.
+There is no Lab change to undo.	Es gibt keine Lab-Änderung, die sich rückgängig machen ließe.
+The record of an interrupted settings change could not be read, so it was set aside. Check your settings.	Die Aufzeichnung einer unterbrochenen Einstellungsänderung ließ sich nicht lesen und wurde beiseitegelegt. Prüfe deine Einstellungen.
+An interrupted settings change could not be recovered, so its record was set aside. Check your settings or restore a backup.	Eine unterbrochene Einstellungsänderung ließ sich nicht wiederherstellen, ihre Aufzeichnung wurde beiseitegelegt. Prüfe deine Einstellungen oder stelle eine Sicherung wieder her.
+A newer clear replaced that undo. Tap the row again to put it back.	Ein neueres Löschen hat dieses Rückgängig ersetzt. Erneut auf die Zeile tippen, um es zurückzuholen.
+That creator pattern is too long, so it was not added: %1$s	Dieses Kreator-Muster ist zu lang und wurde nicht hinzugefügt: %1$s
+Use the preset for the region TikTok reports for your account and its shop too. May affect search. Needs Override SIM details, Match locale and timezone to country, and a restart.	Die Vorlage auch für die Region verwenden, die TikTok für dein Konto und seinen Shop meldet. Kann die Suche beeinflussen. Braucht SIM-Details überschreiben, Sprache und Zeitzone ans Land anpassen und einen Neustart.
+Saved one original photo	Ein Originalfoto gespeichert
+Length and views per like	Länge und Aufrufe pro Like
+Stop a long press on Share from opening TikTok's quick share action.	Verhindern, dass langes Drücken auf Teilen TikToks Schnellteilen öffnet.
+Stop a long press on Like from opening TikTok's repost action.	Verhindern, dass langes Drücken auf Gefällt mir TikToks Reposten öffnet.
+dp	dp
+Select every tab	Jeden Tab auswählen
+Tabs TikTok has loaded	Tabs, die TikTok geladen hat
+That creator pattern is too long to use, so it was skipped: %1$s	Dieses Kreator-Muster ist zu lang und wurde übersprungen: %1$s
+Nothing to undo yet.	Noch nichts rückgängig zu machen.
+No matching diagnostics found.	Keine passenden Diagnosedaten gefunden.
+Diagnostic report copied to the clipboard.	Diagnosebericht in die Zwischenablage kopiert.
+The diagnostic report could not be exported.	Der Diagnosebericht ließ sich nicht exportieren.
+The diagnostic report could not be saved yet. Try again in a moment.	Der Diagnosebericht ließ sich noch nicht speichern. Versuche es gleich noch einmal.
+A diagnostic report is already being saved.	Ein Diagnosebericht wird gerade gespeichert.
+Full report saved to %1$s	Vollständiger Bericht gespeichert unter %1$s
+Could not start the report export. Try again shortly.	Der Export des Berichts ließ sich nicht starten. Versuche es gleich noch einmal.
+Copy quick report	Kurzbericht kopieren
+Save full report	Vollständigen Bericht speichern

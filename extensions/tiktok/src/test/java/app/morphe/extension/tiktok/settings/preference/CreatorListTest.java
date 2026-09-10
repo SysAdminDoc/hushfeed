@@ -205,6 +205,36 @@ public class CreatorListTest {
     }
 
     @Test
+    public void aHandleStillInTheBoxIsSavedWithTheRest() {
+        try (var owner = Robolectric.buildActivity(app.morphe.extension.tiktok.captions.CaptionToolsTest.CaptionActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setContext(activity);
+            Settings.LOCAL_HIDDEN_CREATORS.save("alice");
+
+            // Typed and then Save, with Add never pressed. That is what a reader does, and the
+            // handle went nowhere: Save read only the rows.
+            CreatorListPreference preference = open(activity);
+            View view = preference.onCreateDialogView();
+            EditText add = view.findViewWithTag("creator_list_add");
+            add.setText("dave");
+            preference.onDialogClosed(true);
+            assertEquals("alice, dave", Settings.LOCAL_HIDDEN_CREATORS.get());
+
+            // One that would be refused by Add is refused here too, out loud, and the rest
+            // is still saved.
+            ShadowToast.reset();
+            preference = open(activity);
+            view = preference.onCreateDialogView();
+            add = view.findViewWithTag("creator_list_add");
+            add.setText("/[/");
+            preference.onDialogClosed(true);
+            assertTrue(String.valueOf(ShadowToast.getTextOfLatestToast()),
+                    ShadowToast.getTextOfLatestToast().contains("/[/"));
+            assertEquals("alice, dave", Settings.LOCAL_HIDDEN_CREATORS.get());
+        }
+    }
+
+    @Test
     public void theSearchNarrowsTheRowsAndSaysWhenNothingMatches() {
         try (var owner = Robolectric.buildActivity(app.morphe.extension.tiktok.captions.CaptionToolsTest.CaptionActivity.class).setup().visible()) {
             Activity activity = owner.get();

@@ -99,7 +99,7 @@ public final class ShareActionChecklistPreference extends DialogPreference {
         scroll.addView(rows, new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         LinearLayout.LayoutParams scrollParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, SettingsUi.dp(context, 300));
+                ViewGroup.LayoutParams.MATCH_PARENT, SettingsUi.dialogListHeight(context, 300));
         scrollParams.topMargin = SettingsUi.dp(context, 10);
         root.addView(scroll, scrollParams);
         renderRows("");
@@ -129,7 +129,7 @@ public final class ShareActionChecklistPreference extends DialogPreference {
             }
             CheckBox check = new CheckBox(getContext());
             check.setText(entry.label);
-            check.setTextColor(SettingsUi.textPrimary());
+            SettingsUi.styleCheckBox(check);
             check.setTag("share_action_" + entry.key);
             check.setChecked(selected.contains(entry.key));
             check.setOnCheckedChangeListener((button, checked) -> {

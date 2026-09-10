@@ -295,6 +295,12 @@ public class CreatorListPreference extends DialogPreference {
     @Override
     protected void onDialogClosed(boolean positiveResult) {
         if (positiveResult) {
+            // A handle typed into the box and never added with the button is still what the
+            // reader meant to save. It goes in the way Add would have put it, with the same
+            // checks and the same word about it if it cannot be; before this it was dropped
+            // without a word.
+            String typed = addEditText == null ? "" : addEditText.getText().toString().trim();
+            if (!typed.isEmpty()) addEntry();
             setValue(AdvancedFeedRules.joinCreatorEntries(pendingEntries));
         }
     }

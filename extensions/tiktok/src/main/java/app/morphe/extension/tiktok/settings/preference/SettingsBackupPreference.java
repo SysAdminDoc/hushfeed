@@ -30,6 +30,8 @@ public final class SettingsBackupPreference extends Preference
 
     private final int rowAction;
 
+    static final String UNDO_SUMMARY = "Recover the settings saved before the last restore or reset.";
+
     private SettingsBackupPreference(TikTokPreferenceFragment fragment, int action, String title, String summary) {
         super(fragment.getActivity());
         this.rowAction = action;
@@ -59,8 +61,7 @@ public final class SettingsBackupPreference extends Preference
                         "Choose a backup file. Your current settings are kept for Undo."},
                 {RESET, "Reset settings",
                         "Restore defaults immediately. Your current settings are kept for Undo."},
-                {UNDO, "Undo last restore or reset",
-                        "Recover the settings saved before the last restore or reset."},
+                {UNDO, "Undo last restore or reset", UNDO_SUMMARY},
         }) {
             SettingsBackupPreference preference = new SettingsBackupPreference(
                     fragment, (Integer) row[0], (String) row[1], (String) row[2]);
@@ -252,6 +253,9 @@ public final class SettingsBackupPreference extends Preference
         if (rowAction != UNDO) return;
         boolean available = SettingsBackup.hasUndo(getContext());
         if (isEnabled() != available) setEnabled(available);
+        // The one greyed row on the page, and its summary went on offering a recovery. A
+        // screen reader announces "disabled" with no reason; this is the reason.
+        setSummary(available ? UNDO_SUMMARY : "Nothing to undo yet.");
     }
 
     @Override protected void onBindView(View view) {
