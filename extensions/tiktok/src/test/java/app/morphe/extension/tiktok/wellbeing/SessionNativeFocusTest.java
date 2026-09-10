@@ -146,6 +146,212 @@ public class SessionNativeFocusTest {
         }
     }
 
+    @Test public void aNativeGainAfterExpiryResumesTheHeldVideoOnlyOnce() throws Exception {
+        try (Hold hold = new Hold(); ExternalFocus external = new ExternalFocus(hold)) {
+            external.request();
+            long stoppedAt = hold.player.manager.position;
+            hold.expire();
+            assertEquals("expiry resumed while another app still owned focus", 0,
+                    hold.player.manager.resumes);
+            hold.player.manager.advance(2_000);
+            assertEquals(stoppedAt, hold.player.manager.position);
+            SessionLockOverlay.sync();
+            SessionLockOverlay.sync();
+
+            external.releaseNormally();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertEquals("normal native focus return lost the expired hold's paused video", 1,
+                    hold.player.manager.resumes);
+            hold.player.manager.advance(1_000);
+            assertEquals("the returned native player did not advance", stoppedAt + 1_000,
+                    hold.player.manager.position);
+
+            external.deliverNativeGain();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertEquals("a duplicate native gain resumed an already released hold", 1,
+                    hold.player.manager.resumes);
+        }
+    }
+
+    @Test public void aGainAfterExpiryStillChecksTheCurrentPlayerAndForeground() throws Exception {
+        for (int changed = 0; changed < 5; changed++) {
+            try (Hold hold = new Hold(); ExternalFocus external = new ExternalFocus(hold)) {
+                external.request();
+                hold.expire();
+                NativeManager paused = hold.player.manager;
+                NativeController replacement = null;
+                // These changes happen after expiry, while a resume is waiting for focus.
+                if (changed == 0) hold.player.current = new Clip("different-cell");
+                else if (changed == 1) hold.player.manager = new NativeManager();
+                else if (changed == 2) {
+                    replacement = new NativeController();
+                    replacement.current = new Clip("held");
+                    replacement.manager.playing = false;
+                    replacement.manager.paused = true;
+                    replacement.reportProgress();
+                } else if (changed == 3) hold.home.setSelected(false);
+                else hold.activity.windowFocusChanged(false);
+
+                external.releaseNormally();
+                Shadows.shadowOf(Looper.getMainLooper()).idle();
+                assertEquals("late focus bypassed the owned player/feed check " + changed,
+                        0, paused.resumes);
+                assertEquals("late focus resumed a replacement manager " + changed,
+                        0, hold.player.manager.resumes);
+                if (replacement != null) assertEquals("late focus resumed another controller",
+                        0, replacement.manager.resumes);
+            }
+        }
+    }
+
+    @Test public void aGainAfterExpiryLeavesAnIndependentlyPausedPlayerAlone() throws Exception {
+        try (Hold hold = new Hold(true); ExternalFocus external = new ExternalFocus(hold)) {
+            external.request();
+            hold.expire();
+            external.releaseNormally();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertEquals("late focus resumed a pause the daily hold never made", 0,
+                    hold.player.manager.resumes);
+            long stoppedAt = hold.player.manager.position;
+            hold.player.manager.advance(2_000);
+            assertEquals("the independently paused player started advancing", stoppedAt,
+                    hold.player.manager.position);
+        }
+    }
+
+    @Test public void lateOrRevokedNativeCallbacksCannotResumeAnExpiredHold() throws Exception {
+        for (int invalid = 0; invalid < 4; invalid++) {
+            try (Hold hold = new Hold(); ExternalFocus external = new ExternalFocus(hold)) {
+                external.request();
+                hold.expire();
+                if (invalid == 0) {
+                    new NativeFocusListener().onAudioFocusChange(AudioManager.AUDIOFOCUS_GAIN);
+                } else {
+                    if (invalid == 1) external.nativeOwner.abandon();
+                    else if (invalid == 2) external.nativeOwner.listener.onAudioFocusChange(
+                            AudioManager.AUDIOFOCUS_LOSS);
+                    external.releaseNormally();
+                    // A posted gain must recheck a loss received before its main-thread work.
+                    if (invalid == 3) external.nativeOwner.listener.onAudioFocusChange(
+                            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT);
+                }
+                Shadows.shadowOf(Looper.getMainLooper()).idle();
+                assertEquals("late or revoked focus resumed playback " + invalid, 0,
+                        hold.player.manager.resumes);
+            }
+        }
+    }
+
+    @Test public void aLateNativeGainCannotReleaseANewActiveHold() throws Exception {
+        try (Hold hold = new Hold(); ExternalFocus external = new ExternalFocus(hold)) {
+            external.request();
+            hold.expire();
+            var reset = new app.morphe.extension.tiktok.settings.preference.StartTodayOverPreference(
+                    hold.activity.get());
+            assertTrue("the actual reset row did not run",
+                    reset.getOnPreferenceClickListener().onPreferenceClick(reset));
+            assertEquals("the actual reset row did not clear the count", 0, SessionBudget.videosSeen());
+            hold.player.manager.nativeResume();
+            hold.player.bind("new-first");
+            hold.player.reportProgress();
+            hold.player.bind("new-held");
+            hold.player.reportProgress();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertTrue("the selected new videos did not start another hold", SessionBudget.isLocked());
+            assertTrue(hold.player.manager.isPaused());
+
+            external.releaseNormally();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertTrue("late focus removed the new hold", SessionBudget.isLocked());
+            assertEquals("a callback for the expired hold resumed the new active hold", 0,
+                    hold.player.manager.resumes);
+            assertTrue(hold.player.manager.isPaused());
+        }
+    }
+
+    @Test public void progressAfterExpiryDistinguishesAnIndependentResumeFromAPausedReport() throws Exception {
+        int[] resumes = new int[3];
+        for (int independentResume = 0; independentResume < 3; independentResume++) {
+            try (Hold hold = new Hold(); ExternalFocus external = new ExternalFocus(hold)) {
+                external.request();
+                hold.expire();
+                if (independentResume == 1) hold.player.manager.nativeResume();
+                // The real progress bridge runs even when the current source ID is unchanged.
+                hold.player.reportProgress();
+                if (independentResume == 1) hold.player.manager.LIZ();
+                Shadows.shadowOf(Looper.getMainLooper()).idle();
+                assertTrue("the native player was not paused before focus returned",
+                        hold.player.manager.isPaused());
+
+                if (independentResume == 2) {
+                    // A fresh native request can also receive permission after the old hold expired.
+                    hold.client().request(AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
+                } else {
+                    external.releaseNormally();
+                }
+                Shadows.shadowOf(Looper.getMainLooper()).idle();
+                resumes[independentResume] = hold.player.manager.resumes;
+            }
+        }
+        assertEquals("a paused native progress report discarded the hold's pending resume", 1, resumes[0]);
+        assertEquals("late focus claimed a new pause after an independently reported resume", 0, resumes[1]);
+        assertEquals("a fresh granted native request did not restore the pending video", 1, resumes[2]);
+    }
+
+    /** Real request/normal-abandon calls; Android's resulting callbacks need replay in Robolectric. */
+    private static final class ExternalFocus implements AutoCloseable {
+        final AudioManager audio;
+        final NativeFocusClient nativeOwner;
+        final AudioManager.OnAudioFocusChangeListener listener = change -> { };
+        boolean requested;
+
+        ExternalFocus(Hold hold) {
+            audio = hold.audio;
+            nativeOwner = hold.client();
+            nativeOwner.request(AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
+        }
+
+        @SuppressWarnings("deprecation")
+        void request() {
+            int result = audio.requestAudioFocus(listener, AudioManager.STREAM_MUSIC,
+                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+            assertEquals("the competing app did not receive focus",
+                    AudioManager.AUDIOFOCUS_REQUEST_GRANTED, result);
+            requested = true;
+            nativeOwner.listener.onAudioFocusChange(AudioManager.AUDIOFOCUS_LOSS_TRANSIENT);
+        }
+
+        @SuppressWarnings("deprecation")
+        void releaseNormally() throws Exception {
+            assertTrue("no external focus request was active", requested);
+            audio.abandonAudioFocus(listener);
+            requested = false;
+            deliverNativeGain();
+        }
+
+        void deliverNativeGain() throws Exception {
+            Throwable[] failure = new Throwable[1];
+            Thread callback = new Thread(() -> {
+                try {
+                    nativeOwner.listener.onAudioFocusChange(AudioManager.AUDIOFOCUS_GAIN);
+                } catch (Throwable error) {
+                    failure[0] = error;
+                }
+            }, "native-focus-callback");
+            callback.start();
+            callback.join(5_000);
+            if (callback.isAlive()) {
+                callback.interrupt();
+                throw new AssertionError("native focus callback did not finish");
+            }
+            if (failure[0] != null) throw new AssertionError("native focus callback failed", failure[0]);
+        }
+
+        @Override @SuppressWarnings("deprecation") public void close() {
+            if (requested) audio.abandonAudioFocus(listener);
+        }
+    }
+
     /** Mirrors 0q3r's actual request/result and abandon calls, including its listener identity. */
     private static final class NativeFocusClient {
         final AudioManager audio;
@@ -191,6 +397,10 @@ public class SessionNativeFocusTest {
         View home;
 
         Hold() throws Exception {
+            this(false);
+        }
+
+        Hold(boolean pausedBeforeHold) throws Exception {
             clearHold();
             Settings.SESSION_BUDGET_VIDEOS.save(2);
             Settings.SESSION_BUDGET_LOCK_MINUTES.save(2);
@@ -198,13 +408,20 @@ public class SessionNativeFocusTest {
                     .getSystemService(Activity.AUDIO_SERVICE);
             Shadows.shadowOf(audio).setNextFocusRequestResponse(AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
             openActivity();
+            if (pausedBeforeHold) {
+                player.manager.LIZ();
+                Shadows.shadowOf(Looper.getMainLooper()).idle();
+                assertTrue("the native pause did not precede the daily hold", player.manager.isPaused());
+            }
             player.bind("first");
             player.reportProgress();
             player.bind("held");
             player.reportProgress();
             Shadows.shadowOf(Looper.getMainLooper()).idle();
             assertTrue("the real item/progress path did not start the hold", SessionBudget.isLocked());
-            assertEquals("the hold did not own a native pause", 1, player.manager.pauses);
+            if (pausedBeforeHold) assertEquals("the daily hold claimed an already paused player",
+                    1, player.manager.pauses);
+            else assertEquals("the hold did not own a native pause", 1, player.manager.pauses);
             assertTrue(player.manager.isPaused());
             var request = Shadows.shadowOf(audio).getLastAudioFocusRequest();
             assertNotNull("the hold never requested audio focus", request);

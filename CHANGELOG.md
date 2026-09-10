@@ -1,5 +1,7 @@
 ## Unreleased
 
+* A daily hold now keeps its paused video ready when another app owns audio focus at expiry. A later native focus grant can resume that same video once, provided its feed is still visible. A reported independent resume gives up that ownership, so a later pause won't be undone.
+
 * Profile-picture saves now try TikTok's largest image before the medium and smaller variants. The previous priority picked a 300-pixel image even when the current profile supplied a 1080-pixel original. Current-profile ownership and secure fallback URLs are preserved.
 
 * Long-press actions now run from the current feed's coordinate callback as well as its older gesture listener. The patch keeps TikTok's own timer and menu coordinates, and hands the gesture back when the chosen action doesn't handle it.

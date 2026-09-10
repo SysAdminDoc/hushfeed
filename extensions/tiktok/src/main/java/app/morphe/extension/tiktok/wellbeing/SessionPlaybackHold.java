@@ -27,6 +27,8 @@ public final class SessionPlaybackHold {
     private static volatile Target current;
     // Accessed only on the main thread, where the panel changes and native playback is controlled.
     private static Target held;
+    // Published by main-thread release; progress can prove an independent resume before focus returns.
+    private static volatile Target waitingForFocus;
     private static WeakReference<Object> heldManager = new WeakReference<>(null);
     // Native requests may run on an executor while focus callbacks arrive on another thread.
     // Compare listener identity, and never retain an activity's listener through static state.
@@ -45,16 +47,19 @@ public final class SessionPlaybackHold {
                 nativeFocusOwner = new WeakReference<>(listener);
             }
         }
+        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) resumeAfterNativeFocus();
     }
 
     /** Receives a focus change for the same native listener that requested it. */
     public static void onNativeFocusChange(Object listener, int change) {
         if (listener == null) return;
+        boolean gained = false;
         synchronized (nativeFocusListeners) {
             if (change == AudioManager.AUDIOFOCUS_GAIN) {
                 for (WeakReference<Object> request : nativeFocusListeners) {
                     if (request.get() == listener) {
                         nativeFocusOwner = new WeakReference<>(listener);
+                        gained = true;
                         break;
                     }
                 }
@@ -66,6 +71,15 @@ public final class SessionPlaybackHold {
                 nativeFocusOwner = new WeakReference<>(null);
             }
         }
+        if (gained) resumeAfterNativeFocus();
+    }
+
+    /** A grant can arrive after the panel and its timer have already gone away. */
+    private static void resumeAfterNativeFocus() {
+        MAIN.post(() -> {
+            if (waitingForFocus == null || SessionBudget.isLocked() || !hasNativeFocus()) return;
+            release(false);
+        });
     }
 
     /** Receives the native listener immediately before its focus request is abandoned. */
@@ -114,7 +128,24 @@ public final class SessionPlaybackHold {
                 || !awemeId.equals(previous.awemeId)) {
             current = new Target(controller, awemeId);
         }
-        if (!SessionBudget.isLocked() || !syncQueued.compareAndSet(false, true)) return;
+        if (!SessionBudget.isLocked()) {
+            Target waiting = waitingForFocus;
+            if (waiting != null && waiting == current) {
+                Object manager = Reflect.invoke(controller, "getPlayerManager");
+                if (Boolean.TRUE.equals(Reflect.invoke(manager, "isPlaying"))) {
+                    // A real progress report while playing means our pause has already ended.
+                    // Do not reclaim a later native pause when focus eventually returns.
+                    if (Looper.myLooper() == Looper.getMainLooper()) {
+                        relinquishAfterPlayback(waiting, manager);
+                    } else {
+                        WeakReference<Object> resumedManager = new WeakReference<>(manager);
+                        MAIN.post(() -> relinquishAfterPlayback(waiting, resumedManager.get()));
+                    }
+                }
+            }
+            return;
+        }
+        if (!syncQueued.compareAndSet(false, true)) return;
         // Do not pause reentrantly inside a native callback. A fresh report also catches native
         // auto-resume while the panel already exists, including a return from settings.
         MAIN.post(() -> {
@@ -136,27 +167,51 @@ public final class SessionPlaybackHold {
         if (invoke(manager, "LIZ")) {
             held = target;
             heldManager = new WeakReference<>(manager);
+            waitingForFocus = null;
         }
+    }
+
+    private static void relinquishAfterPlayback(Target owner, Object manager) {
+        if (waitingForFocus == owner && heldManager.get() == manager) forgetHeld();
+    }
+
+    private static void forgetHeld() {
+        waitingForFocus = null;
+        held = null;
+        heldManager.clear();
     }
 
     /** Hands back only the still-current video this hold paused, while its feed is foreground. */
     static void release(boolean mayResume) {
         Target owner = held;
         Object manager = heldManager.get();
-        held = null;
-        heldManager = new WeakReference<>(null);
-        if (owner == null || (!mayResume && !hasNativeFocus())) return;
+        if (owner == null) return;
         Activity activity = Utils.getActivity();
         if (activity == null || activity.isFinishing() || activity.isDestroyed()
-                || !activity.hasWindowFocus() || !FeedVisibility.isOnFeed(activity)) return;
+                || !activity.hasWindowFocus() || !FeedVisibility.isOnFeed(activity)) {
+            forgetHeld();
+            return;
+        }
         Object controller = owner.controller.get();
         if (current != owner || !owner.isCurrentCell(controller)
-                || manager == null || Reflect.invoke(controller, "getPlayerManager") != manager) return;
+                || manager == null || Reflect.invoke(controller, "getPlayerManager") != manager) {
+            forgetHeld();
+            return;
+        }
         // Pause and resume share the native dispatcher. Playing can still be the state before
         // our queued pause; its matching resume must follow it when the hold is released early.
         // Read playing first so the PLAYING -> PAUSED transition cannot fall between the checks.
         if (!Boolean.TRUE.equals(Reflect.invoke(manager, "isPlaying"))
-                && !Boolean.TRUE.equals(Reflect.invoke(manager, "isPaused"))) return;
+                && !Boolean.TRUE.equals(Reflect.invoke(manager, "isPaused"))) {
+            forgetHeld();
+            return;
+        }
+        if (!mayResume && !hasNativeFocus()) {
+            // Keep this exact weak owner through repeated detach calls until focus can return it.
+            waitingForFocus = owner;
+            return;
+        }
+        forgetHeld();
         invoke(manager, "LJIILL");
     }
 
