@@ -19,6 +19,7 @@ import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
@@ -49,14 +50,24 @@ private fun BytecodePatchContext.resolveLazyRegistration(): Registration {
     classDefForEach { classDef ->
         for (method in classDef.methods) {
             val instructions = method.implementation?.instructions?.toList() ?: continue
-            val namesComponent = instructions.any {
+            val namesComponent = instructions.indexOfFirst {
                 it.opcode == Opcode.CONST_CLASS && it.getReference<TypeReference>()?.type == COMPONENT
             }
-            if (!namesComponent) continue
+            if (namesComponent < 0) continue
             instructions.forEachIndexed { index, instruction ->
+                // LAZY is a common name for a common idea: this build has it on a coroutine
+                // start and on two other enums as well. What tells the registration apart is
+                // that it writes the constant it just loaded straight into the entry beside
+                // the component it is registering.
+                if (index <= namesComponent) return@forEachIndexed
                 if (instruction.opcode != Opcode.SGET_OBJECT) return@forEachIndexed
                 val field = instruction.getReference<FieldReference>() ?: return@forEachIndexed
                 if (field.name != LAZY) return@forEachIndexed
+                val store = instructions.getOrNull(index + 1) ?: return@forEachIndexed
+                if (store.opcode != Opcode.IPUT_OBJECT) return@forEachIndexed
+                if ((store as TwoRegisterInstruction).registerA !=
+                    (instruction as OneRegisterInstruction).registerA) return@forEachIndexed
+                if (store.getReference<FieldReference>()?.type != field.type) return@forEachIndexed
                 found.add(Registration(classDef.type, method, index, field.type))
             }
         }

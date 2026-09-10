@@ -28,8 +28,8 @@ class AutoScrollLoadStrategyTest {
     @Test
     fun `the strategy written into the registration is the one the extension answered`() {
         for (answer in listOf("IMMEDIATE", "LAZY")) {
-            // iput-object addresses four-bit registers, so this is the whole range the
-            // host can write its strategy straight back from.
+            // iput-object addresses four-bit registers, so these are the registers the host
+            // can write its strategy back from without moving it down first.
             for (register in listOf(0, 5, 15)) {
                 val method = lazyRegistration(register)
                 method.chooseAutoAdvanceLoadStrategy(strategyIndex = 0, strategy = STRATEGY)
@@ -63,7 +63,10 @@ class AutoScrollLoadStrategyTest {
     }
 
     @Test
-    fun `the call reaches the extension through the range form, so a high register still works`() {
+    fun `the highest register the host can load its constant into is still addressed`() {
+        // sget-object is a 21c, so the register the host puts its strategy in is never above
+        // v255. That, not the range form, is what makes the emitted widths safe: move-result-object
+        // and check-cast are both eight bit, and the range call carries any of them.
         val method = lazyRegistration(255, storeIntoEntry = false)
         method.chooseAutoAdvanceLoadStrategy(strategyIndex = 0, strategy = STRATEGY)
         val call = method.implementation!!.instructions.single { it.opcode == Opcode.INVOKE_STATIC_RANGE }
@@ -89,7 +92,7 @@ class AutoScrollLoadStrategyTest {
      * The shape the host registers a component with: load its strategy constant, then write it
      * into the entry the panel keeps. [leadingInstructions] puts unrelated work ahead of it.
      * [storeIntoEntry] drops that write, which is how a register above the four bits iput-object
-     * can address is reached: the host would move it down before storing.
+     * can address is reached: a host holding its constant that high moves it down before storing.
      */
     private fun lazyRegistration(
         register: Int,
@@ -136,7 +139,17 @@ class AutoScrollLoadStrategyTest {
         val body = method.implementation!!
         val registers = arrayOfNulls<String>(body.registerCount)
         var result: String? = null
+        var previous: Opcode? = null
         for (instruction in body.instructions) {
+            // A result register only holds an answer on the instruction directly after the call.
+            // Anything in between and the verifier treats it as undefined, which smali will
+            // assemble without complaint and the device will then refuse to load.
+            if (instruction.opcode == Opcode.MOVE_RESULT_OBJECT &&
+                previous != Opcode.INVOKE_STATIC_RANGE && previous != Opcode.INVOKE_STATIC
+            ) {
+                error("move-result-object does not follow the call, it follows $previous")
+            }
+            previous = instruction.opcode
             when (instruction.opcode) {
                 Opcode.NOP -> Unit
                 Opcode.SGET_OBJECT -> {

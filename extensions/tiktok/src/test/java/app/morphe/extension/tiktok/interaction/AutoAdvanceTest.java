@@ -46,12 +46,24 @@ public class AutoAdvanceTest {
         IndicatorView(android.content.Context context) { super(context); }
         @Override public boolean hasWindowFocus() { return true; }
     }
-    static final class FeedView extends View {
+    /**
+     * The feed, with the host's auto scroll indicator inside it. The control is given the
+     * indicator, because that is the view the patch hands over, and the indicator is GONE
+     * because that is how the host keeps it until scrolling runs. Being on screen is therefore
+     * the feed's answer, not the indicator's, which is the whole point of the check.
+     */
+    static final class FeedView extends android.widget.FrameLayout {
         boolean attached = true, shown = true, focused = true;
-        FeedView() { super(RuntimeEnvironment.getApplication()); }
-        @Override public boolean isAttachedToWindow() { return attached; }
+        final View indicator = new View(RuntimeEnvironment.getApplication()) {
+            @Override public boolean isAttachedToWindow() { return attached; }
+            @Override public boolean hasWindowFocus() { return focused; }
+        };
+        FeedView() {
+            super(RuntimeEnvironment.getApplication());
+            indicator.setVisibility(GONE);
+            addView(indicator);
+        }
         @Override public boolean isShown() { return shown; }
-        @Override public boolean hasWindowFocus() { return focused; }
     }
     @Before public void setup() {
         Utils.setContext(RuntimeEnvironment.getApplication());
@@ -87,12 +99,70 @@ public class AutoAdvanceTest {
         assertEquals(LoadStrategy.LAZY, AutoAdvance.loadStrategy(LoadStrategy.LAZY));
     }
 
+    /** A component the host has stopped, so a look that decides to start it is visible. */
+    @Implements(AutoAdvance.class)
+    public static class StoppedComponent {
+        static int starts;
+        @Implementation protected static Object readState(Object component) {
+            return State.AUTO_SCROLL_STATE_STOP;
+        }
+        @Implementation protected static void start(Object component) { starts++; }
+        @Implementation protected static void stop(Object component) { }
+        @Implementation protected static Object readAweme(Object component) { return null; }
+    }
+
+    private int completionsAgainst(AutoAdvance.Control control) {
+        StoppedComponent.starts = 0;
+        Object component = new Object();
+        java.util.Map<Object, AutoAdvance.Control> controls =
+                org.robolectric.util.ReflectionHelpers.getStaticField(AutoAdvance.class, "CONTROLS");
+        controls.put(component, control);
+        try {
+            AutoAdvance.beforeCompletion(component, "a");
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+            return StoppedComponent.starts;
+        } finally {
+            controls.remove(component);
+        }
+    }
+
+    @Test @Config(shadows = StoppedComponent.class)
+    public void aCompletionLooksAgainWhenTheSessionIsStoodDown() {
+        // Changing the limit resets the count through the posted update, but that update runs
+        // while the settings page still holds the window, so nothing starts. The host keeps
+        // reporting completions of the video it is looping, and that is the second look.
+        var control = new AutoAdvance.Control(new FeedView().indicator);
+        control.owned = false;
+        assertEquals("a stood-down session never looked again", 1, completionsAgainst(control));
+        assertEquals("the completion was counted while it was not running", 0, control.completedCount);
+    }
+
+    @Test @Config(shadows = StoppedComponent.class)
+    public void aCompletionCannotStartASessionTheLimitHasAlreadyEnded() {
+        // Saved before the control is built, so this is a session that spent its limit rather
+        // than one whose limit just changed. A changed limit is the case above.
+        Settings.AUTO_ADVANCE_LIMIT.save(2);
+        var control = new AutoAdvance.Control(new FeedView().indicator);
+        control.owned = false;
+        control.completedCount = 2;
+        assertEquals("a spent session was started again", 0, completionsAgainst(control));
+    }
+
+    @Test @Config(shadows = StoppedComponent.class)
+    public void aCompletionCannotStartASessionOnAFeedThatIsNotOnScreen() {
+        FeedView feed = new FeedView();
+        feed.shown = false;
+        var control = new AutoAdvance.Control(feed.indicator);
+        control.owned = false;
+        assertEquals("an off-screen feed was started", 0, completionsAgainst(control));
+    }
+
     @Test public void restartsNativeStopButPreservesPauseAndStopsWhenDisabled() {
         // The control holds the view weakly, so the test has to hold it strongly. Without
         // this the view can be collected part way through and every later update returns
         // early, which showed up as one failing run in ten.
         FeedView feed = new FeedView();
-        var control = new AutoAdvance.Control(feed);
+        var control = new AutoAdvance.Control(feed.indicator);
         var state = new AtomicReference<>(State.AUTO_SCROLL_STATE_STOP);
         var starts = new AtomicInteger();
         var stops = new AtomicInteger();
@@ -119,7 +189,7 @@ public class AutoAdvanceTest {
         // Advancing behind the hold walks through videos nobody can see, and each one used to
         // spend a place in this session's own limit as well.
         FeedView feed = new FeedView();
-        var control = new AutoAdvance.Control(feed);
+        var control = new AutoAdvance.Control(feed.indicator);
         var state = new AtomicReference<>(State.AUTO_SCROLL_STATE_STOP);
         var starts = new AtomicInteger();
         var stops = new AtomicInteger();
@@ -153,7 +223,7 @@ public class AutoAdvanceTest {
         // completion is recorded, so the video that finished behind the panel still spent a
         // place in this session's limit and could put its notice on top of the hold.
         FeedView feed = new FeedView();
-        var control = new AutoAdvance.Control(feed);
+        var control = new AutoAdvance.Control(feed.indicator);
         control.owned = true;
         Object component = new Object();
         java.util.Map<Object, AutoAdvance.Control> controls =
@@ -174,7 +244,7 @@ public class AutoAdvanceTest {
 
     @Test public void disabledSettingLeavesPreexistingNativeAutoScrollAlone() {
         FeedView feed = new FeedView();
-        var control = new AutoAdvance.Control(feed);
+        var control = new AutoAdvance.Control(feed.indicator);
         var state = new AtomicReference<>(State.AUTO_SCROLL_STATE_START);
         control.update(state::get, () -> fail("Already running"), () -> fail("Native ownership"));
         Settings.AUTO_ADVANCE.save(false);
@@ -184,7 +254,7 @@ public class AutoAdvanceTest {
     }
     @Test public void aCollectedFeedViewEndsTheControlsWork() {
         FeedView view = new FeedView();
-        var control = new AutoAdvance.Control(view);
+        var control = new AutoAdvance.Control(view.indicator);
         control.update(() -> State.AUTO_SCROLL_STATE_STOP, () -> { }, () -> fail("Not started"));
 
         // Ownership of the view is deliberately weak. Once it is gone the control must do
@@ -194,7 +264,7 @@ public class AutoAdvanceTest {
     }
     @Test public void hiddenDetachedAndUnfocusedViewsCannotStartScrolling() {
         FeedView view = new FeedView();
-        var control = new AutoAdvance.Control(view);
+        var control = new AutoAdvance.Control(view.indicator);
         for (int i = 0; i < 3; i++) {
             view.attached = i != 0;
             view.shown = i != 1;
@@ -248,7 +318,7 @@ public class AutoAdvanceTest {
 
     @Test public void nativeRefusalDoesNotClaimOwnershipAndSettingIsReachable() throws Exception {
         FeedView feed = new FeedView();
-        var control = new AutoAdvance.Control(feed);
+        var control = new AutoAdvance.Control(feed.indicator);
         control.update(() -> State.AUTO_SCROLL_STATE_STOP, () -> { }, () -> fail("Not started"));
         assertFalse(control.owned);
         try (var owner = Robolectric.buildActivity(app.morphe.extension.tiktok.captions.CaptionToolsTest.CaptionActivity.class).setup().visible()) {
@@ -273,7 +343,7 @@ public class AutoAdvanceTest {
     @Test public void ownedSessionStopsAtItsVisibleCompletionLimitAndCanBeReset() {
         Settings.AUTO_ADVANCE_LIMIT.save(2);
         FeedView feed = new FeedView();
-        var control = new AutoAdvance.Control(feed);
+        var control = new AutoAdvance.Control(feed.indicator);
         var state = new AtomicReference<>(State.AUTO_SCROLL_STATE_STOP);
         var starts = new AtomicInteger();
         var stops = new AtomicInteger();
@@ -297,14 +367,14 @@ public class AutoAdvanceTest {
         Settings.AUTO_ADVANCE_LIMIT.save(0);
         control.update(state::get, start, stop);
         assertEquals(3, starts.get());
-        var fresh = new AutoAdvance.Control(new FeedView());
+        var fresh = new AutoAdvance.Control(new FeedView().indicator);
         assertEquals(0, fresh.completedCount);
     }
 
     @Test public void nativeOnlyCompletionsDoNotConsumeTheHushfeedLimit() {
         Settings.AUTO_ADVANCE_LIMIT.save(1);
         FeedView feed = new FeedView();
-        var control = new AutoAdvance.Control(feed);
+        var control = new AutoAdvance.Control(feed.indicator);
         var state = new AtomicReference<>(State.AUTO_SCROLL_STATE_START);
         control.update(state::get, () -> fail("native scrolling is already running"),
                 () -> fail("native scrolling is not owned"));
