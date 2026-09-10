@@ -13,6 +13,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.tiktok.shared.callThroughLocals
 import app.morphe.patches.tiktok.shared.objectIn
 import app.morphe.patches.tiktok.shared.valueIn
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
@@ -21,16 +22,33 @@ import java.util.WeakHashMap
 
 private const val STRING = "Ljava/lang/String;"
 
-/** A method's return type and parameter list, which is what tells the AB getters apart. */
-internal data class MethodShape(val returnType: String, val parameters: List<String>)
+/**
+ * A method's return type, parameter list and whether it is static, which is what tells the AB
+ * getters apart.
+ *
+ * <p>The static bit is not decoration. Every boundary hook names the register its key arrives in,
+ * and an instance method's `p0` is `this`, so the same parameter list is `p3` on one and `p2` on
+ * the other. With the shape as the only anchor left for the app AB class, a static getter of the
+ * same signature would be accepted and then read a boolean as the key.
+ */
+internal data class MethodShape(
+    val returnType: String,
+    val parameters: List<String>,
+    val isStatic: Boolean = false,
+)
 
-internal fun Method.shape() = MethodShape(returnType, parameterTypes.map(CharSequence::toString))
+internal fun Method.shape() = MethodShape(
+    returnType,
+    parameterTypes.map(CharSequence::toString),
+    AccessFlags.STATIC.value and accessFlags != 0,
+)
 
 /**
  * The typed getters TikTok's app AB class carries, one per value type, plus the raw one. Each is
  * a different shape, and no other class in the build carries all seven, so together they name
  * the class without its name. On 46.2.3 it was `LX/0BYX;`, which was written into the patches
- * and became `LX/09h1;` on 46.7.3 and `LX/09cY;` on 46.8.3.
+ * and became `LX/09h1;` on 46.7.3 and `LX/09cY;` on 46.8.3. All seven are instance methods on
+ * all three, which is what puts the key one register further along than the parameter list says.
  */
 internal val APP_AB_BOOLEAN = MethodShape("Z", listOf("I", STRING, "Z", "Z"))
 internal val APP_AB_DOUBLE = MethodShape("D", listOf("D", "I", STRING, "Z"))
@@ -43,7 +61,7 @@ internal val APP_AB_SHAPES = listOf(
     APP_AB_BOOLEAN, APP_AB_DOUBLE, APP_AB_FLOAT, APP_AB_INT, APP_AB_LONG, APP_AB_STRING, APP_AB_RAW,
 )
 
-/** The int getter's key sits after `this` and two ints. */
+/** The int getter's key sits after `this` and two ints, which [APP_AB_INT] holds it to. */
 internal const val APP_AB_INT_KEY_REGISTER = "p3"
 
 private val resolved = WeakHashMap<BytecodePatchContext, String>()

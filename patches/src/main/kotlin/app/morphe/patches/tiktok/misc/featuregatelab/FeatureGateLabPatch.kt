@@ -48,6 +48,8 @@ private data class TypedBoundary(
     val runtimeMethod: String,
     val runtimeDescriptor: String,
     val wide: Boolean = false,
+    /** Whether the boundary is a static method, which is what [keyParameter] counts from. */
+    val isStatic: Boolean = false,
 )
 
 private val boundaries = listOf(
@@ -57,12 +59,12 @@ private val boundaries = listOf(
     TypedBoundary(APP_AB, "LJFF", "I", listOf("I", "I", "Ljava/lang/String;", "Z"), APP_AB_INT_KEY_REGISTER, Opcode.RETURN, "overrideInt", "(Ljava/lang/String;I)I"),
     TypedBoundary(APP_AB, "LJII", "J", listOf("I", "J", "Ljava/lang/String;", "Z"), "p4", Opcode.RETURN_WIDE, "overrideLong", "(Ljava/lang/String;J)J", true),
     TypedBoundary(APP_AB, "LJIIIIZZ", "Ljava/lang/String;", listOf("I", "Ljava/lang/String;", "Ljava/lang/String;", "Z"), "p2", Opcode.RETURN_OBJECT, "overrideString", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"),
-    TypedBoundary(ABMOCK_SETTINGS_MANAGER_DESCRIPTOR, "LIZ", "Z", listOf("Ljava/lang/String;", "Z"), "p0", Opcode.RETURN, "overrideBoolean", "(Ljava/lang/String;Z)Z"),
-    TypedBoundary(ABMOCK_SETTINGS_MANAGER_DESCRIPTOR, "LIZIZ", "D", listOf("Ljava/lang/String;", "D"), "p0", Opcode.RETURN_WIDE, "overrideDouble", "(Ljava/lang/String;D)D", true),
-    TypedBoundary(ABMOCK_SETTINGS_MANAGER_DESCRIPTOR, "LIZJ", "F", listOf("Ljava/lang/String;", "F"), "p0", Opcode.RETURN, "overrideFloat", "(Ljava/lang/String;F)F"),
-    TypedBoundary(ABMOCK_SETTINGS_MANAGER_DESCRIPTOR, "LJ", "I", listOf("Ljava/lang/String;", "I"), "p0", Opcode.RETURN, "overrideInt", "(Ljava/lang/String;I)I"),
-    TypedBoundary(ABMOCK_SETTINGS_MANAGER_DESCRIPTOR, "LJFF", "J", listOf("Ljava/lang/String;", "J"), "p0", Opcode.RETURN_WIDE, "overrideLong", "(Ljava/lang/String;J)J", true),
-    TypedBoundary(ABMOCK_SETTINGS_MANAGER_DESCRIPTOR, "LJI", "Ljava/lang/String;", listOf("Ljava/lang/String;", "Ljava/lang/String;"), "p0", Opcode.RETURN_OBJECT, "overrideString", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"),
+    TypedBoundary(ABMOCK_SETTINGS_MANAGER_DESCRIPTOR, "LIZ", "Z", listOf("Ljava/lang/String;", "Z"), "p0", Opcode.RETURN, "overrideBoolean", "(Ljava/lang/String;Z)Z", isStatic = true),
+    TypedBoundary(ABMOCK_SETTINGS_MANAGER_DESCRIPTOR, "LIZIZ", "D", listOf("Ljava/lang/String;", "D"), "p0", Opcode.RETURN_WIDE, "overrideDouble", "(Ljava/lang/String;D)D", true, isStatic = true),
+    TypedBoundary(ABMOCK_SETTINGS_MANAGER_DESCRIPTOR, "LIZJ", "F", listOf("Ljava/lang/String;", "F"), "p0", Opcode.RETURN, "overrideFloat", "(Ljava/lang/String;F)F", isStatic = true),
+    TypedBoundary(ABMOCK_SETTINGS_MANAGER_DESCRIPTOR, "LJ", "I", listOf("Ljava/lang/String;", "I"), "p0", Opcode.RETURN, "overrideInt", "(Ljava/lang/String;I)I", isStatic = true),
+    TypedBoundary(ABMOCK_SETTINGS_MANAGER_DESCRIPTOR, "LJFF", "J", listOf("Ljava/lang/String;", "J"), "p0", Opcode.RETURN_WIDE, "overrideLong", "(Ljava/lang/String;J)J", true, isStatic = true),
+    TypedBoundary(ABMOCK_SETTINGS_MANAGER_DESCRIPTOR, "LJI", "Ljava/lang/String;", listOf("Ljava/lang/String;", "Ljava/lang/String;"), "p0", Opcode.RETURN_OBJECT, "overrideString", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", isStatic = true),
     TypedBoundary(LIVE_SETTINGS_DESCRIPTOR, "getBooleanValue", "Z", listOf("Ljava/lang/String;", "Z"), "p1", Opcode.RETURN, "overrideLiveBoolean", "(Ljava/lang/String;Z)Z"),
     TypedBoundary(LIVE_SETTINGS_DESCRIPTOR, "getDoubleValue", "D", listOf("Ljava/lang/String;", "D"), "p1", Opcode.RETURN_WIDE, "overrideLiveDouble", "(Ljava/lang/String;D)D", true),
     TypedBoundary(LIVE_SETTINGS_DESCRIPTOR, "getFloatValue", "F", listOf("Ljava/lang/String;", "F"), "p1", Opcode.RETURN, "overrideLiveFloat", "(Ljava/lang/String;F)F"),
@@ -87,22 +89,28 @@ val featureGateLabPatch = bytecodePatch(
 
     execute {
         boundaries.forEach { boundary ->
-            val target = if (boundary.targetDescriptor == APP_AB) appAbClass()
+            val obfuscated = boundary.targetDescriptor == APP_AB
+            val target = if (obfuscated) appAbClass()
             else mutableClassDefBy(boundary.targetDescriptor)
-            // By shape first. The names in the table are the 46.2.3 build's and are kept only
-            // to tell two getters of the same shape apart, which no class in the table has yet.
-            val shape = MethodShape(boundary.returnType, boundary.parameters)
+            val shape = MethodShape(boundary.returnType, boundary.parameters, boundary.isStatic)
+            // Shape first only where the name is gone. The app AB class is renamed by every
+            // build and so are its methods, so there the name is worth no more than a tiebreak.
+            // The other three targets keep the names they are written with, and dropping the
+            // name there would take an unrelated helper of the same signature and report
+            // success where the old code stopped.
             val ofShape = target.methods.filter { it.shape() == shape }
-            val method = when (ofShape.size) {
-                1 -> ofShape.single()
+            val candidates = if (obfuscated) ofShape else ofShape.filter { it.name == boundary.methodName }
+            val method = when (candidates.size) {
+                1 -> candidates.single()
                 0 -> throw PatchException(
                     "Feature Gate Lab boundary not found: ${target.type} has no " +
+                        (if (obfuscated) "" else "${boundary.methodName} of ") +
                         "${boundary.returnType}${boundary.parameters}.",
                 )
-                else -> ofShape.singleOrNull { it.name == boundary.methodName }
+                else -> candidates.singleOrNull { it.name == boundary.methodName }
                     ?: throw PatchException(
                         "Feature Gate Lab boundary is ambiguous: ${target.type} has " +
-                            "${ofShape.size} of ${boundary.returnType}${boundary.parameters} and " +
+                            "${candidates.size} of ${boundary.returnType}${boundary.parameters} and " +
                             "none is called ${boundary.methodName}.",
                     )
             }
