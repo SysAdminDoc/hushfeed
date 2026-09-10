@@ -1,3 +1,11 @@
+## 0.29.0
+
+* A new switch empties the menu that opens when you press and hold TikTok's icon on the home screen. Those entries are not declared anywhere in the app, TikTok builds them while it runs, and it only rewrites them when it notices a difference. So the switch takes away what is already published and answers the handover that would publish more. Turning it off asks TikTok to build them again. Tapping the icon still opens the app, and a shortcut you pinned to a home screen yourself is left alone.
+
+* The v0.28.0 download has been replaced. The bundle pins a build stamp to the commit it was built from, so that anyone can rebuild it and check the published checksum against their own, and that file was built a couple of commits before the release it shipped as. Its patches were the right ones, entry for entry; only the stamp was wrong. The release check now reads the stamp back and refuses a bundle that was not built from the commit being released.
+
+* Everything the patches inject is now checked against the register count of the method it lands in, and against the Android runtime's own verifier on a phone. A patch that writes into a register a method never declared assembles cleanly, applies cleanly, and fails only on a device; nothing here does that.
+
 ## 0.28.0
 
 * Automatic video advance now works from a cold start. Two things stood in the way. TikTok builds its auto scroll component only once somebody opens the video panel and asks for it by hand, so with the setting already on, a fresh launch had nothing to work with. And the check for whether the feed was on screen asked TikTok's auto scroll indicator about itself, which TikTok keeps hidden until scrolling is already running, so the answer was always no. With the setting on, the component is now built alongside the ones TikTok always builds, and the feed it sits in is what answers for being on screen. With the setting off, TikTok's own choice is left alone. Automatic advance also looks again when a video ends rather than staying down for the rest of the session, so changing the session limit or coming back to the feed picks it up again without restarting TikTok.

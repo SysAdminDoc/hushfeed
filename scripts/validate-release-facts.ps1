@@ -358,43 +358,47 @@ if ($VerifyPublishedAsset) {
         if ($listedHash -ne $publishedHash) {
             throw "SHA256SUMS.txt lists $listedHash for $assetName, but the hosted artifact is $publishedHash."
         }
-        # A matching hash proves the published file is the one this checkout has. It does not
+        # A matching hash proves the published file is the one this checkout built. It does not
         # prove either of them is what the released commit builds, and on v0.28.0 the two came
         # apart: the bundle was built while HEAD was still two commits back, was published, and
         # then the release commit was made. The hashes agreed at the time and the README's offer
-        # to rebuild and compare was false for the rest of the release. The pin is the only field
-        # that carries the answer, so read it back out of what is actually published.
+        # to rebuild the bundle and compare checksums was false for the rest of the release.
         #
-        # Held to the tag, not to HEAD. The claim being checked is that somebody who checks out
-        # v<version> and builds it gets the published file, and HEAD stops being that commit the
-        # moment anything lands on top. SOURCE_DATE_EPOCH is deliberately not consulted: it is
-        # the same variable the build reads, so accepting it here would compare the builder's
-        # input against itself and agree no matter which commit the bundle came from.
-        $releaseTag = "v$releaseVersion"
-        $taggedEpoch = (& git -C $rootPath log -1 --format=%ct "refs/tags/$releaseTag" 2>$null | Select-Object -First 1)
-        $taggedEpoch = "$taggedEpoch".Trim()
-        if ($taggedEpoch -notmatch '^\d+$') {
-            throw ("No commit found for $releaseTag, so the published bundle cannot be held to " +
-                'the commit it claims to come from. Create the tag before validating the release.')
+        # Checked against the local artifact and HEAD rather than against the published file and
+        # the tag, because the tag cannot be the answer here. It only points at the release commit
+        # once that commit is on the remote, and the push that puts it there is the push this
+        # check gates, so a tag comparison could never pass at the one moment it matters. Held
+        # together with the hash comparison above, which says published and local are the same
+        # bytes, this gives the whole claim: the published bundle is pinned to the commit being
+        # released.
+        #
+        # SOURCE_DATE_EPOCH is deliberately not consulted. It is the same variable the build
+        # reads, so accepting it as the expected value would compare the builder's own input
+        # against itself and agree whichever commit the bundle came from.
+        $headEpoch = (& git -C $rootPath log -1 --format=%ct 2>$null | Select-Object -First 1)
+        $headEpoch = "$headEpoch".Trim()
+        if ($headEpoch -notmatch '^\d+$') {
+            throw 'Could not read the commit being released, so the bundle cannot be held to it.'
         }
-        $expectedStamp = [long]$taggedEpoch * 1000
+        $expectedStamp = [long]$headEpoch * 1000
         Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction SilentlyContinue
-        $publishedStamp = $null
-        $zip = [System.IO.Compression.ZipFile]::OpenRead($temporaryArtifact)
+        $localStamp = $null
+        $zip = [System.IO.Compression.ZipFile]::OpenRead($ArtifactPath)
         try {
             $manifestEntry = $zip.GetEntry('META-INF/MANIFEST.MF')
-            if ($null -eq $manifestEntry) { throw "The published $assetName has no META-INF/MANIFEST.MF." }
+            if ($null -eq $manifestEntry) { throw "The local $assetName has no META-INF/MANIFEST.MF." }
             $reader = New-Object IO.StreamReader($manifestEntry.Open())
             try { $manifestText = $reader.ReadToEnd() } finally { $reader.Dispose() }
             $stampMatch = [regex]::Match($manifestText, '(?m)^Timestamp: (\d+)')
-            if (-not $stampMatch.Success) { throw "The published $assetName manifest has no Timestamp line." }
-            $publishedStamp = [long]$stampMatch.Groups[1].Value
+            if (-not $stampMatch.Success) { throw "The local $assetName manifest has no Timestamp line." }
+            $localStamp = [long]$stampMatch.Groups[1].Value
         } finally { $zip.Dispose() }
-        if ($publishedStamp -ne $expectedStamp) {
-            throw ("The published $assetName is pinned to $publishedStamp but $releaseTag is " +
-                "$expectedStamp. Rebuild the bundle from the tagged commit and upload that file, " +
-                'so rebuilding from the tag reproduces the published hash.')
+        if ($localStamp -ne $expectedStamp) {
+            throw ("The bundle in patches/build/libs is pinned to $localStamp but the commit being " +
+                "released is $expectedStamp. Build the bundle after making the release commit, so " +
+                'that rebuilding from the tag reproduces the published hash.')
         }
+        $publishedStamp = $localStamp
         Write-Host ("[release] published bundle is pinned to the released commit; timestamp=" + $publishedStamp)
         Write-Host ("[release] verified " + $assetName + " from the indexed URL; sha256=" + $publishedHash)
         # No caller passed -DesktopJar and nothing in the repo set the variable, so this check
