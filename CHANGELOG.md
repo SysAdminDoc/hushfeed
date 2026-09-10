@@ -18,6 +18,8 @@
 
 * Patches refuse more of the builds they can't patch, by name, rather than applying and doing nothing or shipping an instruction a phone's verifier rejects: every injection that writes a scratch register at the start of a method checks that the method has a local to write; every call that names a register read off a return uses the range form; the quick reactions gate reads its return register off each return instead of assuming v0; follow diagnostics counts its hooks and fails when a rename leaves one unhooked; the photo download anchor no longer matches the lookup method beside it; the risk-control CAPTCHA patch checks the request and callback shapes it calls; and a missing instruction is reported with the method it was missing from.
 
+* Follow diagnostics checks all three of its hooks before writing any of them. A build that renamed one used to fail the patch with the other two already written into the app.
+
 * The pre-push check runs the patch module's tests as well as the runtime ones, and treats the version catalog, the settings script, the dependency verification file and the Gradle wrapper as release facts. A push touching only one of those ran no gate at all. A README edit on a clean checkout is no longer blocked by a release check that wanted a built bundle it had just said it didn't need.
 
 * The device scripts read as success when adb refused an install, chose the clean APK by file size, could carry one dex2oat exit code over to the next run, left gigabytes of unpacked APK behind, and wrote an empty screenshot when the capture failed. Each of those is fixed. The verification probe compiles again and holds its broadcasts to a permission only the shell and the platform carry.
