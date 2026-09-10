@@ -1,6 +1,5 @@
 package app.morphe.extension.tiktok.interaction;
 
-import android.content.Context;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -61,13 +60,26 @@ public final class GestureActions {
         return true;
     }
 
+    /** Eligibility callback from the native edge-speedup component before its 300 ms timer. */
+    public static boolean allowNativeEdgeSpeedup(float x) {
+        if (edgeSeekDelta(x) != 0) return false;
+        String action = Settings.LONG_PRESS_ACTION.get();
+        return !"nothing".equals(action) && !"comments".equals(action)
+                && !"original_sound".equals(action) && !"copy_link".equals(action)
+                && !"copy_sound_link".equals(action);
+    }
+
     /**
      * How far a long press at this point should move the video, in milliseconds. Zero when
      * the press landed in the middle, when edge seeking is off, or when there is no screen
      * to measure the press against.
      */
     static long edgeSeekDelta(MotionEvent event) {
-        if (event == null || !Settings.EDGE_SEEK.get()) return 0;
+        return event == null ? 0 : edgeSeekDelta(event.getX());
+    }
+
+    private static long edgeSeekDelta(float x) {
+        if (!Settings.EDGE_SEEK.get()) return 0;
         int seconds = Settings.EDGE_SEEK_SECONDS.get();
         if (seconds <= 0) return 0;
         // The dialog offers at most 60. A restored backup is never asked, and a press that
@@ -84,7 +96,6 @@ public final class GestureActions {
         // The listener sits on the cell's touch layer, which fills the window, so the press
         // is placed against the window. getRawX would be the position on the whole display,
         // which in a side by side split view puts every press in the right hand third.
-        float x = event.getX();
         if (x < third) return -seconds * 1000L;
         if (x >= width - third) return seconds * 1000L;
         return 0;

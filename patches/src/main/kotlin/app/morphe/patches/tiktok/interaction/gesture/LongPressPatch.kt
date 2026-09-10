@@ -12,17 +12,47 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLa
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.interaction.blockauthor.blockAuthorPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.getReference
 import app.morphe.util.numberOfParameterRegisters
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val EXTENSION = "Lapp/morphe/extension/tiktok/interaction/GestureActions;"
 private const val SEEK_EXTENSION = "Lapp/morphe/extension/tiktok/interaction/FeedSeek;"
 private const val MOTION_EVENT = "Landroid/view/MotionEvent;"
+private const val EDGE_SPEEDUP = "Lcom/ss/android/ugc/aweme/feed/longvideo/edgespeedup/EdgeSpeedupAssem;"
+
+private object EdgeSpeedupEligibilityFingerprint : Fingerprint(
+    definingClass = EDGE_SPEEDUP,
+    name = "NU1",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
+    parameters = listOf("F", "F"),
+    returnType = "Z",
+)
+
+internal fun MutableMethod.preserveConfiguredLongPressFromEdgeSpeedup() {
+    check(definingClass == EDGE_SPEEDUP && name == "NU1"
+        && parameterTypes.map(CharSequence::toString) == listOf("F", "F") && returnType == "Z"
+        && accessFlags == (AccessFlags.PUBLIC.value or AccessFlags.FINAL.value)) {
+        "Long-press controls: unexpected native edge-speedup eligibility signature."
+    }
+    val registers = implementation!!.registerCount
+    check(registers - numberOfParameterRegisters >= 1 && registers <= 16) {
+        "Long-press controls: edge-speedup coordinates no longer fit the gesture hook."
+    }
+    // Native NU1 gets local DOWN x in p1. False prevents its earlier 300 ms speedup timer.
+    addInstructionsWithLabels(0, """
+        invoke-static { p1 }, $EXTENSION->allowNativeEdgeSpeedup(F)Z
+        move-result v0
+        if-nez v0, :native_edge_speedup
+        return v0
+    """, ExternalLabel("native_edge_speedup", getInstruction(0)))
+}
 
 /**
  * The feed's gesture listener. Its class name is obfuscated and changes between builds, so
@@ -89,6 +119,8 @@ val longPressPatch = bytecodePatch(
     dependsOn(settingsPatch, blockAuthorPatch, doubleTapPatch)
 
     execute {
+        EdgeSpeedupEligibilityFingerprint.method.preserveConfiguredLongPressFromEdgeSpeedup()
+
         FeedLongPressFingerprint.method.apply {
             // v0 is scratch; the check keeps it a local rather than a parameter register.
             check(implementation!!.registerCount - numberOfParameterRegisters >= 1) {

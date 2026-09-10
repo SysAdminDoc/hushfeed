@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Custom long-press actions now take precedence over TikTok's 2x edge hold, including seeking by the chosen distance. The default keeps TikTok's behavior.
+
 * Hiding search suggestions now also covers cached recommendations and search-page returns. Your search history stays available.
 
 * The comment-sort description now explains that media and creator filters depend on the post's native availability flags. Device checks confirmed those optional categories and preserved the stock menu after disabling the switch.
