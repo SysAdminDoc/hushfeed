@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Process;
 import android.util.Log;
 
 import java.lang.reflect.Method;
@@ -126,7 +127,14 @@ public final class Probe extends Instrumentation {
      */
     private static ClassLoader waitForHushfeed(Context context) throws Exception {
         ClassLoader loader = context.getClassLoader();
-        Method getContext = loader.loadClass(UTILS).getMethod("getContext");
+        Method getContext;
+        try {
+            getContext = loader.loadClass(UTILS).getMethod("getContext");
+        } catch (ClassNotFoundException absent) {
+            // The one message this method exists to produce, and it was unreachable: loadClass
+            // throws before the wait ever starts, so an unpatched build got a raw stack trace.
+            throw new IllegalStateException("no Hushfeed in this build; is it patched?", absent);
+        }
         long deadline = System.currentTimeMillis() + READY_TIMEOUT_MS;
         while (System.currentTimeMillis() < deadline) {
             if (getContext.invoke(null) != null) return loader;
@@ -147,6 +155,16 @@ public final class Probe extends Instrumentation {
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            // Exported, because the sender is adb and that is another uid, and naming the target
+            // package on the adb side restricts where the broadcast goes rather than who may send
+            // one. Without this check any app on the phone could drive Hushfeed's settings for as
+            // long as the probe is loaded, which is not a thing a test tool should make possible
+            // even on a test phone.
+            int sender = getSendingUid();
+            if (sender != Process.SHELL_UID && sender != Process.ROOT_UID) {
+                Log.w(TAG, "ignored a broadcast from uid " + sender);
+                return;
+            }
             String action = intent.getStringExtra("action");
             if (action == null) action = "dump";
             try {
@@ -264,14 +282,29 @@ public final class Probe extends Instrumentation {
                     .invoke(setting, coerce(current, value));
         }
 
-        /** The string turned into whatever the setting already holds. */
+        /**
+         * The string turned into whatever the setting already holds.
+         *
+         * <p>Booleans are parsed strictly. {@code Boolean.parseBoolean} answers false for "1",
+         * for "yes" and for every typo, so a mistyped value would be written as false and logged
+         * as a successful write. This exists to check what settings do on a device; a silent
+         * wrong value is the one failure it must not have.
+         */
         @SuppressWarnings({"unchecked", "rawtypes"})
         private Object coerce(Object current, String value) {
-            if (current instanceof Boolean) return Boolean.parseBoolean(value);
+            if (current instanceof Boolean) {
+                if ("true".equalsIgnoreCase(value)) return Boolean.TRUE;
+                if ("false".equalsIgnoreCase(value)) return Boolean.FALSE;
+                throw new IllegalArgumentException("a boolean setting takes true or false, not " + value);
+            }
             if (current instanceof Integer) return Integer.parseInt(value);
             if (current instanceof Long) return Long.parseLong(value);
             if (current instanceof Float) return Float.parseFloat(value);
-            if (current instanceof Enum) return Enum.valueOf((Class<Enum>) current.getClass(), value);
+            // getDeclaringClass, not getClass: an enum constant with a body of its own is an
+            // anonymous subclass, and valueOf on that finds nothing.
+            if (current instanceof Enum) {
+                return Enum.valueOf((Class<Enum>) ((Enum<?>) current).getDeclaringClass(), value);
+            }
             return value;
         }
 
