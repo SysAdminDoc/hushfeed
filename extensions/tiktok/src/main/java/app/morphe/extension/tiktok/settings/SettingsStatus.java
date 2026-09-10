@@ -275,6 +275,12 @@ public class SettingsStatus {
         videoOverlaysEnabled = true;
     }
 
+    static {
+        // The patcher fills load() with selected registrations. Runtime hooks can run before settings opens.
+        // Keep this after field initializers so their default values cannot overwrite those registrations.
+        load();
+    }
+
     public static void load() {
     }
 }
