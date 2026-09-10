@@ -177,7 +177,7 @@ val downloadsPatch = bytecodePatch(
         }
 
         // Add local gallery saving to the comment sticker/image preview sheet.
-        StickerPreviewBinderFingerprint.method.apply {
+        resolveStickerPreviewBind().apply {
             // Every way out of the bind, not only the last one written. A build that returns
             // early on any path would have shown a sheet with no save button and said nothing.
             findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN_VOID }.forEach { returnIndex ->
@@ -194,18 +194,14 @@ val downloadsPatch = bytecodePatch(
         StickerPreviewSourceFingerprint.method.apply {
             val bindCallIndices = implementation!!.instructions.withIndex()
                 .filter { (_, instruction) ->
-                    instruction.getReference<MethodReference>()?.let { reference ->
-                        reference.definingClass == "LX/0ULN;" &&
-                            reference.name == "LIZ" &&
-                            reference.parameterTypes.firstOrNull() == "LX/0ULM;"
-                    } == true
+                    instruction.getReference<MethodReference>()?.isStickerPreviewBind() == true
                 }
                 .map { it.index }
                 .toList()
 
             if (bindCallIndices.isEmpty()) {
                 throw app.morphe.patcher.patch.PatchException(
-                    "Downloads: could not find 46.2.3 sticker preview bind calls.",
+                    "Downloads: the sticker preview source method calls no preview bind.",
                 )
             }
 
