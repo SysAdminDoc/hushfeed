@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Edge seeking now converts the requested position into the percentage TikTok's player expects. Its position, video identity and duration checks still use milliseconds. The player fixtures were corrected to use the native conversion, which exposed this mismatch.
+
 * Turning comment search off removes its box from an already open comment sheet and restores the rows it hid. Turning it back on works with those same loaded comments, while rows TikTok collapsed keep their native state.
 
 * Selected patches now activate on app launch, before their first runtime hook. Opening Hushfeed settings is no longer needed to turn them on, including search controls used before that page opens.

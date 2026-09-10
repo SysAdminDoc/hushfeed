@@ -71,10 +71,11 @@ public class GestureActionsTest {
         return press(activity.getResources().getDisplayMetrics().widthPixels / 2f);
     }
 
-    /** Stands in for TikTok's player, whose own seek(float) kept its name. */
+    /** Native seek(float) takes a percentage; 0pTR converts it to integer engine milliseconds. */
     public static final class FakePlayer {
+        public final int durationMs = 30_000;
         public float sought = Float.NaN;
-        public void seek(float milliseconds) { sought = milliseconds; }
+        public void seek(float percentage) { sought = (int) (percentage * 0.01d * durationMs); }
     }
 
     /** Stands in for PlayerController, whose getPlayerManager() kept its name. */
@@ -347,7 +348,7 @@ public class GestureActionsTest {
             Settings.LONG_PRESS_ACTION.save("default");
 
             FakeController player = new FakeController();
-            FeedSeek.recordProgress(player, "one", 10_000L, 30_000L);
+            FeedSeek.recordProgress(player, "one", 10_000L, player.player.durationMs);
             // The gesture reads the video on screen from the block author tracker.
             app.morphe.extension.tiktok.blockauthor.BlockAuthorPatch.setCurrentVideoParams(new Params("one"));
             app.morphe.extension.tiktok.blockauthor.BlockAuthorPatch.setPlayingAweme("one");
@@ -355,22 +356,22 @@ public class GestureActionsTest {
             // Right edge: forward by the configured distance, and the press is swallowed so
             // TikTok's own 2x hold does not start under the same finger.
             assertTrue(GestureActions.onLongPress(press(width * 0.9f)));
-            assertEquals(15_000f, player.player.sought, 0.5f);
+            assertEquals(15_000f, player.player.sought, 1f);
 
             // A second press counts from where the first one landed, without waiting for the
             // progress tick that would say so.
             assertTrue(GestureActions.onLongPress(press(width * 0.9f)));
-            assertEquals(20_000f, player.player.sought, 0.5f);
+            assertEquals(20_000f, player.player.sought, 1f);
 
             // Left edge, and never before the start.
             assertTrue(GestureActions.onLongPress(press(width * 0.05f)));
-            assertEquals(15_000f, player.player.sought, 0.5f);
+            assertEquals(15_000f, player.player.sought, 1f);
             for (int i = 0; i < 5; i++) assertTrue(GestureActions.onLongPress(press(0f)));
             assertEquals(0f, player.player.sought, 0.5f);
 
             // Never past the end either: landing on it would finish the video.
             for (int i = 0; i < 10; i++) assertTrue(GestureActions.onLongPress(press(width - 1f)));
-            assertEquals(29_999f, player.player.sought, 0.5f);
+            assertEquals(29_999f, player.player.sought, 1f);
 
             // A tick with nothing playing does not replace the player that is.
             player.player.sought = Float.NaN;
@@ -378,7 +379,7 @@ public class GestureActionsTest {
             FeedSeek.recordProgress(player, "", 1_000L, 30_000L);
             FeedSeek.recordProgress(player, "one", 1_000L, 0L);
             assertTrue(FeedSeek.seekBy("one", -1_000L));
-            assertEquals(28_999f, player.player.sought, 0.5f);
+            assertEquals(28_999f, player.player.sought, 1f);
 
             // Scrolled on to something that never reports progress, a photo post or an ad:
             // the player still holds the video before it, and moving that one would look

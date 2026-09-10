@@ -64,7 +64,7 @@ public class NativeEdgeLongPressTest {
         Utils.setContext(activity);
         BlockAuthorPatch.setCurrentVideoParams(new VideoItemParams());
         BlockAuthorPatch.setPlayingAweme("native-edge-current");
-        FeedSeek.recordProgress(player, "native-edge-current", 10_000, 30_000);
+        FeedSeek.recordProgress(player, "native-edge-current", 10_000, player.manager.durationMs);
     }
 
     @After public void tearDown() {
@@ -82,7 +82,7 @@ public class NativeEdgeLongPressTest {
     @Test public void leftAndRightOwnedEdgesReachTheLegacySeekWithoutStartingNativeSpeedup() {
         Settings.EDGE_SEEK.save(true);
         for (float fraction : new float[]{0.1f, 0.9f}) {
-            FeedSeek.recordProgress(player, "native-edge-current", 10_000, 30_000);
+            FeedSeek.recordProgress(player, "native-edge-current", 10_000, player.manager.durationMs);
             player.manager.sought = Float.NaN;
             NativeCell cell = cell(fraction);
             cell.begin();
@@ -90,7 +90,7 @@ public class NativeEdgeLongPressTest {
             assertTrue("seek ran before the legacy long-press deadline", Float.isNaN(player.manager.sought));
             atLegacyDeadline(cell);
             assertEquals(1, cell.handled);
-            assertEquals(fraction < 0.5f ? 5_000f : 15_000f, player.manager.sought, 0.1f);
+            assertEquals(fraction < 0.5f ? 5_000f : 15_000f, player.manager.sought, 1f);
             assertEquals(0, cell.nativeLongPresses);
             cell.dispatch(MotionEvent.ACTION_UP);
             assertEquals("UP must not restore a speed that never changed", 0, cell.nativeReleases);
@@ -278,8 +278,10 @@ public class NativeEdgeLongPressTest {
     }
 
     public static final class PlayerManager {
+        final int durationMs = 30_000;
         float sought = Float.NaN;
-        public void seek(float milliseconds) { sought = milliseconds; }
+        // Native 0pTR truncates the percentage-derived engine position to integer milliseconds.
+        public void seek(float percentage) { sought = (int) (percentage * 0.01d * durationMs); }
     }
 
     public static final class VideoItemParams {

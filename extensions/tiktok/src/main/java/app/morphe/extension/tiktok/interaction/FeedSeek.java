@@ -18,8 +18,9 @@ import java.lang.reflect.Method;
  * <p>TikTok's {@code PlayerController} kept its name and so did the two methods that matter.
  * Its progress callback runs several times a second while a video plays and carries the
  * position, the length and the id of the video they belong to, and {@code getPlayerManager()}
- * hands back the player the seekbar drags. The manager's own {@code seek(float milliseconds)}
- * kept its name too, but the interface declaring it did not, so that one call goes through
+ * hands back the player the seekbar drags. The manager's own {@code seek(float percentage)}
+ * takes a percentage from 0 to 100, while progress positions and lengths are milliseconds.
+ * Its name survived but the interface declaring it did not, so that one call goes through
  * reflection on whichever concrete class the manager turns out to be.
  *
  * <p>The id is the point. A post that never reports progress, a photo post or a paused ad,
@@ -80,7 +81,8 @@ public final class FeedSeek {
         try {
             Method method = seekMethod(manager.getClass());
             if (method == null) return false;
-            method.invoke(manager, (float) targetMs);
+            // Native 0MhE's seekbar uses target / duration * 100 before 0MI0.seek(F).
+            method.invoke(manager, (float) targetMs / durationMs * 100f);
             return true;
         } catch (Exception exception) {
             Logger.printException(() -> "Could not seek the playing video", exception);
