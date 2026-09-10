@@ -102,6 +102,8 @@ public class JavaCrashCaptureTest {
         String saved = LogBufferManager.readCrashReport(context);
 
         assertTrue("the end says the report was cut", saved.endsWith("[report truncated]\n"));
+        assertTrue("and so does the header", saved.startsWith("schema: 1\ncomplete: false\n"));
+        assertFalse("which no longer claims the report is whole", saved.contains("complete: true"));
         assertFalse("nothing read back as a replacement character", saved.contains("\ufffd"));
         assertTrue(saved.length() < wide.length());
         assertTrue(saved.getBytes(java.nio.charset.StandardCharsets.UTF_8).length <= 64_000);

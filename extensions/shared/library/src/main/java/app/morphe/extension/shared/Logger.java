@@ -104,12 +104,37 @@ public class Logger {
         // was in the middle of: a host object's fields, a list's size, a nullable name. Every
         // hook in the extension logs on its way through, so a message that cannot be built must
         // not be the thing that throws out of the hook into the host app.
+        //
+        // So is everything after the message: the stack trim, the buffer and the toast all run
+        // inside a hook too. An Error counts as much as an exception here, since a toString that
+        // recurses or a class that fails to load is exactly what a host object hands over.
         String messageString;
         try {
             messageString = message.buildMessageString();
-        } catch (RuntimeException failure) {
+        } catch (Throwable failure) {
             messageString = "Could not build the log message: " + failure;
         }
+        try {
+            logBuilt(logLevel, category, explicitSource, message, messageString, ex, includeStackTrace, showToast);
+        } catch (Throwable failure) {
+            try {
+                Log.e(MORPHE_LOG_TAG_PREFIX + "Logger", "Could not log a message: " + messageString, failure);
+            } catch (Throwable ignored) {
+                // Nothing is left to report through.
+            }
+        }
+    }
+
+    private static void logBuilt(
+            LogLevel logLevel,
+            @Nullable DiagnosticCategory category,
+            @Nullable String explicitSource,
+            LogMessage message,
+            String messageString,
+            @Nullable Throwable ex,
+            boolean includeStackTrace,
+            boolean showToast
+    ) {
         String className = explicitSource == null ? getOuterClassSimpleName(message) : explicitSource;
         if (category == null) category = legacyCategory(className, logLevel);
 
@@ -130,7 +155,9 @@ public class Logger {
             // Remove the stacktrace elements of this class.
             final int loggerIndex = stackTrace.lastIndexOf(LOGGER_CLASS_NAME);
             final int loggerBegins = stackTrace.indexOf('\n', loggerIndex);
-            logText += stackTrace.substring(loggerBegins);
+            // With no line after the logger's last frame there is nothing of the caller's to
+            // keep past it, and substring(-1) would throw.
+            logText += loggerBegins >= 0 ? stackTrace.substring(loggerBegins) : "\n" + stackTrace;
         }
 
         // Do not include "morphe:" prefix in clipboard logs.

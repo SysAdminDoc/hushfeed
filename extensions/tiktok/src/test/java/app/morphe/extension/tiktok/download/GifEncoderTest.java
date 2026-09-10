@@ -162,6 +162,24 @@ public class GifEncoderTest {
                 List.of(new GifEncoder.Frame(new int[0], 40))));
     }
 
+    @Test
+    public void aCancelledJobStopsInsteadOfEncodingEveryFrame() {
+        // Tens of thousands of frames on a small canvas were the case this exists for: each is
+        // another pass of colour mapping and compression, and nothing between them looked at
+        // the job. A cancel shows up as an interrupt, which the encoder has to notice itself.
+        List<GifEncoder.Frame> frames = new ArrayList<>();
+        for (int index = 0; index < 3; index++) {
+            frames.add(new GifEncoder.Frame(new int[]{0xFF000000, 0xFFFFFFFF, 0xFF000000, 0xFFFFFFFF}, 40));
+        }
+        Thread.currentThread().interrupt();
+        try {
+            assertThrows(java.io.InterruptedIOException.class,
+                    () -> GifEncoder.write(new ByteArrayOutputStream(), 2, 2, frames));
+        } finally {
+            Thread.interrupted();
+        }
+    }
+
     // ------------------------------------------------------------------ a reader of our own
 
     private static GifReader encodeAndRead(int width, int height, List<GifEncoder.Frame> frames) throws Exception {

@@ -422,6 +422,12 @@ public final class LogBufferManager {
 
     private static void persistCrashReport(Context context, String fileName, String report) throws Exception {
         byte[] bytes = safe(report).getBytes(StandardCharsets.UTF_8);
+        if (bytes.length > CRASH_MAX_BYTES) {
+            // The header's own claim goes with the cut. The marker at the end said the report
+            // was cut while its first lines still said it was complete.
+            bytes = safe(report).replaceFirst("(?m)^complete: true$", "complete: false")
+                    .getBytes(StandardCharsets.UTF_8);
+        }
         int length = Math.min(bytes.length, CRASH_MAX_BYTES);
         if (length < bytes.length) {
             // Cut on a character boundary, with room for a marker at the end: the report opens
