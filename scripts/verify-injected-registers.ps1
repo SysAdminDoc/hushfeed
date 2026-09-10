@@ -90,10 +90,16 @@ if ($cleanHash -ne $CleanApkSha256) {
 
 $work = Join-Path ([System.IO.Path]::GetTempPath()) ("hushfeed-regs-" + [guid]::NewGuid().ToString('N').Substring(0, 8))
 New-Item -ItemType Directory -Force -Path $work | Out-Null
-# The report stays where the caller can read it after the run; the pulled APK and the rest of
-# the working directory do not outlive the run, because a full TikTok is hundreds of megabytes.
-$keepWork = [bool]$ReportPath
-if (-not $ReportPath) { $ReportPath = Join-Path $work 'injected-registers.txt' }
+# The report stays where the caller can read it after the run: at -ReportPath when one is given,
+# and otherwise in the working directory, which is kept whenever the run failed or stopped short,
+# because that is when the FAIL line points at the report. The pulled APK never outlives the run,
+# because a full TikTok is hundreds of megabytes. Worked out before the default path is filled
+# in: reading [bool]$ReportPath after that was always true, and read before it, it was false
+# exactly when the report lived in the directory the cleanup removed.
+$reportInWork = -not $ReportPath
+if ($reportInWork) { $ReportPath = Join-Path $work 'injected-registers.txt' }
+$failed = $false
+$completed = $false
 try {
 
 $adbPath = $null
@@ -128,7 +134,6 @@ $diffOutput = & $Java '-Xmx6g' '-cp' $DesktopJar (Join-Path $PSScriptRoot 'DexDi
 $diffExit = $LASTEXITCODE
 $diffOutput | ForEach-Object { Write-Host "[registers] $_" }
 
-$failed = $false
 if ($diffExit -ne 0) {
     Write-Host "[registers] FAIL: the dex comparison exited $diffExit; see $ReportPath"
     $failed = $true
@@ -199,13 +204,16 @@ if ($Serial) {
     }
 }
 
+$completed = $true
 } finally {
-    if (-not $keepWork) {
-        Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
-    } else {
-        Get-ChildItem -LiteralPath $work -File -ErrorAction SilentlyContinue |
-            Where-Object { $_.Extension -eq '.apk' } |
+    $keepReport = $reportInWork -and ($failed -or -not $completed) -and
+        (Test-Path -LiteralPath $ReportPath -PathType Leaf)
+    if ($keepReport) {
+        Get-ChildItem -LiteralPath $work -Recurse -File -Filter '*.apk' -ErrorAction SilentlyContinue |
             Remove-Item -Force -ErrorAction SilentlyContinue
+        Write-Host "[registers] the report is kept at $ReportPath"
+    } else {
+        Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
     }
 }
 

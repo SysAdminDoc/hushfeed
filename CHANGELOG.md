@@ -24,6 +24,8 @@
 
 * The device scripts read as success when adb refused an install, chose the clean APK by file size, could carry one dex2oat exit code over to the next run, left gigabytes of unpacked APK behind, and wrote an empty screenshot when the capture failed. Each of those is fixed. The verification probe compiles again and holds its broadcasts to a permission only the shell and the platform carry.
 
+* The register check keeps its report when it fails. Run without a report path, it named the report in its FAIL line and then deleted the folder the report was in.
+
 * The README's Patches heading renders on GitHub again; a stray line break tag had swallowed it into body text. The bug report template asks for the phone and its Android version, and its example names a Manager release that can load this bundle. The split-view width setting says dp, which is what it compares against, instead of pixels. The Feature Gate Lab no longer says "No gates match" under "Loading" before it has looked, every switch on its detail page has a name for a screen reader, its page title follows the font scale like every other page, the share checklist's boxes take the theme, and the greyed Undo row says why it's greyed.
 
 ## 0.29.0
