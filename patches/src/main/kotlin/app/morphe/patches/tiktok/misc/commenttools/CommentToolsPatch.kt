@@ -43,6 +43,13 @@ private object CommentDislikeTouchInitFingerprint : Fingerprint(
     custom = { method, _ -> method.name == "LIZIZ" },
 )
 
+private object CommentMoreCellBindFingerprint : Fingerprint(
+    definingClass = "Lcom/ss/android/ugc/aweme/commentv2/commentlist/powercell/CommentMoreItemCell;",
+    returnType = "V",
+    parameters = listOf("LX/0lOS;"),
+    custom = { method, _ -> method.name == "onBindItemView" },
+)
+
 /**
  * Hooks the same two places the comment translation patch does: the comment cell being
  * bound (to attach the block gesture) and the comment list response being handled (to
@@ -73,6 +80,7 @@ val commentToolsPatch = bytecodePatch(
         // the build rather than ship a gesture that silently does nothing.
         BlockServiceFingerprint.method
         CommentDislikeTouchInitFingerprint.method.captureDislikeTouchListener()
+        CommentMoreCellBindFingerprint.method.registerReplySearch()
 
         BaseCommentCellBindFingerprint.method.apply {
             val instructions = implementation!!.instructions
@@ -165,6 +173,38 @@ val commentToolsPatch = bytecodePatch(
                 ),
             )
         }
+    }
+}
+
+/** The reply control is a separate holder whose bound model carries its parent comment. */
+internal fun MutableMethod.registerReplySearch() {
+    val native = implementation ?: throw PatchException("Comment tools: reply bind has no body")
+    val returns = native.instructions.withIndex()
+        .filter { it.value.opcode == Opcode.RETURN_VOID }.map { it.index }
+    if (returns.isEmpty()) throw PatchException("Comment tools: reply bind has no return")
+    val holderRegister = native.registerCount - 2
+    val itemRegister = native.registerCount - 1
+    for (index in returns.reversed()) {
+        val registers = getFreeRegisterProvider(index, 3, listOf(holderRegister, itemRegister))
+        val viewRegister = registers.getFreeRegister4Bit()
+        val modelRegister = registers.getFreeRegister4Bit()
+        val stateRegister = registers.getFreeRegister4Bit()
+        // Q5 has finished changing the control's native height. Its model owns the parent
+        // Comment and computes state4 for a control that must stay collapsed when search clears.
+        addInstructions(
+            index,
+            """
+                move-object/from16 v$viewRegister, p0
+                iget-object v$viewRegister, v$viewRegister, Landroidx/recyclerview/widget/RecyclerView${'$'}ViewHolder;->itemView:Landroid/view/View;
+                move-object/from16 v$modelRegister, p1
+                check-cast v$modelRegister, LX/0nlo;
+                invoke-virtual {v$modelRegister}, LX/0nlo;->LIZ()I
+                move-result v$stateRegister
+                iget-object v$modelRegister, v$modelRegister, LX/0nlo;->LLILZIL:LX/0nls;
+                iget-object v$modelRegister, v$modelRegister, LX/0nls;->LJI:$COMMENT_DESCRIPTOR
+                invoke-static {v$viewRegister, v$modelRegister, v$stateRegister}, Lapp/morphe/extension/tiktok/comment/CommentSearch;->onReplyControlBound(Landroid/view/View;Ljava/lang/Object;I)V
+            """,
+        )
     }
 }
 

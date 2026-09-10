@@ -155,6 +155,7 @@ public final class CommentTools {
             itemView.post(() -> releaseDislike(itemView));
         }
         if (!block && !CommentSearch.enabled()) {
+            CommentSearch.onCellBound(itemView, null);
             return;
         }
 

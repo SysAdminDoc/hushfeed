@@ -47,6 +47,8 @@ public final class CommentSearch {
     private static final Map<View, Integer> ORIGINAL_HEIGHTS = new WeakHashMap<>();
     /** What each bound row is showing, so typing can go over the rows already on screen. */
     private static final Map<View, Object> ROW_COMMENTS = new WeakHashMap<>();
+    /** A reply control can also be collapsed by TikTok after all replies have been loaded. */
+    private static final Map<View, Boolean> COLLAPSED_REPLY_ROWS = new WeakHashMap<>();
     /** The list a box has already been put above, so it is only added once. */
     private static final Map<ViewGroup, Boolean> DECORATED = new WeakHashMap<>();
 
@@ -94,8 +96,17 @@ public final class CommentSearch {
 
     /** Called for each comment row as it is bound, with the comment that row is showing. */
     public static void onCellBound(View itemView, Object comment) {
-        if (itemView == null || !enabled()) return;
+        if (itemView == null) return;
         try {
+            if (!enabled()) {
+                if (ROW_COMMENTS.containsKey(itemView)) {
+                    // Body binding leaves the root height that search collapsed in place.
+                    setRowHidden(itemView, false);
+                    ROW_COMMENTS.remove(itemView);
+                    ORIGINAL_HEIGHTS.remove(itemView);
+                }
+                return;
+            }
             ROW_COMMENTS.put(itemView, comment);
             setRowHidden(itemView, !matches(comment, query));
             // A list binds a row before putting it in place, and detaches one it is about to
@@ -105,6 +116,23 @@ public final class CommentSearch {
         } catch (Throwable exception) {
             Logger.printException(() -> "Could not narrow a comment row", exception);
         }
+    }
+
+    /** Called after the native reply control binds its parent and computes its render state. */
+    public static void onReplyControlBound(View itemView, Object parentComment, int nativeState) {
+        if (itemView == null) return;
+        if (!enabled()) {
+            if (COLLAPSED_REPLY_ROWS.remove(itemView) != null) {
+                ROW_COMMENTS.remove(itemView);
+                ORIGINAL_HEIGHTS.remove(itemView);
+                // Q5 has already set the current native height, including zero for state4.
+                // Release only our visibility; an old search height must not replace it.
+                if (itemView.getVisibility() == View.GONE) itemView.setVisibility(View.VISIBLE);
+            }
+            return;
+        }
+        COLLAPSED_REPLY_ROWS.put(itemView, nativeState == 4);
+        onCellBound(itemView, parentComment);
     }
 
     /** Runs once the bound row is in place, which is the first moment the list can be read. */
@@ -285,6 +313,7 @@ public final class CommentSearch {
      * already in the wanted state.
      */
     private static void setRowHidden(View row, boolean hidden) {
+        hidden |= Boolean.TRUE.equals(COLLAPSED_REPLY_ROWS.get(row));
         ViewGroup.LayoutParams params = row.getLayoutParams();
         if (params == null) {
             int wanted = hidden ? View.GONE : View.VISIBLE;
