@@ -23,6 +23,7 @@ import app.morphe.util.findInstructionIndicesReversedOrThrow
 import app.morphe.util.getFreeRegisterProvider
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionOrThrow
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -197,14 +198,13 @@ val feedFilterPatch = bytecodePatch(
 
         val finalFeedInsertionMethod = FinalFeedInsertionFingerprint.method
         val insertionPayloadType = finalFeedInsertionMethod.parameterTypes.single().toString()
+        // By the set of parameters, not their order. The payload takes an int, a feed key and a
+        // list on every build, and 46.7.3 moved the list ahead of the key, which is R8's choice
+        // and not TikTok's: the static factory beside it still takes them the old way round.
         val insertionPayloadConstructors = mutableClassDefBy(insertionPayloadType).methods.filter { method ->
             method.name == "<init>" &&
-                method.parameterTypes.map(CharSequence::toString) == listOf(
-                    "I",
-                    "Ljava/lang/String;",
-                    "Ljava/util/List;",
-                ) &&
-                method.returnType == "V"
+                method.returnType == "V" &&
+                method.parameterTypes.map(CharSequence::toString).sorted() == INSERTION_PAYLOAD_PARAMETERS
         }
         if (insertionPayloadConstructors.size != 1) {
             throw PatchException(
@@ -533,6 +533,29 @@ private fun MutableMethod.filterReachBottomCacheDelivery(
     )
 }
 
+/** The parameters of the final feed insertion payload constructor, sorted so order does not matter. */
+internal val INSERTION_PAYLOAD_PARAMETERS =
+    listOf("I", "Ljava/lang/String;", "Ljava/util/List;").sorted()
+
+/**
+ * The `pN` the feed key arrives in, which is whichever parameter is the String.
+ *
+ * <p>It was `p2` on 46.2.3 and the constructor takes `(int, List, String)` on 46.7.3 and 46.8.3,
+ * so a written `p2` would have handed a List to something that takes a String. Registers are
+ * counted rather than indexed, because a wide parameter takes two of them.
+ */
+internal fun MutableMethod.insertionPayloadKeyRegister(): String {
+    val keyIndex = parameterTypes.indexOfFirst { it.toString() == "Ljava/lang/String;" }
+    if (keyIndex < 0) {
+        throw PatchException(
+            "Final feed insertion payload constructor takes no feed key: $parameterTypes",
+        )
+    }
+    var register = if (AccessFlags.STATIC.value and accessFlags != 0) 0 else 1
+    parameterTypes.take(keyIndex).forEach { register += if (it == "J" || it == "D") 2 else 1 }
+    return "p$register"
+}
+
 private fun MutableMethod.filterLateInsertedAds(payloadType: String) {
     val listStoreIndices = implementation?.instructions?.withIndex()
         ?.filter { (_, instruction) ->
@@ -562,7 +585,7 @@ private fun MutableMethod.filterLateInsertedAds(payloadType: String) {
         "invoke-static",
         "$EXTENSION_CLASS_DESCRIPTOR->filterLateInsertedAds(Ljava/lang/String;Ljava/util/List;)Ljava/util/List;",
         false,
-        objectIn("p2"),
+        objectIn(insertionPayloadKeyRegister()),
         objectIn("v$listRegister"),
     )
 
