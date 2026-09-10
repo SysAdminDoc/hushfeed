@@ -14,7 +14,10 @@ import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.SwitchPayload
 import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction31t
@@ -59,72 +62,128 @@ internal fun BytecodePatchContext.resolveLazyAbGate(
     key: String,
     gate: (Method) -> Boolean,
 ): MutableMethod {
-    val found = mutableListOf<Pair<ClassDef, Method>>()
-    classDefForEach { classDef ->
-        // The shape first: it costs one pass over the class's own method signatures and leaves a
-        // handful of candidates for the walk that follows to read instructions for.
-        val method = classDef.methods.singleOrNull(gate) ?: return@classDefForEach
-        val clinit = classDef.methods.firstOrNull {
-            it.name == "<clinit>" && it.implementation != null
-        } ?: return@classDefForEach
-        if (!readsSettingsKey(clinit, key)) return@classDefForEach
-        found += classDef to method
-    }
-    if (found.size != 1) {
-        throw PatchException(
-            "$what: expected one class whose lazily read setting is \"$key\", found ${found.size}.",
-        )
-    }
-    val (classDef, method) = found.single()
+    val (classDef, method) =
+        LazyAbGateSearch(::classDefByOrNull).find(what, key, gate, ::classDefForEach)
     return mutableClassDefBy(classDef).findMutableMethodOf(method)
 }
 
-/** Whether the static initialiser reaches [key], directly or through the lambda it builds. */
-private fun BytecodePatchContext.readsSettingsKey(clinit: Method, key: String): Boolean {
-    if (clinit.holdsString(key)) return true
-    val instructions = clinit.implementation?.instructions?.toList() ?: return false
-    instructions.forEachIndexed { index, instruction ->
-        when (instruction.opcode) {
-            Opcode.NEW_INSTANCE -> {
-                val built = instruction.getReference<TypeReference>()?.type ?: return@forEachIndexed
-                val body = classDefByOrNull(built)?.methods?.firstOrNull {
-                    it.name != "<init>" && it.parameterTypes.none() && it.implementation != null
+/**
+ * The search behind [resolveLazyAbGate], over whatever [classOf] can look up. Separate from the
+ * patch context so the rules can be run over a handful of classes built by hand.
+ */
+internal class LazyAbGateSearch(private val classOf: (String) -> ClassDef?) {
+
+    /** The class that reads [key] and the one method on it of the shape [gate] accepts. */
+    fun find(
+        what: String,
+        key: String,
+        gate: (Method) -> Boolean,
+        classes: ((ClassDef) -> Unit) -> Unit,
+    ): Pair<ClassDef, Method> {
+        val found = mutableListOf<Pair<ClassDef, List<Method>>>()
+        classes { classDef ->
+            // The shape first: it costs one pass over the class's own method signatures and
+            // leaves a handful of candidates for the walk that follows to read instructions
+            // for. Every method of the shape is kept rather than exactly one, so that a class
+            // carrying two of them is refused by name below instead of being passed over here
+            // as if it read some other key.
+            val methods = classDef.methods.filter(gate)
+            if (methods.isEmpty()) return@classes
+            val clinit = classDef.methods.firstOrNull {
+                it.name == "<clinit>" && it.implementation != null
+            } ?: return@classes
+            if (!readsSettingsKey(clinit, key)) return@classes
+            found += classDef to methods
+        }
+        if (found.size != 1) {
+            val which = if (found.isEmpty()) "" else " (${found.joinToString { it.first.type }})"
+            throw PatchException(
+                "$what: expected one class whose lazily read setting is \"$key\", " +
+                    "found ${found.size}$which.",
+            )
+        }
+        val (classDef, methods) = found.single()
+        if (methods.size != 1) {
+            throw PatchException(
+                "$what: ${classDef.type} reads \"$key\" but ${methods.size} of its methods " +
+                    "have the gate's shape: " +
+                    methods.joinToString { it.name + it.parameterTypes } + ".",
+            )
+        }
+        return classDef to methods.single()
+    }
+
+    /** Whether the static initialiser reaches [key], directly or through the lambda it builds. */
+    fun readsSettingsKey(clinit: Method, key: String): Boolean {
+        if (clinit.holdsString(key)) return true
+        val instructions = clinit.implementation?.instructions?.toList() ?: return false
+        instructions.forEachIndexed { index, instruction ->
+            when (instruction.opcode) {
+                Opcode.NEW_INSTANCE -> {
+                    // A lambda class of its own. Its body is a no-argument method, and so is the
+                    // bridge Kotlin adds beside it, so every one of them is read rather than the
+                    // first: the bridge holds no string and can come first.
+                    val built = instruction.getReference<TypeReference>()?.type
+                        ?: return@forEachIndexed
+                    val bodies = classOf(built)?.methods?.filter {
+                        it.name != "<init>" && it.parameterTypes.none() && it.implementation != null
+                    } ?: return@forEachIndexed
+                    if (bodies.any { it.holdsString(key) }) return true
                 }
-                if (body?.holdsString(key) == true) return true
+                Opcode.INVOKE_STATIC, Opcode.INVOKE_STATIC_RANGE -> {
+                    val factory = instruction.getReference<MethodReference>()
+                        ?: return@forEachIndexed
+                    if (factory.name != GROUP_FACTORY) return@forEachIndexed
+                    val argument = (instruction as? FiveRegisterInstruction)?.registerC
+                        ?: (instruction as? RegisterRangeInstruction)?.startRegister
+                        ?: return@forEachIndexed
+                    val number = constantBefore(instructions, index, argument)
+                        ?: return@forEachIndexed
+                    if (groupBodies(factory.definingClass, number).any { it.holdsString(key) }) {
+                        return true
+                    }
+                }
+                else -> Unit
             }
-            Opcode.INVOKE_STATIC, Opcode.INVOKE_STATIC_RANGE -> {
-                val factory = instruction.getReference<MethodReference>() ?: return@forEachIndexed
-                if (factory.name != GROUP_FACTORY) return@forEachIndexed
-                val number = constantBefore(instructions, index) ?: return@forEachIndexed
-                val body = groupBody(factory.definingClass, number)
-                if (body?.holdsString(key) == true) return true
+        }
+        return false
+    }
+
+    /**
+     * The bodies the group's entry points dispatch to for [number].
+     *
+     * <p>A group is merged per interface, so one built from `Function0` lambdas dispatches from
+     * a no-argument `invoke` and one built from `Function1` lambdas from a one-argument `invoke`.
+     * Every entry point that opens on the number is followed, so the shape of the interface is
+     * not a condition of finding the body.
+     */
+    fun groupBodies(groupType: String, number: Int): List<Method> {
+        val group = classOf(groupType) ?: return emptyList()
+        return group.methods.filter { it.dispatchesOnIndex() }.mapNotNull { entry ->
+            var at: Method = entry
+            repeat(MAX_DISPATCH_DEPTH) {
+                val next = at.dispatchTarget(group, number) ?: return@mapNotNull null
+                if (!next.dispatchesOnIndex()) return@mapNotNull next
+                at = next
             }
-            else -> Unit
+            null
         }
     }
-    return false
 }
 
-/** The constant the factory is handed, which is loaded just before the call. */
-private fun constantBefore(instructions: List<Instruction>, at: Int): Int? {
+/**
+ * The constant the factory is handed: the last one loaded into the [register] the call reads,
+ * looking back a few instructions. Matched on the register rather than on being the nearest
+ * constant, because the initialiser loads other numbers around the call and the nearest one is
+ * not necessarily the one handed over.
+ */
+internal fun constantBefore(instructions: List<Instruction>, at: Int, register: Int): Int? {
     for (index in (at - 1) downTo maxOf(0, at - CONSTANT_LOOKBACK)) {
         val instruction = instructions[index]
-        if (instruction is WideLiteralInstruction && instruction.opcode.name.startsWith("const")) {
-            return instruction.wideLiteral.toInt()
-        }
-    }
-    return null
-}
-
-/** The body the group's entry point dispatches to for [number]. */
-private fun BytecodePatchContext.groupBody(groupType: String, number: Int): Method? {
-    val group = classDefByOrNull(groupType) ?: return null
-    var at = group.methods.firstOrNull { it.parameterTypes.none() && it.dispatchesOnIndex() }
-    repeat(MAX_DISPATCH_DEPTH) {
-        val current = at ?: return null
-        val next = current.dispatchTarget(group, number) ?: return null
-        if (!next.dispatchesOnIndex()) return next
-        at = next
+        if (instruction !is WideLiteralInstruction) continue
+        if (!instruction.opcode.name.startsWith("const")) continue
+        if ((instruction as? OneRegisterInstruction)?.registerA != register) continue
+        return instruction.wideLiteral.toInt()
     }
     return null
 }
@@ -138,38 +197,42 @@ internal fun Method.dispatchesOnIndex(): Boolean {
         instructions[1].opcode == Opcode.SPARSE_SWITCH
 }
 
-/** The method the switch in this body calls for [number]. */
+/**
+ * The method the switch this body opens with calls for [number].
+ *
+ * <p>Only the switch that follows the read of the number is consulted, the one
+ * [dispatchesOnIndex] saw. A later switch in the same method is on something else, and an
+ * answer read from it would be a body for some other value that happened to share the number.
+ */
 internal fun Method.dispatchTarget(group: ClassDef, number: Int): Method? {
     val instructions = implementation?.instructions?.toList() ?: return null
+    if (!dispatchesOnIndex()) return null
     val addresses = IntArray(instructions.size)
     var address = 0
     instructions.forEachIndexed { index, instruction ->
         addresses[index] = address
         address += instruction.codeUnits
     }
-    instructions.forEachIndexed { index, instruction ->
-        if (instruction !is Instruction31t) return@forEachIndexed
-        if (instruction.opcode != Opcode.PACKED_SWITCH &&
-            instruction.opcode != Opcode.SPARSE_SWITCH
-        ) {
-            return@forEachIndexed
+    val switch = instructions[1] as? Instruction31t ?: return null
+    val switchAddress = addresses[1]
+    val payload = instructions.getOrNull(
+        addresses.indexOf(switchAddress + switch.codeOffset),
+    ) as? SwitchPayload ?: return null
+    val element = payload.switchElements.firstOrNull { it.key == number } ?: return null
+    val target = addresses.indexOf(switchAddress + element.offset)
+    if (target < 0) return null
+    for (candidate in target until minOf(instructions.size, target + TARGET_LOOKAHEAD)) {
+        val call = instructions[candidate]
+        if (call.opcode != Opcode.INVOKE_STATIC && call.opcode != Opcode.INVOKE_STATIC_RANGE) {
+            continue
         }
-        val switchAddress = addresses[index]
-        val payload = instructions.getOrNull(
-            addresses.indexOf(switchAddress + instruction.codeOffset),
-        ) as? SwitchPayload ?: return@forEachIndexed
-        val element = payload.switchElements.firstOrNull { it.key == number }
-            ?: return@forEachIndexed
-        val target = addresses.indexOf(switchAddress + element.offset)
-        if (target < 0) return@forEachIndexed
-        for (candidate in target until minOf(instructions.size, target + TARGET_LOOKAHEAD)) {
-            val call = instructions[candidate]
-            if (call.opcode != Opcode.INVOKE_STATIC && call.opcode != Opcode.INVOKE_STATIC_RANGE) {
-                continue
-            }
-            val reference = call.getReference<MethodReference>() ?: continue
-            if (reference.definingClass != group.type) continue
-            return group.methods.firstOrNull { it.name == reference.name }
+        val reference = call.getReference<MethodReference>() ?: continue
+        if (reference.definingClass != group.type) continue
+        return group.methods.firstOrNull {
+            it.name == reference.name &&
+                it.parameterTypes.map(CharSequence::toString) ==
+                reference.parameterTypes.map(CharSequence::toString) &&
+                it.returnType == reference.returnType
         }
     }
     return null
@@ -180,7 +243,9 @@ internal fun Method.dispatchTarget(group: ClassDef, number: Int): Method? {
  * holds, answer from it.
  *
  * <p>The key says which class; this says the method on it is the one that reads the setting
- * rather than some other member of the same signature.
+ * rather than some other member of the same signature. The read is matched by the name and
+ * shape of `getValue` alone, because the interface it is called on is `kotlin.Lazy` under a name
+ * R8 assigns per build; what pins it down is the unwrap of a `Number` straight after.
  */
 internal fun Method.isLazyAbRead(): Boolean {
     val calls = implementation?.instructions

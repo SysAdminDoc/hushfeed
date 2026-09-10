@@ -23,12 +23,19 @@ val enableVoiceCommentsPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
-        resolveVoiceCommentPublishGate().addInstructions(
-            0,
-            """
-                const/4 v0, 0x1
-                return v0
-            """,
-        )
+        resolveVoiceCommentPublishGate().apply {
+            // The answer returns at once, so nothing after it reads v0 and a parameter may be
+            // written over; the frame only has to hold a register to write.
+            check(implementation!!.registerCount >= 1) {
+                "Enable voice comments: the publish gate has no register to answer from."
+            }
+            addInstructions(
+                0,
+                """
+                    const/4 v0, 0x1
+                    return v0
+                """,
+            )
+        }
     }
 }

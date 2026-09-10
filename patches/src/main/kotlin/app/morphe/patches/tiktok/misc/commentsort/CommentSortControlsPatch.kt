@@ -15,6 +15,7 @@ import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.getReference
+import app.morphe.util.numberOfParameterRegisters
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
@@ -73,6 +74,11 @@ val commentSortControlsPatch = bytecodePatch(
         // A post also has to pass an eligibility check of its own, so the style alone is not
         // enough. Answering true early leaves the original body in place for the switch-off case.
         resolveCommentSortEligibility().apply {
+            // v0 is written and then, with the switch off, the original body runs on. It has to
+            // be a local: on a frame with none, v0 is the first parameter the body still reads.
+            check(implementation!!.registerCount - numberOfParameterRegisters >= 1) {
+                "Comment sort controls: the eligibility gate has no free local register."
+            }
             addInstructionsWithLabels(
                 0,
                 """

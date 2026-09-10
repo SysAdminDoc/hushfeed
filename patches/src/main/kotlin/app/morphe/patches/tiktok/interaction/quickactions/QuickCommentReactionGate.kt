@@ -17,10 +17,10 @@ private const val QUICK_COMMENT_KEY = "comment_hide_quick_emoji_research"
 /**
  * The gate that decides whether a comment box shows its row of quick reactions.
  *
- * <p>It was `LX/0BIZ;`. On 46.2.3 and 46.7.3 it is the only static `(int)boolean`
- * `VideoQuickCommentAssem` calls, but on 46.8.3 neither that class nor any of its other callers
- * calls one at all, so who asks does not name it either. What does is the settings key it reads,
- * which sits behind a lambda R8 merged into a shared group.
+ * <p>It was `LX/0BIZ;`. What names it on 46.2.3 and 46.7.3 is the settings key its lazily read
+ * value reads, which sits behind a lambda R8 merged into a shared group. On 46.8.3 that key is in
+ * no dex at all: the experiment was removed rather than renamed, so this resolves nothing there
+ * and the patch fails by name, which is the right answer until the row's new switch is found.
  */
 internal fun BytecodePatchContext.resolveQuickCommentReactionGate(): MutableMethod =
     resolveLazyAbGate("Hide quick comment reactions", QUICK_COMMENT_KEY) { method ->

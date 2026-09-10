@@ -10,6 +10,9 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.tiktok.shared.isLazyAbRead
 import app.morphe.patches.tiktok.shared.resolveLazyAbGate
 
+/** The setting the comment sort menu is shaped by, which both anchors below rest on. */
+internal const val COMMENT_SORT_STYLE_KEY = "comment_sort_opt_style"
+
 /**
  * The rollout gate. Anchored on the string rather than on the obfuscated lambda class upstream
  * names, because that name changes every build; the string does not. Parameter and return types
@@ -18,12 +21,9 @@ import app.morphe.patches.tiktok.shared.resolveLazyAbGate
  * <p>This is the looser of the two anchors and so the one that could bind quietly: the patcher
  * takes the first match and does not complain about a second. In 46.2.3 exactly two methods carry
  * the string and only one has this shape, so there is nothing to pick between; on a build with
- * more, this would bind to whichever came first rather than fail. The eligibility anchor below is
- * the opposite: pinned by name, so it fails loudly instead.
+ * more, this would bind to whichever came first rather than fail. The eligibility anchor below
+ * refuses a second candidate by name instead.
  */
-/** The setting the comment sort menu is shaped by, which both anchors below rest on. */
-internal const val COMMENT_SORT_STYLE_KEY = "comment_sort_opt_style"
-
 internal object CommentSortOptionStyleFingerprint : Fingerprint(
     returnType = "L",
     parameters = listOf("L"),
