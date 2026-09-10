@@ -53,6 +53,11 @@ public final class LauncherShortcuts {
     public static List<?> publish(List<?> shortcuts) {
         try {
             if (!Settings.HIDE_LAUNCHER_SHORTCUTS.get()) return shortcuts;
+            // Answering with an empty list is itself a removal, so it is recorded as one. Without
+            // this, a reader who turns the switch on, has TikTok publish once, and turns it off
+            // again in the same sitting is left with an empty menu and nothing that knows to ask
+            // for it back: the flag would still say nothing was ever taken away.
+            Settings.LAUNCHER_SHORTCUTS_REMOVED.save(true);
             return Collections.emptyList();
         } catch (Throwable error) {
             Logger.printException(() -> "Could not choose what to offer the launcher", error);
@@ -92,10 +97,12 @@ public final class LauncherShortcuts {
             // took them away: a reader who never turned the switch on gets TikTok's own behaviour,
             // whatever that is.
             if (!Settings.LAUNCHER_SHORTCUTS_REMOVED.get()) return;
+            // The ask goes first and the record is cleared only once it has been made. The other
+            // way round, an ask that throws, and it can, because the patch fills this in with a
+            // call to a service that need not be registered this early, would clear the record on
+            // its way out and no later launch would ever try again.
+            askHostToRebuild();
             Settings.LAUNCHER_SHORTCUTS_REMOVED.save(false);
-            if (!askHostToRebuild()) {
-                Logger.printException(() -> "Could not ask TikTok to rebuild its launcher shortcuts");
-            }
         } catch (Throwable error) {
             Logger.printException(() -> "Could not apply the launcher shortcut setting", error);
         }
@@ -104,11 +111,13 @@ public final class LauncherShortcuts {
     /**
      * Asks TikTok to work out its launcher shortcuts again and publish them.
      *
-     * <p>The patch replaces this with a call to the app's own shortcut service. Left as it is when
-     * the patch is not applied, and when it answers false the caller says so rather than leaving a
-     * reader with an empty menu and no reason for it.
+     * <p>The patch replaces the body with a call to the app's own shortcut service. It answers
+     * nothing on purpose: a return value would only ever say "the patch was applied", which is
+     * always true where this runs, and a branch on it would be a branch no reader can reach.
+     * Whether the ask worked is not knowable here either, because the service does the work on
+     * its own schedule. What matters is that a throw leaves {@link
+     * Settings#LAUNCHER_SHORTCUTS_REMOVED} set, so the next launch asks again.
      */
-    private static boolean askHostToRebuild() {
-        return false;
+    private static void askHostToRebuild() {
     }
 }

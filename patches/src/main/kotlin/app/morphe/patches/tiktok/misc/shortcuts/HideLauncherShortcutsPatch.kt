@@ -20,8 +20,10 @@ import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.cloneMutable
 import app.morphe.util.getReference
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction35c
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
@@ -41,25 +43,52 @@ private const val SERVICE_MANAGER =
  */
 private val PUBLISHERS = setOf("setDynamicShortcuts", "addDynamicShortcuts")
 
-private fun publishesShortcuts(instruction: Instruction): Boolean {
-    if (instruction.opcode != Opcode.INVOKE_VIRTUAL) return false
+internal fun publishesShortcuts(instruction: Instruction): Boolean {
+    // Both forms. d8 emits the range form whenever a register the call needs sits above v15,
+    // which is ordinary in a large synthesized method, and matching only the short form would
+    // walk past such a call without hooking it and without saying so.
+    if (instruction.opcode != Opcode.INVOKE_VIRTUAL &&
+        instruction.opcode != Opcode.INVOKE_VIRTUAL_RANGE
+    ) {
+        return false
+    }
     val reference = instruction.getReference<MethodReference>() ?: return false
     return reference.definingClass == SHORTCUT_MANAGER &&
         reference.name in PUBLISHERS &&
         reference.parameterTypes.singleOrNull() == "Ljava/util/List;"
 }
 
+/** The register holding the list argument of a publish call, in either invoke form. */
+internal fun listRegisterOf(instruction: Instruction): Int = when (instruction) {
+    // registerC is the ShortcutManager the call is made on, registerD its only argument.
+    is Instruction35c -> instruction.registerD
+    // The range form lays the same two out consecutively from the start register.
+    is RegisterRangeInstruction -> instruction.startRegister + 1
+    else -> throw PatchException(
+        "Hide the launcher shortcuts: a publish call in an unexpected form, ${instruction.opcode}.",
+    )
+}
+
 /**
  * Puts the list about to be published in front of the extension and publishes its answer.
  *
- * <p>`registerC` of the call is the `ShortcutManager` it is made on and `registerD` is its only
- * argument, the list. It is the argument that goes through the extension: routing the receiver
- * would hand the extension the manager and publish a manager. The answer goes back into that same
- * register, so the call itself is untouched and whatever the method does with its result still
- * works.
+ * <p>It is the argument that goes through the extension, not the receiver: routing the receiver
+ * would hand the extension the `ShortcutManager` and then try to publish a manager. The answer
+ * goes back into the argument's own register, so the call itself is untouched and whatever the
+ * method does with its result still works.
+ *
+ * <p>`move-result-object` addresses eight bits, so a register above 255 could not receive the
+ * answer. Nothing in this app comes close, and a wrong answer there would be a corrupt method
+ * rather than a missing feature, so it is checked rather than assumed.
  */
 internal fun MutableMethod.routeShortcutListThroughExtension(index: Int) {
-    val list = (getInstruction(index) as Instruction35c).registerD
+    val list = listRegisterOf(getInstruction(index))
+    if (list > 255) {
+        throw PatchException(
+            "Hide the launcher shortcuts: the list is in v$list, which move-result-object " +
+                "cannot address.",
+        )
+    }
     addInstructions(
         index,
         """
@@ -125,8 +154,16 @@ val hideLauncherShortcutsPatch = bytecodePatch(
         // shape means the shape has stopped identifying it, which is a failure rather than a
         // coin toss between them.
         val service = mutableClassDefBy(SHORTCUT_SERVICE)
+        if (!AccessFlags.INTERFACE.isSet(service.accessFlags)) {
+            throw PatchException(
+                "Hide the launcher shortcuts: $SHORTCUT_SERVICE is no longer an interface, so " +
+                    "invoke-interface is the wrong call for it.",
+            )
+        }
         val candidates = service.methods.filter {
-            it.returnType == "V" && it.parameterTypes.toList() == listOf("Ljava/lang/String;", "Z")
+            it.returnType == "V" &&
+                it.parameterTypes.toList() == listOf("Ljava/lang/String;", "Z") &&
+                !AccessFlags.STATIC.isSet(it.accessFlags)
         }
         if (candidates.size != 1) {
             throw PatchException(
@@ -135,6 +172,22 @@ val hideLauncherShortcutsPatch = bytecodePatch(
             )
         }
         val rebuild = candidates.single()
+
+        // The bridge below names these two by hand, and a hand-written name that no longer exists
+        // assembles perfectly and fails only on a phone, quietly, as a switch that stops putting
+        // anything back. Everything else in this patch fails loudly when a shape is missing.
+        val serviceManager = mutableClassDefBy(SERVICE_MANAGER)
+        for (wanted in listOf("get" to emptyList(), "getService" to listOf("Ljava/lang/Class;"))) {
+            if (serviceManager.methods.none {
+                    it.name == wanted.first && it.parameterTypes.toList() == wanted.second
+                }
+            ) {
+                throw PatchException(
+                    "Hide the launcher shortcuts: $SERVICE_MANAGER has no ${wanted.first}, so " +
+                        "the rebuild bridge would call something that is not there.",
+                )
+            }
+        }
 
         val extension = mutableClassDefBy(EXTENSION)
         val stub = extension.methods.single { it.name == "askHostToRebuild" }
@@ -153,17 +206,21 @@ val hideLauncherShortcutsPatch = bytecodePatch(
                 const-string v1, "hushfeed"
                 const/4 v2, 0x1
                 invoke-interface {v0, v1, v2}, $SHORTCUT_SERVICE->${rebuild.name}(Ljava/lang/String;Z)V
-                const/4 v0, 0x1
-                return v0
+                return-void
             """,
         )
 
         // Every launch, because the switch can be changed while the app is not running and what is
-        // published outlives the process. Index 1 rather than 0: the shared extension patch puts
-        // its own setContext at the front of this method, and the preference store this reads is
-        // not there until that has run.
+        // published outlives the process.
+        //
+        // At the front. Anywhere else is a guess about instructions this patch has not read: an
+        // invoke and the move-result that takes its answer have to stay adjacent, and inserting
+        // between them makes a method no device will verify. Prepending cannot split anything.
+        // The context this needs is already set by then either way, because the shared extension
+        // patch makes its hooks in finalize, which runs after every execute block, and puts its
+        // setContext at index 0 of this same method.
         MainActivityOnCreateFingerprint.method.addInstruction(
-            1,
+            0,
             "invoke-static/range {p0 .. p0}, $EXTENSION->apply(Landroid/content/Context;)V",
         )
 

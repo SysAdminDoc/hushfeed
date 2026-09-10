@@ -13,8 +13,10 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction10x
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction35c
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction3rc
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -106,6 +108,62 @@ class ShortcutPublishInjectionTest {
         assertEquals(Opcode.MOVE_RESULT_OBJECT, instructions[4].opcode)
         assertEquals(Opcode.INVOKE_VIRTUAL, instructions[5].opcode)
     }
+
+    @Test
+    fun `only the two calls that put a list in front of the launcher are taken over`() {
+        // Taken over.
+        assertTrue(publishesShortcuts(publish("setDynamicShortcuts", listOf("Ljava/util/List;"), "Z")))
+        assertTrue(publishesShortcuts(publish("addDynamicShortcuts", listOf("Ljava/util/List;"), "Z")))
+
+        // Left alone. updateShortcuts changes entries that are published and adds none;
+        // removeDynamicShortcuts is a removal; requestPinShortcut is somebody putting one on
+        // their own home screen. Hooking any of these would change something nobody asked about.
+        assertFalse(publishesShortcuts(publish("updateShortcuts", listOf("Ljava/util/List;"), "Z")))
+        assertFalse(publishesShortcuts(publish("removeDynamicShortcuts", listOf("Ljava/util/List;"), "V")))
+        assertFalse(
+            publishesShortcuts(
+                publish(
+                    "requestPinShortcut",
+                    listOf("Landroid/content/pm/ShortcutInfo;", "Landroid/content/IntentSender;"),
+                    "Z",
+                ),
+            ),
+        )
+
+        // The name alone is not the anchor. Something else called setDynamicShortcuts is not the
+        // platform's shortcut manager and is none of this patch's business.
+        assertFalse(
+            publishesShortcuts(
+                publish("setDynamicShortcuts", listOf("Ljava/util/List;"), "Z", owner = "Lcom/example/Other;"),
+            ),
+        )
+    }
+
+    @Test
+    fun `the range form of the call is taken over too, and its list register found`() {
+        // d8 emits the range form as soon as a register the call needs sits above v15, which is
+        // ordinary in a large synthesized method. Matching only the short form would walk past
+        // such a call, hook nothing, and report success.
+        val range = ImmutableInstruction3rc(
+            Opcode.INVOKE_VIRTUAL_RANGE,
+            18, 2,
+            ImmutableMethodReference(SHORTCUT_MANAGER, "setDynamicShortcuts", listOf("Ljava/util/List;"), "Z"),
+        )
+        assertTrue(publishesShortcuts(range))
+        // The receiver is at the start register and the list is the one after it.
+        assertEquals(19, listRegisterOf(range))
+    }
+
+    private fun publish(
+        name: String,
+        parameters: List<String>,
+        returns: String,
+        owner: String = SHORTCUT_MANAGER,
+    ) = ImmutableInstruction35c(
+        Opcode.INVOKE_VIRTUAL,
+        1 + parameters.size, 0, 1, 2, 0, 0,
+        ImmutableMethodReference(owner, name, parameters, returns),
+    )
 
     /** A method holding one `setDynamicShortcuts` call, optionally with padding ahead of it. */
     private fun publishCall(manager: Int, list: Int, leadingNops: Int = 0): MutableMethod {

@@ -30,6 +30,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 
 /** What is handed to the launcher when TikTok publishes its shortcuts. */
 @RunWith(RobolectricTestRunner.class)
@@ -146,22 +148,96 @@ public class LauncherShortcutsTest {
         }
     }
 
-    @Test public void turningItOffAsksForThemBackOnceAndThenStops() {
+    /**
+     * Stands in for what the patch writes into the bridge, and counts the asks. Without this the
+     * only thing a test could see is the flag, and deleting the ask entirely would still pass.
+     */
+    @Implements(LauncherShortcuts.class)
+    public static class RebuildBridge {
+        static int asks;
+        static boolean throwOnAsk;
+        @Implementation protected static void askHostToRebuild() {
+            asks++;
+            if (throwOnAsk) throw new IllegalStateException("no shortcut service yet");
+        }
+    }
+
+    @Test @Config(shadows = RebuildBridge.class)
+    public void turningItOffAsksForThemBackOnceAndThenStops() {
         try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
             var activity = controller.get();
             Utils.setContext(activity);
-            managerWithTwo(activity);
+            RebuildBridge.asks = 0;
+            RebuildBridge.throwOnAsk = false;
 
             Settings.HIDE_LAUNCHER_SHORTCUTS.save(false);
             Settings.LAUNCHER_SHORTCUTS_REMOVED.save(true);
             LauncherShortcuts.apply(activity);
+            assertEquals("TikTok was not asked to build them again", 1, RebuildBridge.asks);
             assertFalse("the ask would be repeated on every launch",
                     Settings.LAUNCHER_SHORTCUTS_REMOVED.get());
 
             // Second launch with the switch still off: nothing left to put back, so TikTok is
             // left alone rather than asked again.
             LauncherShortcuts.apply(activity);
+            assertEquals("asked again with nothing to put back", 1, RebuildBridge.asks);
             assertFalse(Settings.LAUNCHER_SHORTCUTS_REMOVED.get());
+        } finally {
+            RebuildBridge.throwOnAsk = false;
+            Settings.HIDE_LAUNCHER_SHORTCUTS.save(false);
+            Settings.LAUNCHER_SHORTCUTS_REMOVED.save(false);
+        }
+    }
+
+    @Test @Config(shadows = RebuildBridge.class)
+    public void anAskThatThrowsIsTriedAgainOnTheNextLaunch() {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            RebuildBridge.asks = 0;
+            RebuildBridge.throwOnAsk = true;
+
+            Settings.HIDE_LAUNCHER_SHORTCUTS.save(false);
+            Settings.LAUNCHER_SHORTCUTS_REMOVED.save(true);
+            LauncherShortcuts.apply(activity);
+
+            // The service the patch calls need not be registered this early. Clearing the record
+            // before the ask would leave a reader with an empty menu and no later launch willing
+            // to try again, which is the one failure this whole path exists to avoid.
+            assertEquals(1, RebuildBridge.asks);
+            assertTrue("a failed ask threw the record away", Settings.LAUNCHER_SHORTCUTS_REMOVED.get());
+
+            RebuildBridge.throwOnAsk = false;
+            LauncherShortcuts.apply(activity);
+            assertEquals(2, RebuildBridge.asks);
+            assertFalse(Settings.LAUNCHER_SHORTCUTS_REMOVED.get());
+        } finally {
+            RebuildBridge.throwOnAsk = false;
+            Settings.HIDE_LAUNCHER_SHORTCUTS.save(false);
+            Settings.LAUNCHER_SHORTCUTS_REMOVED.save(false);
+        }
+    }
+
+    @Test @Config(shadows = RebuildBridge.class)
+    public void publishingNothingCountsAsTakingThemAway() {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            RebuildBridge.asks = 0;
+            RebuildBridge.throwOnAsk = false;
+
+            // The switch goes on and TikTok publishes during the same run, so the handover is
+            // what empties the menu and no launch has passed through apply() with it on.
+            Settings.HIDE_LAUNCHER_SHORTCUTS.save(true);
+            Settings.LAUNCHER_SHORTCUTS_REMOVED.save(false);
+            assertTrue(LauncherShortcuts.publish(Arrays.asList("search", "messages")).isEmpty());
+            assertTrue("the handover took them away without recording it",
+                    Settings.LAUNCHER_SHORTCUTS_REMOVED.get());
+
+            // Switch off again, next launch: there is something to put back and it is asked for.
+            Settings.HIDE_LAUNCHER_SHORTCUTS.save(false);
+            LauncherShortcuts.apply(activity);
+            assertEquals(1, RebuildBridge.asks);
         } finally {
             Settings.HIDE_LAUNCHER_SHORTCUTS.save(false);
             Settings.LAUNCHER_SHORTCUTS_REMOVED.save(false);
@@ -210,11 +286,24 @@ public class LauncherShortcutsTest {
     @Test public void noContextIsNotACrash() {
         try {
             Settings.HIDE_LAUNCHER_SHORTCUTS.save(true);
+            Settings.LAUNCHER_SHORTCUTS_REMOVED.save(false);
             LauncherShortcuts.apply(null);
+            // Not merely "did not throw": with nothing to ask about the published list, there is
+            // nothing to record either, and recording a removal that did not happen would have
+            // the next launch ask TikTok to rebuild for no reason.
+            assertFalse("a call with no context recorded a removal",
+                    Settings.LAUNCHER_SHORTCUTS_REMOVED.get());
         } finally {
             Settings.HIDE_LAUNCHER_SHORTCUTS.save(false);
             Settings.LAUNCHER_SHORTCUTS_REMOVED.save(false);
         }
+    }
+
+    @Test public void theInternalRecordDoesNotTravelInABackup() {
+        // It describes what happened on one phone. Restoring it onto another would have that
+        // phone ask TikTok to rebuild shortcuts nothing had removed.
+        assertFalse(Settings.LAUNCHER_SHORTCUTS_REMOVED.includeWithImportExport);
+        assertTrue(Settings.HIDE_LAUNCHER_SHORTCUTS.includeWithImportExport);
     }
 
     @Test public void theRowIsAbsentUntilThePatchSaysItIsThere() {
