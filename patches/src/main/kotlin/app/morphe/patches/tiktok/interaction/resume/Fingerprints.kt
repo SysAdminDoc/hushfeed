@@ -5,13 +5,29 @@
 package app.morphe.patches.tiktok.interaction.resume
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.util.getReference
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 
+private const val CONTINUE_CONFIG =
+    "Lcom/ss/android/ugc/aweme/feed/experiment/FeedPlayProgressContinueConfig;"
+
+/**
+ * The lambda that answers whether a video resumes where it was left.
+ *
+ * <p>Its class was written here as `LX/0Lyr;`, which is `LX/0MGs;` on 46.7.3 and `LX/0M77;` on
+ * 46.8.3. What it reads is not renamed: `FeedPlayProgressContinueConfig.enable`, and exactly one
+ * `invoke()` in the app reads it on each of the three builds.
+ */
 internal object FeedProgressContinueGateFingerprint : Fingerprint(
+    name = "invoke",
     returnType = "Ljava/lang/Object;",
     parameters = emptyList(),
-    custom = { method, classDef ->
-        classDef.type == "LX/0Lyr;" &&
-            method.name == "invoke"
+    custom = { method, _ ->
+        method.implementation?.instructions?.any { instruction ->
+            instruction.getReference<FieldReference>()?.let { field ->
+                field.definingClass == CONTINUE_CONFIG && field.name == "enable"
+            } == true
+        } == true
     },
 )
 
