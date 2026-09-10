@@ -69,7 +69,9 @@ public final class CommentBatchTranslator {
     private static volatile boolean disabledForSession;
     private static long nextRequestGeneration;
     private static LoadedBatch latestLoadedBatch;
-    private static WeakReference<Object> lastManager = new WeakReference<>(null);
+    // Written under LOCK on the bind thread, read without it on the response thread. The
+    // volatile is the happens-before edge; the other cross-thread fields here carry one too.
+    private static volatile WeakReference<Object> lastManager = new WeakReference<>(null);
     private static volatile Object nativeLanguageService;
     private static volatile Method nativeTargetLanguageGetter;
     private static volatile Object nativeLanguageSettings;

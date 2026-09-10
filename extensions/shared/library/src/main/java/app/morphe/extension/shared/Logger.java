@@ -99,7 +99,17 @@ public class Logger {
         // It's very important that no Settings are used in this method,
         // as this code is used when a context is not set and thus referencing
         // a setting will crash the app.
-        String messageString = message.buildMessageString();
+        //
+        // The message is built by the caller's lambda, and that lambda reads whatever the caller
+        // was in the middle of: a host object's fields, a list's size, a nullable name. Every
+        // hook in the extension logs on its way through, so a message that cannot be built must
+        // not be the thing that throws out of the hook into the host app.
+        String messageString;
+        try {
+            messageString = message.buildMessageString();
+        } catch (RuntimeException failure) {
+            messageString = "Could not build the log message: " + failure;
+        }
         String className = explicitSource == null ? getOuterClassSimpleName(message) : explicitSource;
         if (category == null) category = legacyCategory(className, logLevel);
 

@@ -154,7 +154,7 @@ final class FeedFilterFeedback {
         if ("LiveReplayFilter".equals(reason)) return "LIVE replays";
         if ("RegionFilter".equals(reason)) return "Region rules";
         if ("PublicationAgeFilter".equals(reason)) return "Publication age";
-        if ("QualityFilter".equals(reason)) return "Video quality";
+        if ("QualityFilter".equals(reason)) return "Length and views per like";
         return OTHER_REASON;
     }
 
@@ -163,7 +163,10 @@ final class FeedFilterFeedback {
             noticePending = false;
         }
         Activity activity = Utils.getActivity();
-        if (activity == null || activity.isFinishing()) {
+        // Posted from a network thread, so it can land between an activity's onDestroy and
+        // the next one taking its place, when isFinishing is already false again and only
+        // isDestroyed says the window token is gone. A dialog on it throws; a toast does not.
+        if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
             Utils.showToastLong(message);
             return;
         }

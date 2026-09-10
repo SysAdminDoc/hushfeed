@@ -68,6 +68,11 @@ final class AnimatedWebpGifConverter {
 
             List<GifEncoder.Frame> frames = new ArrayList<>(frameCount);
             for (int frameIndex = 0; frameIndex < frameCount; frameIndex++) {
+                // The one place in the loop that can notice the job's deadline or a cancel.
+                // The pixel cap bounds the memory, not the time: a small canvas with tens of
+                // thousands of frames passes it and then holds one of the three media worker
+                // threads for as long as the decoding takes. The MP4 path checks the same way.
+                MediaBudget.check(null);
                 Object frame = null;
                 Bitmap piece = null;
                 try {

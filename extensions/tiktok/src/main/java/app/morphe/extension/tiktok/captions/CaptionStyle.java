@@ -45,8 +45,12 @@ public final class CaptionStyle {
     public static Layout layout(Layout original) {
         int size = size();
         if (original == null || size == 0) return original;
+        // On the host's render path, so nothing here may throw. The context is set in
+        // attachBaseContext, long before a caption is drawn, but a null answer costs one line.
+        android.content.Context context = Utils.getContext();
+        if (context == null) return original;
         TextPaint paint = new TextPaint(original.getPaint());
-        paint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, size, Utils.getContext().getResources().getDisplayMetrics()));
+        paint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, size, context.getResources().getDisplayMetrics()));
         return new StaticLayout(original.getText(), paint, Math.max(1, original.getWidth()),
                 original.getAlignment(), original.getSpacingMultiplier(), original.getSpacingAdd(), true);
     }

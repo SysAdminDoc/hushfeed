@@ -3,6 +3,7 @@ package app.morphe.extension.tiktok.settings;
 import android.content.Context;
 import android.util.AtomicFile;
 
+import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.SettingsJson;
 import app.morphe.extension.tiktok.featuregatelab.FeatureGateLabStore;
@@ -66,10 +67,10 @@ public final class SettingsOperationJournal {
                 message = "Completed an interrupted settings change. Restart TikTok to apply it.";
                 break;
             case MALFORMED:
-                message = "Settings recovery needs attention. Use Undo or restore your backup.";
+                message = "The record of an interrupted settings change could not be read, so it was set aside. Check your settings.";
                 break;
             case FAILED:
-                message = "Settings recovery could not finish. Use Undo or restore your backup.";
+                message = "An interrupted settings change could not be recovered, so its record was set aside. Check your settings or restore a backup.";
                 break;
             default:
                 return;
@@ -96,18 +97,23 @@ public final class SettingsOperationJournal {
         }
         Context app = applicationContext(context);
         LOCK.lock();
+        // The lock is handed to the Operation on success and released on every other way out,
+        // an Error included: reconciling reads a journal of up to 8 MB and builds two trees
+        // from it, and a lock left held by a thread that has gone parks every later caller.
+        boolean handedOver = false;
         try {
-            Recovery recovery = reconcileLocked(app);
-            if (recovery == Recovery.MALFORMED || recovery == Recovery.FAILED) {
+            reconcileLocked(app);
+            // A record that could not be read or applied has been set aside by then. The one
+            // reason left to refuse is a journal still in place, which is a record that has
+            // not been reconciled and must not be written over.
+            if (hasJournalFile(journalFile(app))) {
                 throw new IOException("Settings recovery needs attention");
             }
-            return new Operation(app);
-        } catch (IOException error) {
-            LOCK.unlock();
-            throw error;
-        } catch (RuntimeException error) {
-            LOCK.unlock();
-            throw error;
+            Operation operation = new Operation(app);
+            handedOver = true;
+            return operation;
+        } finally {
+            if (!handedOver) LOCK.unlock();
         }
     }
 
@@ -197,12 +203,18 @@ public final class SettingsOperationJournal {
         // of treating the interrupted operation as if no journal existed.
         if (!hasJournalFile(file)) return Recovery.NONE;
 
+        // A record that cannot be read, or cannot be applied, is set aside rather than left in
+        // place. Left there, every later acquire() refused to start, and the notice told the
+        // reader to use Undo or restore a backup, both of which start with acquire(). Nothing
+        // short of clearing the app's data got out of that. The copy set aside keeps what the
+        // record said for anyone reading the diagnostics; the notice says what happened.
         String text;
         String fingerprint;
         try {
             text = read(file);
             fingerprint = fingerprint(text);
         } catch (Exception error) {
+            setAside(file);
             publish(Recovery.MALFORMED, file.getBaseFile().getAbsolutePath());
             return Recovery.MALFORMED;
         }
@@ -212,6 +224,7 @@ public final class SettingsOperationJournal {
             entry = parseEntry(text);
             validateEntry(entry);
         } catch (Exception error) {
+            setAside(file);
             publish(Recovery.MALFORMED, fingerprint);
             return Recovery.MALFORMED;
         }
@@ -224,8 +237,38 @@ public final class SettingsOperationJournal {
             publish(result, fingerprint);
             return result;
         } catch (Exception error) {
+            Logger.printException(() -> "Could not reconcile the settings journal", error);
+            setAside(file);
             publish(Recovery.FAILED, fingerprint);
             return Recovery.FAILED;
+        }
+    }
+
+    /** The name a journal that could not be used is kept under, beside where it was. */
+    static final String DAMAGED_SUFFIX = ".damaged";
+
+    /**
+     * Moves the journal out of the way, keeping its bytes under {@link #DAMAGED_SUFFIX}. An
+     * older damaged copy is replaced. If the move itself fails the file is deleted, because
+     * what matters is that the next acquire() can start; the diagnostics already carry the
+     * failure that brought this about.
+     */
+    private static void setAside(AtomicFile file) {
+        File base = file.getBaseFile();
+        File damaged = new File(base.getPath() + DAMAGED_SUFFIX);
+        File backup = new File(base.getPath() + ".bak");
+        // AtomicFile keeps the last durable copy in .bak while a write is in flight, and
+        // openRead() prefers it, so it is what an unreadable base was read from. Both go.
+        File source = base.isFile() ? base : backup;
+        if (damaged.exists() && !damaged.delete()) {
+            Logger.printInfo(() -> "Could not replace the previous damaged settings journal");
+        }
+        if (source.isFile() && !source.renameTo(damaged)) {
+            Logger.printInfo(() -> "Could not set the settings journal aside, deleting it");
+        }
+        file.delete();
+        if (hasJournalFile(file)) {
+            Logger.printException(() -> "The settings journal could not be cleared");
         }
     }
 

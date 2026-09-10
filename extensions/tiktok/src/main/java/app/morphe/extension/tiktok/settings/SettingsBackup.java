@@ -239,7 +239,15 @@ public final class SettingsBackup {
         restore(context, text, saveUndo);
         return text;
     }
-    public static boolean hasUndo(Context context) { return undoFile(context).getBaseFile().isFile(); }
+    /**
+     * Whether an undo copy can be read. AtomicFile keeps the last durable copy in .bak while a
+     * write is in flight and openRead() restores it, so a process death in that window leaves
+     * an undo that works behind a base file that is missing. The row was greyed out over it.
+     */
+    public static boolean hasUndo(Context context) {
+        File base = undoFile(context).getBaseFile();
+        return base.isFile() || new File(base.getPath() + ".bak").isFile();
+    }
 
     private static boolean ordinarySettingsMatch(Map<String, ?> expected) {
         try {

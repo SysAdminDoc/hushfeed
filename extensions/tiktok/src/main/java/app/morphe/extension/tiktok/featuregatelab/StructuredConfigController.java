@@ -300,7 +300,7 @@ final class StructuredConfigController {
             Class<?> elementType = targetType.getComponentType();
             Object result = Array.newInstance(elementType, source.length());
             for (int index = 0; index < source.length(); index++) {
-                Array.set(result, index, coerce(source.opt(index), elementType, elementType));
+                Array.set(result, index, coerce(source.opt(index), elementType, elementType, depth + 1));
             }
             return result;
         }
@@ -321,7 +321,7 @@ final class StructuredConfigController {
             java.util.Iterator<String> keys = source.keys();
             while (keys.hasNext()) {
                 String key = keys.next();
-                result.put(key, coerce(source.opt(key), elementType, arguments[1]));
+                result.put(key, coerce(source.opt(key), elementType, arguments[1], depth + 1));
             }
             return result;
         }

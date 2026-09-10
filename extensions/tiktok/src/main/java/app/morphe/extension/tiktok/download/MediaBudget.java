@@ -87,7 +87,14 @@ final class MediaBudget {
         check(deadline);
         checkTransferLength(transferBytes);
         if (directory == null) return;
-        long free = directory.getUsableSpace();
+        // A destination that does not exist yet answers zero, which is not "no quota": the
+        // publish step is handed DCIM/TikTok before the first save ever creates it, and that
+        // is exactly the copy the reservation is for. The nearest existing ancestor is on the
+        // same volume and answers for it.
+        File existing = directory;
+        while (existing != null && !existing.exists()) existing = existing.getParentFile();
+        if (existing == null) return;
+        long free = existing.getUsableSpace();
         if (free <= 0) return;
         long estimate = transferBytes < 0
                 ? UNKNOWN_TRANSFER_RESERVATION_BYTES

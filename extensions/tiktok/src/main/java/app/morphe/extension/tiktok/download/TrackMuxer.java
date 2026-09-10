@@ -4,6 +4,8 @@ import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
+
+import app.morphe.extension.shared.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -32,9 +34,24 @@ final class TrackMuxer {
         } finally {
             picture.release();
             sound.release();
-            if (muxer != null) muxer.release();
+            release(muxer);
         }
         if (output.length() == 0) throw new IOException("Video muxer wrote an empty file");
+    }
+
+    /**
+     * Lets the muxer go without letting its complaint replace the one that got here. A muxer
+     * that was started and never stopped, because a copy threw before the track had a sample,
+     * stops itself inside release() and throws over an empty track; out of a finally block
+     * that throw discarded the failure that emptied it.
+     */
+    private static void release(MediaMuxer muxer) {
+        if (muxer == null) return;
+        try {
+            muxer.release();
+        } catch (RuntimeException exception) {
+            Logger.printInfo(() -> "Could not release the muxer cleanly: " + exception);
+        }
     }
 
     /** Copies just the sound into its own MP4 container, which is what an .m4a is. */
@@ -54,7 +71,7 @@ final class TrackMuxer {
             MediaBudget.check(null);
         } finally {
             sound.release();
-            if (muxer != null) muxer.release();
+            release(muxer);
         }
         if (output.length() == 0) throw new IOException("Audio muxer wrote an empty file");
     }
@@ -79,7 +96,7 @@ final class TrackMuxer {
             MediaBudget.check(null);
         } finally {
             picture.release();
-            if (muxer != null) muxer.release();
+            release(muxer);
         }
         if (output.length() == 0) throw new IOException("Video muxer wrote an empty file");
     }
