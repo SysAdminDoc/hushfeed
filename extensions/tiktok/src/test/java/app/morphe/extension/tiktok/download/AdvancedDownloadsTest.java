@@ -559,14 +559,16 @@ public class AdvancedDownloadsTest {
         account.avatarMedium = new Address("https://example.com/medium.jpg", 30);
         account.avatarLarger = new Address("https://example.com/larger.jpg", 40);
         account.avatar300 = new Address("https://example.com/300.jpg", 50);
-        assertEquals(List.of("https://example.com/300.jpg"), ProfileAvatarSaver.avatarUrls(account));
-
-        // Each size steps down only when the one above it is missing, never past it.
-        account.avatar300 = null;
+        // Native S22 fields carry Larger=1080, Medium=720 and Avatar300=300 pixels.
+        // The former expectation picked 300 first and incorrectly called that full size.
         assertEquals(List.of("https://example.com/larger.jpg"), ProfileAvatarSaver.avatarUrls(account));
+
+        // Each size steps down only when the one above it has no usable URL.
         account.avatarLarger = new Address(null, 0);
         assertEquals(List.of("https://example.com/medium.jpg"), ProfileAvatarSaver.avatarUrls(account));
         account.avatarMedium = null;
+        assertEquals(List.of("https://example.com/300.jpg"), ProfileAvatarSaver.avatarUrls(account));
+        account.avatar300 = null;
         assertEquals(List.of("https://example.com/168.jpg"), ProfileAvatarSaver.avatarUrls(account));
         account.avatar168 = null;
         assertEquals(List.of("https://example.com/thumb.jpg"), ProfileAvatarSaver.avatarUrls(account));

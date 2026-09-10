@@ -33,13 +33,13 @@ public final class ProfileAvatarSaver {
     private static final AtomicBoolean RUNNING = new AtomicBoolean();
 
     /**
-     * The avatar sizes TikTok carries, largest first. 300 and "larger" are the full size
-     * uploads; the rest are display crops and only stand in when the big ones are missing.
+     * Largest available source first. The inspected native profile supplies Larger at 1080 pixels,
+     * Medium at 720, then 300, 168 and the 100-pixel thumbnail.
      */
     private static final String[][] SIZES = {
-            {"getAvatar300", "avatar300"},
             {"getAvatarLarger", "avatarLarger"},
             {"getAvatarMedium", "avatarMedium"},
+            {"getAvatar300", "avatar300"},
             {"getAvatar168", "avatar168"},
             {"getAvatarThumb", "avatarThumb"},
     };
