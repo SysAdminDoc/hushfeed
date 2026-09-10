@@ -29,6 +29,8 @@ public final class SessionPlaybackHold {
     private static Target held;
     // Published by main-thread release; progress can prove an independent resume before focus returns.
     private static volatile Target waitingForFocus;
+    // A queued LIZ can still report PLAYING until its native dispatcher applies the pause.
+    private static volatile boolean heldPauseObserved;
     private static WeakReference<Object> heldManager = new WeakReference<>(null);
     // Native requests may run on an executor while focus callbacks arrive on another thread.
     // Compare listener identity, and never retain an activity's listener through static state.
@@ -132,14 +134,17 @@ public final class SessionPlaybackHold {
             Target waiting = waitingForFocus;
             if (waiting != null && waiting == current) {
                 Object manager = Reflect.invoke(controller, "getPlayerManager");
-                if (Boolean.TRUE.equals(Reflect.invoke(manager, "isPlaying"))) {
-                    // A real progress report while playing means our pause has already ended.
-                    // Do not reclaim a later native pause when focus eventually returns.
+                boolean pauseWasObserved = heldPauseObserved;
+                boolean playing = Boolean.TRUE.equals(Reflect.invoke(manager, "isPlaying"));
+                if ((playing && pauseWasObserved)
+                        || (!playing && Boolean.TRUE.equals(Reflect.invoke(manager, "isPaused")))) {
+                    // Only playback after an observed pause proves an independent resume.
+                    // The old PLAYING state before our queued pause must retain its handback.
                     if (Looper.myLooper() == Looper.getMainLooper()) {
-                        relinquishAfterPlayback(waiting, manager);
+                        observeNativePlayback(waiting, manager, playing);
                     } else {
-                        WeakReference<Object> resumedManager = new WeakReference<>(manager);
-                        MAIN.post(() -> relinquishAfterPlayback(waiting, resumedManager.get()));
+                        WeakReference<Object> observedManager = new WeakReference<>(manager);
+                        MAIN.post(() -> observeNativePlayback(waiting, observedManager.get(), playing));
                     }
                 }
             }
@@ -168,7 +173,13 @@ public final class SessionPlaybackHold {
             held = target;
             heldManager = new WeakReference<>(manager);
             waitingForFocus = null;
+            heldPauseObserved = false;
         }
+    }
+
+    private static void observeNativePlayback(Target owner, Object manager, boolean playing) {
+        if (playing) relinquishAfterPlayback(owner, manager);
+        else if (waitingForFocus == owner && heldManager.get() == manager) heldPauseObserved = true;
     }
 
     private static void relinquishAfterPlayback(Target owner, Object manager) {
@@ -177,6 +188,7 @@ public final class SessionPlaybackHold {
 
     private static void forgetHeld() {
         waitingForFocus = null;
+        heldPauseObserved = false;
         held = null;
         heldManager.clear();
     }
@@ -201,10 +213,12 @@ public final class SessionPlaybackHold {
         // Pause and resume share the native dispatcher. Playing can still be the state before
         // our queued pause; its matching resume must follow it when the hold is released early.
         // Read playing first so the PLAYING -> PAUSED transition cannot fall between the checks.
-        if (!Boolean.TRUE.equals(Reflect.invoke(manager, "isPlaying"))
-                && !Boolean.TRUE.equals(Reflect.invoke(manager, "isPaused"))) {
-            forgetHeld();
-            return;
+        if (!Boolean.TRUE.equals(Reflect.invoke(manager, "isPlaying"))) {
+            if (!Boolean.TRUE.equals(Reflect.invoke(manager, "isPaused"))) {
+                forgetHeld();
+                return;
+            }
+            heldPauseObserved = true;
         }
         if (!mayResume && !hasNativeFocus()) {
             // Keep this exact weak owner through repeated detach calls until focus can return it.

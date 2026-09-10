@@ -298,6 +298,39 @@ public class SessionNativeFocusTest {
         assertEquals("a fresh granted native request did not restore the pending video", 1, resumes[2]);
     }
 
+    @Test public void progressBeforeTheQueuedPauseAppliesKeepsTheResumeForNormalFocusReturn() throws Exception {
+        try (Hold hold = new Hold(false, true); ExternalFocus external = new ExternalFocus(hold)) {
+            external.request();
+            ViewGroup root = hold.activity.get().findViewById(android.R.id.content);
+            ViewGroup panel = (ViewGroup) root.getChildAt(root.getChildCount() - 1);
+            assertTrue("the actual hold release control did not run", panel.getChildAt(3).performClick());
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertFalse("the panel did not release the hold", SessionBudget.isLocked());
+            assertEquals("release resumed while external focus was still held", 0,
+                    hold.player.manager.resumes);
+
+            // SimplifyAsyncPlayer can still report PLAYING while our LIZ command is queued.
+            // This is the old state before our pause, not an independent resume after it.
+            assertTrue("the native pause ran before the final progress report",
+                    hold.player.manager.isPlaying());
+            hold.player.reportProgress();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            hold.player.manager.drainNativeCommands();
+            assertTrue("the queued native pause did not apply", hold.player.manager.isPaused());
+
+            external.releaseNormally();
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertEquals("pre-pause progress discarded the matching resume on normal focus return",
+                    1, hold.player.manager.resumes);
+            hold.player.manager.drainNativeCommands();
+            assertTrue("the native dispatcher did not apply the matching resume",
+                    hold.player.manager.isPlaying());
+            hold.player.manager.advance(1_000);
+            assertEquals("the returned native player did not advance", 1_000,
+                    hold.player.manager.position);
+        }
+    }
+
     /** Real request/normal-abandon calls; Android's resulting callbacks need replay in Robolectric. */
     private static final class ExternalFocus implements AutoCloseable {
         final AudioManager audio;
@@ -401,6 +434,10 @@ public class SessionNativeFocusTest {
         }
 
         Hold(boolean pausedBeforeHold) throws Exception {
+            this(pausedBeforeHold, false);
+        }
+
+        Hold(boolean pausedBeforeHold, boolean deferNativeCommands) throws Exception {
             clearHold();
             Settings.SESSION_BUDGET_VIDEOS.save(2);
             Settings.SESSION_BUDGET_LOCK_MINUTES.save(2);
@@ -408,6 +445,7 @@ public class SessionNativeFocusTest {
                     .getSystemService(Activity.AUDIO_SERVICE);
             Shadows.shadowOf(audio).setNextFocusRequestResponse(AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
             openActivity();
+            player.manager.deferNativeCommands = deferNativeCommands;
             if (pausedBeforeHold) {
                 player.manager.LIZ();
                 Shadows.shadowOf(Looper.getMainLooper()).idle();
@@ -422,7 +460,9 @@ public class SessionNativeFocusTest {
             if (pausedBeforeHold) assertEquals("the daily hold claimed an already paused player",
                     1, player.manager.pauses);
             else assertEquals("the hold did not own a native pause", 1, player.manager.pauses);
-            assertTrue(player.manager.isPaused());
+            if (deferNativeCommands) assertTrue("the native command queue drained early",
+                    player.manager.isPlaying());
+            else assertTrue(player.manager.isPaused());
             var request = Shadows.shadowOf(audio).getLastAudioFocusRequest();
             assertNotNull("the hold never requested audio focus", request);
             quiet = request.listener;
