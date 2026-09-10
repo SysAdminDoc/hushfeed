@@ -12,9 +12,9 @@
 
 * The creator list dialog saves a handle that was typed into the box and never added with the button. It was dropped without a word.
 
-* The free-space check before a save no longer stands down when the destination folder doesn't exist yet, which is exactly the first save into it. A crash report cut at the size ceiling now says so and is cut on a character boundary rather than in the middle of one. Converting a sticker to GIF checks the job's deadline once per frame, the way the MP4 path does, so a small canvas with tens of thousands of frames can't hold a media worker for good. A muxer that fails mid-copy no longer replaces the real error with its own complaint on release.
+* The free-space check before a save no longer stands down when the destination folder doesn't exist yet, which is exactly the first save into it. A crash report cut at the size ceiling now says so, at the top as well as where it stops, and is cut on a character boundary rather than in the middle of one. Converting a sticker to GIF checks the job's deadline once per frame, while it decodes and again while it encodes, the way the MP4 path does, so a small canvas with tens of thousands of frames can't hold a media worker for good. A muxer that fails mid-copy no longer replaces the real error with its own complaint on release.
 
-* A log message that throws while being built no longer throws out of the hook that was logging, into TikTok. The follow diagnostics path looks up the request's path through the cached reflection helper rather than an uncached lookup on every network request.
+* A log message that fails while being built, or a log line that can't be written, no longer throws out of the hook that was logging, into TikTok. The follow diagnostics path looks up the request's path through the cached reflection helper rather than an uncached lookup on every network request.
 
 * Patches refuse more of the builds they can't patch, by name, rather than applying and doing nothing or shipping an instruction a phone's verifier rejects: every injection that writes a scratch register at the start of a method checks that the method has a local to write; every call that names a register read off a return uses the range form; the quick reactions gate reads its return register off each return instead of assuming v0; follow diagnostics counts its hooks and fails when a rename leaves one unhooked; the photo download anchor no longer matches the lookup method beside it; the risk-control CAPTCHA patch checks the request and callback shapes it calls; and a missing instruction is reported with the method it was missing from.
 
@@ -28,7 +28,7 @@
 
 * The pre-push check runs the patch module's tests as well as the runtime ones, and treats the version catalog, the settings script, the dependency verification file and the Gradle wrapper as release facts. A push touching only one of those ran no gate at all. A README edit on a clean checkout is no longer blocked by a release check that wanted a built bundle it had just said it didn't need.
 
-* The device scripts read as success when adb refused an install, chose the clean APK by file size, could carry one dex2oat exit code over to the next run, left gigabytes of unpacked APK behind, and wrote an empty screenshot when the capture failed. Each of those is fixed. The verification probe compiles again and holds its broadcasts to a permission only the shell and the platform carry.
+* The device scripts read as success when adb refused an install, chose the clean APK by file size, could carry one dex2oat exit code over to the next run, left gigabytes of unpacked APK behind, and wrote an empty screenshot when the capture failed. Each of those is fixed. The verification probe compiles again and holds its broadcasts to the DUMP permission, which the shell has and an ordinary app can only be given over adb.
 
 * The register check keeps its report when it fails. Run without a report path, it named the report in its FAIL line and then deleted the folder the report was in.
 
