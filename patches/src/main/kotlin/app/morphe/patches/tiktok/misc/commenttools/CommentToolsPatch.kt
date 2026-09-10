@@ -43,10 +43,15 @@ private object CommentDislikeTouchInitFingerprint : Fingerprint(
     custom = { method, _ -> method.name == "LIZIZ" },
 )
 
+/**
+ * The cell keeps its own name and so does `onBindItemView`; the model it is handed does not. That
+ * was `LX/0lOS;` on 46.2.3 and is `LX/0U5F;` on 46.8.3, and the class has one `onBindItemView`
+ * on every build, so the parameter is taken as any object.
+ */
 private object CommentMoreCellBindFingerprint : Fingerprint(
     definingClass = "Lcom/ss/android/ugc/aweme/commentv2/commentlist/powercell/CommentMoreItemCell;",
     returnType = "V",
-    parameters = listOf("LX/0lOS;"),
+    parameters = listOf("L"),
     custom = { method, _ -> method.name == "onBindItemView" },
 )
 
