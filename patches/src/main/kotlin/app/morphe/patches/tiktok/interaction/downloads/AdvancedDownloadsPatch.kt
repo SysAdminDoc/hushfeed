@@ -66,7 +66,7 @@ private object ProfileAvatarBindFingerprint : Fingerprint(
 private object OwnProfileAvatarLongPressFingerprint : Fingerprint(
     definingClass = AVATAR_LISTENER,
     name = "onClick\$43",
-    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC, AccessFlags.FINAL),
     parameters = listOf(AVATAR_LISTENER, "Landroid/view/View;"),
     returnType = "V",
     strings = listOf("photo", "video"),
@@ -75,7 +75,7 @@ private object OwnProfileAvatarLongPressFingerprint : Fingerprint(
 private object OtherProfileAvatarLongPressFingerprint : Fingerprint(
     definingClass = AVATAR_LISTENER,
     name = "onClick\$46",
-    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC, AccessFlags.FINAL),
     parameters = listOf(AVATAR_LISTENER, "Landroid/view/View;"),
     returnType = "V",
     strings = listOf("long_press", "long_hold_head"),
