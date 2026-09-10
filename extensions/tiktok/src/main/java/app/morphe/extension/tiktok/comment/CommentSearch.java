@@ -30,6 +30,7 @@ import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.preference.SettingsUi;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -49,8 +50,8 @@ public final class CommentSearch {
     private static final Map<View, Object> ROW_COMMENTS = new WeakHashMap<>();
     /** A reply control can also be collapsed by TikTok after all replies have been loaded. */
     private static final Map<View, Boolean> COLLAPSED_REPLY_ROWS = new WeakHashMap<>();
-    /** The list a box has already been put above, so it is only added once. */
-    private static final Map<ViewGroup, Boolean> DECORATED = new WeakHashMap<>();
+    /** The list owns its decoration through its listener; neither map side retains that tree. */
+    private static final Map<ViewGroup, WeakReference<SearchField>> DECORATED = new WeakHashMap<>();
 
     /** How far above the list to look for something that stacks its children. */
     private static final int MAX_COLUMN_LEVELS = 4;
@@ -63,6 +64,29 @@ public final class CommentSearch {
 
     public static boolean enabled() {
         return Settings.COMMENT_SEARCH.get();
+    }
+
+    /** The settings page calls this after saving, including when the comment sheet is cached. */
+    public static void onSettingChanged() {
+        try {
+            if (enabled()) {
+                ViewGroup listView = shown.get();
+                if (listView != null && listView.isAttachedToWindow()) {
+                    addSearchField(listView);
+                    narrowShownRows();
+                }
+                return;
+            }
+            setQuery("");
+            for (WeakReference<SearchField> reference : new ArrayList<>(DECORATED.values())) {
+                SearchField field = reference.get();
+                if (field != null) field.remove(false);
+            }
+            // Retain bound models for re-enabling on the same sheet without another native bind.
+            for (View row : ROW_COMMENTS.keySet()) setRowHidden(row, false);
+        } catch (Throwable exception) {
+            Logger.printException(() -> "Could not update comment search after its setting changed", exception);
+        }
     }
 
     /** What is in the box, lower cased once so every comparison does not have to be. */
@@ -138,6 +162,7 @@ public final class CommentSearch {
     /** Runs once the bound row is in place, which is the first moment the list can be read. */
     private static void decorate(View itemView) {
         try {
+            if (!enabled()) return;
             ViewParent parent = itemView.getParent();
             if (!(parent instanceof ViewGroup)) return;
             ViewGroup listView = (ViewGroup) parent;
@@ -224,7 +249,8 @@ public final class CommentSearch {
 
     /** Builds the box and puts it in {@code column}, directly above whatever holds the list. */
     private static void insertBox(LinearLayout column, View anchor, ViewGroup listView) {
-        if (Boolean.TRUE.equals(DECORATED.get(column))) return;
+        WeakReference<SearchField> existing = DECORATED.get(column);
+        if (existing != null && existing.get() != null) return;
 
         Context context = column.getContext();
         EditText box = new EditText(context);
@@ -256,6 +282,7 @@ public final class CommentSearch {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
             @Override public void afterTextChanged(Editable typed) {
+                if (!enabled()) return;
                 setQuery(typed == null ? "" : typed.toString());
                 narrowShownRows();
             }
@@ -273,23 +300,40 @@ public final class CommentSearch {
         column.addView(box, column.indexOfChild(anchor));
         // Only once it is really in. Marking the column first would blacklist it for good if
         // anything above threw, and the sheet would never get a box again.
-        DECORATED.put(column, Boolean.TRUE);
+        SearchField field = new SearchField(column, listView, box);
+        DECORATED.put(column, new WeakReference<>(field));
 
         // The column can be further up than the sheet and outlive it, so the box leaves with
         // the list it belongs to rather than being left over the feed.
-        listView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
-            @Override public void onViewAttachedToWindow(View view) {}
+        listView.addOnAttachStateChangeListener(field);
+    }
 
-            @Override public void onViewDetachedFromWindow(View view) {
-                view.removeOnAttachStateChangeListener(this);
-                DECORATED.remove(column);
-                setQuery("");
-                // Posted rather than done here: this runs while the parent is part way
-                // through taking the list out, and taking a second child out underneath
-                // that leaves it reading a list it has already changed.
-                column.post(() -> column.removeView(box));
-            }
-        });
+    private static final class SearchField implements View.OnAttachStateChangeListener {
+        private final LinearLayout column;
+        private final ViewGroup listView;
+        private final EditText box;
+
+        SearchField(LinearLayout column, ViewGroup listView, EditText box) {
+            this.column = column;
+            this.listView = listView;
+            this.box = box;
+        }
+
+        void remove(boolean detaching) {
+            listView.removeOnAttachStateChangeListener(this);
+            WeakReference<SearchField> current = DECORATED.get(column);
+            if (current != null && current.get() == this) DECORATED.remove(column);
+            // Detach runs during native child removal; don't alter a second child mid-dispatch.
+            if (detaching) column.post(() -> column.removeView(box));
+            else column.removeView(box);
+        }
+
+        @Override public void onViewAttachedToWindow(View view) {}
+
+        @Override public void onViewDetachedFromWindow(View view) {
+            remove(true);
+            if (shown.get() == listView) setQuery("");
+        }
     }
 
     /**
@@ -300,10 +344,11 @@ public final class CommentSearch {
     static void narrowShownRows() {
         ViewGroup listView = shown.get();
         if (listView == null) return;
+        boolean filtering = enabled();
         for (int index = 0; index < listView.getChildCount(); index++) {
             View row = listView.getChildAt(index);
             if (!ROW_COMMENTS.containsKey(row)) continue;
-            setRowHidden(row, !matches(ROW_COMMENTS.get(row), query));
+            setRowHidden(row, filtering && !matches(ROW_COMMENTS.get(row), query));
         }
     }
 

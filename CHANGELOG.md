@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Turning comment search off removes its box from an already open comment sheet and restores the rows it hid. Turning it back on works with those same loaded comments, while rows TikTok collapsed keep their native state.
+
 * Selected patches now activate on app launch, before their first runtime hook. Opening Hushfeed settings is no longer needed to turn them on, including search controls used before that page opens.
 
 * Settings changes now survive an older settings page remaining open. Each page reads the saved choice before refreshing its controls, so an old switch or text field can't undo a newer choice.
