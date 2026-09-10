@@ -151,6 +151,27 @@ class ResourceTableTest {
     }
 
     @Test
+    fun `the flags a real table sets on a plain entry are not the compact bit`() {
+        // Every entry in TikTok's own package carries flags 0x0, 0x1 or 0x4. A reader masking
+        // the wrong bit would take those for compact entries and read their values as keys, and
+        // a suite whose entries all carry zero would not notice.
+        for (entryFlags in listOf(0x1, 0x4, 0x5)) {
+            val table = ResourceTable.parse(
+                table(
+                    pkg(
+                        id = 0x7f,
+                        types = listOf("raw"),
+                        keys = listOf("first", "second"),
+                        chunks = listOf(type(1, listOf(0, 1), entryFlags = entryFlags)),
+                    ),
+                ),
+            )
+            assertEquals("flags=$entryFlags", 0x7f010000, table.idOf("raw", "first", APP))
+            assertEquals("flags=$entryFlags", 0x7f010001, table.idOf("raw", "second", APP))
+        }
+    }
+
+    @Test
     fun `a type id offset moves every id in the package`() {
         val table = ResourceTable.parse(
             table(
@@ -293,7 +314,13 @@ class ResourceTableTest {
     }
 
     /** A type chunk for one type id, `entries[i]` being the key index of entry i or null. */
-    private fun type(id: Int, entries: List<Int?>, flags: Int = 0, compact: Boolean = false): Chunk {
+    private fun type(
+        id: Int,
+        entries: List<Int?>,
+        flags: Int = 0,
+        compact: Boolean = false,
+        entryFlags: Int = 0,
+    ): Chunk {
         val headerSize = 20 + 56 // ResTable_type header plus a minimal ResTable_config of 56 bytes
         val present = entries.withIndex().filter { it.value != null }
         val entrySize = 8
@@ -330,7 +357,7 @@ class ResourceTableTest {
                 body.u32(entries.size - 1 - k)
             } else {
                 body.u16(entrySize)
-                body.u16(0)
+                body.u16(entryFlags)
                 body.u32(k!!)
             }
         }

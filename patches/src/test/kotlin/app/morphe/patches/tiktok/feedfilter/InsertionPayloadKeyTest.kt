@@ -6,7 +6,9 @@ import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -57,11 +59,51 @@ class InsertionPayloadKeyTest {
     }
 
     @Test
-    fun `the constructor is matched by its parameters in any order`() {
-        assertEquals(
-            INSERTION_PAYLOAD_PARAMETERS,
-            listOf("I", "Ljava/util/List;", "Ljava/lang/String;").sorted(),
+    fun `the constructor is matched whichever order this build put its parameters in`() {
+        assertTrue(constructor(listOf("I", "Ljava/lang/String;", "Ljava/util/List;")).isInsertionPayloadConstructor())
+        assertTrue(constructor(listOf("I", "Ljava/util/List;", "Ljava/lang/String;")).isInsertionPayloadConstructor())
+        assertTrue(constructor(listOf("Ljava/util/List;", "Ljava/lang/String;", "I")).isInsertionPayloadConstructor())
+    }
+
+    @Test
+    fun `the static factory beside it takes the same three and is not the constructor`() {
+        // LX/0SN6;->LIZ(I, String, List) builds the payload and is what the app calls. Only the
+        // name and the return type tell it apart from the constructor it forwards to.
+        val factory = ImmutableMethod(
+            payload,
+            "LIZ",
+            listOf("I", "Ljava/lang/String;", "Ljava/util/List;").map { ImmutableMethodParameter(it, null, null) },
+            payload,
+            AccessFlags.PUBLIC.value or AccessFlags.STATIC.value,
+            null,
+            null,
+            null,
         )
+        assertFalse(MutableMethod(factory).isInsertionPayloadConstructor())
+    }
+
+    @Test
+    fun `a void method of the same three parameters is not the constructor either`() {
+        // The factory is separated by its return type. A plain void helper of the same shape is
+        // not, and the class is free to grow one, so the name is what rules it out.
+        val helper = ImmutableMethod(
+            payload,
+            "LIZ",
+            listOf("I", "Ljava/lang/String;", "Ljava/util/List;").map { ImmutableMethodParameter(it, null, null) },
+            "V",
+            AccessFlags.PUBLIC.value,
+            null,
+            null,
+            null,
+        )
+        assertFalse(MutableMethod(helper).isInsertionPayloadConstructor())
+    }
+
+    @Test
+    fun `a constructor of some other shape is not it`() {
+        assertFalse(constructor(listOf("I", "Ljava/lang/String;")).isInsertionPayloadConstructor())
+        assertFalse(constructor(listOf("I", "Ljava/lang/String;", "Ljava/util/List;", "Z")).isInsertionPayloadConstructor())
+        assertFalse(constructor(listOf("I", "I", "Ljava/util/List;")).isInsertionPayloadConstructor())
     }
 
     private fun constructor(parameters: List<String>) = MutableMethod(

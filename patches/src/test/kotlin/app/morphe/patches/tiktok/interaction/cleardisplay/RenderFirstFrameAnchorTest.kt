@@ -7,6 +7,7 @@ import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -64,6 +65,24 @@ class RenderFirstFrameAnchorTest {
         assertFalse(matchesHandler(handler(listOf(event, "I"))))
         assertFalse(matchesHandler(handler(emptyList())))
         assertTrue(matchesHandler(handler(listOf(event))))
+    }
+
+    @Test
+    fun `the anchors keep the parts the custom clause does not cover`() {
+        // The custom clause is only half of each anchor. PlayerController carries four public
+        // static (PlayerController, something)V methods on 46.8.3 and a second, synthetic
+        // onRenderFirstFrame taking a String as well, so the flags and the defining class are
+        // doing work and deleting either line leaves the rest of this suite green.
+        assertEquals("/feed/controller/PlayerController;", OnRenderFirstFrameFingerprint.definingClass)
+        assertEquals("onRenderFirstFrame", OnRenderFirstFrameFingerprint.name)
+        assertEquals("V", OnRenderFirstFrameFingerprint.returnType)
+
+        assertEquals("/feed/controller/PlayerController;", OnRenderFirstFrameBodyFingerprint.definingClass)
+        assertEquals("V", OnRenderFirstFrameBodyFingerprint.returnType)
+        assertEquals(
+            AccessFlags.PUBLIC.value or AccessFlags.STATIC.value,
+            OnRenderFirstFrameBodyFingerprint.accessFlags,
+        )
     }
 
     private fun matchesBody(method: Method, classDef: ClassDef) =

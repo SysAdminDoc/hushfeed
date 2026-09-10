@@ -21,6 +21,7 @@ import app.morphe.patches.tiktok.shared.objectIn
 import app.morphe.patches.tiktok.shared.valueIn
 import app.morphe.patches.tiktok.shared.wideIn
 import app.morphe.util.cloneMutableAndPreserveParameters
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
@@ -50,6 +51,17 @@ private data class TypedBoundary(
     val wide: Boolean = false,
     /** Whether the boundary is a static method, which is what [keyParameter] counts from. */
     val isStatic: Boolean = false,
+    /**
+     * Whether [methodName] is a name TikTok wrote rather than one R8 assigned.
+     *
+     * <p>A keep rule saves a class name without saving its members. `SettingsManager` proves it
+     * on itself: `getSettingsValueProvider` survives and everything beside it is `LIZ`, `LIZIZ`,
+     * `LJFF`. A minified name is worth a tiebreak between two methods of one shape and nothing
+     * more, because requiring it turns a rename into a failure on a build the shape would have
+     * patched. A real name is the anchor and is required, so that an unrelated helper of the
+     * same signature cannot stand in for a getter that was inlined away.
+     */
+    val nameIsStable: Boolean = false,
 )
 
 private val boundaries = listOf(
@@ -65,17 +77,17 @@ private val boundaries = listOf(
     TypedBoundary(ABMOCK_SETTINGS_MANAGER_DESCRIPTOR, "LJ", "I", listOf("Ljava/lang/String;", "I"), "p0", Opcode.RETURN, "overrideInt", "(Ljava/lang/String;I)I", isStatic = true),
     TypedBoundary(ABMOCK_SETTINGS_MANAGER_DESCRIPTOR, "LJFF", "J", listOf("Ljava/lang/String;", "J"), "p0", Opcode.RETURN_WIDE, "overrideLong", "(Ljava/lang/String;J)J", true, isStatic = true),
     TypedBoundary(ABMOCK_SETTINGS_MANAGER_DESCRIPTOR, "LJI", "Ljava/lang/String;", listOf("Ljava/lang/String;", "Ljava/lang/String;"), "p0", Opcode.RETURN_OBJECT, "overrideString", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", isStatic = true),
-    TypedBoundary(LIVE_SETTINGS_DESCRIPTOR, "getBooleanValue", "Z", listOf("Ljava/lang/String;", "Z"), "p1", Opcode.RETURN, "overrideLiveBoolean", "(Ljava/lang/String;Z)Z"),
-    TypedBoundary(LIVE_SETTINGS_DESCRIPTOR, "getDoubleValue", "D", listOf("Ljava/lang/String;", "D"), "p1", Opcode.RETURN_WIDE, "overrideLiveDouble", "(Ljava/lang/String;D)D", true),
-    TypedBoundary(LIVE_SETTINGS_DESCRIPTOR, "getFloatValue", "F", listOf("Ljava/lang/String;", "F"), "p1", Opcode.RETURN, "overrideLiveFloat", "(Ljava/lang/String;F)F"),
-    TypedBoundary(LIVE_SETTINGS_DESCRIPTOR, "getIntValue", "I", listOf("Ljava/lang/String;", "I"), "p1", Opcode.RETURN, "overrideLiveInt", "(Ljava/lang/String;I)I"),
-    TypedBoundary(LIVE_SETTINGS_DESCRIPTOR, "getLongValue", "J", listOf("Ljava/lang/String;", "J"), "p1", Opcode.RETURN_WIDE, "overrideLiveLong", "(Ljava/lang/String;J)J", true),
-    TypedBoundary(LIVE_SETTINGS_DESCRIPTOR, "getStringValue", "Ljava/lang/String;", listOf("Ljava/lang/String;", "Ljava/lang/String;"), "p1", Opcode.RETURN_OBJECT, "overrideLiveString", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"),
-    TypedBoundary(VE_CONFIG_DESCRIPTOR, "getValue", "Ljava/lang/Boolean;", listOf("Ljava/lang/String;", "Z"), "p1", Opcode.RETURN_OBJECT, "overrideVeBoolean", "(Ljava/lang/String;Ljava/lang/Boolean;)Ljava/lang/Boolean;"),
-    TypedBoundary(VE_CONFIG_DESCRIPTOR, "getValue", "F", listOf("Ljava/lang/String;", "F"), "p1", Opcode.RETURN, "overrideVeFloat", "(Ljava/lang/String;F)F"),
-    TypedBoundary(VE_CONFIG_DESCRIPTOR, "getValue", "I", listOf("Ljava/lang/String;", "I"), "p1", Opcode.RETURN, "overrideVeInt", "(Ljava/lang/String;I)I"),
-    TypedBoundary(VE_CONFIG_DESCRIPTOR, "getValue", "J", listOf("Ljava/lang/String;", "J"), "p1", Opcode.RETURN_WIDE, "overrideVeLong", "(Ljava/lang/String;J)J", true),
-    TypedBoundary(VE_CONFIG_DESCRIPTOR, "getValue", "Ljava/lang/String;", listOf("Ljava/lang/String;", "Ljava/lang/String;"), "p1", Opcode.RETURN_OBJECT, "overrideVeString", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"),
+    TypedBoundary(LIVE_SETTINGS_DESCRIPTOR, "getBooleanValue", "Z", listOf("Ljava/lang/String;", "Z"), "p1", Opcode.RETURN, "overrideLiveBoolean", "(Ljava/lang/String;Z)Z", nameIsStable = true),
+    TypedBoundary(LIVE_SETTINGS_DESCRIPTOR, "getDoubleValue", "D", listOf("Ljava/lang/String;", "D"), "p1", Opcode.RETURN_WIDE, "overrideLiveDouble", "(Ljava/lang/String;D)D", true, nameIsStable = true),
+    TypedBoundary(LIVE_SETTINGS_DESCRIPTOR, "getFloatValue", "F", listOf("Ljava/lang/String;", "F"), "p1", Opcode.RETURN, "overrideLiveFloat", "(Ljava/lang/String;F)F", nameIsStable = true),
+    TypedBoundary(LIVE_SETTINGS_DESCRIPTOR, "getIntValue", "I", listOf("Ljava/lang/String;", "I"), "p1", Opcode.RETURN, "overrideLiveInt", "(Ljava/lang/String;I)I", nameIsStable = true),
+    TypedBoundary(LIVE_SETTINGS_DESCRIPTOR, "getLongValue", "J", listOf("Ljava/lang/String;", "J"), "p1", Opcode.RETURN_WIDE, "overrideLiveLong", "(Ljava/lang/String;J)J", true, nameIsStable = true),
+    TypedBoundary(LIVE_SETTINGS_DESCRIPTOR, "getStringValue", "Ljava/lang/String;", listOf("Ljava/lang/String;", "Ljava/lang/String;"), "p1", Opcode.RETURN_OBJECT, "overrideLiveString", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", nameIsStable = true),
+    TypedBoundary(VE_CONFIG_DESCRIPTOR, "getValue", "Ljava/lang/Boolean;", listOf("Ljava/lang/String;", "Z"), "p1", Opcode.RETURN_OBJECT, "overrideVeBoolean", "(Ljava/lang/String;Ljava/lang/Boolean;)Ljava/lang/Boolean;", nameIsStable = true),
+    TypedBoundary(VE_CONFIG_DESCRIPTOR, "getValue", "F", listOf("Ljava/lang/String;", "F"), "p1", Opcode.RETURN, "overrideVeFloat", "(Ljava/lang/String;F)F", nameIsStable = true),
+    TypedBoundary(VE_CONFIG_DESCRIPTOR, "getValue", "I", listOf("Ljava/lang/String;", "I"), "p1", Opcode.RETURN, "overrideVeInt", "(Ljava/lang/String;I)I", nameIsStable = true),
+    TypedBoundary(VE_CONFIG_DESCRIPTOR, "getValue", "J", listOf("Ljava/lang/String;", "J"), "p1", Opcode.RETURN_WIDE, "overrideVeLong", "(Ljava/lang/String;J)J", true, nameIsStable = true),
+    TypedBoundary(VE_CONFIG_DESCRIPTOR, "getValue", "Ljava/lang/String;", listOf("Ljava/lang/String;", "Ljava/lang/String;"), "p1", Opcode.RETURN_OBJECT, "overrideVeString", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", nameIsStable = true),
 )
 
 @Suppress("unused")
@@ -89,22 +101,22 @@ val featureGateLabPatch = bytecodePatch(
 
     execute {
         boundaries.forEach { boundary ->
-            val obfuscated = boundary.targetDescriptor == APP_AB
-            val target = if (obfuscated) appAbClass()
+            val target = if (boundary.targetDescriptor == APP_AB) appAbClass()
             else mutableClassDefBy(boundary.targetDescriptor)
             val shape = MethodShape(boundary.returnType, boundary.parameters, boundary.isStatic)
-            // Shape first only where the name is gone. The app AB class is renamed by every
-            // build and so are its methods, so there the name is worth no more than a tiebreak.
-            // The other three targets keep the names they are written with, and dropping the
-            // name there would take an unrelated helper of the same signature and report
-            // success where the old code stopped.
+            // Whether the name is required turns on whether R8 assigned it, not on whether the
+            // class name did. SettingsManager keeps its own name and calls its getters LIZ and
+            // LJFF, the same alphabet as the app AB class; live_settings and VEConfigCenter
+            // keep theirs all the way down.
             val ofShape = target.methods.filter { it.shape() == shape }
-            val candidates = if (obfuscated) ofShape else ofShape.filter { it.name == boundary.methodName }
+            val candidates =
+                if (boundary.nameIsStable) ofShape.filter { it.name == boundary.methodName }
+                else ofShape
             val method = when (candidates.size) {
                 1 -> candidates.single()
                 0 -> throw PatchException(
                     "Feature Gate Lab boundary not found: ${target.type} has no " +
-                        (if (obfuscated) "" else "${boundary.methodName} of ") +
+                        (if (boundary.nameIsStable) "${boundary.methodName} of " else "") +
                         "${boundary.returnType}${boundary.parameters}.",
                 )
                 else -> candidates.singleOrNull { it.name == boundary.methodName }
@@ -121,11 +133,14 @@ val featureGateLabPatch = bytecodePatch(
             .patchRawAbBoundary()
 
         val settingsManager = mutableClassDefBy(ABMOCK_SETTINGS_MANAGER_DESCRIPTOR)
+        // Static, because these read their key from p0. The shape alone does not say so, and the
+        // patch below counts registers from it.
         val objectGetterWithoutDefault = settingsManager.methods.singleOrNull {
             it.name == "LJII" &&
                 it.returnType == "Ljava/lang/Object;" &&
-                it.parameterTypes == listOf("Ljava/lang/String;", "Ljava/lang/Class;")
-        } ?: throw PatchException("Feature Gate Lab SettingsManager object boundary without default not found")
+                it.parameterTypes == listOf("Ljava/lang/String;", "Ljava/lang/Class;") &&
+                AccessFlags.STATIC.value and it.accessFlags != 0
+        } ?: throw PatchException("Feature Gate Lab SettingsManager static object boundary without default not found")
         objectGetterWithoutDefault
             .cloneMutableAndPreserveParameters()
             .patchSettingsManagerObjectBoundary(
@@ -140,8 +155,9 @@ val featureGateLabPatch = bytecodePatch(
                     "Ljava/lang/String;",
                     "Ljava/lang/Class;",
                     "Ljava/lang/Object;",
-                )
-        } ?: throw PatchException("Feature Gate Lab SettingsManager object boundary with default not found")
+                ) &&
+                AccessFlags.STATIC.value and it.accessFlags == 0
+        } ?: throw PatchException("Feature Gate Lab SettingsManager instance object boundary with default not found")
         objectGetterWithDefault.patchSettingsManagerObjectBoundary(
             hasDefault = true,
             isStatic = false,

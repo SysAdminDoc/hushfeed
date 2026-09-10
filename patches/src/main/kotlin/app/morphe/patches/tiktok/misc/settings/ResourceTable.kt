@@ -92,6 +92,8 @@ internal class ResourceTable private constructor(private val buffer: ByteBuffer)
 
     /**
      * The id of `type/name` in the named package, or null when that package does not carry it.
+     * Raises when the table holds no package this can answer for, which is a different thing
+     * from the package not having the entry.
      *
      * <p>An entry can appear in several type chunks, one per configuration; they all share the
      * entry index, so the first is as good as any.

@@ -19,6 +19,9 @@ private const val AUDIO_MANAGER = "Landroid/media/AudioManager;"
 private const val AUDIO_LISTENER = "Landroid/media/AudioManager\$OnAudioFocusChangeListener;"
 private const val CONTEXT = "Landroid/content/Context;"
 
+/** How far up a listener's superclasses the focus callback is looked for before giving up. */
+private const val MAX_LISTENER_DEPTH = 16
+
 /**
  * The host's player audio-focus helper, found by what it is rather than what it is called.
  *
@@ -47,9 +50,15 @@ internal fun BytecodePatchContext.resolveNativeFocus(): NativeFocus {
         // field; the other two read the listener off the host's own call. Two listener-typed
         // fields and a guess here would instrument a class the host never registers, while the
         // other two hooks reported the real one, and nothing would fail at patch time.
-        val listener = fields.singleOrNull { field ->
-            field.type != AUDIO_MANAGER && implementsAudioListener(field.type)
-        }?.type ?: return@classDefForEach
+        //
+        // A field typed as something that only reaches the interface through what it extends
+        // counts, because R8 moves an interface onto a superclass routinely. But a field that
+        // declares the interface itself wins outright, so widening the test cannot turn a build
+        // that resolved into one that finds two and gives up.
+        val listeners = fields.filter { it.type != AUDIO_MANAGER && implementsAudioListener(it.type) }
+        val listener = (listeners.singleOrNull() ?: listeners.singleOrNull { field ->
+            classDefByOrNull(field.type)?.interfaces?.contains(AUDIO_LISTENER) == true
+        })?.type ?: return@classDefForEach
         if (classDef.methods.none { it.name == "<init>" && it.parameterTypes.toList() == listOf(CONTEXT) }) {
             return@classDefForEach
         }
@@ -74,12 +83,23 @@ internal fun BytecodePatchContext.resolveNativeFocus(): NativeFocus {
     val (classDef, request, abandon) = found.single()
     val listenerType = listenerOf.getValue(classDef.type)
     val helper = mutableClassDefBy(classDef)
-    val listenerClass = mutableClassDefBy(listenerType)
-    val change = listenerClass.methods.singleOrNull {
-        it.name == "onAudioFocusChange" && it.returnType == "V" &&
-            it.parameterTypes.toList() == listOf("I") &&
-            AccessFlags.STATIC.value and it.accessFlags == 0
-    } ?: throw PatchException("Block author button: $listenerType has no onAudioFocusChange(I)V.")
+    // The callback can sit on a superclass of the field's type: the field is typed as whatever
+    // the host declared and R8 is free to have put the implementation further up. Only the class
+    // that declares it can be instrumented, so that is the one this walks to.
+    val change = generateSequence(listenerType) { classDefByOrNull(it)?.superclass }
+        .take(MAX_LISTENER_DEPTH)
+        .mapNotNull { type ->
+            classDefByOrNull(type)?.let { mutableClassDefBy(type) }?.methods?.singleOrNull {
+                it.name == "onAudioFocusChange" && it.returnType == "V" &&
+                    it.parameterTypes.toList() == listOf("I") &&
+                    AccessFlags.STATIC.value and it.accessFlags == 0
+            }
+        }
+        .firstOrNull()
+        ?: throw PatchException(
+            "Block author button: neither $listenerType nor anything it extends declares " +
+                "onAudioFocusChange(I)V.",
+        )
     return NativeFocus(
         helper = classDef.type,
         listener = listenerType,

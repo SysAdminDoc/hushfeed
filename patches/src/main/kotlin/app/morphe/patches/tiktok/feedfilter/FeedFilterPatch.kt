@@ -25,6 +25,7 @@ import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
@@ -201,11 +202,8 @@ val feedFilterPatch = bytecodePatch(
         // By the set of parameters, not their order. The payload takes an int, a feed key and a
         // list on every build, and 46.7.3 moved the list ahead of the key, which is R8's choice
         // and not TikTok's: the static factory beside it still takes them the old way round.
-        val insertionPayloadConstructors = mutableClassDefBy(insertionPayloadType).methods.filter { method ->
-            method.name == "<init>" &&
-                method.returnType == "V" &&
-                method.parameterTypes.map(CharSequence::toString).sorted() == INSERTION_PAYLOAD_PARAMETERS
-        }
+        val insertionPayloadConstructors = mutableClassDefBy(insertionPayloadType).methods
+            .filter(Method::isInsertionPayloadConstructor)
         if (insertionPayloadConstructors.size != 1) {
             throw PatchException(
                 "Expected one final feed insertion payload constructor for $insertionPayloadType, " +
@@ -534,8 +532,20 @@ private fun MutableMethod.filterReachBottomCacheDelivery(
 }
 
 /** The parameters of the final feed insertion payload constructor, sorted so order does not matter. */
-internal val INSERTION_PAYLOAD_PARAMETERS =
+private val INSERTION_PAYLOAD_PARAMETERS =
     listOf("I", "Ljava/lang/String;", "Ljava/util/List;").sorted()
+
+/**
+ * Whether the method is the payload's constructor: an int, a feed key and a list, in whatever
+ * order this build's R8 put them.
+ *
+ * <p>The static factory beside it takes the same three, so being a `<init>` returning void is
+ * what separates them, not the parameters.
+ */
+internal fun Method.isInsertionPayloadConstructor() =
+    name == "<init>" &&
+        returnType == "V" &&
+        parameterTypes.map(CharSequence::toString).sorted() == INSERTION_PAYLOAD_PARAMETERS
 
 /**
  * The `pN` the feed key arrives in, which is whichever parameter is the String.
