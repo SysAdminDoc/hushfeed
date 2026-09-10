@@ -32,7 +32,10 @@ SCALE="${PHONE_SCALE:-1.15756}"
 mkdir -p "$SP"
 
 top() { local result; result=$(timeout 30 "$ADB" -s "$S" shell dumpsys activity activities 2>/dev/null) || return $?; printf '%s\n' "$result" | grep -m1 -o "topResumedActivity=ActivityRecord{[^}]*}" | sed 's/.*u0 //;s/ t[0-9]*}//'; }
-shot() { local activity; timeout 60 "$ADB" -s "$S" exec-out screencap -p > "$SP/$1.png" 2>/dev/null || return $?; activity=$(top) || return $?; echo "shot $SP/$1.png top=$activity"; }
+# Written to a temporary name and moved into place only after a zero exit: the redirection
+# creates the file before adb runs, so a dropped device or a timeout left an empty .png where
+# a device check expected evidence.
+shot() { local activity tmp; tmp="$SP/$1.png.part"; if ! timeout 60 "$ADB" -s "$S" exec-out screencap -p > "$tmp" 2>/dev/null || [ ! -s "$tmp" ]; then rm -f "$tmp"; echo "screencap failed for $1" >&2; return 1; fi; mv -f "$tmp" "$SP/$1.png"; activity=$(top) || return $?; echo "shot $SP/$1.png top=$activity"; }
 guard() { local t; t=$(top); case "$t" in $PKG/*) ;; *) echo "REFUSED: foreground is $t"; exit 2;; esac; }
 px() { awk "BEGIN{printf \"%d\", $1*$SCALE}"; }
 tap() { guard; timeout 30 "$ADB" -s "$S" shell input tap "$(px "$1")" "$(px "$2")"; sleep "${3:-2}"; }

@@ -71,7 +71,10 @@ if (-not $javac -or -not (Test-Path $javac)) {
 }
 if (-not $javac -or -not (Test-Path $javac)) { throw 'No javac found. Set JAVA_HOME.' }
 
-Remove-Item $OutDir -Recurse -Force -ErrorAction SilentlyContinue
+# Not silenced: a directory that cannot be cleared keeps its old classes, and every .class
+# under it is dexed into the probe below, source file or not.
+if (Test-Path -LiteralPath $OutDir) { Remove-Item -LiteralPath $OutDir -Recurse -Force }
+if (Test-Path -LiteralPath $OutDir) { throw "Could not clear $OutDir." }
 New-Item -ItemType Directory -Force -Path "$OutDir\classes", "$OutDir\dex" | Out-Null
 
 # @() around both of these: with a single file the pipeline hands back a string rather than
@@ -99,8 +102,15 @@ if ($LASTEXITCODE -ne 0) { throw 'aapt2 link failed.' }
 # which is what an ordinary build does too, just with more steps in between.
 Push-Location "$OutDir\dex"
 try {
-    & (Join-Path $buildTools.FullName 'aapt.exe') add $unsigned classes.dex | Out-Null
-    if ($LASTEXITCODE -ne 0) {
+    # aapt is gone from recent build-tools, and under Stop a missing command is a terminating
+    # error that skipped the fallback below. Tested for, so the zip path is the one that runs.
+    $aapt = Join-Path $buildTools.FullName 'aapt.exe'
+    $added = $false
+    if (Test-Path -LiteralPath $aapt -PathType Leaf) {
+        & $aapt add $unsigned classes.dex | Out-Null
+        $added = $LASTEXITCODE -eq 0
+    }
+    if (-not $added) {
         Add-Type -AssemblyName System.IO.Compression.FileSystem
         $zip = [System.IO.Compression.ZipFile]::Open($unsigned, 'Update')
         try {
@@ -125,6 +135,7 @@ if ($Install) {
     if (-not $Serial) { throw '-Install needs -Serial.' }
     $adb = Resolve-Adb
     & $adb -s $Serial install -r $signed | Out-Host
+    if ($LASTEXITCODE -ne 0) { throw "adb install failed on $Serial. The output above says why." }
     Write-Host '[probe] installed. Load it into TikTok, then send it work:'
     Write-Host "  adb -s $Serial shell am instrument app.hushfeed.verification/.Probe"
     Write-Host "  adb -s $Serial shell am broadcast -a app.hushfeed.verification.PROBE -p com.zhiliaoapp.musically -e action dump"

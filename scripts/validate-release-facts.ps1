@@ -248,7 +248,7 @@ if ($testFiles.Count -eq 0) {
 # The newest result is the one to compare. Gradle never removes the XML of a test class that was
 # deleted or renamed, and that file keeps its original timestamp through every later run, so
 # taking the oldest would refuse forever after the first class is dropped.
-$sourceRoots = @('extensions/tiktok/src', 'extensions/shared/library/src') |
+$sourceRoots = @('extensions/tiktok/src', 'extensions/tiktok/stub/src', 'extensions/shared/library/src') |
     ForEach-Object { Join-Path $rootPath $_ } |
     Where-Object { Test-Path -LiteralPath $_ }
 $newestSource = $sourceRoots |
@@ -469,8 +469,18 @@ $bundlePath = if ($ArtifactPath) { $ArtifactPath } else {
     Join-Path $rootPath "patches/build/libs/patches-$releaseVersion.mpp"
 }
 if (-not (Test-Path -LiteralPath $bundlePath -PathType Leaf)) {
-    throw ("The built bundle is missing, so its patcher version cannot be checked against the " +
-        "$pinnedPatcher the catalog pins: $bundlePath. Run :patches:buildAndroid first.")
+    # The stamp is a fact about a built bundle, and only the hash comparison needs one built
+    # here. The pre-push hook reaches this after saying "no local bundle here, so the hosted
+    # artifact is not compared", so a clean checkout pushing a README edit must not die on the
+    # line after that. A release run passes -VerifyPublishedAsset and is held to it.
+    if ($VerifyPublishedAsset) {
+        throw ("The built bundle is missing, so its patcher version cannot be checked against " +
+            "the $pinnedPatcher the catalog pins: $bundlePath. Run :patches:buildAndroid first.")
+    }
+    Write-Host ("[release] no built bundle at $bundlePath, so its patcher stamp is not compared " +
+        "against the catalog pin $pinnedPatcher")
+    Write-Host ("[facts] " + $sourceVersion + ": " + $patchCount + " patches for " + $targetPackage + " " + $targetVersion + "; " + $testCount + " runtime tests")
+    exit 0
 }
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $manifestText = $null

@@ -129,6 +129,13 @@ def java_name(lang):
     return lang.replace("-", "_").replace("+", "_")
 
 
+def method_name(lang):
+    """The build method for a table. Only the first letter is raised: capitalize() lowered the
+    rest, so pt-rBR became buildPt_rbr and two tags differing in case would have collided."""
+    name = java_name(lang)
+    return name[:1].upper() + name[1:]
+
+
 def main():
     tables = {}
     seen = {}
@@ -198,7 +205,7 @@ def main():
             labels.append(alias + dash + tail)
         for label in labels:
             lines.append("            case %s:" % literal(label))
-        lines.append("                return build%s();" % java_name(lang).capitalize())
+        lines.append("                return build%s();" % method_name(lang))
     lines.append("            default:")
     lines.append("                return null;")
     lines.append("        }")
@@ -210,7 +217,7 @@ def main():
         total += len(entries)
         pairs = [(english, entries[english]) for english in sorted(entries)]
         chunks = [pairs[at:at + CHUNK] for at in range(0, len(pairs), CHUNK)]
-        name = java_name(lang).capitalize()
+        name = method_name(lang)
 
         lines.append("")
         lines.append("    private static Map<String, String> build%s() {" % name)

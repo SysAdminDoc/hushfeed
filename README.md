@@ -46,6 +46,7 @@ The block, local hide, sound and Not interested controls, rendered in a local UI
 Selected patches activate when TikTok starts. The Settings patch adds the entry point and is selected by default. Deselect it and the other patches still apply, but their switches have nowhere to live. `patches-bundle.json` in the repository root is the source index Morphe reads for the published bundle.
 
 <br>
+
 ## Patches
 
 | Patch | Description |

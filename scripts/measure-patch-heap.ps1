@@ -81,10 +81,9 @@ if (-not $apk) {
     throw ('Set HUSHFEED_APK to the TikTok build README.md records under "Supported target". ' +
         'The heap a patch needs depends on the APK, so there is no sensible default.')
 }
-$bundle = Get-ChildItem (Join-Path $root 'patches/build/libs') -Filter '*.mpp' -ErrorAction SilentlyContinue |
-    Where-Object { $_.Name -notmatch 'sources|javadoc' } |
-    Sort-Object LastWriteTime -Descending | Select-Object -First 1
-if ($null -eq $bundle) { throw 'No bundle found. Run :patches:buildAndroid first.' }
+$version = ((Get-Content (Join-Path $root 'gradle.properties')) -match '^version\s*=' | Select-Object -First 1) -replace '^version\s*=\s*', ''
+$bundle = Get-Item -LiteralPath (Join-Path $root "patches/build/libs/patches-$version.mpp") -ErrorAction SilentlyContinue
+if ($null -eq $bundle) { throw "No bundle for version $version. Run :patches:buildAndroid first." }
 if (-not (Test-Path -LiteralPath $jar -PathType Leaf)) { throw "Desktop CLI jar not found: $jar" }
 if (-not (Test-Path -LiteralPath $apk -PathType Leaf)) { throw "APK not found: $apk" }
 

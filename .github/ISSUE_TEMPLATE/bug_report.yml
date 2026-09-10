@@ -25,7 +25,15 @@ body:
     attributes:
       label: Morphe Manager and Hushfeed versions
       description: Include the Morphe Manager version and the Hushfeed bundle version.
-      placeholder: Morphe Manager 1.0.0, Hushfeed 0.19.0
+      placeholder: Morphe Manager 1.29.0, Hushfeed 0.29.0
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Phone and Android version
+      description: The phone model and its Android version. The bundle runs from Android 6 up, and some checks only fail on one version.
+      placeholder: Samsung Galaxy S22, Android 15
     validations:
       required: true
   - type: textarea

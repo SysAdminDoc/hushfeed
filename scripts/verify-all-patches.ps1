@@ -55,10 +55,11 @@ function Remove-GeneratedPath {
 }
 
 if (-not $Bundle) {
-    $candidate = Get-ChildItem (Join-Path $root 'patches/build/libs') -Filter '*.mpp' -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -notmatch 'sources|javadoc' } |
-        Sort-Object LastWriteTime -Descending | Select-Object -First 1
-    if ($null -ne $candidate) { $Bundle = $candidate.FullName }
+    $version = ((Get-Content (Join-Path $root 'gradle.properties')) -match '^version\s*=' | Select-Object -First 1) -replace '^version\s*=\s*', ''
+    $Bundle = Join-Path $root "patches/build/libs/patches-$version.mpp"
+    if (-not (Test-Path -LiteralPath $Bundle -PathType Leaf)) {
+        throw "No bundle for version $version at $Bundle. Run :patches:generatePatchesList then :patches:buildAndroid."
+    }
 }
 if (-not $PatchList) { $PatchList = Join-Path $root 'patches-list.json' }
 if (-not $Bundle -or -not (Test-Path -LiteralPath $Bundle -PathType Leaf)) { throw "No bundle found. Run :patches:buildAndroid first." }

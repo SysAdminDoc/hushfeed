@@ -102,7 +102,12 @@ try {
     $touchesCode = @($paths | Where-Object { $_ -like 'extensions/*' -or $_ -like 'patches/*' }).Count -gt 0
     $touchesRelease = @($paths | Where-Object {
         $_ -eq 'patches-bundle.json' -or $_ -eq 'patches-list.json' -or
-        $_ -eq 'gradle.properties' -or $_ -eq 'README.md'
+        $_ -eq 'gradle.properties' -or $_ -eq 'README.md' -or
+        # The pins the release check holds the bundle and the README to. A push that moved
+        # only one of these ran no gate at all.
+        $_ -eq 'gradle/libs.versions.toml' -or $_ -eq 'settings.gradle.kts' -or
+        $_ -eq 'gradle/verification-metadata.xml' -or
+        $_ -eq 'gradle/wrapper/gradle-wrapper.properties'
     }).Count -gt 0
 
     if ($touchesCode) {
@@ -129,8 +134,11 @@ try {
         # all: they run on a desktop JVM, where every java.util method exists whatever the
         # payload's floor says. Only the API level check reads minSdk, and it reads the SDK_INT
         # guards with it, so a call that is properly guarded stays quiet.
+        # The patch module has tests of its own, on the register helpers and the anchors, and
+        # nothing before a push ran them: they only ran on the way to generatePatchesList.
         $tasks = @(
             ':extensions:tiktok:test',
+            ':patches:test',
             ':extensions:shared:library:lint',
             ':extensions:tiktok:lint'
         )

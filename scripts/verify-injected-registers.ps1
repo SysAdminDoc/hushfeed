@@ -47,6 +47,8 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+# The vendor 46.2.3 build the README links, which is the only clean side this comparison means.
+$CleanApkSha256 = '2fbe277a568e0e820cb51b09bcf0c0d788dc4fb070e66025f12d11cd3ec16936'
 . (Join-Path $PSScriptRoot 'Resolve-Java.ps1')
 $Java = Resolve-Java -Explicit $Java
 
@@ -71,17 +73,28 @@ function Resolve-Adb {
 }
 
 if (-not $CleanApk) {
-    $fixture = Get-ChildItem 'C:\_claude-backups\tiktok-fixture' -Filter '*.apk' -ErrorAction SilentlyContinue |
-        Sort-Object Length -Descending | Select-Object -First 1
+    $fixture = Get-ChildItem 'C:\_claude-backups\tiktok-fixture' -Filter '*46.2.3*.apk' -ErrorAction SilentlyContinue |
+        Select-Object -First 1
     if ($fixture) { $CleanApk = $fixture.FullName }
 }
 if (-not $CleanApk -or -not (Test-Path -LiteralPath $CleanApk -PathType Leaf)) {
     throw 'No clean APK. Pass -CleanApk with the vendor build this bundle targets.'
 }
+# The clean side has to be the vendor build, not the largest file in a folder that also holds
+# patched output and newer builds: two patched files differ from each other, both halves
+# report differences, and the run passes while comparing nothing against a clean baseline.
+$cleanHash = (Get-FileHash -LiteralPath $CleanApk -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($cleanHash -ne $CleanApkSha256) {
+    throw "The clean APK at $CleanApk hashes to $cleanHash, not the vendor 46.2.3 build ($CleanApkSha256)."
+}
 
 $work = Join-Path ([System.IO.Path]::GetTempPath()) ("hushfeed-regs-" + [guid]::NewGuid().ToString('N').Substring(0, 8))
 New-Item -ItemType Directory -Force -Path $work | Out-Null
+# The report stays where the caller can read it after the run; the pulled APK and the rest of
+# the working directory do not outlive the run, because a full TikTok is hundreds of megabytes.
+$keepWork = [bool]$ReportPath
 if (-not $ReportPath) { $ReportPath = Join-Path $work 'injected-registers.txt' }
+try {
 
 $adbPath = $null
 if ($FromDevice -or $Serial) { $adbPath = Resolve-Adb -Explicit $Adb }
@@ -134,10 +147,15 @@ if ($Serial) {
         if ($LASTEXITCODE -ne 0) { throw "Could not push $Label to $Serial." }
         & $adbPath -s $Serial shell "rm -rf $dir && mkdir -p $dir" | Out-Null
         & $adbPath -s $Serial logcat -c | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw "Could not clear logcat on $Serial before verifying $Label; an earlier run's messages would count against the baseline." }
+        # Reset before the run, or a shell that printed no exit line leaves the previous
+        # verification's zero here and the patched build passes on the clean one's result.
+        $script:dexoatExit = $null
         & $adbPath -s $Serial shell "dex2oat64 --dex-file=$remote --oat-file=$dir/out.oat --output-vdex=$dir/out.vdex --instruction-set=arm64 --compiler-filter=verify --runtime-arg -Xmx1024m -j4; echo exit=`$?" |
             ForEach-Object { if ("$_" -match 'exit=(\d+)') { $script:dexoatExit = [int]$Matches[1] } }
         $log = & $adbPath -s $Serial logcat -d 2>$null
         & $adbPath -s $Serial shell "rm -rf $dir $remote" | Out-Null
+        if ($null -eq $script:dexoatExit) { throw "dex2oat on $Label reported no exit code; the shell did not finish." }
         if ($script:dexoatExit -ne 0) { throw "dex2oat on $Label exited $($script:dexoatExit)." }
         # The message carries the method it is about, so the method name is the identity here:
         # timestamps and pids differ between two runs of the same APK and mean nothing. Counted
@@ -178,6 +196,16 @@ if ($Serial) {
         } else {
             Write-Host '[registers] device: the patched build raises no verifier message the clean build does not.'
         }
+    }
+}
+
+} finally {
+    if (-not $keepWork) {
+        Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
+    } else {
+        Get-ChildItem -LiteralPath $work -File -ErrorAction SilentlyContinue |
+            Where-Object { $_.Extension -eq '.apk' } |
+            Remove-Item -Force -ErrorAction SilentlyContinue
     }
 }
 

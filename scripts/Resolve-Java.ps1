@@ -38,13 +38,18 @@ function Resolve-Java {
         if (-not $candidate) { continue }
         # A JDK directory is what the error message asks for, so take it as one when it is one.
         if (Test-Path -LiteralPath $candidate -PathType Container) {
+            $found = $false
             foreach ($leaf in @('bin/java.exe', 'bin/java')) {
                 $inside = Join-Path $candidate $leaf
                 if (Test-Path -LiteralPath $inside -PathType Leaf) {
                     $candidates.Add($inside)
+                    $found = $true
                     break
                 }
             }
+            # A directory with no java in it is still what the caller asked for. Recorded, so
+            # the failure names it rather than quietly running whatever java is on the PATH.
+            if (-not $found) { $candidates.Add((Join-Path $candidate 'bin/java.exe')) }
             continue
         }
         $candidates.Add($candidate)
