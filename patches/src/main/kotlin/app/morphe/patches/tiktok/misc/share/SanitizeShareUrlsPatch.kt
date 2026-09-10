@@ -11,6 +11,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.patches.tiktok.shared.requireRegisters
 import app.morphe.util.numberOfParameterRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 
@@ -44,10 +45,19 @@ val sanitizeShareUrlsPatch = bytecodePatch(
                 (if (AccessFlags.STATIC.isSet(accessFlags)) 0 else 1) +
                 widthOf(parameterTypes[0].toString())
 
+            // The parameter has to be the string the extension is declared to take. The
+            // fingerprint asks for two strings somewhere in the list, not for this one here.
+            check(parameterTypes.getOrNull(1)?.toString() == "Ljava/lang/String;") {
+                "Sanitize sharing links: ${definingClass}->$name does not take the URL as its " +
+                    "second parameter: ${parameterTypes.joinToString()}"
+            }
+            // The rewrite returns at once, so v0 may be a parameter; the frame has to hold it.
+            requireRegisters("Sanitize sharing links", 1)
+            // Range form: a parameter of a large frame sits past v15.
             addInstructions(
                 0,
                 """
-                    invoke-static {v$urlRegister}, $EXTENSION_CLASS_DESCRIPTOR->rewriteShareUrl(Ljava/lang/String;)Ljava/lang/String;
+                    invoke-static/range {v$urlRegister .. v$urlRegister}, $EXTENSION_CLASS_DESCRIPTOR->rewriteShareUrl(Ljava/lang/String;)Ljava/lang/String;
                     move-result-object v0
                     return-object v0
                 """,

@@ -84,7 +84,7 @@ val refreshRatePatch = bytecodePatch(
             }
         }
 
-        if (patched == 0) throw PatchException("Uncap the refresh rate: nothing asks for one.")
+        if (patched == 0) throw PatchException("Keep the screen's refresh rate: nothing asks for one.")
 
         SettingsStatusLoadFingerprint.method.addInstruction(
             0,

@@ -72,7 +72,7 @@ val duetStitchPatch = bytecodePatch(
                     val setting = getInstruction<OneRegisterInstruction>(index).registerA
                     check(setting <= 15) {
                         "Allow Duet and Stitch: ${fingerprint.name} returns from v$setting, " +
-                            "which move-result cannot reach."
+                            "past what the plain invoke below can name."
                     }
                     addInstructions(
                         index,

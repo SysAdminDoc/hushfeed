@@ -17,6 +17,7 @@ import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionOrThrow
+import app.morphe.util.moveResultRegisterAfter
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
@@ -60,11 +61,11 @@ val hideFloatingPromotionsPatch = bytecodePatch(
                         reference.returnType == "Ljava/lang/Object;"
                 } == true
             }
-            val resultRegister = method.getInstruction<OneRegisterInstruction>(parseIndex + 1).registerA
+            val resultRegister = method.moveResultRegisterAfter(parseIndex, "Hide floating promotions")
             method.addInstructions(
                 parseIndex + 2,
                 """
-                    invoke-static {v$resultRegister}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->filterNormalPendant(Ljava/lang/Object;)Ljava/lang/Object;
+                    invoke-static/range {v$resultRegister .. v$resultRegister}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->filterNormalPendant(Ljava/lang/Object;)Ljava/lang/Object;
                     move-result-object v$resultRegister
                 """,
             )

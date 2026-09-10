@@ -15,6 +15,8 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.patches.tiktok.shared.requireLocals
+import app.morphe.util.findFreeRegister
 import com.android.tools.smali.dexlib2.Opcode
 
 private const val EXTENSION_CLASS_DESCRIPTOR =
@@ -37,6 +39,7 @@ val openExternalLinksPatch = bytecodePatch(
                 "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableExternalBrowser()V",
         )
 
+        SparkThirdRouterOpenFingerprint.method.requireLocals("Open links in external browser", 1)
         SparkThirdRouterOpenFingerprint.method.addInstructionsWithLabels(
             0,
             """
@@ -51,6 +54,7 @@ val openExternalLinksPatch = bytecodePatch(
             ),
         )
 
+        StoryLinkSheetFingerprint.method.requireLocals("Open links in external browser", 1)
         StoryLinkSheetFingerprint.method.addInstructionsWithLabels(
             0,
             """
@@ -70,12 +74,19 @@ val openExternalLinksPatch = bytecodePatch(
         check(superOnCreateIndex >= 0) {
             "Could not find SparkActivity super.onCreate call"
         }
+        // Past index 0 a local can be live: whatever the host loaded before super.onCreate
+        // and reads after it. The register is one nothing is holding at that point, not v0.
+        val sparkResult = SparkActivityOnCreateFingerprint.method.findFreeRegister(superOnCreateIndex + 1)
+        check(sparkResult <= 15) {
+            "Open links in external browser: no register below v16 is free after SparkActivity's " +
+                "super.onCreate, and the branch below cannot name v$sparkResult."
+        }
         SparkActivityOnCreateFingerprint.method.addInstructionsWithLabels(
             superOnCreateIndex + 1,
             """
                 invoke-static/range {p0 .. p0}, $EXTENSION_CLASS_DESCRIPTOR->openSparkActivity(Landroid/app/Activity;)Z
-                move-result v0
-                if-eqz v0, :external_browser_spark_activity_original
+                move-result v$sparkResult
+                if-eqz v$sparkResult, :external_browser_spark_activity_original
                 return-void
             """,
             ExternalLabel(

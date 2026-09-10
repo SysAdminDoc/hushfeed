@@ -108,10 +108,13 @@ internal fun BytecodePatchContext.hookAppAbIntBoundary(
     extensionMethod: String,
 ) {
     appAbClass().methodOfShape(APP_AB_INT, "App AB int boundary").apply {
-        implementation!!.instructions.withIndex()
+        val returns = implementation!!.instructions.withIndex()
             .filter { it.value.opcode == Opcode.RETURN }
             .map { it.index }
-            .asReversed()
+        check(returns.isNotEmpty()) {
+            "App AB int boundary: $definingClass->$name has no int return to hook for $extensionMethod."
+        }
+        returns.asReversed()
             .forEach { returnIndex ->
                 val register = getInstruction<OneRegisterInstruction>(returnIndex).registerA
                 // The key register is a parameter, which a plain invoke cannot name on a host

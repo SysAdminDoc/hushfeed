@@ -135,3 +135,38 @@ internal fun MutableMethod.callThroughLocals(
     }
     return (moves + "$invoke {${named.joinToString(", ")}}, $target").joinToString("\n")
 }
+
+/**
+ * Refuses a frame with fewer than [count] local registers, naming the patch and the method.
+ *
+ * An injection that writes v0 at index 0 is writing a local on every method seen so far, and
+ * would be writing the first parameter, `this` on an instance method, on one with no locals.
+ * Nothing about the smali says which; this does, before the instruction is assembled.
+ */
+internal fun MutableMethod.requireLocals(patch: String, count: Int) {
+    val body = implementation ?: throw PatchException("$patch: $definingClass->$name has no implementation")
+    val locals = body.registerCount - numberOfParameterRegisters
+    if (locals < count) {
+        throw PatchException(
+            "$patch: $definingClass->$name has $locals local register(s), and the injection " +
+                "writes $count. The write would land on a parameter.",
+        )
+    }
+}
+
+/**
+ * Refuses a frame with fewer than [count] registers in all, naming the patch and the method.
+ *
+ * For an injection that replaces the method outright, returning before any of the host's own
+ * instructions run. Such a body may write over the parameters, because nothing reads them
+ * afterwards; what it cannot do is name a register the frame does not have.
+ */
+internal fun MutableMethod.requireRegisters(patch: String, count: Int) {
+    val body = implementation ?: throw PatchException("$patch: $definingClass->$name has no implementation")
+    if (body.registerCount < count) {
+        throw PatchException(
+            "$patch: $definingClass->$name has ${body.registerCount} register(s), and the " +
+                "replacement names $count.",
+        )
+    }
+}

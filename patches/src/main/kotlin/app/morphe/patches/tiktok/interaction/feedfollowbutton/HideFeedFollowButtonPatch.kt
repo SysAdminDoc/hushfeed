@@ -15,6 +15,7 @@ import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.getReference
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val VIEW_GROUP_DESCRIPTOR = "Landroid/view/ViewGroup;"
@@ -25,7 +26,10 @@ private object FeedFollowVisibilityFingerprint : Fingerprint(
     definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/avatar/FeedAvatarDefaultAssem;",
     returnType = "V",
     custom = { method, _ ->
-        method.parameterTypes.size == 3 &&
+        // An instance method, or p2 below is the third parameter rather than the second: on
+        // a static one the visibility sits in p1 and p2 holds an object the int is written over.
+        !AccessFlags.STATIC.isSet(method.accessFlags) &&
+            method.parameterTypes.size == 3 &&
             method.parameterTypes[0] == VIEW_GROUP_DESCRIPTOR &&
             method.parameterTypes[1] == "I" &&
             method.implementation?.instructions?.let { instructions ->

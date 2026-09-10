@@ -47,6 +47,12 @@ val followDiagnosticsPatch = bytecodePatch(
 
     execute {
         val patchesByMethod = linkedMapOf<Method, ArrayDeque<FollowCallPatch>>()
+        // Each anchor is a name test inside a walk over every class, and a name that no method
+        // carries any more simply never matches. Counted, so that a build which renames one
+        // fails the patch by name instead of shipping it with that hook missing.
+        var commonFollowHooks = 0
+        var executeCallHooks = 0
+        var parseResponseHooks = 0
 
         classDefForEach { classDef ->
             for (method in classDef.methods) {
@@ -55,18 +61,21 @@ val followDiagnosticsPatch = bytecodePatch(
                 if (classDef.type == COMMON_FOLLOW_API_DESCRIPTOR && method.name == "LIZ") {
                     val mutableMethod = mutableClassDefBy(classDef.type).findMutableMethodOf(method)
                     patchCommonFollowApi(mutableMethod)
+                    commonFollowHooks++
                     continue
                 }
 
                 if (classDef.type == CALL_SERVER_INTERCEPTOR_DESCRIPTOR && method.name == NETWORK_EXECUTE_CALL_METHOD) {
                     val mutableMethod = mutableClassDefBy(classDef.type).findMutableMethodOf(method)
                     patchNetworkExecuteCall(mutableMethod)
+                    executeCallHooks++
                     continue
                 }
 
                 if (classDef.type == CALL_SERVER_INTERCEPTOR_DESCRIPTOR && method.name == NETWORK_PARSE_RESPONSE_METHOD) {
                     val mutableMethod = mutableClassDefBy(classDef.type).findMutableMethodOf(method)
                     patchNetworkParseResponse(mutableMethod)
+                    parseResponseHooks++
                     continue
                 }
 
@@ -77,6 +86,22 @@ val followDiagnosticsPatch = bytecodePatch(
                         .add(FollowCallPatch(index, beforeInstructions))
                 }
             }
+        }
+
+        check(commonFollowHooks == 1) {
+            "Follow diagnostics: expected one $COMMON_FOLLOW_API_DESCRIPTOR->LIZ to hook, " +
+                "found $commonFollowHooks."
+        }
+        check(executeCallHooks == 1) {
+            "Follow diagnostics: expected one $CALL_SERVER_INTERCEPTOR_DESCRIPTOR->" +
+                "$NETWORK_EXECUTE_CALL_METHOD to hook, found $executeCallHooks."
+        }
+        check(parseResponseHooks == 1) {
+            "Follow diagnostics: expected one $CALL_SERVER_INTERCEPTOR_DESCRIPTOR->" +
+                "$NETWORK_PARSE_RESPONSE_METHOD to hook, found $parseResponseHooks."
+        }
+        check(patchesByMethod.isNotEmpty()) {
+            "Follow diagnostics: no call site asks the follow services for a request."
         }
 
         patchesByMethod.forEach { (method, patches) ->
@@ -167,6 +192,18 @@ private fun patchNetworkLancet(
         throw PatchException("Follow diagnostics: ${method.name} catches nothing to report.")
     }
     val throwableRegister = (instructions[exceptionIndex] as OneRegisterInstruction).registerA
+
+    // Two-argument calls in the plain form, injected where the host's locals are live, so
+    // nothing can be staged into a lower register. The registers come off eight bit
+    // instructions and are refused here rather than at the assembler, which names nothing.
+    for ((what, register) in listOf("request" to requestRegister, "response" to responseRegister, "throwable" to throwableRegister)) {
+        if (register > 15) {
+            throw PatchException(
+                "Follow diagnostics: ${method.name} keeps its $what in v$register, past what " +
+                    "the plain invoke can name.",
+            )
+        }
+    }
 
     // Highest index first. Every index above was read from the untouched method, and inserting
     // at a lower one moves all of them; this held only because the catch handler happens to sit

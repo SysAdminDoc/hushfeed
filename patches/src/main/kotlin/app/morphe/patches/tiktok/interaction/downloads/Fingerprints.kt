@@ -8,6 +8,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 internal object AclCommonShareFingerprint : Fingerprint(
     definingClass = "/ACLCommonShare;",
@@ -71,11 +72,22 @@ internal object CommentImageWatermarkFingerprint : Fingerprint(
     returnType = "V",
 )
 
+/**
+ * Strings match by substring, so "/", "/Camera" and "/Camera/" are all satisfied by the
+ * lookup method's own "/Camera/" and told the two apart only by which the patcher visited
+ * first. The lookup is the one that queries by relative path and MIME type; this one must not.
+ */
 internal object PhotoDownloadUriFingerprint : Fingerprint(
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
     returnType = "Landroid/net/Uri;",
     parameters = listOf("Landroid/content/Context;", "Ljava/lang/String;", "Ljava/lang/String;"),
     strings = listOf("/", "/Camera", "/Camera/"),
+    custom = { method, _ ->
+        method.implementation?.instructions?.none { instruction ->
+            val string = instruction.getReference<StringReference>()?.string ?: return@none false
+            string == "image/*" || string.contains("relative_path=?")
+        } == true
+    },
 )
 
 internal object VideoLookupUriFingerprint : Fingerprint(

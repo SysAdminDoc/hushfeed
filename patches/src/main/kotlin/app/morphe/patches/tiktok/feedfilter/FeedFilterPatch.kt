@@ -4,20 +4,21 @@
  */
 package app.morphe.patches.tiktok.feedfilter
 
-import app.morphe.patches.shared.compat.AppCompatibilities
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
-import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import app.morphe.patcher.util.smali.ExternalLabel
+import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.patches.tiktok.shared.callThroughLocals
 import app.morphe.patches.tiktok.shared.objectIn
+import app.morphe.patches.tiktok.shared.requireLocals
 import app.morphe.util.addInstructionsAtControlFlowLabel
 import app.morphe.util.findInstructionIndicesReversedOrThrow
 import app.morphe.util.getFreeRegisterProvider
@@ -339,6 +340,7 @@ val feedFilterPatch = bytecodePatch(
             }
         }
 
+        TakoAiFeedButtonSetVisibleFingerprint.method.requireLocals("Feed filter", 1)
         TakoAiFeedButtonSetVisibleFingerprint.method.addInstructions(
             0,
             """
@@ -368,6 +370,7 @@ val feedFilterPatch = bytecodePatch(
         // Things TikTok slots into the feed that never arrive as ordinary items, so they
         // are stopped where they are built. Each is optional: a build without the surface
         // simply skips it.
+        PlaylistBottomBarAvailableFingerprint.method.requireLocals("Feed filter", 1)
         PlaylistBottomBarAvailableFingerprint.method.addInstructions(
             0,
             """
@@ -382,6 +385,7 @@ val feedFilterPatch = bytecodePatch(
         )
 
         // Null is the app's own "no recommended users to insert" result.
+        RecUserCardInsertFingerprint.method.requireLocals("Feed filter", 1)
         RecUserCardInsertFingerprint.method.addInstructions(
             0,
             """
@@ -395,6 +399,7 @@ val feedFilterPatch = bytecodePatch(
             """,
         )
 
+        FeedLynxCardLoadFingerprint.method.requireLocals("Feed filter", 1)
         FeedLynxCardLoadFingerprint.method.addInstructions(
             0,
             """
@@ -417,13 +422,14 @@ val feedFilterPatch = bytecodePatch(
                 addInstructions(
                     dramaReturnIndex,
                     """
-                        invoke-static {v$dramaRegister}, $CARD_FILTERS_CLASS_DESCRIPTOR->shouldBlockForDramaAd(Z)Z
+                        invoke-static/range {v$dramaRegister .. v$dramaRegister}, $CARD_FILTERS_CLASS_DESCRIPTOR->shouldBlockForDramaAd(Z)Z
                         move-result v$dramaRegister
                     """,
                 )
             }
         }
 
+        SpecActTouchpointAttachFingerprint.method.requireLocals("Feed filter", 1)
         SpecActTouchpointAttachFingerprint.method.addInstructions(
             0,
             """

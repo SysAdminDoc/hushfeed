@@ -47,11 +47,13 @@ val showSeekbarPatch = bytecodePatch(
         )
 
         SetSeekBarShowTypeFingerprint.method.apply {
+            // The last parameter, which the fingerprint holds to being the int. An int takes one
+            // register, so it is the top of the frame; range form, because that can sit past v15.
             val typeRegister = implementation!!.registerCount - 1
             addInstructions(
                 0,
                 """
-                    invoke-static {v$typeRegister}, $EXTENSION_CLASS_DESCRIPTOR->overrideSeekbarShowType(I)I
+                    invoke-static/range {v$typeRegister .. v$typeRegister}, $EXTENSION_CLASS_DESCRIPTOR->overrideSeekbarShowType(I)I
                     move-result v$typeRegister
                 """,
             )

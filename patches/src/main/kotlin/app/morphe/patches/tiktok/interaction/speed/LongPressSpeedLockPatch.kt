@@ -6,7 +6,6 @@ package app.morphe.patches.tiktok.interaction.speed
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
@@ -14,7 +13,7 @@ import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionOrThrow
-import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import app.morphe.util.moveResultRegisterAfter
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val FEATURE_CONTROLS_CLASS_DESCRIPTOR =
@@ -44,11 +43,11 @@ val longPressSpeedLockPatch = bytecodePatch(
                         reference.returnType == "Z"
                 } == true
             }
-            val resultRegister = method.getInstruction<OneRegisterInstruction>(lookupIndex + 1).registerA
+            val resultRegister = method.moveResultRegisterAfter(lookupIndex, "Hold-and-slide 2x lock")
             method.addInstructions(
                 lookupIndex + 2,
                 """
-                    invoke-static {v$resultRegister}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->overrideLongPressSpeedUpEnabled(Z)Z
+                    invoke-static/range {v$resultRegister .. v$resultRegister}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->overrideLongPressSpeedUpEnabled(Z)Z
                     move-result v$resultRegister
                 """,
             )
@@ -61,11 +60,11 @@ val longPressSpeedLockPatch = bytecodePatch(
                         reference.returnType == "I"
                 } == true
             }
-            val resultRegister = method.getInstruction<OneRegisterInstruction>(lookupIndex + 1).registerA
+            val resultRegister = method.moveResultRegisterAfter(lookupIndex, "Hold-and-slide 2x lock")
             method.addInstructions(
                 lookupIndex + 2,
                 """
-                    invoke-static {v$resultRegister}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->overrideLongPressSpeedUpLockDistance(I)I
+                    invoke-static/range {v$resultRegister .. v$resultRegister}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->overrideLongPressSpeedUpLockDistance(I)I
                     move-result v$resultRegister
                 """,
             )

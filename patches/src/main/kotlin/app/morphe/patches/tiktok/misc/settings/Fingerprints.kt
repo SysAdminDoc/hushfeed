@@ -30,11 +30,18 @@ internal object SettingsStatusLoadFingerprint : Fingerprint(
     },
 )
 
+/**
+ * The crash reporter's initialiser, which is handed the application context. The context is
+ * what the injection passes on, so its position is part of the shape: first, and the only
+ * parameter, or the register arithmetic in the patch names something else.
+ */
 internal object NpthExtentTaskInitFingerprint : Fingerprint(
+    returnType = "V",
+    parameters = listOf("Landroid/content/Context;"),
     custom = { method, classDef ->
         classDef.endsWith("/NpthExtentTask;") &&
             method.name == "LIZ" &&
-            method.returnType == "V"
+            method.parameterTypes.size == 1
     },
 )
 

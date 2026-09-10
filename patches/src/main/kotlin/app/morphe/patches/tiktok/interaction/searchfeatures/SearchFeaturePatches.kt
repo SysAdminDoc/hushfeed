@@ -26,12 +26,21 @@ private fun BytecodePatchContext.patchBooleanGate(
     extensionMethod: String,
 ) {
     fingerprint.method.apply {
-        implementation!!.instructions.withIndex()
+        val returns = implementation!!.instructions.withIndex()
             .filter { it.value.opcode == Opcode.RETURN }
             .map { it.index }
-            .asReversed()
+        // A gate with no boolean return, because it throws or boxes its answer, would leave
+        // the switch applied and doing nothing.
+        check(returns.isNotEmpty()) {
+            "Search features: $definingClass->$name has no boolean return to hook for $extensionMethod."
+        }
+        returns.asReversed()
             .forEach { returnIndex ->
                 val register = getInstruction<OneRegisterInstruction>(returnIndex).registerA
+                check(register <= 15) {
+                    "Search features: $definingClass->$name returns from v$register, past what " +
+                        "the plain invoke can name."
+                }
                 addInstructions(
                     returnIndex,
                     """

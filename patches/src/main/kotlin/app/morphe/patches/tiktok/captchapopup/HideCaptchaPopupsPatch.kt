@@ -16,6 +16,7 @@ import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.patches.tiktok.shared.callThroughLocals
 import app.morphe.patches.tiktok.shared.objectIn
+import app.morphe.patches.tiktok.shared.requireLocals
 import app.morphe.patches.tiktok.shared.valueIn
 import com.android.tools.smali.dexlib2.AccessFlags
 
@@ -126,6 +127,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
         // Every invoke below is /range: the parameter registers of a large native method can
         // sit above v15, which format 35c cannot encode.
         CaptchaPopupFingerprint.method.apply {
+            requireLocals("Hide CAPTCHA popups", 1)
             val dismiss = dismissCall(parameterTypes[2].toString(), SEC_DISMISS)
             addInstructions(
                 0,
@@ -144,6 +146,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
         }
 
         LegacyCaptchaPopupFingerprint.method.apply {
+            requireLocals("Hide CAPTCHA popups", 1)
             val dismiss = dismissCall(parameterTypes[2].toString(), SEC_DISMISS)
             addInstructions(
                 0,
@@ -162,6 +165,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
         }
 
         OecCaptchaPopupFingerprint.method.apply {
+            requireLocals("Hide CAPTCHA popups", 2)
             val onFail = callThroughLocals(
                 "Hide CAPTCHA popups",
                 "invoke-interface",
@@ -188,6 +192,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
         }
 
         LiveHostCaptchaPopupFingerprint.method.apply {
+            requireLocals("Hide CAPTCHA popups", 1)
             val dismiss = dismissCall(parameterTypes[2].toString(), LIVE_DISMISS)
             addInstructions(
                 0,
@@ -207,6 +212,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
 
         // Network verification can present Turing directly without passing through SecApiImpl.
         BdTuringCaptchaPopupFingerprint.method.apply {
+            requireLocals("Hide CAPTCHA popups", 2)
             val onFail = callThroughLocals(
                 "Hide CAPTCHA popups",
                 "invoke-interface",

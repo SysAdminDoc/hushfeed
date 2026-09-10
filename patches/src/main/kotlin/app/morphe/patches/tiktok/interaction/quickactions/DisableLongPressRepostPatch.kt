@@ -13,6 +13,7 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.patches.tiktok.shared.requireLocals
 
 private const val FEATURE_CONTROLS_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/featurecontrols/FeatureControls;"
@@ -34,6 +35,7 @@ val disableLongPressRepostPatch = bytecodePatch(
         )
 
         LongPressRepostGateFingerprint.method.apply {
+            requireLocals("Disable the long press repost", 1)
             addInstructionsWithLabels(
                 0,
                 """

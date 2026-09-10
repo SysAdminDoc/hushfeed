@@ -15,6 +15,7 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.patches.tiktok.shared.requireLocals
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionOrThrow
 import app.morphe.util.indexOfFirstInstructionReversedOrThrow
@@ -67,6 +68,8 @@ val resumeVideoAfterScrollPatch = bytecodePatch(
         }
 
         FeedPlayCompletedFingerprint.method.apply {
+            // v0 and v1 are written before the host's own first instruction runs.
+            requireLocals("Resume videos after scrolling", 2)
             addInstructionsWithLabels(
                 0,
                 """

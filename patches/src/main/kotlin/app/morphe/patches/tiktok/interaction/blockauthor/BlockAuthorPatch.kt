@@ -94,7 +94,13 @@ val blockAuthorPatch = bytecodePatch(
             Triple("onDestroyView", emptyList(), "onDetailDestroyed(Ljava/lang/Object;)V"),
             Triple("setUserVisibleHint", listOf("Z"), "onDetailVisibility(Ljava/lang/Object;Z)V"),
         ).forEach { (name, parameters, callback) ->
-            val method = detail.methods.single { it.name == name && it.parameterTypes == parameters }
+            val candidates = detail.methods.filter { it.name == name && it.parameterTypes == parameters }
+            check(candidates.size == 1) {
+                "Block author: expected DetailPageFragment to declare one $name$parameters, " +
+                    "found ${candidates.size}. A lifecycle method it no longer overrides is " +
+                    "inherited, and there is nothing on the class to hook."
+            }
+            val method = candidates.single()
             val endRegister = if (parameters.isEmpty()) "p0" else "p1"
             method.addInstruction(0, "invoke-static/range { p0 .. $endRegister }, $visibility->$callback")
         }

@@ -4,7 +4,6 @@
  */
 package app.morphe.patches.tiktok.misc.settings
 
-import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
@@ -14,16 +13,19 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
+import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
-import app.morphe.util.findMutableMethodOf
+import app.morphe.patches.tiktok.shared.requireLocals
+import app.morphe.patches.tiktok.shared.requireRegisters
 import app.morphe.util.findFreeRegister
+import app.morphe.util.findMutableMethodOf
 import app.morphe.util.getFreeRegisterProvider
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionOrThrow
 import app.morphe.util.numberOfParameterRegisters
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method as SmaliMethod
-import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -257,6 +259,10 @@ val settingsPatch = bytecodePatch(
         }
 
         fun MutableMethod.openMorpheSettingsAtStart(contextRegister: String) {
+            // The body replaces the lambda outright and returns, so the parameters are fair
+            // to write over; the frame still has to hold the three registers it names. The
+            // OpenDebug lambda has no locals at all on 46.2.3, only its parameters.
+            requireRegisters("Settings", 3)
             addInstructions(
                 0,
                 """
@@ -376,6 +382,7 @@ val settingsPatch = bytecodePatch(
         }
 
         AdPersonalizationActivityOnBackPressedFingerprint.method.apply {
+            requireLocals("Settings", 1)
             addInstructionsWithLabels(
                 0,
                 """
@@ -447,6 +454,10 @@ val settingsPatch = bytecodePatch(
         val clickWrapperMethod = resolveClickWrapperMethod()
         val openDebugClickWrapperClass = clickWrapperMethod.definingClass
         clickWrapperMethod.apply {
+            // v0, v1 and v2 all written at index 0, and the body returns without reaching the
+            // wrapper's own code, so the parameters may be written over. The frame has to hold
+            // three registers all the same.
+            requireRegisters("Settings", 3)
             addInstructions(
                 0,
                 """

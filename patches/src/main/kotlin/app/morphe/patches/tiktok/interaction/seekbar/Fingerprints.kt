@@ -31,6 +31,12 @@ internal object ShouldShowProgressBarFingerprint : Fingerprint(
     },
 )
 
+/**
+ * The setter that logs the type it was handed. The patch reads that type from the last
+ * parameter, so the last parameter has to be an int, and there has to be one: the string alone
+ * would also match a method that logs it from a field.
+ */
 internal object SetSeekBarShowTypeFingerprint : Fingerprint(
     strings = listOf("seekbar show type change, change to:"),
+    custom = { method, _ -> method.parameterTypes.lastOrNull()?.toString() == "I" },
 )
