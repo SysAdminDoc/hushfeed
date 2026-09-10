@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Long-press actions now run from the current feed's coordinate callback as well as its older gesture listener. The patch keeps TikTok's own timer and menu coordinates, and hands the gesture back when the chosen action doesn't handle it.
+
 * Edge seeking now converts the requested position into the percentage TikTok's player expects. Its position, video identity and duration checks still use milliseconds. The player fixtures were corrected to use the native conversion, which exposed this mismatch.
 
 * Turning comment search off removes its box from an already open comment sheet and restores the rows it hid. Turning it back on works with those same loaded comments, while rows TikTok collapsed keep their native state.

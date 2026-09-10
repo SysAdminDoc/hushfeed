@@ -26,6 +26,43 @@ private const val EXTENSION = "Lapp/morphe/extension/tiktok/interaction/GestureA
 private const val SEEK_EXTENSION = "Lapp/morphe/extension/tiktok/interaction/FeedSeek;"
 private const val MOTION_EVENT = "Landroid/view/MotionEvent;"
 private const val EDGE_SPEEDUP = "Lcom/ss/android/ugc/aweme/feed/longvideo/edgespeedup/EdgeSpeedupAssem;"
+private const val DEFAULT_COORDINATE_LISTENER = "LX/0QPc;"
+private const val ADAPTER_COORDINATE_LISTENER = "LX/0QPd;"
+
+private object DefaultCoordinateLongPressFingerprint : Fingerprint(
+    definingClass = DEFAULT_COORDINATE_LISTENER,
+    name = "LIZ",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
+    parameters = listOf("F", "F"),
+    returnType = "V",
+)
+
+private object AdapterCoordinateLongPressFingerprint : Fingerprint(
+    definingClass = ADAPTER_COORDINATE_LISTENER,
+    name = "LIZ",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
+    parameters = listOf("F", "F"),
+    returnType = "V",
+)
+
+internal fun MutableMethod.hookCoordinateLongPress() {
+    check(definingClass in listOf(DEFAULT_COORDINATE_LISTENER, ADAPTER_COORDINATE_LISTENER)
+        && name == "LIZ" && parameterTypes.map(CharSequence::toString) == listOf("F", "F")
+        && returnType == "V" && accessFlags == (AccessFlags.PUBLIC.value or AccessFlags.FINAL.value)) {
+        "Long-press controls: unexpected native coordinate callback signature."
+    }
+    val registers = implementation!!.registerCount
+    check(registers - numberOfParameterRegisters >= 1 && registers <= 16) {
+        "Long-press controls: native coordinates no longer fit the gesture hook."
+    }
+    // 0R9T's existing timer supplies local DOWN x in p1. Native p2/y and the event body survive.
+    addInstructionsWithLabels(0, """
+        invoke-static { p1 }, $EXTENSION->onLongPress(F)Z
+        move-result v0
+        if-eqz v0, :native_coordinate_action
+        return-void
+    """, ExternalLabel("native_coordinate_action", getInstruction(0)))
+}
 
 private object EdgeSpeedupEligibilityFingerprint : Fingerprint(
     definingClass = EDGE_SPEEDUP,
@@ -58,8 +95,8 @@ internal fun MutableMethod.preserveConfiguredLongPressFromEdgeSpeedup() {
  * The feed's gesture listener. Its class name is obfuscated and changes between builds, so
  * it is found by shape: the OnGestureListener whose {@code onDoubleTap} hands the event to
  * the real-named {@code handleDoubleClick(MotionEvent)}. Only that listener does, and it is
- * the one VideoViewCell installs on the cell's touch layer. The landscape cell has its own
- * listener, which does not reach handleDoubleClick and so is left alone.
+ * the one VideoViewCell installs on its gradual-mask view. Ordinary cells also have a separate
+ * coordinate timer hooked above. The landscape listener does not reach handleDoubleClick.
  */
 private object FeedLongPressFingerprint : Fingerprint(
     name = "onLongPress",
@@ -120,6 +157,8 @@ val longPressPatch = bytecodePatch(
 
     execute {
         EdgeSpeedupEligibilityFingerprint.method.preserveConfiguredLongPressFromEdgeSpeedup()
+        DefaultCoordinateLongPressFingerprint.method.hookCoordinateLongPress()
+        AdapterCoordinateLongPressFingerprint.method.hookCoordinateLongPress()
 
         FeedLongPressFingerprint.method.apply {
             // v0 is scratch; the check keeps it a local rather than a parameter register.

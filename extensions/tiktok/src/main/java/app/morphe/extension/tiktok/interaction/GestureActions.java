@@ -106,7 +106,15 @@ public final class GestureActions {
      * which is what keeps the 2x hold and the quick share sheet from also firing.
      */
     public static boolean onLongPress(MotionEvent event) {
-        long delta = edgeSeekDelta(event);
+        return handleLongPress(edgeSeekDelta(event));
+    }
+
+    /** Ordinary feed cells deliver the saved local DOWN x through their native timer. */
+    public static boolean onLongPress(float x) {
+        return handleLongPress(edgeSeekDelta(x));
+    }
+
+    private static boolean handleLongPress(long delta) {
         if (delta != 0) {
             // Named, so a post that never reported progress cannot move the video before it.
             String videoId = Reflect.string(CurrentVideoAuthor.getAweme(), "getAid", "aid");
