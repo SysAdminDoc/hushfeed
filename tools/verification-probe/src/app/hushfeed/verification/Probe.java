@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Process;
 import android.util.Log;
 
 import java.lang.reflect.Method;
@@ -100,13 +99,19 @@ public final class Probe extends Instrumentation {
                     ClassLoader loader = waitForHushfeed(context);
                     IntentFilter filter = new IntentFilter(ACTION);
                     BroadcastReceiver receiver = new Commands(context, loader);
+                    // The sender is adb, which is another uid, so the receiver has to be
+                    // exported. Exported to everything, any app on the phone could drive
+                    // Hushfeed's settings for as long as the probe is loaded, so the sender is
+                    // held to a permission only the shell and the platform can carry: DUMP is
+                    // signature-or-privileged, the shell requests it for dumpsys, and no app
+                    // from a store can be granted it. Root passes every permission check.
+                    // Asking the broadcast who sent it does not work here: the public
+                    // getSentFromUid answers -1 for the shell, whose package TikTok cannot see.
                     if (Build.VERSION.SDK_INT >= 33) {
-                        // The sender is adb, which is another uid, so the receiver has to be
-                        // exported. On a release build of the app there would be no receiver here
-                        // at all; this package is only ever installed to run a check.
-                        context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED);
+                        context.registerReceiver(
+                                receiver, filter, SENDER_PERMISSION, null, Context.RECEIVER_EXPORTED);
                     } else {
-                        context.registerReceiver(receiver, filter);
+                        context.registerReceiver(receiver, filter, SENDER_PERMISSION, null);
                     }
                     Log.i(TAG, "ready");
                 } catch (Throwable error) {
@@ -143,6 +148,9 @@ public final class Probe extends Instrumentation {
         throw new IllegalStateException("Hushfeed never took a context; is this build patched?");
     }
 
+    /** The permission a sender has to hold: the shell has it, an app from a store cannot. */
+    private static final String SENDER_PERMISSION = "android.permission.DUMP";
+
     /** One broadcast, one action, one line in the log. */
     private static final class Commands extends BroadcastReceiver {
         private final Context app;
@@ -155,16 +163,8 @@ public final class Probe extends Instrumentation {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            // Exported, because the sender is adb and that is another uid, and naming the target
-            // package on the adb side restricts where the broadcast goes rather than who may send
-            // one. Without this check any app on the phone could drive Hushfeed's settings for as
-            // long as the probe is loaded, which is not a thing a test tool should make possible
-            // even on a test phone.
-            int sender = getSendingUid();
-            if (sender != Process.SHELL_UID && sender != Process.ROOT_UID) {
-                Log.w(TAG, "ignored a broadcast from uid " + sender);
-                return;
-            }
+            // Who may send is settled where the receiver is registered, by the permission the
+            // sender has to hold. Nothing here needs to ask again.
             String action = intent.getStringExtra("action");
             if (action == null) action = "dump";
             try {
