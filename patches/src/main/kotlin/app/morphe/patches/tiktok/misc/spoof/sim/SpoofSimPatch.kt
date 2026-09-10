@@ -21,6 +21,7 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import app.morphe.patches.tiktok.shared.requireLocals
 
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/spoof/sim/SpoofSimPatch;"
 
@@ -38,6 +39,10 @@ val simSpoofPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
+        // Checked before the first write: the SIM change task's injection writes v0 and then
+        // falls into TikTok's own first instruction, so v0 has to be a local.
+        CheckSimChangeTaskFingerprint.method.requireLocals("SIM spoof", 1)
+
         val replacements = mapOf(
             "getSimCountryIso" to "getCountryIso",
             "getNetworkCountryIso" to "getCountryIso",

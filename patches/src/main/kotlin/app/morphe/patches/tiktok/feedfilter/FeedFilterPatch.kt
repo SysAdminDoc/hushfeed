@@ -501,6 +501,8 @@ private fun MutableMethod.filterChainedCacheDelivery(
 }
 
 private fun MutableMethod.filterPlayLagCacheInsertion() {
+    // v0 is written ahead of the host's own first instruction.
+    requireLocals("Feed filter", 1)
     addInstructionsWithLabels(
         0,
         """
@@ -518,6 +520,8 @@ private fun MutableMethod.filterReachBottomCacheDelivery(
     cachedAwemeField: FieldReference,
     cacheFailureField: FieldReference,
 ) {
+    // v0 and v1 are written ahead of the host's own first instruction.
+    requireLocals("Feed filter", 2)
     addInstructions(
         0,
         """

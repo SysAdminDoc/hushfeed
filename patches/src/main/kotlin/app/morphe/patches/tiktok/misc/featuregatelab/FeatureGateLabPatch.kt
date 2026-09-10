@@ -396,7 +396,7 @@ private fun MutableMethod.patchActivityCenterSchema() {
             addInstructions(
                 index,
                 """
-                    invoke-static {v$register}, $RUNTIME_DESCRIPTOR->transformActivityCenterSchema(Ljava/lang/String;)Ljava/lang/String;
+                    invoke-static/range {v$register .. v$register}, $RUNTIME_DESCRIPTOR->transformActivityCenterSchema(Ljava/lang/String;)Ljava/lang/String;
                     move-result-object v$register
                 """,
             )

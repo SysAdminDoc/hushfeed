@@ -12,6 +12,7 @@ import app.morphe.patches.tiktok.misc.absettings.hookAppAbIntBoundary
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.patches.tiktok.shared.requireLocals
 
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/seekbar/SeekbarPatch;"
 
@@ -26,6 +27,10 @@ val showSeekbarPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
+        // Checked before the first write: the predicate's injection writes v0 and then falls
+        // into TikTok's own first instruction, so v0 has to be a local rather than p0.
+        ShouldShowProgressBarFingerprint.method.requireLocals("Show the progress bar", 1)
+
         SettingsStatusLoadFingerprint.method.addInstruction(
             0,
             "invoke-static {}, " +

@@ -114,7 +114,7 @@ private fun MutableMethod.filterPromotionalTouchPoint() {
         addInstructions(
             index,
             """
-                invoke-static {v$register}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->filterPromotionalTouchPoint(Ljava/lang/Object;)Ljava/lang/Object;
+                invoke-static/range {v$register .. v$register}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->filterPromotionalTouchPoint(Ljava/lang/Object;)Ljava/lang/Object;
                 move-result-object v$register
                 check-cast v$register, $returnType
             """,
