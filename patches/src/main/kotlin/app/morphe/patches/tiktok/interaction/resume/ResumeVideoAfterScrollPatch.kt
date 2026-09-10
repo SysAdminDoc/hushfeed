@@ -29,6 +29,9 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 private const val EXTENSION_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/interaction/ResumeVideoAfterScrollPatch;"
 
+/** What a call's answer is taken with. Nothing may be put between the call and one of these. */
+private val MOVE_RESULTS = setOf(Opcode.MOVE_RESULT, Opcode.MOVE_RESULT_WIDE, Opcode.MOVE_RESULT_OBJECT)
+
 @Suppress("unused")
 val resumeVideoAfterScrollPatch = bytecodePatch(
     name = "Resume videos after scrolling",
@@ -40,55 +43,20 @@ val resumeVideoAfterScrollPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
-            0,
-            "invoke-static {}, " +
-                "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableResumeVideoAfterScroll()V",
-        )
+        // Everything the writes below need is read off the host and checked before the first of
+        // them, because the patcher does not take a failed patch's writes back out.
+        val settingsStatus = SettingsStatusLoadFingerprint.method
 
-        FeedProgressContinueGateFingerprint.method.apply {
-            // v0 is scratch and the branch falls back into the host's own first instruction, so
-            // the register has to be a local rather than one of the parameters.
-            check(implementation!!.registerCount - numberOfParameterRegisters >= 1) {
-                "Resume videos after scrolling: the continue gate has no free local register."
-            }
-            addInstructionsWithLabels(
-                0,
-                """
-                    invoke-static {}, $EXTENSION_DESCRIPTOR->shouldResumeVideoAfterScroll()Z
-                    move-result v0
-                    if-eqz v0, :continue_gate
-                    const/4 v0, 0x1
-                    invoke-static {v0}, Ljava/lang/Boolean;->valueOf(Z)Ljava/lang/Boolean;
-                    move-result-object v0
-                    return-object v0
-                """,
-                ExternalLabel("continue_gate", getInstruction(0)),
-            )
+        val continueGate = FeedProgressContinueGateFingerprint.method
+        // v0 is scratch and the branch falls back into the host's own first instruction, so
+        // the register has to be a local rather than one of the parameters.
+        check(continueGate.implementation!!.registerCount - continueGate.numberOfParameterRegisters >= 1) {
+            "Resume videos after scrolling: the continue gate has no free local register."
         }
 
-        FeedPlayCompletedFingerprint.method.apply {
-            // v0 and v1 are written before the host's own first instruction runs.
-            requireLocals("Resume videos after scrolling", 2)
-            addInstructionsWithLabels(
-                0,
-                """
-                    invoke-static {}, $EXTENSION_DESCRIPTOR->shouldResumeVideoAfterScroll()Z
-                    move-result v0
-                    if-eqz v0, :continue_completion
-                    sget-object v0, LX/0Lze;->LIZLLL:LX/01xP;
-                    invoke-interface {v0}, LX/01xP;->getValue()Ljava/lang/Object;
-                    move-result-object v0
-                    check-cast v0, Landroid/util/LruCache;
-                    move-object/from16 v1, p1
-                    invoke-virtual {v0, v1}, Landroid/util/LruCache;->remove(Ljava/lang/Object;)Ljava/lang/Object;
-                    const/4 v0, 0x0
-                    sput-object v0, LX/0Lze;->LJ:LX/0LxV;
-                    sput-object v0, LX/0Lze;->LJFF:Ljava/lang/String;
-                """,
-                ExternalLabel("continue_completion", getInstruction(0)),
-            )
-        }
+        val completed = FeedPlayCompletedFingerprint.method
+        // v0 and v1 are written before the host's own first instruction runs.
+        completed.requireLocals("Resume videos after scrolling", 2)
 
         // TikTok records a position for every feed it plays, but it only hands one back when the
         // feed's event type is in FeedPlayProgressContinueConfig.event_type_list. On 46.2.3 that
@@ -96,73 +64,123 @@ val resumeVideoAfterScrollPatch = bytecodePatch(
         // personal_homepage, landscape_mode, account_history and collection_video. The Following
         // and Friends tabs are not in it, which is why the switch appeared to do nothing there
         // while the position was being stored all along.
-        FeedProgressResumePositionFingerprint.method.apply {
-            val eventTypeListIndex = indexOfFirstInstructionOrThrow {
-                getReference<FieldReference>()?.name == "event_type_list"
-            }
-            val containsIndex = indexOfFirstInstructionOrThrow(eventTypeListIndex) {
-                val reference = getReference<MethodReference>()
-                reference?.definingClass == "Ljava/util/List;" && reference.name == "contains"
-            }
-            val resultInstruction = getInstruction(containsIndex + 1)
-            if (resultInstruction.opcode != Opcode.MOVE_RESULT) {
-                throw PatchException(
-                    "Resume video after scroll: the event type check does not keep its answer.",
-                )
-            }
-            val resultRegister = (resultInstruction as OneRegisterInstruction).registerA
-            check(resultRegister <= 15) {
-                "Resume video after scroll: the event type answer is above v15, which the " +
-                    "override cannot name."
-            }
+        val resumePosition = FeedProgressResumePositionFingerprint.method
+        val eventTypeListIndex = resumePosition.indexOfFirstInstructionOrThrow {
+            getReference<FieldReference>()?.name == "event_type_list"
+        }
+        val containsIndex = resumePosition.indexOfFirstInstructionOrThrow(eventTypeListIndex) {
+            val reference = getReference<MethodReference>()
+            reference?.definingClass == "Ljava/util/List;" && reference.name == "contains"
+        }
+        val containsResult = resumePosition.getInstruction(containsIndex + 1)
+        if (containsResult.opcode != Opcode.MOVE_RESULT) {
+            throw PatchException(
+                "Resume video after scroll: the event type check does not keep its answer.",
+            )
+        }
+        val eventTypeRegister = (containsResult as OneRegisterInstruction).registerA
+        check(eventTypeRegister <= 15) {
+            "Resume video after scroll: the event type answer is above v15, which the " +
+                "override cannot name."
+        }
 
-            addInstructions(
-                containsIndex + 2,
-                """
-                    invoke-static {v$resultRegister}, $EXTENSION_DESCRIPTOR->allowResumeInThisFeed(Z)Z
-                    move-result v$resultRegister
-                """,
+        val progress = FeedPlayProgressFingerprint.method
+        val cachePutIndex = progress.indexOfFirstInstructionReversedOrThrow {
+            val reference = getReference<MethodReference>()
+            reference?.definingClass == "Landroid/util/LruCache;" &&
+                reference.name == "put" &&
+                reference.parameterTypes.size == 2
+        }
+        // The cache, the key and a register to work in all come out of the put itself: it
+        // holds the cache and the key this has to remove, and the value it was given is
+        // spent the moment it returns. Naming them by number was right on 46.2.3 and says
+        // nothing about the next build.
+        val put = progress.getInstruction(cachePutIndex) as? FiveRegisterInstruction
+            ?: throw PatchException(
+                "Resume video after scroll: the progress cache put is not a plain invoke.",
+            )
+        val cacheRegister = put.registerC
+        val keyRegister = put.registerD
+        val scratchRegister = put.registerE
+        check(maxOf(cacheRegister, keyRegister, scratchRegister) <= 15) {
+            "Resume video after scroll: the progress cache put reaches above v15, which the " +
+                "removal cannot name."
+        }
+        // The value is only spent once the put returns if nothing takes the put's own answer,
+        // and a line wedged between a call and its move-result is one the verifier refuses.
+        val continueInstruction = progress.getInstruction(cachePutIndex + 1)
+        if (continueInstruction.opcode in MOVE_RESULTS) {
+            throw PatchException(
+                "Resume video after scroll: the progress cache put keeps its answer, so nothing " +
+                    "can go straight after it.",
             )
         }
 
-        FeedPlayProgressFingerprint.method.apply {
-            val cachePutIndex = indexOfFirstInstructionReversedOrThrow {
-                val reference = getReference<MethodReference>()
-                reference?.definingClass == "Landroid/util/LruCache;" &&
-                    reference.name == "put" &&
-                    reference.parameterTypes.size == 2
-            }
-            val continueInstruction = getInstruction(cachePutIndex + 1)
+        // Where the positions live, read off that same put because every name in it is
+        // renamed per build.
+        val store = progressStoreAt(progress, cachePutIndex) { classDefByOrNull(it) }
 
-            // The cache, the key and a register to work in all come out of the put itself: it
-            // holds the cache and the key this has to remove, and the value it was given is
-            // spent the moment it returns. Naming them by number was right on 46.2.3 and says
-            // nothing about the next build.
-            val put = getInstruction(cachePutIndex) as? FiveRegisterInstruction
-                ?: throw PatchException(
-                    "Resume video after scroll: the progress cache put is not a plain invoke.",
-                )
-            val cacheRegister = put.registerC
-            val keyRegister = put.registerD
-            val scratchRegister = put.registerE
-            check(maxOf(cacheRegister, keyRegister, scratchRegister) <= 15) {
-                "Resume video after scroll: the progress cache put reaches above v15, which the " +
-                    "removal cannot name."
-            }
+        settingsStatus.addInstruction(
+            0,
+            "invoke-static {}, " +
+                "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableResumeVideoAfterScroll()V",
+        )
 
-            addInstructionsWithLabels(
-                cachePutIndex + 1,
-                """
-                    invoke-static/range {p2 .. p5}, $EXTENSION_DESCRIPTOR->shouldClearCompletedProgress(JJ)Z
-                    move-result v$scratchRegister
-                    if-eqz v$scratchRegister, :continue_progress
-                    invoke-virtual {v$cacheRegister, v$keyRegister}, Landroid/util/LruCache;->remove(Ljava/lang/Object;)Ljava/lang/Object;
-                    const/4 v$scratchRegister, 0x0
-                    sput-object v$scratchRegister, LX/0Lze;->LJ:LX/0LxV;
-                    sput-object v$scratchRegister, LX/0Lze;->LJFF:Ljava/lang/String;
-                """,
-                ExternalLabel("continue_progress", continueInstruction),
-            )
-        }
+        continueGate.addInstructionsWithLabels(
+            0,
+            """
+                invoke-static {}, $EXTENSION_DESCRIPTOR->shouldResumeVideoAfterScroll()Z
+                move-result v0
+                if-eqz v0, :continue_gate
+                const/4 v0, 0x1
+                invoke-static {v0}, Ljava/lang/Boolean;->valueOf(Z)Ljava/lang/Boolean;
+                move-result-object v0
+                return-object v0
+            """,
+            ExternalLabel("continue_gate", continueGate.getInstruction(0)),
+        )
+
+        // A video watched to the end starts from the top next time: its position leaves the
+        // cache, and so does the record the store would otherwise answer from first.
+        completed.addInstructionsWithLabels(
+            0,
+            """
+                invoke-static {}, $EXTENSION_DESCRIPTOR->shouldResumeVideoAfterScroll()Z
+                move-result v0
+                if-eqz v0, :continue_completion
+                sget-object v0, ${store.cache.smali()}
+                ${store.cacheValueInvoke} {v0}, ${store.cacheValue.smali()}
+                move-result-object v0
+                check-cast v0, Landroid/util/LruCache;
+                move-object/from16 v1, p1
+                invoke-virtual {v0, v1}, Landroid/util/LruCache;->remove(Ljava/lang/Object;)Ljava/lang/Object;
+                const/4 v0, 0x0
+                sput-object v0, ${store.lastRecord.smali()}
+                sput-object v0, ${store.lastAid.smali()}
+            """,
+            ExternalLabel("continue_completion", completed.getInstruction(0)),
+        )
+
+        resumePosition.addInstructions(
+            containsIndex + 2,
+            """
+                invoke-static {v$eventTypeRegister}, $EXTENSION_DESCRIPTOR->allowResumeInThisFeed(Z)Z
+                move-result v$eventTypeRegister
+            """,
+        )
+
+        progress.addInstructionsWithLabels(
+            cachePutIndex + 1,
+            """
+                invoke-static/range {p2 .. p5}, $EXTENSION_DESCRIPTOR->shouldClearCompletedProgress(JJ)Z
+                move-result v$scratchRegister
+                if-eqz v$scratchRegister, :continue_progress
+                invoke-virtual {v$cacheRegister, v$keyRegister}, Landroid/util/LruCache;->remove(Ljava/lang/Object;)Ljava/lang/Object;
+                const/4 v$scratchRegister, 0x0
+                sput-object v$scratchRegister, ${store.lastRecord.smali()}
+                sput-object v$scratchRegister, ${store.lastAid.smali()}
+            """,
+            ExternalLabel("continue_progress", continueInstruction),
+        )
     }
 }
