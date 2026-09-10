@@ -43,9 +43,12 @@ internal fun BytecodePatchContext.resolveNativeFocus(): NativeFocus {
     classDefForEach { classDef ->
         val fields = classDef.fields.toList()
         if (fields.count { it.type == AUDIO_MANAGER } != 1) return@classDefForEach
-        val listener = fields.firstOrNull { field ->
-            field.type != AUDIO_MANAGER &&
-                classDefByOrNull(field.type)?.interfaces?.contains(AUDIO_LISTENER) == true
+        // One listener field, not the first of several. Only the change hook is placed off this
+        // field; the other two read the listener off the host's own call. Two listener-typed
+        // fields and a guess here would instrument a class the host never registers, while the
+        // other two hooks reported the real one, and nothing would fail at patch time.
+        val listener = fields.singleOrNull { field ->
+            field.type != AUDIO_MANAGER && implementsAudioListener(field.type)
         }?.type ?: return@classDefForEach
         if (classDef.methods.none { it.name == "<init>" && it.parameterTypes.toList() == listOf(CONTEXT) }) {
             return@classDefForEach
@@ -63,9 +66,9 @@ internal fun BytecodePatchContext.resolveNativeFocus(): NativeFocus {
     }
     if (found.size != 1) {
         throw PatchException(
-            "Block author button: expected one audio focus helper holding an AudioManager and a " +
-                "listener, with a (Context)V that abandons focus and one that requests it; found " +
-                "${found.size}.",
+            "Block author button: expected one audio focus helper holding exactly one " +
+                "AudioManager field and exactly one focus listener field, with a (Context)V that " +
+                "abandons focus and one that requests it; found ${found.size}.",
         )
     }
     val (classDef, request, abandon) = found.single()
@@ -93,10 +96,30 @@ private fun Method.calls(predicate: (MethodReference) -> Boolean): Boolean =
     } == true
 
 /**
+ * Whether the type is the focus listener interface or reaches it, following what its class
+ * extends and what its interfaces extend.
+ *
+ * <p>Not the field type's own interface list: R8 moves an interface onto a superclass and puts a
+ * sub-interface in front of one as a matter of course, and either leaves the direct list without
+ * the name in it. That is the same brittleness the literals had, one level down.
+ */
+private fun BytecodePatchContext.implementsAudioListener(
+    type: String,
+    seen: MutableSet<String> = mutableSetOf(),
+): Boolean {
+    if (type == AUDIO_LISTENER) return true
+    if (!seen.add(type)) return false
+    val classDef = classDefByOrNull(type) ?: return false
+    if (classDef.interfaces.any { implementsAudioListener(it, seen) }) return true
+    return classDef.superclass?.let { implementsAudioListener(it, seen) } == true
+}
+
+/**
  * TikTok does not call `requestAudioFocus` itself. It goes through a static wrapper taking the
  * manager, the listener and two ints, which is the platform call's own argument list with the
- * manager in front, so that is what identifies it. A build that called the platform directly
- * would be taken too.
+ * manager in front, so that is what identifies it. The platform call is recognised as well, so
+ * that a build which stopped going through the wrapper is named by
+ * [captureNativeFocusRequest] as a request of the wrong shape rather than found by nothing.
  */
 private fun requestsFocus(reference: MethodReference): Boolean =
     reference.name == "requestAudioFocus" ||
@@ -105,12 +128,24 @@ private fun requestsFocus(reference: MethodReference): Boolean =
 
 internal fun MutableMethod.captureNativeFocusRequest() {
     val instructions = implementation!!.instructions
-    val index = instructions.withIndex().single {
+    // Resolution accepts a method that contains at least one focus request; this needs the one it
+    // rewrites. Two of them is a normal-path and error-path pair, which resolves and then reaches
+    // here, so it is answered rather than left to a bare "more than one matching element".
+    val index = instructions.withIndex().singleOrNull {
         it.value.getReference<MethodReference>()?.let(::requestsFocus) == true
-    }.index
+    }?.index ?: throw PatchException(
+        "Block author button: expected one focus request in $definingClass->$name.",
+    )
+    // The opcode is checked before the cast: a build that grew enough registers here emits
+    // invoke-static/range, which is not a FiveRegisterInstruction, and casting first threw a
+    // ClassCastException over the message written for exactly that case.
+    check(instructions[index].opcode == Opcode.INVOKE_STATIC) {
+        "Block author button: the focus request in $definingClass->$name is " +
+            "${instructions[index].opcode}, not invoke-static."
+    }
     val call = instructions[index] as FiveRegisterInstruction
     val reference = instructions[index].getReference<MethodReference>()!!
-    check(instructions[index].opcode == Opcode.INVOKE_STATIC && call.registerCount == 4) {
+    check(call.registerCount == 4) {
         "Block author button: the focus request is not a four-argument static call."
     }
     // The original return also owns the null branches and Exception handler. Insert at the
@@ -143,11 +178,17 @@ internal fun MutableMethod.captureNativeFocusChange() {
 
 internal fun MutableMethod.captureNativeFocusAbandon() {
     val instructions = implementation!!.instructions
-    val index = instructions.withIndex().single {
+    val index = instructions.withIndex().singleOrNull {
         it.value.getReference<MethodReference>()?.name == "abandonAudioFocus"
-    }.index
+    }?.index ?: throw PatchException(
+        "Block author button: expected one abandonAudioFocus call in $definingClass->$name.",
+    )
+    check(instructions[index].opcode == Opcode.INVOKE_VIRTUAL) {
+        "Block author button: abandonAudioFocus in $definingClass->$name is " +
+            "${instructions[index].opcode}, not invoke-virtual."
+    }
     val call = instructions[index] as FiveRegisterInstruction
-    check(instructions[index].opcode == Opcode.INVOKE_VIRTUAL && call.registerCount == 2) {
+    check(call.registerCount == 2) {
         "Block author button: abandonAudioFocus is not called on a manager with one listener."
     }
     // Invalidate before calling Android, including when the native Exception handler runs.

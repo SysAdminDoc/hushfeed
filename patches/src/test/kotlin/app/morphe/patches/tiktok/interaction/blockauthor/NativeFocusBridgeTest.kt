@@ -1,6 +1,7 @@
 package app.morphe.patches.tiktok.interaction.blockauthor
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -215,6 +216,56 @@ class NativeFocusBridgeTest {
         val error = runCatching { method.captureNativeFocusRequest() }.exceptionOrNull()
         assertEquals(true, error is IllegalStateException)
         assertEquals(true, error!!.message!!.contains("last thing"))
+    }
+
+    @Test
+    fun `a request that names its registers as a range is refused by its opcode`() {
+        // Resolution takes a class for the shape of its calls, not their format. Enough register
+        // pressure here and the host emits invoke-static/range, which is not the instruction the
+        // registers are read off, and the cast used to happen before anything said so.
+        val method = nativeOwnerMethod("anything", 8, """
+            iget-object v4, p0, LX/1Gr4;->LIZ:$audio
+            iget-object v5, p0, LX/1Gr4;->LIZIZ:LX/1Gr5;
+            const/4 v6, 3
+            const/4 v7, 2
+            invoke-static/range {v4 .. v7}, LX/2ZZZ;->q9($audio${listener}II)I
+            return-void
+        """, 5)
+        val error = runCatching { method.captureNativeFocusRequest() }.exceptionOrNull()
+        assertEquals(true, error is IllegalStateException)
+        assertEquals(true, error!!.message!!.contains("INVOKE_STATIC_RANGE"))
+    }
+
+    @Test
+    fun `two focus requests in one method are refused by name`() {
+        // The resolver takes a method that contains a request, never one that contains only one,
+        // so a normal path and an error path reaching here has to say what it found.
+        val method = nativeOwnerMethod("anything", 6, """
+            iget-object v3, p0, LX/1Gr4;->LIZ:$audio
+            iget-object v2, p0, LX/1Gr4;->LIZIZ:LX/1Gr5;
+            const/4 v1, 3
+            const/4 v0, 2
+            invoke-static {v3, v2, v1, v0}, LX/2ZZZ;->q9($audio${listener}II)I
+            invoke-static {v3, v2, v1, v0}, LX/2ZZZ;->q9($audio${listener}II)I
+            return-void
+        """, 6)
+        val error = runCatching { method.captureNativeFocusRequest() }.exceptionOrNull()
+        assertEquals(true, error is PatchException)
+        assertEquals(true, error!!.message!!.contains("expected one focus request"))
+    }
+
+    @Test
+    fun `two abandon calls in one method are refused by name`() {
+        val method = nativeOwnerMethod("anything", 4, """
+            iget-object v1, p0, LX/1Gr4;->LIZ:$audio
+            iget-object v0, p0, LX/1Gr4;->LIZIZ:LX/1Gr5;
+            invoke-virtual {v1, v0}, $audio->abandonAudioFocus($listener)I
+            invoke-virtual {v1, v0}, $audio->abandonAudioFocus($listener)I
+            return-void
+        """, 4)
+        val error = runCatching { method.captureNativeFocusAbandon() }.exceptionOrNull()
+        assertEquals(true, error is PatchException)
+        assertEquals(true, error!!.message!!.contains("expected one abandonAudioFocus"))
     }
 
     private fun assertCall(instruction: ReferenceInstruction, type: String, name: String,
