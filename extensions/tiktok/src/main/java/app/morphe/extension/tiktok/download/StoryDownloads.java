@@ -8,6 +8,7 @@ package app.morphe.extension.tiktok.download;
 
 import android.content.Context;
 import android.view.View;
+import android.view.ViewParent;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
@@ -29,10 +30,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * Saves a story from a press and hold on it.
  *
  * A story is an Aweme like anything else in the feed, so the saves beside this one do the work;
- * what stories lack is any way to ask. The play area component hands over both the view to press
- * and the story bound to it, and the two are kept together rather than in one field: the story
- * viewer binds the pages either side of the one you are looking at, so a single "last story
- * seen" would be somebody else's by the time you pressed.
+ * what stories lack is any way to ask. The registered play area identifies a story viewer;
+ * its native child handles the hold and owns the currently selected story. The outer play
+ * area can carry a collection, and neighboring pages bind ahead, so the child supplies the
+ * model when its timer fires.
  *
  * The gesture is only taken when the switch is on, because holding a story is how TikTok pauses
  * it.
@@ -41,7 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class StoryDownloads {
     private static final Set<String> ACTIVE = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
 
-    /** The story each play area is showing, and the view each play area put on screen. */
+    /** The model each play area binds, and the view each play area put on screen. */
     private static final Map<Object, Object> STORIES = new WeakHashMap<>();
     private static final Map<View, WeakReference<Object>> OWNERS = new WeakHashMap<>();
 
@@ -96,6 +97,28 @@ public final class StoryDownloads {
 
     static boolean enabled() {
         return SettingsStatus.advancedDownloadsEnabled && Settings.SAVE_STORY.get();
+    }
+
+    /** Called by the native story child's completed long-press timer. */
+    public static boolean onNativeLongPress(View view) {
+        if (view == null || !enabled()) return false;
+        for (View ancestor = view; ancestor != null; ) {
+            boolean owned;
+            synchronized (OWNERS) {
+                WeakReference<Object> owner = OWNERS.get(ancestor);
+                owned = owner != null && owner.get() != null;
+            }
+            if (owned) {
+                // 0R9T's monitor reads this same current sub-cell model when pausing it.
+                Object monitor = Reflect.readField(view, "LLJIJIL");
+                Object state = Reflect.readField(monitor, "LLJIJIL");
+                Object params = Reflect.readField(state, "LL");
+                return save(view, Reflect.invoke(params, "getAweme"));
+            }
+            ViewParent parent = ancestor.getParent();
+            ancestor = parent instanceof View ? (View) parent : null;
+        }
+        return false;
     }
 
     /** The story the pressed view's own play area last bound. */

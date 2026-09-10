@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Profile-picture saving now handles the current profile header and resolves the picture from the pressed component. Story long presses reach the native child that consumes the gesture and save its current story, even when the outer view holds a collection. Turning either option off keeps the native gesture.
+
 * Comment search now hides reply controls with their nonmatching parent comments. Clearing search restores the rows. Turning search off also releases its saved heights and visibility during native rebinding, with either comment-blocking setting, while preserving rows TikTok hid itself.
 
 * Follow readback now recognizes the modern profile response and keeps each relationship state with its own account identity. A reported zero remains zero; conflicting states stay unclear. Diagnostics can report a mismatch after an accepted follow without guessing its cause.

@@ -25,10 +25,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Saves a profile picture from a long press on the avatar.
  *
- * TikTok never puts the full size avatar on screen, so the URL comes from the profile the app
- * last loaded rather than from the view. `UserResponse` is the profile fetch, and its user is
- * recorded as it is read; the avatar on screen belongs to whichever profile was loaded most
- * recently, which is the one the page is showing.
+ * The full size URL comes from the current gesture owner's profile. Older headers use the
+ * recorded UserResponse; modern profile responses are converted directly into the owner's User.
  */
 @SuppressWarnings("unused")
 public final class ProfileAvatarSaver {
@@ -49,6 +47,13 @@ public final class ProfileAvatarSaver {
     private static volatile Object profileUser;
 
     private ProfileAvatarSaver() {
+    }
+
+    /** Called by the native avatar gesture with the component that owns the current profile. */
+    public static boolean onAvatarLongPress(Object owner, View avatar) {
+        if (!enabled()) return false;
+        save(avatar, Reflect.invoke(owner, "bq"));
+        return true;
     }
 
     /**
@@ -92,10 +97,8 @@ public final class ProfileAvatarSaver {
     }
 
     /**
-     * Whether the profile that was loaded last is the one whose avatar was pressed. There is one
-     * recorded profile and a header can be shown again from cache without fetching, so the handle
-     * on screen is the check: a follower list visited in between would otherwise save the wrong
-     * person's picture under their name.
+     * Checks the supplied profile against the handle on screen. Legacy headers can reappear
+     * from cache after another profile was recorded, so their saved source needs this check.
      *
      * @return false only when a handle is on screen and it is somebody else's.
      */
@@ -129,7 +132,7 @@ public final class ProfileAvatarSaver {
         return answer;
     }
 
-    /** What the last profile fetch carried, which is the profile the page is showing. */
+    /** What the last legacy profile fetch carried. */
     static Object recordedProfileUser() {
         return profileUser;
     }
