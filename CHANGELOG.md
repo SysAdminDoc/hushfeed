@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Settings changes now survive an older settings page remaining open. Each page reads the saved choice before refreshing its controls, so an old switch or text field can't undo a newer choice.
+
 * Custom long-press actions now take precedence over TikTok's 2x edge hold, including seeking by the chosen distance. The default keeps TikTok's behavior.
 
 * Hiding search suggestions now also covers cached recommendations and search-page returns. Your search history stays available.

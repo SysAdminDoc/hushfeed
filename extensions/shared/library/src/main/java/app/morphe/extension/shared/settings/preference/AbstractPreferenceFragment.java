@@ -75,24 +75,32 @@ public abstract class AbstractPreferenceFragment extends PreferenceFragment {
             }
             Logger.printDebug(() -> "Preference changed: " + setting.key);
 
-            if (!settingImportInProgress && !showingUserDialogMessage) {
-                if (setting.userDialogMessage != null && !prefIsSetToDefault(pref, setting)) {
-                    // Do not change the setting yet, to allow preserving whatever
-                    // list/text value was previously set if it needs to be reverted.
-                    showSettingUserDialogConfirmation(pref, setting);
-                    return;
-                } else if (setting.rebootApp) {
-                    showRestartDialog(getContext());
-                }
-            }
-
             updatingPreference = true;
-            // Apply 'Setting <- Preference', unless during importing when it needs to be 'Setting -> Preference'.
-            // Updating here can cause a recursive call back into this same method.
-            updatePreference(pref, setting, true, settingImportInProgress);
-            // Update any other preference availability that may now be different.
-            updateUIAvailability();
-            updatingPreference = false;
+            try {
+                if (!settingImportInProgress) {
+                    // Another live page may own the change. Its persisted value is authoritative;
+                    // reading this page's older control would overwrite it, including removing defaults.
+                    syncPreferenceWithStoredValue(pref, setting, sharedPreferences);
+                }
+
+                if (!settingImportInProgress && !showingUserDialogMessage) {
+                    if (setting.userDialogMessage != null && !prefIsSetToDefault(pref, setting)) {
+                        // Do not change the setting yet, to allow preserving whatever
+                        // list/text value was previously set if it needs to be reverted.
+                        showSettingUserDialogConfirmation(pref, setting);
+                        return;
+                    } else if (setting.rebootApp) {
+                        showRestartDialog(getContext());
+                    }
+                }
+
+                // Apply 'Setting <- Preference', unless importing already updated the Setting.
+                updatePreference(pref, setting, true, settingImportInProgress);
+                // Update any other preference availability that may now be different.
+                updateUIAvailability();
+            } finally {
+                updatingPreference = false;
+            }
         } catch (Exception ex) {
             Logger.printException(() -> "OnSharedPreferenceChangeListener failure", ex);
         }
@@ -229,6 +237,19 @@ public abstract class AbstractPreferenceFragment extends PreferenceFragment {
                     Logger.printException(() -> "Preference key has no setting: " + key);
                 }
             }
+        }
+    }
+
+    /** Refreshes a receiving page before its control is used to update the Setting. */
+    protected void syncPreferenceWithStoredValue(@NonNull Preference pref,
+                                                @NonNull Setting<?> setting,
+                                                @NonNull SharedPreferences preferences) {
+        if (pref instanceof SwitchPreference switchPref) {
+            switchPref.setChecked(preferences.getBoolean(setting.key, (Boolean) setting.defaultValue));
+        } else if (pref instanceof EditTextPreference editPreference) {
+            editPreference.setText(preferences.getString(setting.key, setting.defaultValue.toString()));
+        } else if (pref instanceof ListPreference listPref) {
+            listPref.setValue(preferences.getString(setting.key, setting.defaultValue.toString()));
         }
     }
 

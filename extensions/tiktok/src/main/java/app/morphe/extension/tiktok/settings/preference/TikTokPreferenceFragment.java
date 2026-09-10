@@ -11,6 +11,7 @@ import android.app.FragmentManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -143,6 +144,30 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             pendingDownloadPathKey = null;
             app.morphe.extension.shared.Utils.showToastLong(L10n.t(
                     "This phone has no folder picker. Type the folder into the row instead."));
+        }
+    }
+
+    @Override
+    protected void syncPreferenceWithStoredValue(@NonNull Preference pref,
+                                                @NonNull Setting<?> setting,
+                                                @NonNull SharedPreferences preferences) {
+        if (pref instanceof NumberInputPreference) {
+            NumberInputPreference numberPref = (NumberInputPreference) pref;
+            numberPref.setValue(preferences.getString(setting.key, setting.defaultValue.toString()));
+        } else if (pref instanceof CreatorListPreference) {
+            CreatorListPreference creatorPref = (CreatorListPreference) pref;
+            creatorPref.setValue(preferences.getString(setting.key, setting.defaultValue.toString()));
+        } else if (pref instanceof RangeValuePreference) {
+            RangeValuePreference rangePref = (RangeValuePreference) pref;
+            rangePref.setValue(preferences.getString(setting.key, setting.defaultValue.toString()));
+        } else if (pref instanceof DownloadPathPreference) {
+            DownloadPathPreference pathPref = (DownloadPathPreference) pref;
+            pathPref.setValue(preferences.getString(setting.key, setting.defaultValue.toString()));
+        } else if (pref instanceof TabSelectionPreference) {
+            TabSelectionPreference tabsPref = (TabSelectionPreference) pref;
+            tabsPref.setValue(preferences.getString(setting.key, setting.defaultValue.toString()));
+        } else {
+            super.syncPreferenceWithStoredValue(pref, setting, preferences);
         }
     }
 

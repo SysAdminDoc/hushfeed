@@ -185,7 +185,7 @@ Auto-advance session limit is zero by default. A positive value counts videos th
 
 Advanced downloads can send a sanitized TikTok link to another installed app. Enter its package name in `Send links to another app`; an empty value keeps TikTok's own save. The [YTDLnis](https://github.com/deniscerri/ytdlnis) package is recognized explicitly as `com.deniscerri.ytdl`, so its documented audio or video type and optional background mode are available. The profile controls stay disabled for every other package, and an uninstalled target falls back to TikTok's save.
 
-Foldable controls are in App behavior. Settings save immediately. A notification tells you when to restart TikTok.
+Foldable controls are in App behavior. Settings save immediately, including when an older settings page is still open. A notification tells you when to restart TikTok.
 
 Numeric feed limits show their actual unit with language-aware singular and plural labels.
 
