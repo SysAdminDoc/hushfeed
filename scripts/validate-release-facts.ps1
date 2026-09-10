@@ -25,8 +25,10 @@ param(
     # is written and drift apart with the next test anyone adds, so a push that only touches
     # README would fail on it for the rest of the release cycle. scripts/pre-push.ps1 passes this
     # when patches-bundle.json is not among the changed files; a release, which rewrites that
-    # file, does not. The rest of the test results check, that a run exists and carries no
-    # failures or skips, always runs, and a run by hand checks everything.
+    # file, does not. With it, a checkout that has no test results at all (a fresh clone pushing
+    # a README edit, which runs no tests) is not held to a run it had no reason to make; any
+    # results that are there are still checked for age, completeness, failures and skips. A
+    # release and a run by hand check everything.
     [switch]$SkipDescriptionTestCount
 )
 
@@ -234,7 +236,11 @@ if ($SkipUrlCheck) {
 $testRoot = Join-Path $rootPath 'extensions/tiktok/build/test-results/testDebugUnitTest'
 $testFiles = @(Get-ChildItem -LiteralPath $testRoot -Filter '*.xml' -File -ErrorAction SilentlyContinue)
 if ($testFiles.Count -eq 0) {
-    throw "No runtime test results found under $testRoot. Run :extensions:tiktok:test first."
+    if (-not $SkipDescriptionTestCount) {
+        throw "No runtime test results found under $testRoot. Run :extensions:tiktok:test first."
+    }
+    Write-Host ('[release] no runtime test results here, and this push rewrites no release ' +
+        'description, so there is no run to check')
 }
 
 # Gradle leaves the previous run's XML in place, so results from before the last edit satisfy
@@ -255,7 +261,7 @@ $newestSource = $sourceRoots |
     ForEach-Object { Get-ChildItem -LiteralPath $_ -Recurse -File -ErrorAction SilentlyContinue } |
     Sort-Object LastWriteTimeUtc -Descending |
     Select-Object -First 1
-if ($null -ne $newestSource) {
+if ($null -ne $newestSource -and $testFiles.Count -gt 0) {
     $newestResult = $testFiles | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
     if ($newestResult.LastWriteTimeUtc -lt $newestSource.LastWriteTimeUtc) {
         throw ("Runtime test results are older than the sources. The newest result " +
@@ -270,7 +276,7 @@ if ($null -ne $newestSource) {
 # said 682. The failure named the index rather than the filtered run, and anyone reconciling the
 # index to match would have written down a number no full run ever produced.
 $testSourceRoot = Join-Path $rootPath 'extensions/tiktok/src/test'
-if (Test-Path -LiteralPath $testSourceRoot) {
+if ($testFiles.Count -gt 0 -and (Test-Path -LiteralPath $testSourceRoot)) {
     $sourceClasses = @(Get-ChildItem -LiteralPath $testSourceRoot -Recurse -File -Filter '*Test.java' |
         ForEach-Object { $_.BaseName })
     # TEST-<package>.<Class>.xml, and the package is not needed to tell one class from another.
@@ -301,9 +307,11 @@ foreach ($file in $testFiles) {
     }
     $testCount += @($results.testsuite.testcase).Count
 }
+$testFacts = if ($testFiles.Count -gt 0) { "$testCount runtime tests" } else { 'no runtime test results here' }
 if ($SkipDescriptionTestCount) {
+    $ranHere = if ($testFiles.Count -gt 0) { "; $testCount tests ran here" } else { '' }
     Write-Host ("[release] patches-bundle.json did not change, so its description is left " +
-        "against the release it describes; " + $testCount + " tests ran here")
+        "against the release it describes" + $ranHere)
 } else {
     Require-Match -Text ([string]$bundle.description) -Pattern "\b$testCount runtime tests passed\b" -Description 'bundle description test count'
 }
@@ -479,7 +487,7 @@ if (-not (Test-Path -LiteralPath $bundlePath -PathType Leaf)) {
     }
     Write-Host ("[release] no built bundle at $bundlePath, so its patcher stamp is not compared " +
         "against the catalog pin $pinnedPatcher")
-    Write-Host ("[facts] " + $sourceVersion + ": " + $patchCount + " patches for " + $targetPackage + " " + $targetVersion + "; " + $testCount + " runtime tests")
+    Write-Host ("[facts] " + $sourceVersion + ": " + $patchCount + " patches for " + $targetPackage + " " + $targetVersion + "; " + $testFacts)
     exit 0
 }
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -506,7 +514,7 @@ if ($stampMatch.Groups[1].Value -ne $pinnedPatcher) {
 }
 Write-Host "[release] the bundle stamps patcher $pinnedPatcher, as the catalog pins"
 
-Write-Host ("[facts] " + $sourceVersion + ": " + $patchCount + " patches for " + $targetPackage + " " + $targetVersion + "; " + $testCount + " runtime tests")
+Write-Host ("[facts] " + $sourceVersion + ": " + $patchCount + " patches for " + $targetPackage + " " + $targetVersion + "; " + $testFacts)
 
 # Callers check the exit code, and a script invoked with & leaves the previous native
 # command's code in $LASTEXITCODE, so a clean run has to say so itself.
