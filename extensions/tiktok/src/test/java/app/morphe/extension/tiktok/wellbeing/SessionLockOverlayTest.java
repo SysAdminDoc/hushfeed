@@ -6,6 +6,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
+import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -16,6 +18,7 @@ import app.morphe.extension.tiktok.settings.Settings;
 import java.lang.reflect.Method;
 import java.util.Calendar;
 import java.util.TimeZone;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
@@ -72,6 +75,11 @@ public class SessionLockOverlayTest {
         SessionBudget.resetForTests();
         Settings.SESSION_BUDGET_NOTICE_MINUTES.resetToDefault();
         Settings.SESSION_BUDGET_STATE.resetToDefault();
+        // Finish the timer before Robolectric clears its queue but keeps the static flag.
+        Runnable tick = org.robolectric.util.ReflectionHelpers.getStaticField(SessionLockOverlay.class, "TICK");
+        android.os.Handler handler = org.robolectric.util.ReflectionHelpers.getStaticField(SessionLockOverlay.class, "MAIN");
+        handler.removeCallbacks(tick);
+        tick.run();
     }
 
     @Test public void theHoldStopsAboveTheTabBar() throws Exception {
@@ -110,6 +118,123 @@ public class SessionLockOverlayTest {
 
             assertEquals(0, (int) navigationHeight().invoke(null, activity, root));
         }
+    }
+
+    // On S22, the tab row and system inset occupy a small bottom strip. Match the virtual
+    // display to the fixture scale so automatic window layouts preserve that proportion.
+    @Test @Config(qualifiers = "w480dp-h960dp-mdpi")
+    public void aTabRowMeasuredAfterHoldAttachmentRemainsTappable() {
+        assertProfileRemainsTappableAfterNavigationLayout(false, false);
+    }
+
+    @Test @Config(qualifiers = "w480dp-h960dp-mdpi")
+    public void aRetainedHoldTracksLaterNavigationHeightChanges() {
+        assertProfileRemainsTappableAfterNavigationLayout(true, false);
+    }
+
+    @Test @Config(qualifiers = "w480dp-h960dp-mdpi")
+    public void aMeasuredTabRowAboveTheSystemInsetRemainsTappableFromAnOffsetRoot() {
+        assertProfileRemainsTappableAfterNavigationLayout(true, true);
+    }
+
+    private void assertProfileRemainsTappableAfterNavigationLayout(
+            boolean initiallyMeasured, boolean withSystemInset) {
+        Settings.SESSION_BUDGET_VIDEOS.save(1);
+        Settings.SESSION_BUDGET_LOCK_MINUTES.save(5);
+        SessionBudget.noteVideo("held-navigation-video");
+        assertTrue(SessionBudget.claimNotice());
+
+        try (var owner = Robolectric.buildActivity(HostActivity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setActivity(activity);
+            ViewGroup root = activity.findViewById(android.R.id.content);
+            layoutHoldRoot(root, withSystemInset);
+
+            FrameLayout bar = new FrameLayout(activity);
+            FrameLayout.LayoutParams barParams = new FrameLayout.LayoutParams(-1, 80, Gravity.BOTTOM);
+            barParams.bottomMargin = withSystemInset ? 100 : 0;
+            root.addView(bar, barParams);
+            View home = new View(activity);
+            home.setSelected(true);
+            bar.addView(home, new FrameLayout.LayoutParams(96, -1, Gravity.LEFT));
+            View profile = new View(activity);
+            AtomicInteger profileTaps = new AtomicInteger();
+            profile.setOnClickListener(view -> profileTaps.incrementAndGet());
+            bar.addView(profile, new FrameLayout.LayoutParams(96, -1, Gravity.RIGHT));
+            seedHomeTab(home);
+            if (initiallyMeasured) layoutHoldRoot(root, withSystemInset);
+            else assertEquals("the regression needs an unmeasured native row", 0, bar.getHeight());
+
+            SessionLockOverlay.sync();
+            View panel = root.getChildAt(root.getChildCount() - 1);
+            AtomicInteger panelDowns = new AtomicInteger();
+            panel.setOnTouchListener((view, event) -> {
+                if (event.getActionMasked() == MotionEvent.ACTION_DOWN) panelDowns.incrementAndGet();
+                return false;
+            });
+            if (initiallyMeasured && !withSystemInset) {
+                assertEquals(80, ((FrameLayout.LayoutParams) panel.getLayoutParams()).bottomMargin);
+                // A navigation-mode or inset change gives the retained tab row a new height.
+                ViewGroup.LayoutParams params = bar.getLayoutParams();
+                params.height = 180;
+                bar.setLayoutParams(params);
+            }
+
+            layoutHoldRoot(root, withSystemInset);
+            root.getViewTreeObserver().dispatchOnGlobalLayout();
+            layoutHoldRoot(root, withSystemInset);
+            root.getViewTreeObserver().dispatchOnGlobalLayout();
+            Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+            layoutHoldRoot(root, withSystemInset);
+            assertTrue("the native tab was never laid out", profile.getHeight() > 0);
+            assertTrue("the regression must reuse the existing hold", panel.getParent() == root);
+            if (withSystemInset) {
+                int[] rootPosition = new int[2];
+                root.getLocationOnScreen(rootPosition);
+                assertTrue("the regression needs a nonzero root origin",
+                        rootPosition[0] != 0 && rootPosition[1] != 0);
+                assertEquals(100, root.getHeight() - bar.getBottom());
+            }
+
+            // The top of the enlarged tab lies under the old margin. Dispatch through the root
+            // so a stale hold must actually intercept the tap rather than just report bad bounds.
+            tapRoot(root, bar.getLeft() + profile.getLeft() + profile.getWidth() / 2f,
+                    bar.getTop() + profile.getTop() + 16);
+            assertEquals("the retained hold intercepted the native Profile tab", 1, profileTaps.get());
+            assertEquals("the native Profile tap reached the hold", 0, panelDowns.get());
+            // Also protect the last pixel of feed above the tab. Mixing screen and root
+            // coordinates can move the hold too high and expose this strip instead.
+            tapRoot(root, 240, bar.getTop() - 1);
+            assertEquals("repairing navigation uncovered the held feed", 1, panelDowns.get());
+            assertTrue(SessionBudget.isLocked());
+        } finally {
+            seedHomeTab(null);
+            Utils.setActivity(null);
+            SessionBudget.releaseLock();
+            SessionLockOverlay.sync();
+        }
+    }
+
+    private static void layoutHoldRoot(View root, boolean withSystemInset) {
+        root.measure(View.MeasureSpec.makeMeasureSpec(480, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(960, View.MeasureSpec.EXACTLY));
+        int left = withSystemInset ? 24 : 0;
+        int top = withSystemInset ? 45 : 0;
+        root.layout(left, top, left + 480, top + 960);
+    }
+
+    private static void tapRoot(ViewGroup root, float x, float y) {
+        MotionEvent down = MotionEvent.obtain(10, 10, MotionEvent.ACTION_DOWN, x, y, 0);
+        MotionEvent up = MotionEvent.obtain(10, 30, MotionEvent.ACTION_UP, x, y, 0);
+        try {
+            assertTrue(root.dispatchTouchEvent(down));
+            assertTrue(root.dispatchTouchEvent(up));
+        } finally {
+            down.recycle();
+            up.recycle();
+        }
+        // View posts its click after ACTION_UP, as it does when a real tab receives a touch.
+        Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
     }
 
     @Test public void aRowTallEnoughToBeTheFeedIsNotMistakenForNavigation() throws Exception {
@@ -450,9 +575,8 @@ public class SessionLockOverlayTest {
     }
 
     @Test public void theHoldAsksTheFeedToStopPlaying() throws Exception {
-        // The panel covers the feed and swallows touches, but the video underneath kept playing
-        // with sound, which reads as the app having broken. Taking the audio focus is how one
-        // app tells another to stop, and it is the only lever this extension has.
+        // Focus remains held alongside the native pause. This also covers a restored hold
+        // before the first native player instance has reported progress.
         Settings.SESSION_BUDGET_VIDEOS.save(1);
         Settings.SESSION_BUDGET_LOCK_MINUTES.save(5);
         SessionBudget.noteVideo("a");

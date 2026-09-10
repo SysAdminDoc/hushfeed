@@ -42,8 +42,19 @@ public final class BlockAuthorPatch {
      * that is playing. This is what decides which of the bound items is on screen; the
      * bind callback above runs for items the user has not reached yet.
      *
+     * @param controller the reporting native PlayerController
      * @param awemeId the playing video's id
      */
+    public static void setPlayingAweme(Object controller, String awemeId) {
+        try {
+            app.morphe.extension.tiktok.wellbeing.SessionPlaybackHold.onPlayerProgress(controller, awemeId);
+        } catch (Throwable ex) {
+            Logger.printException(() -> "Could not track the session hold player", ex);
+        }
+        setPlayingAweme(awemeId);
+    }
+
+    /** Compatibility entry for callers that only report the current video ID. */
     public static void setPlayingAweme(String awemeId) {
         try {
             CurrentVideoAuthor.onPlaying(awemeId);

@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Daily-budget holds pause the current native player and resume only the player they held, while its feed is visible and audio focus permits playback. Holds survive settings returns and activity recreation. Their lower edge follows the actual tab row, including the system navigation gap, so Home and messages remain tappable.
+
 * Enabling the block or Not interested button now attaches it to the current creator immediately. Disabling the last button removes the controls. A daily-budget hold keeps those controls hidden while the feed is covered.
 
 * The phone helper rejects a log query without its required filter. That usage error no longer exits successfully after printing an error.

@@ -8,6 +8,7 @@ package app.morphe.patches.tiktok.interaction.blockauthor
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.inbox.MainActivityOnCreateFingerprint
@@ -66,12 +67,25 @@ val blockAuthorPatch = bytecodePatch(
         // A bind is not "this video is on screen": the feed binds the items either side of
         // the current one before the user reaches them, so the tracker above would arm the
         // next creator. The player names the video that is actually playing, which is what
-        // selects among the bound items. p1 is that id.
-        PlayerProgressAidFingerprint.method.addInstruction(
-            0,
-            "invoke-static/range { p1 .. p1 }, " +
-                "$EXTENSION_CLASS_DESCRIPTOR->setPlayingAweme(Ljava/lang/String;)V",
-        )
+        // selects among the bound items. p1 is that id; p0 also lets the session hold
+        // pause the owning player without retaining a global player instance.
+        PlayerProgressAidFingerprint.method.capturePlayingAweme()
+
+        // A replacement native activity can take focus from the hold itself. Observe its
+        // actual grant and loss so release can distinguish that from an external audio owner.
+        val nativeFocus = mutableClassDefBy("LX/0q3r;")
+        nativeFocus.methods.single {
+            it.name == "LIZIZ" && it.returnType == "V"
+                && it.parameterTypes.map(CharSequence::toString) == listOf("Landroid/content/Context;")
+        }.captureNativeFocusRequest()
+        nativeFocus.methods.single {
+            it.name == "LIZ" && it.returnType == "V"
+                && it.parameterTypes.map(CharSequence::toString) == listOf("Landroid/content/Context;")
+        }.captureNativeFocusAbandon()
+        mutableClassDefBy("LX/0q3s;").methods.single {
+            it.name == "onAudioFocusChange" && it.returnType == "V"
+                && it.parameterTypes.map(CharSequence::toString) == listOf("I")
+        }.captureNativeFocusChange()
 
         // Assert the block endpoint still looks the way the extension expects. The
         // extension calls it by reflection, so without this the patch would install a
@@ -92,6 +106,14 @@ val blockAuthorPatch = bytecodePatch(
             method.addInstruction(0, "invoke-static/range { p0 .. $endRegister }, $visibility->$callback")
         }
     }
+}
+
+internal fun MutableMethod.capturePlayingAweme() {
+    addInstruction(
+        0,
+        "invoke-static/range { p0 .. p1 }, " +
+            "$EXTENSION_CLASS_DESCRIPTOR->setPlayingAweme(Ljava/lang/Object;Ljava/lang/String;)V",
+    )
 }
 
 /**
