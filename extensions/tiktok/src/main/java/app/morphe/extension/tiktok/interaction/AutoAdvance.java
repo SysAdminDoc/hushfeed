@@ -96,9 +96,21 @@ public final class AutoAdvance {
         int completedCount;
         private String lastCompletedId;
         private boolean limitNoticeShown;
+        private int sessionLimit = Settings.AUTO_ADVANCE_LIMIT.get();
         Control(View view) { this.view = new WeakReference<>(view); }
 
+        private void refreshLimit() {
+            int next = Settings.AUTO_ADVANCE_LIMIT.get();
+            if (sessionLimit == next) return;
+            sessionLimit = next;
+            completedCount = 0;
+            lastCompletedId = null;
+            limitNoticeShown = false;
+        }
+
         boolean recordCompletion(String completedId) {
+            // A completion may arrive before the posted preference refresh.
+            refreshLimit();
             if (!owned || completedId.equals(lastCompletedId)) return false;
             lastCompletedId = completedId;
             completedCount++;
@@ -117,6 +129,9 @@ public final class AutoAdvance {
         }
 
         void update(StateReader state, Runnable start, Runnable stop) {
+            // The settings page's canonical value is ready when its posted update runs.
+            // Returning to the same value or changing another row preserves this session.
+            refreshLimit();
             if (!Settings.AUTO_ADVANCE.get()) {
                 if (owned) { stop.run(); owned = false; }
                 return;

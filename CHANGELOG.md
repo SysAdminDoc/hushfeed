@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Changing the auto-advance session limit now starts a fresh count on the same feed. The new session can count its current video and show its own stop notice. Saving the same limit, changing another setting or returning from settings keeps the existing count.
+
 * A final playback report can arrive before TikTok applies a daily hold's queued pause. That report now keeps the matching resume ready for audio focus to return. Playback after an observed pause still releases that ownership.
 
 * A daily hold now keeps its paused video ready when another app owns audio focus at expiry. A later native focus grant can resume that same video once, provided its feed is still visible. A reported independent resume gives up that ownership, so a later pause won't be undone.
