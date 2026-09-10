@@ -8,7 +8,10 @@ package app.morphe.patches.tiktok.interaction.searchsuggestions
 
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -16,10 +19,17 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.patches.tiktok.shared.callThroughLocals
+import app.morphe.patches.tiktok.shared.objectIn
 import app.morphe.util.getReference
 import app.morphe.util.numberOfParameterRegisters
+import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 private const val EXTENSION = "Lapp/morphe/extension/tiktok/search/SearchSuggestions;"
 private const val SUGGEST_WORDS_VIEW_MODEL =
@@ -60,13 +70,38 @@ private object SuggestWordsRequestFingerprint : Fingerprint(
 /**
  * The hand-off to the screen. Same idea: it opens with
  * `SearchMiddleMonitor.recommendPostValueStart` and then posts to the view model's live data.
- * Guarding this as well as the request means anything that fetched by another route still shows
- * nothing.
+ * This covers ViewModel responses; the separate Lynx cache and visibility inputs are handled
+ * below because they can populate the page without publishing through this LiveData.
  */
 private object SuggestWordsPublishFingerprint : Fingerprint(
     definingClass = SUGGEST_WORDS_VIEW_MODEL,
     returnType = "V",
     custom = { method, _ -> method.marks("recommendPostValueStart") },
+)
+
+// Verified 46.2.3 boundaries. The first-screen cache has raw JSON and TemplateData readers;
+// both consult this gate, independently of the history gate and SuggestWordsViewModel.
+private object LynxFirstScreenCacheFingerprint : Fingerprint(
+    definingClass = "LX/0OiL;",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+    name = "LIZ",
+    parameters = emptyList(),
+    returnType = "Z",
+)
+
+private object LynxParameterFingerprint : Fingerprint(
+    definingClass = "LX/0Bav;",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+    name = "LIZ",
+    parameters = listOf("Ljava/lang/String;"),
+    returnType = "Ljava/lang/Object;",
+)
+
+private object SearchReentryFingerprint : Fingerprint(
+    definingClass = "Lcom/ss/android/ugc/aweme/search/middle/DynamicSingleIntermediateFragmentNew;",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
+    returnType = "V",
+    strings = listOf("show_suggest_search_words", "searchTransferEnter"),
 )
 
 /**
@@ -96,7 +131,64 @@ val hideSearchSuggestionsPatch = bytecodePatch(
         IntermediatePreloadEnableFingerprint.method.guard("const/4 v0, 0x0\n                    return v0")
         SuggestWordsRequestFingerprint.method.guard("return-void")
         SuggestWordsPublishFingerprint.method.guard("return-void")
+        LynxFirstScreenCacheFingerprint.method.hookFirstScreenCache()
+        LynxParameterFingerprint.method.hookInitialLynxParameter()
+        SearchReentryFingerprint.method.hookReentryVisibility()
     }
+}
+
+internal fun MutableMethod.hookFirstScreenCache() {
+    implementation!!.instructions.withIndex().filter { it.value.opcode == Opcode.RETURN }
+        .map { it.index }.asReversed().forEach { index ->
+            val register = getInstruction<OneRegisterInstruction>(index).registerA
+            // Native branches target this return directly. Replacing it keeps their target
+            // on the hook; inserting before it would leave those branches skipping the call.
+            replaceInstruction(
+                index,
+                "invoke-static/range {v$register .. v$register}, $EXTENSION->filterCachedSuggestions(Z)Z",
+            )
+            addInstructions(index + 1, "move-result v$register\nreturn v$register")
+        }
+}
+
+internal fun MutableMethod.hookInitialLynxParameter() {
+    if (!AccessFlags.STATIC.isSet(accessFlags)) {
+        throw PatchException("Hide search suggestions: the Lynx parameter reader is not static.")
+    }
+    implementation!!.instructions.withIndex().filter { it.value.opcode == Opcode.RETURN_OBJECT }
+        .map { it.index }.asReversed().forEach { index ->
+            val register = getInstruction<OneRegisterInstruction>(index).registerA
+            val call = callThroughLocals(
+                "Hide search suggestions", "invoke-static",
+                "$EXTENSION->filterLynxParameter(Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;",
+                objectIn("p0"), objectIn("v$register"),
+            )
+            addInstructions(index, "$call\nmove-result-object v$register")
+        }
+}
+
+internal fun MutableMethod.hookReentryVisibility() {
+    val instructions = implementation!!.instructions.toList()
+    val keyIndex = instructions.indices.singleOrNull {
+        instructions[it].getReference<StringReference>()?.string == "show_suggest_search_words"
+    } ?: throw PatchException("Hide search suggestions: search reentry has no unique visibility key.")
+    val keyRegister = (instructions[keyIndex] as OneRegisterInstruction).registerA
+    val read = instructions.getOrNull(keyIndex + 1)
+    val reference = read?.getReference<MethodReference>()
+    val result = instructions.getOrNull(keyIndex + 2)
+    if (read !is FiveRegisterInstruction || read.registerCount != 5 || read.registerF != keyRegister ||
+        reference?.definingClass != "LX/0BZD;" || reference.name != "LJIIJJI" ||
+        reference.returnType != "I" || result?.opcode != Opcode.MOVE_RESULT
+    ) {
+        throw PatchException("Hide search suggestions: search reentry visibility reader changed.")
+    }
+    val register = (result as OneRegisterInstruction).registerA
+    // This is in the live native frame. A one-register range call needs no scratch register.
+    addInstructions(
+        keyIndex + 3,
+        "invoke-static/range {v$register .. v$register}, $EXTENSION->filterReentryVisibility(I)I\n" +
+            "move-result v$register",
+    )
 }
 
 /** Leaves the method before it does anything, when the extension says the feature is on. */

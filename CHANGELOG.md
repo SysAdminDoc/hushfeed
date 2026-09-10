@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Hiding search suggestions now also covers cached recommendations and search-page returns. Your search history stays available.
+
 * The comment-sort description now explains that media and creator filters depend on the post's native availability flags. Device checks confirmed those optional categories and preserved the stock menu after disabling the switch.
 
 * Profile-picture saving now handles the current profile header and resolves the picture from the pressed component. Story long presses reach the native child that consumes the gesture and save its current story, even when the outer view holds a collection. Turning either option off keeps the native gesture.

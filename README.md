@@ -78,7 +78,7 @@ The Settings patch adds the entry point and is selected by default. Deselect it 
 | `Downloads` | Adds watermark-free downloads, filename templates, and comment sticker saving. An animated sticker is written as MP4, GIF, or the WebP TikTok sent, whichever you pick. |
 | `Show LIVE search` | Shows TikTok's search entry in the LIVE drawer where supported. |
 | `Use non-personalized search` | Uses TikTok's non-personalized search mode instead of its saved account choice. |
-| `Hide search suggestions` | Hides the searches TikTok offers on the search page before you type, and stops it fetching them. Your own search history stays. |
+| `Hide search suggestions` | Hides the searches TikTok offers before you type, including cached recommendations and those shown when you return to Search. It stops new suggestions from loading while keeping your own search history. |
 | `Feature Gate Lab` | Adds a searchable menu for viewing and overriding supported TikTok feature flags and configuration values. Client-side overrides cannot bypass server enforcement. |
 | `Feature Gate Recorder` | Records gate reads while you use a feature, then shows new and changed values. An interrupted recording is discarded before the next baseline is taken. Save the full report as JSON or copy a smaller report. |
 | `Follow diagnostics` | Reports the first refused follow and its reason each session, including nearby follows and follower removals. Optional diagnostics retains at most 160 requests. Refusal notices still work after that limit. Later profile readback stays paired with the same account and reports conflicting state without guessing the cause. |

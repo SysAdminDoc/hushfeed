@@ -18,4 +18,20 @@ public final class SearchSuggestions {
     public static boolean shouldHide() {
         return SettingsStatus.hideSearchSuggestionsEnabled && Settings.HIDE_SEARCH_SUGGESTIONS.get();
     }
+
+    public static boolean filterCachedSuggestions(boolean nativeValue) {
+        return nativeValue && !shouldHide();
+    }
+
+    public static Object filterLynxParameter(String key, Object nativeValue) {
+        if (shouldHide()) {
+            if ("show_suggest_search_words".equals(key)) return Integer.valueOf(0);
+            if ("is_lynx_request_suggest".equals(key)) return Boolean.FALSE;
+        }
+        return nativeValue;
+    }
+
+    public static int filterReentryVisibility(int nativeValue) {
+        return shouldHide() ? 0 : nativeValue;
+    }
 }
