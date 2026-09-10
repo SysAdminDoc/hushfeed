@@ -273,7 +273,7 @@ public class CaptionToolsTest {
             Settings.KEEP_CAPTIONS_CLEAR_DISPLAY.save(true);
             Settings.CAPTION_TEXT_SIZE.save(24);
             CaptionTools.onVideoChanged("one");
-            CaptionTools.onCaption(source, "one", "EXPANDED", "Current spoken caption", false);
+            CaptionTools.onCaption(source, "one", "EXPANDED", "Current spoken caption");
             CaptionTools.onClear(new Video("one"), true);
             TextView caption = find(activity.getWindow().getDecorView(), "Current spoken caption");
             assertNotNull(caption);
@@ -285,12 +285,12 @@ public class CaptionToolsTest {
             owner.windowFocusChanged(true);
             CaptionTools.refresh();
             assertEquals(View.VISIBLE, caption.getVisibility());
-            CaptionTools.onCaption(source, null, "HIDDEN", "", false);
+            CaptionTools.onCaption(source, null, "HIDDEN", "");
             assertEquals(View.GONE, caption.getVisibility());
-            CaptionTools.onCaption(source, null, "EXPANDED", "Another cue", false);
+            CaptionTools.onCaption(source, null, "EXPANDED", "Another cue");
             assertEquals(View.VISIBLE, caption.getVisibility());
             CaptionTools.onVideoChanged("two");
-            CaptionTools.onCaption(source, "one", "EXPANDED", "Stale cue", false);
+            CaptionTools.onCaption(source, "one", "EXPANDED", "Stale cue");
             CaptionTools.onClear(new Video("one"), true);
             assertEquals(View.GONE, caption.getVisibility());
         }
@@ -307,7 +307,7 @@ public class CaptionToolsTest {
             owner.windowFocusChanged(true);
             Settings.KEEP_CAPTIONS_CLEAR_DISPLAY.save(true);
             CaptionTools.onVideoChanged("predraw-video");
-            CaptionTools.onCaption(source, "predraw-video", "EXPANDED", "A continuing cue", false);
+            CaptionTools.onCaption(source, "predraw-video", "EXPANDED", "A continuing cue");
             CaptionTools.onClear(new Video("predraw-video"), true);
             View decor = activity.getWindow().getDecorView();
             TextView caption = find(decor, "A continuing cue");
@@ -344,7 +344,7 @@ public class CaptionToolsTest {
             Utils.setContext(first);
             Settings.KEEP_CAPTIONS_CLEAR_DISPLAY.save(true);
             CaptionTools.onVideoChanged("moving-video");
-            CaptionTools.onCaption(firstSource, "moving-video", "EXPANDED", "First window cue", false);
+            CaptionTools.onCaption(firstSource, "moving-video", "EXPANDED", "First window cue");
             CaptionTools.onClear(new Video("moving-video"), true);
             View firstDecor = first.getWindow().getDecorView();
             TextView oldCaption = find(firstDecor, "First window cue");
@@ -356,7 +356,7 @@ public class CaptionToolsTest {
             second.setContentView(secondSource);
             secondOwner.windowFocusChanged(true);
             Utils.setContext(second);
-            CaptionTools.onCaption(secondSource, "moving-video", "EXPANDED", "Second window cue", false);
+            CaptionTools.onCaption(secondSource, "moving-video", "EXPANDED", "Second window cue");
             ViewGroup secondDecor = (ViewGroup) second.getWindow().getDecorView();
             TextView caption = find(secondDecor, "Second window cue");
             assertNotNull(caption);
@@ -365,7 +365,7 @@ public class CaptionToolsTest {
             assertSame(secondDecor, caption.getRootView());
             assertEquals(View.VISIBLE, caption.getVisibility());
             int childCount = secondDecor.getChildCount();
-            CaptionTools.onCaption(secondSource, null, "EXPANDED", "Next window cue", false);
+            CaptionTools.onCaption(secondSource, null, "EXPANDED", "Next window cue");
             assertEquals(childCount, secondDecor.getChildCount());
             assertEquals("Next window cue", caption.getText().toString());
 

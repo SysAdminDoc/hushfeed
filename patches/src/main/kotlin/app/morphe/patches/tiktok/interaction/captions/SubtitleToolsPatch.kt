@@ -3,6 +3,7 @@ package app.morphe.patches.tiktok.interaction.captions
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.interaction.blockauthor.blockAuthorPatch
@@ -41,34 +42,56 @@ val subtitleToolsPatch = bytecodePatch(
             it.name == "<init>" && it.parameterTypes.size == 4 &&
                 it.parameterTypes.first() == "Landroid/widget/FrameLayout;" &&
                 it.parameterTypes.last() == "Ljava/lang/String;"
-        }.distinctBy { it.toString() }.single()
+        }.distinctBy { it.toString() }.singleOrNull()
+            ?: throw PatchException(
+                "Subtitle tools: expected one caption renderer constructor taking a FrameLayout " +
+                    "first and a String last, called from ${CaptionViewFingerprint.method.name}.",
+            )
         val renderer = mutableClassDefBy(rendererConstructor.definingClass)
-        val root = renderer.fields.single { it.type == "Landroid/widget/FrameLayout;" }
-        val render = renderer.methods.single {
+        val root = renderer.fields.singleOrNull { it.type == "Landroid/widget/FrameLayout;" }
+            ?: throw PatchException(
+                "Subtitle tools: ${renderer.type} does not hold exactly one FrameLayout to read " +
+                    "the caption root from.",
+            )
+        // The fourth parameter is not read. It was a boolean on 46.2.3 and 46.7.3 and is an
+        // edit-hint enum (NONE, TAP_TO_EDIT, EDIT_CTA, EDIT_CTA_HIGHLIGHTED) on 46.8.3, so
+        // pinning it to Z found nothing there. The hook takes the first four registers and the
+        // extension never wanted the fifth.
+        val render = renderer.methods.singleOrNull {
             it.returnType == "V" && it.parameterTypes.size == 4 &&
                 it.parameterTypes[0] == "Ljava/lang/String;" &&
-                it.parameterTypes[2] == "Ljava/lang/String;" && it.parameterTypes[3] == "Z"
-        }
+                it.parameterTypes[2] == "Ljava/lang/String;"
+        } ?: throw PatchException(
+            "Subtitle tools: ${renderer.type} has no (String, ?, String, ?)V caption render.",
+        )
         check(mutableClassDefBy(render.parameterTypes[1].toString()).fields.any { it.name == "EXPANDED" }) {
             "Subtitle tools: ${render.parameterTypes[1]} has no EXPANDED field, so it is not the " +
                 "caption state this reads."
         }
         val layoutSetter = render.implementation!!.instructions.mapNotNull { it.getReference<MethodReference>() }
             .filter { it.name == "setTextLayout" && it.parameterTypes == listOf("Landroid/text/Layout;") }
-            .distinctBy { it.toString() }.single()
-        mutableClassDefBy(layoutSetter.definingClass).methods.single {
+            .distinctBy { it.toString() }.singleOrNull()
+            ?: throw PatchException(
+                "Subtitle tools: the caption render does not call exactly one " +
+                    "setTextLayout(Layout).",
+            )
+        (mutableClassDefBy(layoutSetter.definingClass).methods.singleOrNull {
             it.name == layoutSetter.name && it.parameterTypes == layoutSetter.parameterTypes
-        }.addInstructions(0, """
+        } ?: throw PatchException(
+            "Subtitle tools: ${layoutSetter.definingClass} has no ${layoutSetter.name} to take " +
+                "the caption layout through.",
+        )).addInstructions(0, """
             invoke-static/range { p1 .. p1 }, ${EXTENSION}CaptionStyle;->layout(Landroid/text/Layout;)Landroid/text/Layout;
             move-result-object p1
         """)
         render.implementation!!.instructions.withIndex().filter { it.value.opcode == Opcode.RETURN_VOID }
             .map { it.index }.reversed().forEach { index ->
                 render.addInstruction(index,
-                    "invoke-static/range { p0 .. p4 }, ${EXTENSION}CaptionTools;->onCaption(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;Z)V")
+                    "invoke-static/range { p0 .. p3 }, ${EXTENSION}CaptionTools;->onCaption(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;)V")
             }
         val extension = mutableClassDefBy("${EXTENSION}CaptionTools;")
-        val original = extension.methods.single { it.name == "rootOf" }
+        val original = extension.methods.singleOrNull { it.name == "rootOf" }
+            ?: throw PatchException("Subtitle tools: the extension has no rootOf to rewrite.")
         val bridge = original.cloneMutable(additionalRegisters = 1)
         extension.methods.remove(original)
         extension.methods.add(bridge)

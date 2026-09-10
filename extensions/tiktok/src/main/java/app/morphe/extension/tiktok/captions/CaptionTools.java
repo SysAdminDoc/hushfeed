@@ -47,7 +47,7 @@ public final class CaptionTools {
         });
     }
 
-    public static void onCaption(Object renderer, String id, Object state, String text, boolean instruction) {
+    public static void onCaption(Object renderer, String id, Object state, String text) {
         try {
             FrameLayout root = rootOf(renderer);
             if (root == null) return;
