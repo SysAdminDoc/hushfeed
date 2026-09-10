@@ -2,6 +2,8 @@ package app.morphe.patches.tiktok.misc.settings
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
@@ -13,9 +15,10 @@ import java.nio.ByteOrder
  * <p>The real table was checked once by hand: `raw/icon_2pt_settings_stroke` reads as
  * `0x7f010088` from the 46.2.3, 46.7.3 and 46.8.3 tables, which is what aapt2 reports for each.
  * That check is not in the suite because the tables are not in the repository. What is here
- * covers the layouts the reader has to understand: both string encodings, the two compact
- * entry-offset forms newer aapt2 writes, a table with more than one package, and the ways an
- * entry can be missing.
+ * covers the layouts the reader has to understand: both string encodings including the two-unit
+ * length forms, the two compact entry-offset forms newer aapt2 writes, compact entries, a package
+ * whose type ids are offset, which package of several answers, and the ways an entry can be
+ * missing.
  */
 class ResourceTableTest {
 
@@ -34,11 +37,11 @@ class ResourceTableTest {
                 ),
             ),
         )
-        assertEquals(0x7f010001, table.idOf("raw", "icon_2pt_settings_stroke"))
-        assertEquals(0x7f010000, table.idOf("raw", "alpha"))
-        assertEquals(0x7f010002, table.idOf("raw", "zeta"))
+        assertEquals(0x7f010001, table.idOf("raw", "icon_2pt_settings_stroke", APP))
+        assertEquals(0x7f010000, table.idOf("raw", "alpha", APP))
+        assertEquals(0x7f010002, table.idOf("raw", "zeta", APP))
         // The same key in another type is another resource with another id.
-        assertEquals(0x7f020000, table.idOf("drawable", "alpha"))
+        assertEquals(0x7f020000, table.idOf("drawable", "alpha", APP))
     }
 
     @Test
@@ -58,10 +61,10 @@ class ResourceTableTest {
                 ),
             ),
         )
-        assertNull(table.idOf("raw", "beta"))
-        assertNull(table.idOf("drawable", "beta"))
-        assertNull(table.idOf("raw", "gamma"))
-        assertNull(table.idOf("string", "alpha"))
+        assertNull(table.idOf("raw", "beta", APP))
+        assertNull(table.idOf("drawable", "beta", APP))
+        assertNull(table.idOf("raw", "gamma", APP))
+        assertNull(table.idOf("string", "alpha", APP))
     }
 
     @Test
@@ -80,23 +83,130 @@ class ResourceTableTest {
                     ),
                 )
                 val label = "utf8=$utf8 flags=$flags"
-                assertEquals(label, 0x7f010000, table.idOf("raw", "first"))
-                assertEquals(label, 0x7f010002, table.idOf("raw", "third"))
-                assertNull(label, table.idOf("raw", "second"))
+                assertEquals(label, 0x7f010000, table.idOf("raw", "first", APP))
+                assertEquals(label, 0x7f010002, table.idOf("raw", "third", APP))
+                assertNull(label, table.idOf("raw", "second", APP))
             }
         }
     }
 
     @Test
-    fun `a second package is searched too and keeps its own id`() {
+    fun `a library package carrying the same name does not answer for the app`() {
+        // TikTok's table has twelve packages with the app's own last, and three names in it are
+        // in a library package as well. Reading in file order answered from the library.
         val table = ResourceTable.parse(
             table(
-                pkg(id = 0x01, types = listOf("attr"), keys = listOf("x"), chunks = listOf(type(1, listOf(0)))),
-                pkg(id = 0x7f, types = listOf("raw"), keys = listOf("y"), chunks = listOf(type(1, listOf(0)))),
+                pkg(
+                    id = 0x4f,
+                    name = "com.example.library",
+                    types = listOf("raw"),
+                    keys = listOf("icon_2pt_settings_stroke"),
+                    chunks = listOf(type(1, listOf(0))),
+                ),
+                pkg(
+                    id = 0x7f,
+                    types = listOf("raw"),
+                    keys = listOf("other", "icon_2pt_settings_stroke"),
+                    chunks = listOf(type(1, listOf(0, 1))),
+                ),
             ),
         )
-        assertEquals(0x01010000, table.idOf("attr", "x"))
-        assertEquals(0x7f010000, table.idOf("raw", "y"))
+        assertEquals(0x7f010001, table.idOf("raw", "icon_2pt_settings_stroke", APP))
+    }
+
+    @Test
+    fun `a table that declares the app under another name still answers from its own package`() {
+        val table = ResourceTable.parse(
+            table(
+                pkg(
+                    id = 0x4f,
+                    name = "com.example.library",
+                    types = listOf("raw"),
+                    keys = listOf("icon"),
+                    chunks = listOf(type(1, listOf(0))),
+                ),
+                pkg(
+                    id = 0x7f,
+                    name = "com.example.app.before.the.rename",
+                    types = listOf("raw"),
+                    keys = listOf("icon"),
+                    chunks = listOf(type(1, listOf(0))),
+                ),
+            ),
+        )
+        assertEquals(0x7f010000, table.idOf("raw", "icon", APP))
+    }
+
+    @Test
+    fun `a table with no app package says so rather than picking one`() {
+        val table = ResourceTable.parse(
+            table(
+                pkg(id = 0x4f, name = "one", types = listOf("raw"), keys = listOf("icon"), chunks = listOf(type(1, listOf(0)))),
+                pkg(id = 0x53, name = "two", types = listOf("raw"), keys = listOf("icon"), chunks = listOf(type(1, listOf(0)))),
+            ),
+        )
+        val error = assertThrows(IllegalStateException::class.java) { table.idOf("raw", "icon", APP) }
+        assertTrue(error.message, error.message!!.contains("one=0x4f"))
+        assertTrue(error.message, error.message!!.contains("two=0x53"))
+    }
+
+    @Test
+    fun `a type id offset moves every id in the package`() {
+        val table = ResourceTable.parse(
+            table(
+                pkg(
+                    id = 0x7f,
+                    types = listOf("raw", "drawable"),
+                    keys = listOf("icon"),
+                    chunks = listOf(type(id = 8, entries = listOf(0)), type(id = 9, entries = listOf(0))),
+                    typeIdOffset = 7,
+                ),
+            ),
+        )
+        assertEquals(0x7f080000, table.idOf("raw", "icon", APP))
+        assertEquals(0x7f090000, table.idOf("drawable", "icon", APP))
+    }
+
+    @Test
+    fun `names past the one byte length form read whole in both encodings`() {
+        // A pool writes its lengths in one byte until the high bit says two follow, and the two
+        // encodings put the extra byte in different places.
+        val long8 = "a".repeat(0x90)
+        val long16 = "b".repeat(0x9000)
+        for (utf8 in listOf(true, false)) {
+            val name = if (utf8) long8 else long16
+            val table = ResourceTable.parse(
+                table(
+                    pkg(
+                        id = 0x7f,
+                        types = listOf("raw"),
+                        keys = listOf("short", name),
+                        chunks = listOf(type(1, listOf(0, 1))),
+                        utf8 = utf8,
+                    ),
+                ),
+            )
+            assertEquals("utf8=$utf8", 0x7f010001, table.idOf("raw", name, APP))
+            assertEquals("utf8=$utf8", 0x7f010000, table.idOf("raw", "short", APP))
+        }
+    }
+
+    @Test
+    fun `a compact entry keeps its key where the size would be`() {
+        val table = ResourceTable.parse(
+            table(
+                pkg(
+                    id = 0x7f,
+                    types = listOf("raw"),
+                    // The value written into a compact entry is the key index of the other entry,
+                    // which is what a reader looking at the wrong offset would match on.
+                    keys = listOf("first", "second"),
+                    chunks = listOf(type(1, listOf(0, 1), compact = true)),
+                ),
+            ),
+        )
+        assertEquals(0x7f010000, table.idOf("raw", "first", APP))
+        assertEquals(0x7f010001, table.idOf("raw", "second", APP))
     }
 
     @Test
@@ -113,7 +223,7 @@ class ResourceTableTest {
                 ),
             ),
         )
-        assertEquals(0x7f010000, table.idOf("raw", "only"))
+        assertEquals(0x7f010000, table.idOf("raw", "only", APP))
     }
 
     // ---- a small encoder, the mirror of what the reader decodes ----
@@ -121,6 +231,8 @@ class ResourceTableTest {
     private companion object {
         const val FLAG_SPARSE = 0x01
         const val FLAG_OFFSET16 = 0x02
+        const val FLAG_COMPACT = 0x0008
+        const val APP = "com.example.app"
     }
 
     private class Chunk(val bytes: ByteArray)
@@ -129,6 +241,15 @@ class ResourceTableTest {
     private fun ByteArrayOutputStream.u8(v: Int) = write(v and 0xFF)
     private fun ByteArrayOutputStream.u16(v: Int) { u8(v); u8(v ushr 8) }
     private fun ByteArrayOutputStream.u32(v: Int) { u16(v and 0xFFFF); u16(v ushr 16) }
+
+    /** A pool length: one unit, or two with the high bit set on the first and the high half in it. */
+    private fun ByteArrayOutputStream.len8(v: Int) {
+        if (v < 0x80) u8(v) else { u8((v ushr 8) or 0x80); u8(v and 0xFF) }
+    }
+
+    private fun ByteArrayOutputStream.len16(v: Int) {
+        if (v < 0x8000) u16(v) else { u16((v ushr 16) or 0x8000); u16(v and 0xFFFF) }
+    }
 
     private fun chunk(type: Int, headerSize: Int, header: ByteArray, body: ByteArray): ByteArray {
         val out = le()
@@ -147,12 +268,12 @@ class ResourceTableTest {
             offsets += data.size()
             if (utf8) {
                 val bytes = s.toByteArray(Charsets.UTF_8)
-                data.u8(s.length)
-                data.u8(bytes.size)
+                data.len8(s.length)
+                data.len8(bytes.size)
                 data.write(bytes)
                 data.u8(0)
             } else {
-                data.u16(s.length)
+                data.len16(s.length)
                 for (c in s) data.u16(c.code)
                 data.u16(0)
             }
@@ -172,7 +293,7 @@ class ResourceTableTest {
     }
 
     /** A type chunk for one type id, `entries[i]` being the key index of entry i or null. */
-    private fun type(id: Int, entries: List<Int?>, flags: Int = 0): Chunk {
+    private fun type(id: Int, entries: List<Int?>, flags: Int = 0, compact: Boolean = false): Chunk {
         val headerSize = 20 + 56 // ResTable_type header plus a minimal ResTable_config of 56 bytes
         val present = entries.withIndex().filter { it.value != null }
         val entrySize = 8
@@ -200,9 +321,18 @@ class ResourceTableTest {
             else -> for (i in entries.indices) body.u32(entryOffsets[i] ?: -1)
         }
         for ((_, k) in present) {
-            body.u16(entrySize)
-            body.u16(0)
-            body.u32(k!!)
+            if (compact) {
+                // The key takes the size field, the flag says so, and the value sits where a
+                // plain entry keeps its key. The value here is another entry's key index, so a
+                // reader that looks in the wrong place matches the wrong entry rather than none.
+                body.u16(k!!)
+                body.u16(FLAG_COMPACT)
+                body.u32(entries.size - 1 - k)
+            } else {
+                body.u16(entrySize)
+                body.u16(0)
+                body.u32(k!!)
+            }
         }
         return Chunk(chunk(0x0201, headerSize, header.toByteArray(), body.toByteArray()))
     }
@@ -217,19 +347,27 @@ class ResourceTableTest {
 
     private fun unknownChunk(): Chunk = Chunk(chunk(0x0203, 12, ByteArray(4), ByteArray(24)))
 
-    private fun pkg(id: Int, types: List<String>, keys: List<String>, chunks: List<Chunk>, utf8: Boolean = true): Chunk {
+    private fun pkg(
+        id: Int,
+        types: List<String>,
+        keys: List<String>,
+        chunks: List<Chunk>,
+        utf8: Boolean = true,
+        name: String = APP,
+        typeIdOffset: Int = 0,
+    ): Chunk {
         val headerSize = 288
         val typePool = stringPool(types, utf8)
         val keyPool = stringPool(keys, utf8)
         val header = le()
         header.u32(id)
-        val name = "test".toCharArray()
-        for (i in 0 until 128) header.u16(if (i < name.size) name[i].code else 0)
+        val declared = name.toCharArray()
+        for (i in 0 until 128) header.u16(if (i < declared.size) declared[i].code else 0)
         header.u32(headerSize)                 // typeStrings offset
         header.u32(types.size)                 // lastPublicType
         header.u32(headerSize + typePool.size) // keyStrings offset
         header.u32(keys.size)                  // lastPublicKey
-        header.u32(0)                          // typeIdOffset
+        header.u32(typeIdOffset)
         val body = le()
         body.write(typePool)
         body.write(keyPool)

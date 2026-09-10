@@ -44,7 +44,6 @@ private data class OpenDebugTargets(
     val composeMutable: MutableMethod,
 )
 
-@Suppress("unused")
 /**
  * The type of TikTok's `VectorResource(resId: Int)` data class, found by the string constant its
  * generated toString() appends. Exactly one class carries it, and it has to have the one-int
@@ -69,6 +68,7 @@ private fun BytecodePatchContext.vectorResourceClass(): String {
 
 private const val VECTOR_RESOURCE_TO_STRING = "VectorResource(resId="
 
+@Suppress("unused")
 val settingsPatch = bytecodePatch(
     name = "Settings",
     description = "Adds the Hushfeed settings screen to TikTok.",
@@ -429,15 +429,16 @@ val settingsPatch = bytecodePatch(
             }
             val iconRegister = constructor.getInstruction<OneRegisterInstruction>(iconLoadIndex).registerA
             val tempRegister = constructor.findFreeRegister(iconLoadIndex + 1, iconRegister)
-            check(settingsIconResourceId != 0) {
-                "Settings: the icon resource was not resolved before the bytecode patch ran."
-            }
+            val iconResourceId = settingsIconResourceId
+                ?: throw PatchException(
+                    "Settings: the icon resource was not resolved before the bytecode patch ran.",
+                )
 
             constructor.addInstructions(
                 iconLoadIndex + 1,
                 """
                     new-instance v$iconRegister, $vectorResource
-                    const v$tempRegister, $settingsIconResourceId
+                    const v$tempRegister, $iconResourceId
                     invoke-direct {v$iconRegister, v$tempRegister}, $vectorResource-><init>(I)V
                 """,
             )
