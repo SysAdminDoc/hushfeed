@@ -176,14 +176,12 @@ val featureGateLabPatch = bytecodePatch(
         playerGetter.patchPlayerSettingBoundary()
 
         val activityCenter = mutableClassDefBy(ACTIVITY_CENTER_DESCRIPTOR)
+        // The parameter list used to be spelled out here and 46.8.3 added a fourth, a Uri, which
+        // took the whole patch down. Nothing below reads a parameter: the schema is taken off the
+        // return register, so what identifies the method is that it is the class's one String
+        // getSchema. A second one appearing is worth failing on rather than guessing between.
         val getSchema = activityCenter.methods.singleOrNull {
-            it.name == "getSchema" &&
-                it.returnType == "Ljava/lang/String;" &&
-                it.parameterTypes == listOf(
-                    "Ljava/lang/String;",
-                    "Ljava/lang/String;",
-                    "Ljava/lang/String;",
-                )
+            it.name == "getSchema" && it.returnType == "Ljava/lang/String;"
         } ?: throw PatchException("Feature Gate Lab Activity Center schema boundary not found")
         getSchema.patchActivityCenterSchema()
 
