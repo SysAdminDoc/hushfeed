@@ -44,8 +44,15 @@ private class Registration(
  * panel asks for it by hand, and every hook below hangs off that component's own lifecycle, so
  * until somebody opened the panel there was nothing to hook. The registration is found by the two
  * things only it carries together: the component's own class, and a strategy constant beside it.
+ *
+ * <p>There is more than one on 46.7.3 and 46.8.3, and they are the same registration twice: R8
+ * keeps the lambda that performs it and also copies it into a merged lambda group, and the two
+ * copies name the same component, the same view id and the same strategy, differing only in how
+ * each fetches the factory it stores. Which of the two the panel calls is not something this can
+ * read, so every copy is taken. They are required to agree on the strategy type, because two
+ * different ones would mean these are not copies of one registration after all.
  */
-private fun BytecodePatchContext.resolveLazyRegistration(): Registration {
+private fun BytecodePatchContext.resolveLazyRegistrations(): List<Registration> {
     val found = mutableListOf<Registration>()
     classDefForEach { classDef ->
         for (method in classDef.methods) {
@@ -72,12 +79,17 @@ private fun BytecodePatchContext.resolveLazyRegistration(): Registration {
             }
         }
     }
-    if (found.size != 1) {
+    if (found.isEmpty()) {
+        throw PatchException("Auto advance: found no lazy auto scroll registration.")
+    }
+    val strategies = found.mapTo(LinkedHashSet()) { it.strategy }
+    if (strategies.size != 1) {
         throw PatchException(
-            "Auto advance: expected one lazy auto scroll registration, found ${found.size}.",
+            "Auto advance: the ${found.size} lazy auto scroll registrations write " +
+                "${strategies.size} different load strategy types: $strategies.",
         )
     }
-    return found.single()
+    return found
 }
 
 /**
@@ -148,13 +160,14 @@ val autoAdvancePatch = bytecodePatch(
                 method.implementation!!.instructions.any { it.getReference<MethodReference>()?.toString() == startCore.toString() }
         }
         val stop = Stop.method
-        val registration = resolveLazyRegistration()
-        val strategyEnum = mutableClassDefBy(registration.strategy)
+        val registrations = resolveLazyRegistrations()
+        val strategy = registrations.first().strategy
+        val strategyEnum = mutableClassDefBy(strategy)
         check(strategyEnum.superclass == "Ljava/lang/Enum;" &&
             strategyEnum.fields.any { it.name == IMMEDIATE }
         ) {
-            "Auto advance: ${registration.strategy} is not the load strategy enum. Expected an " +
-                "enum with $IMMEDIATE."
+            "Auto advance: $strategy is not the load strategy enum. Expected an enum with " +
+                "$IMMEDIATE."
         }
         val extension = mutableClassDefBy(EXTENSION)
         fun bridge(name: String, registers: Int, code: String) {
@@ -192,11 +205,15 @@ val autoAdvancePatch = bytecodePatch(
             return-void
         """)
         bridge("immediateLoad", 1, """
-            sget-object v0, ${registration.strategy}->$IMMEDIATE:${registration.strategy}
+            sget-object v0, $strategy->$IMMEDIATE:$strategy
             return-object v0
         """)
-        mutableClassDefBy(registration.owner).findMutableMethodOf(registration.method)
-            .chooseAutoAdvanceLoadStrategy(registration.strategyIndex, registration.strategy)
+        // Later sites first, so that inserting into one does not move the next one's index if
+        // two copies ever land in the same method.
+        registrations.sortedByDescending { it.strategyIndex }.forEach { registration ->
+            mutableClassDefBy(registration.owner).findMutableMethodOf(registration.method)
+                .chooseAutoAdvanceLoadStrategy(registration.strategyIndex, registration.strategy)
+        }
         component.methods.single { it.name == "onViewCreated" && it.parameterTypes == listOf("Landroid/view/View;") }
             .addInstruction(0, "invoke-static/range {p0 .. p1}, $EXTENSION->onView(Ljava/lang/Object;Landroid/view/View;)V")
         for (name in listOf("onResume", "onDestroy")) {
