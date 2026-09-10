@@ -17,6 +17,7 @@ import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.patches.tiktok.shared.callThroughLocals
 import app.morphe.patches.tiktok.shared.objectIn
 import app.morphe.patches.tiktok.shared.valueIn
+import com.android.tools.smali.dexlib2.AccessFlags
 
 /**
  * Every entry point below is named by a class and a method TikTok wrote. What was written here
@@ -82,8 +83,14 @@ private const val SEC_DISMISS = "LIZJ"
 private const val LIVE_DISMISS = "LIZIZ"
 
 /**
- * `type->name()V`, having checked that the class in this build declares it. A callback whose
- * dismiss notice moved would otherwise assemble into a call to nothing and fail on a phone.
+ * The whole `invoke-... {p3 .. p3}, type->name()V`, having checked that the class in this build
+ * declares it. A callback whose dismiss notice moved would otherwise assemble into a call to
+ * nothing and fail on a phone.
+ *
+ * <p>The invoke kind comes from what the callback is rather than being written down beside it.
+ * These types change kind between builds: the name `LX/1Cc3;` is the LIVE callback interface on
+ * 46.2.3 and an unrelated final class on the two builds since, and invoke-interface against a
+ * class is the same class-load failure the name check exists to prevent.
  */
 private fun BytecodePatchContext.dismissCall(type: String, name: String): String {
     val callback = classDefByOrNull(type)
@@ -91,7 +98,12 @@ private fun BytecodePatchContext.dismissCall(type: String, name: String): String
     if (callback.methods.none { it.name == name && it.returnType == "V" && it.parameterTypes.none() }) {
         throw PatchException("Hide CAPTCHA popups: $type has no $name()V to dismiss the request with.")
     }
-    return "$type->$name()V"
+    val kind = if (AccessFlags.INTERFACE.value and callback.accessFlags != 0) {
+        "invoke-interface"
+    } else {
+        "invoke-virtual"
+    }
+    return "$kind/range {p3 .. p3}, $type->$name()V"
 }
 
 @Suppress("unused")
@@ -122,7 +134,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
                 move-result v0
                 if-eqz v0, :morphe_show_captcha_popup
                 if-eqz p3, :morphe_hide_captcha_popup_return
-                invoke-virtual/range {p3 .. p3}, $dismiss
+                $dismiss
                 :morphe_hide_captcha_popup_return
                 return-void
                 :morphe_show_captcha_popup
@@ -140,7 +152,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
                 move-result v0
                 if-eqz v0, :morphe_show_legacy_captcha_popup
                 if-eqz p3, :morphe_hide_legacy_captcha_popup_return
-                invoke-virtual/range {p3 .. p3}, $dismiss
+                $dismiss
                 :morphe_hide_legacy_captcha_popup_return
                 return-void
                 :morphe_show_legacy_captcha_popup
@@ -184,7 +196,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
                 move-result v0
                 if-eqz v0, :morphe_show_live_captcha_popup
                 if-eqz p3, :morphe_hide_live_captcha_popup_return
-                invoke-interface/range {p3 .. p3}, $dismiss
+                $dismiss
                 :morphe_hide_live_captcha_popup_return
                 return-void
                 :morphe_show_live_captcha_popup

@@ -52,10 +52,9 @@ internal fun BytecodePatchContext.resolveNativeFocus(): NativeFocus {
         // other two hooks reported the real one, and nothing would fail at patch time.
         //
         // A field typed as something that only reaches the interface through what it extends
-        // counts, because R8 moves an interface onto a superclass routinely. The field that
-        // declares the interface itself is preferred, so a helper that holds both is answered
-        // rather than counted as two and dropped, and only a class with two of the same kind is
-        // skipped.
+        // counts, because R8 moves an interface onto a superclass routinely. A helper holding
+        // both a declarer and an inheritor resolves to the declarer; two of either kind is an
+        // ambiguity nothing here can settle, so the class is skipped and the count says so.
         val listeners = fields.filter { it.type != AUDIO_MANAGER && implementsAudioListener(it.type) }
         val listener = (listeners.singleOrNull { field ->
             classDefByOrNull(field.type)?.interfaces?.contains(AUDIO_LISTENER) == true

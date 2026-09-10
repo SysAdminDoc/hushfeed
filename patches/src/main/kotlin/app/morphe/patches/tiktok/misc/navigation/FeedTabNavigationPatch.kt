@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.misc.navigation
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
@@ -27,6 +28,15 @@ val feedTabNavigationPatch = bytecodePatch(
             0,
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableFeedNavigation()V",
         )
+
+        // One method answering to both scenes would take both hooks and leave the other list
+        // unfiltered, with nothing failing.
+        if (TopTabModelListFingerprint.method.name == BottomTabModelListFingerprint.method.name) {
+            throw PatchException(
+                "Feed tab navigation: both tab lists resolved to " +
+                    "${TopTabModelListFingerprint.method.name}.",
+            )
+        }
 
         TopTabModelListFingerprint.method.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()

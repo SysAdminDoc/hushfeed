@@ -18,6 +18,7 @@ import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionOrThrow
 import app.morphe.util.indexOfFirstInstructionReversedOrThrow
+import app.morphe.util.numberOfParameterRegisters
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -45,6 +46,11 @@ val resumeVideoAfterScrollPatch = bytecodePatch(
         )
 
         FeedProgressContinueGateFingerprint.method.apply {
+            // v0 is scratch and the branch falls back into the host's own first instruction, so
+            // the register has to be a local rather than one of the parameters.
+            check(implementation!!.registerCount - numberOfParameterRegisters >= 1) {
+                "Resume videos after scrolling: the continue gate has no free local register."
+            }
             addInstructionsWithLabels(
                 0,
                 """

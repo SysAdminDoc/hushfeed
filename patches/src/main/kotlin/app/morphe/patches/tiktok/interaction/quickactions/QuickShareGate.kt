@@ -44,9 +44,28 @@ internal fun BytecodePatchContext.resolveLongPressQuickShareGate(): MutableMetho
         )
     }
     val gate = called.single()
-    return mutableClassDefBy(gate.definingClass).methods.singleOrNull {
+    val method = mutableClassDefBy(gate.definingClass).methods.singleOrNull {
         it.name == gate.name && it.returnType == "I" && it.parameterTypes.isEmpty()
     } ?: throw PatchException(
         "Long press quick share: ${gate.definingClass} has no ${gate.name}()I to override.",
     )
+    // Who calls it says which method; this says it is the kind of method the patch rewrites. A
+    // build that stopped calling the gate from here but left any other static ()I would otherwise
+    // resolve to that one and have its return overridden.
+    val references = method.implementation?.instructions
+        ?.mapNotNull { it.getReference<MethodReference>() }
+        .orEmpty()
+    val readsLazyValue = references.any {
+        it.name == "getValue" && it.returnType == "Ljava/lang/Object;" && it.parameterTypes.isEmpty()
+    }
+    val unwrapsInt = references.any {
+        it.definingClass == "Ljava/lang/Number;" && it.name == "intValue" && it.returnType == "I"
+    }
+    if (!readsLazyValue || !unwrapsInt) {
+        throw PatchException(
+            "Long press quick share: ${gate.definingClass}->${gate.name} does not read a lazy " +
+                "value and unwrap it as an int, so it is not the gate.",
+        )
+    }
+    return method
 }

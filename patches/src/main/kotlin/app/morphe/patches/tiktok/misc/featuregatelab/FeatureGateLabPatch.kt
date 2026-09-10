@@ -7,6 +7,7 @@ package app.morphe.patches.tiktok.misc.featuregatelab
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.util.proxy.mutableTypes.MutableClass
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.absettings.APP_AB_INT_KEY_REGISTER
@@ -136,11 +137,14 @@ val featureGateLabPatch = bytecodePatch(
         // By shape, like the table above: these were `LJII` and `LJIIIIZZ`, which are R8's names
         // on a class whose own name is kept, and each shape is the only one of its kind here.
         // Static, because this one reads its key from p0 and the shape does not say so.
-        val objectGetterWithoutDefault = settingsManager.methods.singleOrNull {
+        val objectGetterWithoutDefault = settingsManager.methodOfShapeOrNamed(
+            "LJII",
+            "Feature Gate Lab SettingsManager static object boundary without default",
+        ) {
             it.returnType == "Ljava/lang/Object;" &&
                 it.parameterTypes == listOf("Ljava/lang/String;", "Ljava/lang/Class;") &&
                 AccessFlags.STATIC.value and it.accessFlags != 0
-        } ?: throw PatchException("Feature Gate Lab SettingsManager static object boundary without default not found")
+        }
         objectGetterWithoutDefault
             .cloneMutableAndPreserveParameters()
             .patchSettingsManagerObjectBoundary(
@@ -148,7 +152,10 @@ val featureGateLabPatch = bytecodePatch(
             isStatic = true,
         )
 
-        val objectGetterWithDefault = settingsManager.methods.singleOrNull {
+        val objectGetterWithDefault = settingsManager.methodOfShapeOrNamed(
+            "LJIIIIZZ",
+            "Feature Gate Lab SettingsManager instance object boundary with default",
+        ) {
             it.returnType == "Ljava/lang/Object;" &&
                 it.parameterTypes == listOf(
                     "Ljava/lang/String;",
@@ -156,7 +163,7 @@ val featureGateLabPatch = bytecodePatch(
                     "Ljava/lang/Object;",
                 ) &&
                 AccessFlags.STATIC.value and it.accessFlags == 0
-        } ?: throw PatchException("Feature Gate Lab SettingsManager instance object boundary with default not found")
+        }
         objectGetterWithDefault.patchSettingsManagerObjectBoundary(
             hasDefault = true,
             isStatic = false,
@@ -213,6 +220,27 @@ val featureGateLabPatch = bytecodePatch(
             it.name == "isInstalled" && it.returnType == "Z" && it.parameterTypes.isEmpty()
         } ?: throw PatchException("Feature Gate Lab runtime marker not found")
         installed.addInstructions(0, "const/4 v0, 0x1\nreturn v0")
+    }
+}
+
+/**
+ * The one method of the shape, or the one of that shape called [name] when the shape has stopped
+ * being unique. The same trade the boundary table above makes: an R8 name is worth a tiebreak and
+ * not a requirement.
+ */
+private fun MutableClass.methodOfShapeOrNamed(
+    name: String,
+    what: String,
+    shape: (MutableMethod) -> Boolean,
+): MutableMethod {
+    val ofShape = methods.filter(shape)
+    return when (ofShape.size) {
+        1 -> ofShape.single()
+        0 -> throw PatchException("$what not found on $type")
+        else -> ofShape.singleOrNull { it.name == name }
+            ?: throw PatchException(
+                "$what is ambiguous: $type has ${ofShape.size} of that shape and none is $name",
+            )
     }
 }
 

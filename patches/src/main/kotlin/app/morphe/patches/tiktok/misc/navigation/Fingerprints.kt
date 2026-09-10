@@ -17,12 +17,12 @@ private const val BOTTOM_TAB_SCENE = "scene_get_bottom_tab"
 /**
  * Whether the method is a tab list getter for [scene]: build the tabs, hand back the list.
  *
- * <p>`TabAbilityAssem` keeps its own name and carries six `()List` methods whose names R8 assigns,
- * two of which the patch wants. They were written here as `W52` and `OA`, which is what they are
- * called on 46.2.3 and not on any build since. Four of the six do more than hand back a list; the
- * two that matter are three instructions long, and what tells those two apart is the method each
- * calls first to fill the list, one of which reports itself as `scene_get_top_tab` and the other
- * as `scene_get_bottom_tab`. Those two strings are on all three builds.
+ * <p>`TabAbilityAssem` keeps its own name and carries five `()List` methods whose names R8
+ * assigns, two of which the patch wants. They were written here as `W52` and `OA`, which is what
+ * they are called on 46.2.3 and not on any build since. Three of the five do more than hand back a
+ * list; the two that matter are three instructions long, and what tells those two apart is the
+ * method each calls first to fill the list, one of which reports itself as `scene_get_top_tab` and
+ * the other as `scene_get_bottom_tab`. Those two strings are on all three builds.
  */
 private fun Method.isTabModelList(classDef: ClassDef, scene: String): Boolean {
     val instructions = implementation?.instructions?.toList() ?: return false

@@ -82,6 +82,17 @@ private fun BytecodePatchContext.resolveLazyRegistrations(): List<Registration> 
     if (found.isEmpty()) {
         throw PatchException("Auto advance: found no lazy auto scroll registration.")
     }
+    // One per method. The scan takes every `LAZY` write after a single const-class of the
+    // component, so two in one method would mean it is reading a registration that is not this
+    // component's, and requiring exactly one overall used to be what ruled that out.
+    val perMethod = found.groupBy { "${it.owner}->${it.method.name}${it.method.parameterTypes}" }
+    val crowded = perMethod.filterValues { it.size > 1 }
+    if (crowded.isNotEmpty()) {
+        throw PatchException(
+            "Auto advance: ${crowded.keys.first()} carries ${crowded.values.first().size} lazy " +
+                "auto scroll registrations, so the component they belong to is not clear.",
+        )
+    }
     val strategies = found.mapTo(LinkedHashSet()) { it.strategy }
     if (strategies.size != 1) {
         throw PatchException(
