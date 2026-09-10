@@ -79,22 +79,54 @@ private object SuggestWordsPublishFingerprint : Fingerprint(
     custom = { method, _ -> method.marks("recommendPostValueStart") },
 )
 
-// Verified 46.2.3 boundaries. The first-screen cache has raw JSON and TemplateData readers;
-// both consult this gate, independently of the history gate and SuggestWordsViewModel.
+/** The AB key the first-screen gate reads, which its own class holds in the clear. */
+private const val FIRST_SCREEN_KEY = "search_lynx_recommend_first_screen"
+
+/**
+ * The gate the first-screen cache consults, both from its raw JSON reader and its TemplateData
+ * one, independently of the history gate and SuggestWordsViewModel.
+ *
+ * <p>Its class was written here as `LX/0OiL;`, which is `LX/0Or3;` on 46.7.3 and `LX/0Ol1;` on
+ * 46.8.3. Unlike most of TikTok's AB gates it reads its key in its own `<clinit>` rather than
+ * behind a lambda, and exactly one `<clinit>` in the app holds that key on all three builds.
+ */
 private object LynxFirstScreenCacheFingerprint : Fingerprint(
-    definingClass = "LX/0OiL;",
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
-    name = "LIZ",
     parameters = emptyList(),
     returnType = "Z",
+    custom = { _, classDef ->
+        classDef.methods.any { candidate ->
+            candidate.name == "<clinit>" &&
+                candidate.implementation?.instructions?.any {
+                    it.getReference<StringReference>()?.string == FIRST_SCREEN_KEY
+                } == true
+        }
+    },
+)
+
+/**
+ * The Lynx parameter helper, `LX/0Bav;` on 46.2.3 and `LX/09iY;` and `LX/09eO;` since.
+ *
+ * <p>Four statics together name it: the reader this hooks, the two that answer with a name and a
+ * map, and one that writes a value into a gson object. That last signature is what makes the set
+ * specific, and exactly one class in the app carries all four on each of the three builds.
+ */
+private val LYNX_PARAMETER_SHAPES = setOf(
+    "Ljava/lang/String;[]",
+    "Ljava/util/Map;[]",
+    "V[Lcom/google/gson/n;, Ljava/lang/Object;, Ljava/lang/String;]",
 )
 
 private object LynxParameterFingerprint : Fingerprint(
-    definingClass = "LX/0Bav;",
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
-    name = "LIZ",
     parameters = listOf("Ljava/lang/String;"),
     returnType = "Ljava/lang/Object;",
+    custom = { _, classDef ->
+        val statics = classDef.methods
+            .filter { AccessFlags.STATIC.value and it.accessFlags != 0 }
+            .mapTo(HashSet()) { "${it.returnType}${it.parameterTypes}" }
+        statics.containsAll(LYNX_PARAMETER_SHAPES)
+    },
 )
 
 private object SearchReentryFingerprint : Fingerprint(
@@ -176,9 +208,14 @@ internal fun MutableMethod.hookReentryVisibility() {
     val read = instructions.getOrNull(keyIndex + 1)
     val reference = read?.getReference<MethodReference>()
     val result = instructions.getOrNull(keyIndex + 2)
+    // The settings reader was named here as LX/0BZD;->LJIIJJI, both of which R8 assigns. Its
+    // signature is what identifies it at this call site: two ints, the key this method just
+    // loaded, a boolean, and an int back.
     if (read !is FiveRegisterInstruction || read.registerCount != 5 || read.registerF != keyRegister ||
-        reference?.definingClass != "LX/0BZD;" || reference.name != "LJIIJJI" ||
-        reference.returnType != "I" || result?.opcode != Opcode.MOVE_RESULT
+        reference == null || reference.returnType != "I" ||
+        reference.parameterTypes.map(CharSequence::toString) !=
+        listOf("I", "I", "Ljava/lang/String;", "Z") ||
+        result?.opcode != Opcode.MOVE_RESULT
     ) {
         throw PatchException("Hide search suggestions: search reentry visibility reader changed.")
     }
