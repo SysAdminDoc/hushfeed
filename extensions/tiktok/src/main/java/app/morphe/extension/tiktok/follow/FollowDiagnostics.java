@@ -798,11 +798,25 @@ public final class FollowDiagnostics {
         if (context == null) return "no_request_context";
         if ("unknown".equals(match)) return context.hasTarget() ? "no_matching_readback_target" : "no_request_target";
         if ("false".equals(match)) return "target_mismatch";
-        if (!"unknown".equals(context.bodyFollowStatus) && userSignals != null
-                && userSignals.contains("followStatus=" + context.bodyFollowStatus)) {
-            return "confirmed_" + context.bodyFollowStatus;
+        if (!context.bodyFollowStatus.matches("[0-9]+")) return "target_found_state_unclear";
+
+        String observed = null;
+        for (String signal : userSignals.split(" \\| ")) {
+            if (!"true".equals(targetMatch(signal, context))) continue;
+            String field = ",followStatus=";
+            int start = signal.indexOf(field);
+            if (start < 0) continue;
+            start += field.length();
+            int end = signal.indexOf(',', start);
+            String state = signal.substring(start, end < 0 ? signal.length() : end);
+            if (!state.matches("[0-9]+")) continue;
+            if (observed != null && !observed.equals(state)) return "target_found_state_unclear";
+            observed = state;
         }
-        return "target_found_state_unclear";
+        if (observed == null) return "target_found_state_unclear";
+        return observed.equals(context.bodyFollowStatus)
+                ? "confirmed_" + observed
+                : "observed_" + observed + "_expected_" + context.bodyFollowStatus;
     }
 
     private static String encodedFormBody(Object payload) {
@@ -1033,13 +1047,22 @@ public final class FollowDiagnostics {
     }
 
     private static String describeUserState(Object target) {
+        Object identity = target;
+        Object relation = target;
+        // This profile schema splits one account's identity and relation under the same common.
+        // Do not pair arbitrary sibling objects: a readback may contain several different users.
+        if ("com.ss.android.ugc.profile.platform.base.data.ProfileUser".equals(target.getClass().getName())) {
+            Object common = readField(target, "common");
+            identity = firstPresentValue(common, "getUserProfileInfo", "userProfileInfo");
+            relation = firstPresentValue(common, "getUserRelationInfo", "userRelationInfo");
+        }
         return "class=" + target.getClass().getName()
-                + ",uidHash=" + hash(firstPresentString(target, "getUid", "uid", "userId", "getUserId"))
-                + ",secUidHash=" + hash(firstPresentString(target, "getSecUid", "secUid"))
-                + ",uniqueIdHash=" + hash(firstPresentString(target, "getUniqueId", "uniqueId", "nickname"))
-                + ",followStatus=" + describeSimpleValue(firstPresentValue(target, "getFollowStatus", "followStatus"))
-                + ",followerStatus=" + describeSimpleValue(firstPresentValue(target, "getFollowerStatus", "followerStatus"))
-                + ",followed=" + describeSimpleValue(firstPresentValue(target, "isFollowing", "isFollowed", "following"));
+                + ",uidHash=" + hash(firstPresentString(identity, "getUid", "uid", "userId", "getUserId"))
+                + ",secUidHash=" + hash(firstPresentString(identity, "getSecUid", "secUid"))
+                + ",uniqueIdHash=" + hash(firstPresentString(identity, "getUniqueId", "uniqueId", "nickname"))
+                + ",followStatus=" + describeSimpleValue(firstPresentValue(relation, "getFollowStatus", "followStatus"))
+                + ",followerStatus=" + describeSimpleValue(firstPresentValue(relation, "getFollowerStatus", "followerStatus"))
+                + ",followed=" + describeSimpleValue(firstPresentValue(relation, "isFollowing", "isFollowed", "following"));
     }
 
     private static String firstPresentString(Object target, String... names) {
