@@ -9,6 +9,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -44,12 +45,36 @@ private data class OpenDebugTargets(
 )
 
 @Suppress("unused")
+/**
+ * The type of TikTok's `VectorResource(resId: Int)` data class, found by the string constant its
+ * generated toString() appends. Exactly one class carries it, and it has to have the one-int
+ * constructor the patch calls, or the patch says so rather than assembling a call to nothing.
+ */
+private fun BytecodePatchContext.vectorResourceClass(): String {
+    val carriers = getAllClassesWithString(VECTOR_RESOURCE_TO_STRING)
+    if (carriers.size != 1) {
+        throw PatchException(
+            "Settings: expected one class carrying \"$VECTOR_RESOURCE_TO_STRING\", found ${carriers.size}.",
+        )
+    }
+    val type = carriers.single().type
+    val hasIntConstructor = carriers.single().methods.any {
+        it.name == "<init>" && it.parameterTypes.toList() == listOf("I")
+    }
+    if (!hasIntConstructor) {
+        throw PatchException("Settings: $type has no <init>(I)V to build the icon with.")
+    }
+    return type
+}
+
+private const val VECTOR_RESOURCE_TO_STRING = "VectorResource(resId="
+
 val settingsPatch = bytecodePatch(
     name = "Settings",
     description = "Adds the Hushfeed settings screen to TikTok.",
     default = true,
 ) {
-    dependsOn(sharedExtensionPatch)
+    dependsOn(sharedExtensionPatch, settingsIconResourcePatch)
 
     compatibleWith(*AppCompatibilities.tiktok4623())
 
@@ -392,18 +417,28 @@ val settingsPatch = bytecodePatch(
             }
             val constructor = stateConstructor
                 ?: throw PatchException("Settings: OpenDebug state constructor was not found.")
+
+            // The row's icon is a Kotlin data class wrapping a resource id. Its obfuscated name
+            // changes with every build and was once written here as a literal, which is what took
+            // the whole bundle down on 46.7.3: Settings failed, and the sixty-two patches that
+            // depend on it failed with it. What a data class keeps through obfuscation is the
+            // string its toString() builds from, so that is the anchor.
+            val vectorResource = vectorResourceClass()
             val iconLoadIndex = constructor.indexOfFirstInstructionOrThrow {
-                opcode == Opcode.SGET_OBJECT && getReference<FieldReference>()?.type == "LX/08EY;"
+                opcode == Opcode.SGET_OBJECT && getReference<FieldReference>()?.type == vectorResource
             }
             val iconRegister = constructor.getInstruction<OneRegisterInstruction>(iconLoadIndex).registerA
             val tempRegister = constructor.findFreeRegister(iconLoadIndex + 1, iconRegister)
+            check(settingsIconResourceId != 0) {
+                "Settings: the icon resource was not resolved before the bytecode patch ran."
+            }
 
             constructor.addInstructions(
                 iconLoadIndex + 1,
                 """
-                    new-instance v$iconRegister, LX/08EY;
-                    const v$tempRegister, 0x7f010088
-                    invoke-direct {v$iconRegister, v$tempRegister}, LX/08EY;-><init>(I)V
+                    new-instance v$iconRegister, $vectorResource
+                    const v$tempRegister, $settingsIconResourceId
+                    invoke-direct {v$iconRegister, v$tempRegister}, $vectorResource-><init>(I)V
                 """,
             )
         }
