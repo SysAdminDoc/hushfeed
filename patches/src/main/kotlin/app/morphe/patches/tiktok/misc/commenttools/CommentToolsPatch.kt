@@ -24,12 +24,16 @@ import app.morphe.patches.tiktok.shared.callThroughLocals
 import app.morphe.patches.tiktok.shared.objectIn
 import app.morphe.util.getFreeRegisterProvider
 import app.morphe.util.getReference
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/comment/CommentTools;"
 private const val COMMENT_DESCRIPTOR = "Lcom/ss/android/ugc/aweme/comment/model/Comment;"
@@ -85,7 +89,7 @@ val commentToolsPatch = bytecodePatch(
         // the build rather than ship a gesture that silently does nothing.
         BlockServiceFingerprint.method
         CommentDislikeTouchInitFingerprint.method.captureDislikeTouchListener()
-        CommentMoreCellBindFingerprint.method.registerReplySearch()
+        CommentMoreCellBindFingerprint.method.registerReplySearch { classDefByOrNull(it) }
 
         BaseCommentCellBindFingerprint.method.apply {
             val instructions = implementation!!.instructions
@@ -181,9 +185,72 @@ val commentToolsPatch = bytecodePatch(
     }
 }
 
+/**
+ * The reply control's bound model and the three members the hook reads off it: its state, the
+ * data it keeps about the parent comment, and the parent itself. Every one is renamed per build
+ * (`LX/0nlo;`, `LIZ()I`, `LLILZIL` and `LX/0nls;->LJI` on 46.2.3; `LX/0lDH;`, `LIZ()I`,
+ * `LLJILLL` and `LX/0lDJ;->LJI` on 46.8.3), so none is written down: the model is what the bind
+ * casts its item to, the state is the one `()I` the cell's own relayout of that model reads, and
+ * the parent is the one `Comment` held by one of the model's fields.
+ */
+private class ReplyModel(
+    val type: String,
+    val state: MethodReference,
+    val data: FieldReference,
+    val parent: FieldReference,
+)
+
+private fun MutableMethod.replyModel(classOf: (String) -> ClassDef?): ReplyModel {
+    fun fail(why: String): Nothing = throw PatchException("Comment tools: $why")
+    val instructions = implementation?.instructions?.toList() ?: fail("reply bind has no body")
+    val item = implementation!!.registerCount - 1
+
+    // The model: what the bind casts its item to, directly or through the copy made just before.
+    val type = instructions.withIndex().firstNotNullOfOrNull { (index, instruction) ->
+        if (instruction.opcode != Opcode.CHECK_CAST) return@firstNotNullOfOrNull null
+        val register = (instruction as OneRegisterInstruction).registerA
+        val copy = instructions.getOrNull(index - 1)
+        val holdsItem = register == item ||
+            (copy is TwoRegisterInstruction && copy.opcode.name.startsWith("move-object") &&
+                copy.registerA == register && copy.registerB == item)
+        if (holdsItem) instruction.getReference<TypeReference>()?.type else null
+    } ?: fail("the reply bind does not cast its item to a model")
+
+    // The state: the one no-argument int the cell's own (model, boolean) relayout reads off it.
+    val cell = classOf(definingClass) ?: fail("the reply cell $definingClass is not in the app")
+    val relayouts = cell.methods.filter {
+        it.parameterTypes.map(CharSequence::toString) == listOf(type, "Z") && it.returnType == "V"
+    }
+    if (relayouts.size != 1) fail("expected one ($type, boolean) method on the reply cell, found ${relayouts.size}")
+    val states = relayouts.single().implementation?.instructions?.toList().orEmpty()
+        .filter { it.opcode == Opcode.INVOKE_VIRTUAL }
+        .mapNotNull { it.getReference<MethodReference>() }
+        .filter {
+            it.definingClass == type && it.parameterTypes.isEmpty() && it.returnType == "I" &&
+                it.name != "hashCode"
+        }
+        .distinctBy { it.name }
+    if (states.size != 1) fail("expected the reply cell to read one state off $type, found ${states.size}")
+
+    // The parent: the one Comment held by one of the model's fields.
+    val model = classOf(type) ?: fail("the reply model $type is not in the app")
+    val holders = model.fields.filter { !AccessFlags.STATIC.isSet(it.accessFlags) }.mapNotNull { field ->
+        val comments = classOf(field.type)?.fields
+            ?.filter { it.type == COMMENT_DESCRIPTOR && !AccessFlags.STATIC.isSet(it.accessFlags) }
+            .orEmpty()
+        if (comments.size == 1) field to comments.single() else null
+    }
+    if (holders.size != 1) fail("expected one field of $type to hold the parent comment, found ${holders.size}")
+    val (data, parent) = holders.single()
+    return ReplyModel(type, states.single(), data, parent)
+}
+
+private val FieldReference.smali get() = "$definingClass->$name:$type"
+
 /** The reply control is a separate holder whose bound model carries its parent comment. */
-internal fun MutableMethod.registerReplySearch() {
+internal fun MutableMethod.registerReplySearch(classOf: (String) -> ClassDef?) {
     val native = implementation ?: throw PatchException("Comment tools: reply bind has no body")
+    val model = replyModel(classOf)
     val returns = native.instructions.withIndex()
         .filter { it.value.opcode == Opcode.RETURN_VOID }.map { it.index }
     if (returns.isEmpty()) throw PatchException("Comment tools: reply bind has no return")
@@ -194,19 +261,20 @@ internal fun MutableMethod.registerReplySearch() {
         val viewRegister = registers.getFreeRegister4Bit()
         val modelRegister = registers.getFreeRegister4Bit()
         val stateRegister = registers.getFreeRegister4Bit()
-        // Q5 has finished changing the control's native height. Its model owns the parent
-        // Comment and computes state4 for a control that must stay collapsed when search clears.
+        // The relayout has finished changing the control's native height. Its model owns the
+        // parent Comment and computes state4 for a control that must stay collapsed when search
+        // clears.
         addInstructions(
             index,
             """
                 move-object/from16 v$viewRegister, p0
                 iget-object v$viewRegister, v$viewRegister, Landroidx/recyclerview/widget/RecyclerView${'$'}ViewHolder;->itemView:Landroid/view/View;
                 move-object/from16 v$modelRegister, p1
-                check-cast v$modelRegister, LX/0nlo;
-                invoke-virtual {v$modelRegister}, LX/0nlo;->LIZ()I
+                check-cast v$modelRegister, ${model.type}
+                invoke-virtual {v$modelRegister}, ${model.type}->${model.state.name}()I
                 move-result v$stateRegister
-                iget-object v$modelRegister, v$modelRegister, LX/0nlo;->LLILZIL:LX/0nls;
-                iget-object v$modelRegister, v$modelRegister, LX/0nls;->LJI:$COMMENT_DESCRIPTOR
+                iget-object v$modelRegister, v$modelRegister, ${model.data.smali}
+                iget-object v$modelRegister, v$modelRegister, ${model.parent.smali}
                 invoke-static {v$viewRegister, v$modelRegister, v$stateRegister}, Lapp/morphe/extension/tiktok/comment/CommentSearch;->onReplyControlBound(Landroid/view/View;Ljava/lang/Object;I)V
             """,
         )

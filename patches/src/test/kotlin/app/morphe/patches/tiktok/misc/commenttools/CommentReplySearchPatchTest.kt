@@ -1,20 +1,26 @@
 package app.morphe.patches.tiktok.misc.commenttools
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
+import com.android.tools.smali.dexlib2.immutable.ImmutableField
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Test
 
 class CommentReplySearchPatchTest {
@@ -49,7 +55,7 @@ class CommentReplySearchPatchTest {
         }
         val original = method.implementation!!.instructions.toList()
 
-        method.registerReplySearch()
+        method.registerReplySearch(replyClasses(cell, model))
 
         val after = method.implementation!!.instructions.toList()
         assertEquals(30, method.implementation!!.registerCount)
@@ -119,5 +125,121 @@ class CommentReplySearchPatchTest {
             }
             assertSame(instruction, after[next++])
         }
+    }
+
+    @Test
+    fun `the reply model and what it holds are read off the cell whatever the build calls them`() {
+        // 46.8.3: the model is LX/0lDH;, handed over as LX/0U5F;, relaid out by Y5, and its
+        // parent's data sits in LLJILLL of LX/0lDJ;. Not one of those names is 46.2.3's.
+        val cell = "Lcom/ss/android/ugc/aweme/commentv2/commentlist/powercell/CommentMoreItemCell;"
+        val method = bind(cell, "LX/0lDH;", "LX/0U5F;", "Y5")
+        method.registerReplySearch(replyClasses(cell, "LX/0lDH;", "Y5", "LLJILLL", "LX/0lDJ;"))
+        val references = method.implementation!!.instructions
+            .mapNotNull { (it as? ReferenceInstruction)?.reference?.toString() }
+        assertTrue(references.toString(), "LX/0lDH;" in references)
+        assertTrue(references.toString(), "LX/0lDH;->LIZ()I" in references)
+        assertTrue(references.toString(), "LX/0lDH;->LLJILLL:LX/0lDJ;" in references)
+        assertTrue(
+            references.toString(),
+            "LX/0lDJ;->LJI:Lcom/ss/android/ugc/aweme/comment/model/Comment;" in references,
+        )
+        assertTrue(references.toString(), references.none { "0nlo" in it || "0nls" in it })
+    }
+
+    @Test
+    fun `a model with two fields that could hold the parent is refused rather than guessed`() {
+        val cell = "Lcom/ss/android/ugc/aweme/commentv2/commentlist/powercell/CommentMoreItemCell;"
+        val method = bind(cell, "LX/0nlo;", "LX/0lOS;", "Q5")
+        try {
+            method.registerReplySearch(replyClasses(cell, "LX/0nlo;", secondHolder = true))
+            fail("expected a refusal")
+        } catch (refused: PatchException) {
+            assertTrue(refused.message.orEmpty(), "hold the parent comment, found 2" in refused.message.orEmpty())
+        }
+    }
+
+    /** A bind shaped like both builds': the item copied, cast to the model, then relaid out. */
+    private fun bind(cell: String, model: String, item: String, relayout: String) = MutableMethod(
+        ImmutableMethod(
+            cell, "onBindItemView", listOf(ImmutableMethodParameter(item, null, null)),
+            "V", AccessFlags.PUBLIC.value or AccessFlags.FINAL.value, null, null,
+            ImmutableMethodImplementation(30, emptyList(), null, null),
+        ),
+    ).apply {
+        addInstructions(
+            """
+                move-object/from16 v2, p1
+                check-cast v2, $model
+                move-object/from16 v3, p0
+                const/4 v1, 0
+                invoke-virtual {v3, v2, v1}, $cell->$relayout(${model}Z)V
+                return-void
+            """,
+        )
+    }
+
+    /**
+     * The classes the names are read from: the cell, whose relayout of the model reads its
+     * state; the model and its fields; and the data class that carries the parent comment.
+     */
+    private fun replyClasses(
+        cell: String,
+        model: String,
+        relayout: String = "Q5",
+        dataField: String = "LLILZIL",
+        data: String = "LX/0nls;",
+        secondHolder: Boolean = false,
+    ): (String) -> ClassDef? {
+        fun field(owner: String, name: String, type: String) = ImmutableField(
+            owner, name, type, AccessFlags.PUBLIC.value or AccessFlags.FINAL.value, null, null, null,
+        )
+        val relayoutMethod = MutableMethod(
+            ImmutableMethod(
+                cell, relayout,
+                listOf(ImmutableMethodParameter(model, null, null), ImmutableMethodParameter("Z", null, null)),
+                "V", AccessFlags.PUBLIC.value or AccessFlags.FINAL.value, null, null,
+                ImmutableMethodImplementation(4, emptyList(), null, null),
+            ),
+        ).apply {
+            addInstructions(
+                """
+                    invoke-virtual {p1}, $model->LIZ()I
+                    move-result v0
+                    invoke-virtual {p1}, $model->LIZ()I
+                    move-result v0
+                    return-void
+                """,
+            )
+        }
+        val cellClass = ImmutableClassDef(
+            cell, AccessFlags.PUBLIC.value, "Lcom/bytedance/ies/powerlist/PowerCell;",
+            null, null, null, null, listOf(relayoutMethod),
+        )
+        val modelClass = ImmutableClassDef(
+            model, AccessFlags.PUBLIC.value or AccessFlags.FINAL.value, "Ljava/lang/Object;",
+            null, null, null,
+            listOfNotNull(
+                field(model, "LL", "I"),
+                field(model, "LLILLL", "Ljava/lang/String;"),
+                field(model, "LLILZ", "I"),
+                field(model, dataField, data),
+                field(model, "LLILZLL", "Z"),
+                if (secondHolder) field(model, "LLJ", data) else null,
+            ),
+            null,
+        )
+        val dataClass = ImmutableClassDef(
+            data, AccessFlags.PUBLIC.value or AccessFlags.FINAL.value, "Ljava/lang/Object;",
+            null, null, null,
+            listOf(
+                field(data, "LIZ", "I"),
+                field(data, "LJ", "J"),
+                field(data, "LJI", "Lcom/ss/android/ugc/aweme/comment/model/Comment;"),
+                field(data, "LJII", "Ljava/util/List;"),
+            ),
+            null,
+        )
+        val classes = mapOf(cell to cellClass, model to modelClass, data to dataClass)
+        return { type -> classes[type] }
     }
 }

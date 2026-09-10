@@ -22,6 +22,8 @@
 
 * Resume videos after scrolling no longer writes three of TikTok's internal class names into the code it adds. Those names only mean the right thing on 46.2.3. On a newer TikTok they belong to other classes, so the patch applied without complaint there and the first video played to the end with the switch on would have stopped the app. It now reads where TikTok keeps its playback positions off TikTok's own code, and refuses a build where that doesn't add up.
 
+* Comment tools reads the reply row's model off TikTok's own code too, instead of naming it. The search box above the comments uses that model to keep a collapsed reply row collapsed, and all four of the names it needs are different on a newer TikTok.
+
 * The pre-push check runs the patch module's tests as well as the runtime ones, and treats the version catalog, the settings script, the dependency verification file and the Gradle wrapper as release facts. A push touching only one of those ran no gate at all. A README edit on a clean checkout is no longer blocked by a release check that wanted a built bundle it had just said it didn't need.
 
 * The device scripts read as success when adb refused an install, chose the clean APK by file size, could carry one dex2oat exit code over to the next run, left gigabytes of unpacked APK behind, and wrote an empty screenshot when the capture failed. Each of those is fixed. The verification probe compiles again and holds its broadcasts to a permission only the shell and the platform carry.
