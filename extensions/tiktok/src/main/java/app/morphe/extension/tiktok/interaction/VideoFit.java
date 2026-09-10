@@ -71,11 +71,13 @@ public final class VideoFit {
      */
     public static Object fitted(View view, Object result) {
         if (view == null || result == null) return result;
-        int videoWidth = size(result, "getWidth");
-        int videoHeight = size(result, "getHeight");
-        if (videoWidth <= 0 || videoHeight <= 0) return result;
-        if (!Settings.FIT_VIDEO_TO_SCREEN.get()) return result;
         try {
+            // The switch before the reads: this runs twice for every video the feed binds, off is
+            // the default, and the reflection below is only worth paying for with it on.
+            if (!Settings.FIT_VIDEO_TO_SCREEN.get()) return result;
+            int videoWidth = size(result, "getWidth");
+            int videoHeight = size(result, "getHeight");
+            if (videoWidth <= 0 || videoHeight <= 0) return result;
             int containerWidth = containerWidth(view);
             int containerHeight = containerHeight(view);
             if (containerWidth <= 0 || containerHeight <= 0) return result;
@@ -100,7 +102,9 @@ public final class VideoFit {
      * data class generates, which is what says the result is not one this knows how to remake.
      */
     private static Object copyOf(Object result, int width, int height) {
-        for (Method candidate : result.getClass().getMethods()) {
+        // What the class declares, made accessible, rather than what it makes public: the copy is
+        // the one a data class generates whatever access R8 leaves it or its class with.
+        for (Method candidate : result.getClass().getDeclaredMethods()) {
             if (!candidate.getName().equals("copy")) continue;
             Class<?>[] parameters = candidate.getParameterTypes();
             if (parameters.length != 5) continue;
@@ -108,6 +112,7 @@ public final class VideoFit {
             if (parameters[2] != Float.class || parameters[3] != Float.class) continue;
             Object operator = Reflect.invoke(result, "getResultOperator");
             try {
+                candidate.setAccessible(true);
                 return candidate.invoke(result, width, height, Float.valueOf(0f), Float.valueOf(0f), operator);
             } catch (Exception exception) {
                 Logger.printException(() -> "Could not copy the adaption result", exception);
@@ -134,23 +139,24 @@ public final class VideoFit {
      * {@code saveResultInner}, which the story cell uses. That method reads its own fields, so
      * there is no result to swap for a copy and the size is changed in place instead. The fields
      * are final, so nothing out here can write them; the patch does, from inside the class that
-     * declares them, and asks here for what to write.
+     * declares them, and asks here for what to write, or {@link #LEAVE} to write nothing.
      *
      * <p>The matching height is worked out here too and kept for {@link #fittedHeightFor}, because
      * asking twice would mean the second answer was worked out from a width already changed.
      */
     public static int fitWidthFor(Object result, View view) {
-        int videoWidth = size(result, "getWidth");
-        int videoHeight = size(result, "getHeight");
         LAST.remove();
-        if (view == null || videoWidth <= 0 || videoHeight <= 0) return videoWidth;
-        if (!Settings.FIT_VIDEO_TO_SCREEN.get()) return videoWidth;
+        if (view == null || result == null) return LEAVE;
         try {
+            if (!Settings.FIT_VIDEO_TO_SCREEN.get()) return LEAVE;
+            int videoWidth = size(result, "getWidth");
+            int videoHeight = size(result, "getHeight");
+            if (videoWidth <= 0 || videoHeight <= 0) return LEAVE;
             int containerWidth = containerWidth(view);
             int containerHeight = containerHeight(view);
-            if (containerWidth <= 0 || containerHeight <= 0) return videoWidth;
+            if (containerWidth <= 0 || containerHeight <= 0) return LEAVE;
             // Already inside the window, so there is nothing hanging over an edge to bring back.
-            if (videoWidth <= containerWidth && videoHeight <= containerHeight) return videoWidth;
+            if (videoWidth <= containerWidth && videoHeight <= containerHeight) return LEAVE;
 
             LAST.set(new Fitted(
                     result, fitHeight(videoWidth, videoHeight, containerWidth, containerHeight)));
@@ -159,9 +165,19 @@ public final class VideoFit {
         } catch (Exception exception) {
             Logger.printException(() -> "Could not fit the video to the window", exception);
             LAST.remove();
-            return videoWidth;
+            return LEAVE;
         }
     }
+
+    /**
+     * What {@link #fitWidthFor} answers when the result is to be left exactly as TikTok wrote
+     * it: the switch off, a video that already fits, or anything it could not read. The patch
+     * branches past every write on it, so none of the host's fields is touched on that path.
+     * It used to answer the width it had read, which was 0 for a result it could not read, and
+     * the patch wrote that back: a build that renamed the getters would have laid every story
+     * out at nothing by nothing.
+     */
+    public static final int LEAVE = -1;
 
     /**
      * The height that goes with the width already handed back, or the one TikTok chose.

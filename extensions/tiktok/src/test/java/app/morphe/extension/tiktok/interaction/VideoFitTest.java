@@ -76,6 +76,24 @@ public class VideoFitTest {
     public static final class Shapeless {
     }
 
+    /** A result whose size can be read, with no copy to remake it through. */
+    public static final class Uncopyable {
+        public int getWidth() { return 1440; }
+        public int getHeight() { return 2560; }
+    }
+
+    /** A result whose copy is not public, as a build that narrowed it would hand over. */
+    public static final class Tucked {
+        final int width, height;
+        Tucked(int width, int height) { this.width = width; this.height = height; }
+        public int getWidth() { return width; }
+        public int getHeight() { return height; }
+        public Object getResultOperator() { return null; }
+        Tucked copy(int width, int height, Float translateX, Float translateY, Object operator) {
+            return new Tucked(width, height);
+        }
+    }
+
     @Test public void theWholeVideoLandsInsideTheWindowWhicheverWayItOverflows() {
         // A 9:16 video cropped to fill a 4:3 window: 1440x2560 over 1200x900. Fitted, the
         // height is what touches and the width comes down with it.
@@ -111,9 +129,9 @@ public class VideoFitTest {
             video.setLayoutParams(new FrameLayout.LayoutParams(1440, 2560));
             Result cropped = new Result(1440, 2560);
 
-            // Off: TikTok's own numbers come back and nothing is remembered.
+            // Off: the result is to be left alone, and nothing is remembered.
             Settings.FIT_VIDEO_TO_SCREEN.save(false);
-            assertEquals(1440, VideoFit.fitWidthFor(cropped, video));
+            assertEquals(VideoFit.LEAVE, VideoFit.fitWidthFor(cropped, video));
             assertEquals(2560, VideoFit.fittedHeightFor(cropped));
             assertEquals(Float.valueOf(12f), VideoFit.fittedTranslation(cropped, Float.valueOf(12f)));
 
@@ -135,7 +153,7 @@ public class VideoFitTest {
 
             // A video that already fits is left exactly as TikTok laid it out, offsets included.
             Result fits = new Result(400, 800);
-            assertEquals(400, VideoFit.fitWidthFor(fits, video));
+            assertEquals(VideoFit.LEAVE, VideoFit.fitWidthFor(fits, video));
             assertEquals(800, VideoFit.fittedHeightFor(fits));
             assertEquals(Float.valueOf(12f), VideoFit.fittedTranslation(fits, Float.valueOf(12f)));
 
@@ -152,7 +170,7 @@ public class VideoFitTest {
             container.layout(0, 0, 2000, 4000);
             View roomy = new View(activity);
             container.addView(roomy);
-            assertEquals(1440, VideoFit.fitWidthFor(cropped, roomy));
+            assertEquals(VideoFit.LEAVE, VideoFit.fitWidthFor(cropped, roomy));
             assertEquals(2560, VideoFit.fittedHeightFor(cropped));
             assertEquals(Float.valueOf(12f), VideoFit.fittedTranslation(cropped, Float.valueOf(12f)));
 
@@ -172,12 +190,15 @@ public class VideoFitTest {
             assertEquals(window.heightPixels, VideoFit.fittedHeightFor(earlyResult));
 
             // Nothing to work with: no view, no result, a result we cannot read, and sizes
-            // that make no sense. Every one of them hands TikTok's own answer back.
-            assertEquals(1440, VideoFit.fitWidthFor(cropped, null));
-            assertEquals(0, VideoFit.fitWidthFor(null, video));
-            assertEquals(0, VideoFit.fitWidthFor(new Shapeless(), video));
-            assertEquals(0, VideoFit.fitWidthFor(new Result(0, 2560), video));
-            assertEquals(1440, VideoFit.fitWidthFor(new Result(1440, -1), video));
+            // that make no sense. Every one of them says leave it, and the patch then writes
+            // nothing. The old answer was the width it had read, 0 for a result it could not
+            // read, and the patch wrote that into the result, so a renamed getter would have
+            // laid the story out at nothing by nothing.
+            assertEquals(VideoFit.LEAVE, VideoFit.fitWidthFor(cropped, null));
+            assertEquals(VideoFit.LEAVE, VideoFit.fitWidthFor(null, video));
+            assertEquals(VideoFit.LEAVE, VideoFit.fitWidthFor(new Shapeless(), video));
+            assertEquals(VideoFit.LEAVE, VideoFit.fitWidthFor(new Result(0, 2560), video));
+            assertEquals(VideoFit.LEAVE, VideoFit.fitWidthFor(new Result(1440, -1), video));
         } finally {
             Settings.FIT_VIDEO_TO_SCREEN.save(false);
         }
@@ -225,12 +246,18 @@ public class VideoFitTest {
             assertNull(VideoFit.fitted(video, null));
             Shapeless shapeless = new Shapeless();
             assertSame(shapeless, VideoFit.fitted(video, shapeless));
-            // A result that can be read but not remade is also handed back as it is.
-            Object uncopyable = new Object() {
-                public int getWidth() { return 1440; }
-                public int getHeight() { return 2560; }
-            };
+            // A result that can be read but not remade is also handed back as it is. Readable,
+            // as the story path proves by working out a size from it; only the copy is missing.
+            Uncopyable uncopyable = new Uncopyable();
+            assertEquals(506, VideoFit.fitWidthFor(uncopyable, video));
             assertSame(uncopyable, VideoFit.fitted(video, uncopyable));
+
+            // A copy that is not public is still the copy to remake the result through.
+            Tucked tucked = new Tucked(1440, 2560);
+            Object remade = VideoFit.fitted(video, tucked);
+            assertNotSame(tucked, remade);
+            assertEquals(506, ((Tucked) remade).getWidth());
+            assertEquals(900, ((Tucked) remade).getHeight());
         } finally {
             Settings.FIT_VIDEO_TO_SCREEN.save(false);
         }
