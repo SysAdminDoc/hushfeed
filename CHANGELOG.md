@@ -1,5 +1,7 @@
 ## Unreleased
 
+* The phone helper rejects a log query without its required filter. That usage error no longer exits successfully after printing an error.
+
 * The phone helper reports failed activity, log and frame-stat queries instead of hiding their exit status behind output filters. A screenshot no longer claims success when its foreground check fails.
 
 * Changing font size or navigation mode keeps the Hushfeed settings page you were using. The restored page reuses its original container, and Back still returns through the pages you opened.

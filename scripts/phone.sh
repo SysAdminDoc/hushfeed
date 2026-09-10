@@ -39,6 +39,6 @@ tap() { guard; timeout 30 "$ADB" -s "$S" shell input tap "$(px "$1")" "$(px "$2"
 swipe() { guard; timeout 30 "$ADB" -s "$S" shell input swipe "$(px "$1")" "$(px "$2")" "$(px "$3")" "$(px "$4")" "${5:-300}"; sleep "${6:-2}"; }
 key() { guard; timeout 30 "$ADB" -s "$S" shell input keyevent "$1"; sleep "${2:-2}"; }
 text() { guard; timeout 30 "$ADB" -s "$S" shell input text "$1"; sleep 1; }
-logcat() { local result; result=$(timeout 60 "$ADB" -s "$S" logcat -d 2>/dev/null) || return $?; printf '%s\n' "$result" | grep -iE "$1" | tail -"${2:-20}"; }
+logcat() { local result pattern; pattern="${1:?logcat requires a filter}"; result=$(timeout 60 "$ADB" -s "$S" logcat -d 2>/dev/null) || return $?; printf '%s\n' "$result" | grep -iE "$pattern" | tail -"${2:-20}"; }
 gfx() { local result; result=$(timeout 60 "$ADB" -s "$S" shell dumpsys gfxinfo $PKG "${1:-}" 2>/dev/null) || return $?; printf '%s\n' "$result" | grep -E "Total frames|Janky|50th|90th|99th|Number Frame|Uptime" | head -12; }
 "$@"
