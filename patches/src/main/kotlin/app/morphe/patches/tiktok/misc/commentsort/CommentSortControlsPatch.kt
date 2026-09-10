@@ -72,7 +72,7 @@ val commentSortControlsPatch = bytecodePatch(
 
         // A post also has to pass an eligibility check of its own, so the style alone is not
         // enough. Answering true early leaves the original body in place for the switch-off case.
-        CommentSortEligibilityFingerprint.method.apply {
+        resolveCommentSortEligibility().apply {
             addInstructionsWithLabels(
                 0,
                 """

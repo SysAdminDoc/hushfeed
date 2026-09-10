@@ -23,7 +23,7 @@ val enableVoiceCommentsPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
-        VoiceCommentPublishGateFingerprint.method.addInstructions(
+        resolveVoiceCommentPublishGate().addInstructions(
             0,
             """
                 const/4 v0, 0x1

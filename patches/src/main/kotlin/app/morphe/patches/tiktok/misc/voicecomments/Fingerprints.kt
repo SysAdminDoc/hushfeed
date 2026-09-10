@@ -4,38 +4,22 @@
  */
 package app.morphe.patches.tiktok.misc.voicecomments
 
-import app.morphe.patcher.Fingerprint
-import app.morphe.util.getReference
-import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import app.morphe.patcher.patch.BytecodePatchContext
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import app.morphe.patches.tiktok.shared.isLazyAbRead
+import app.morphe.patches.tiktok.shared.resolveLazyAbGate
+
+/** The setting the voice comment entry points are built behind. */
+private const val VOICE_COMMENT_KEY = "audio_comment_publish"
 
 /**
- * The gate that decides whether the voice comment entry points are built. It carries no string,
- * so the obfuscated owner is the only name to hold on to; the shape check below is what stops a
- * renamed class of the same name matching something unrelated. It reads a settings value and
- * turns it into an int, and both of those calls have to be there.
+ * The gate that decides whether the voice comment entry points are built.
+ *
+ * <p>It was `LX/0AkX;`, which is the 46.2.3 name and nothing else, and the class holds no string
+ * to recognise it by: it is one of hundreds TikTok generates around a lazily read AB value. The
+ * key that value reads is a name TikTok wrote, and that is the anchor.
  */
-internal object VoiceCommentPublishGateFingerprint : Fingerprint(
-    returnType = "Z",
-    parameters = emptyList(),
-    custom = { method, classDef ->
-        classDef.type == "LX/0AkX;" &&
-            method.name == "LIZ" &&
-            method.implementation?.instructions?.let { instructions ->
-                instructions.any { instruction ->
-                    instruction.getReference<MethodReference>()?.let { reference ->
-                        reference.definingClass == "LX/01xP;" &&
-                            reference.name == "getValue" &&
-                            reference.parameterTypes.isEmpty() &&
-                            reference.returnType == "Ljava/lang/Object;"
-                    } == true
-                } && instructions.any { instruction ->
-                    instruction.getReference<MethodReference>()?.let { reference ->
-                        reference.definingClass == "Ljava/lang/Number;" &&
-                            reference.name == "intValue" &&
-                            reference.parameterTypes.isEmpty() &&
-                            reference.returnType == "I"
-                    } == true
-                }
-            } == true
-    },
-)
+internal fun BytecodePatchContext.resolveVoiceCommentPublishGate(): MutableMethod =
+    resolveLazyAbGate("Enable voice comments", VOICE_COMMENT_KEY) { method ->
+        method.returnType == "Z" && method.parameterTypes.none() && method.isLazyAbRead()
+    }

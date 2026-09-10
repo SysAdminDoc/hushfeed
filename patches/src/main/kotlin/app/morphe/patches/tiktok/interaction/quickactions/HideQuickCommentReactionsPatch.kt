@@ -34,7 +34,7 @@ val hideQuickCommentReactionsPatch = bytecodePatch(
                 "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableHideCommentQuickReactions()V",
         )
 
-        QuickCommentReactionGateFingerprint.method.apply {
+        resolveQuickCommentReactionGate().apply {
             implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN }
                 .map { it.index }

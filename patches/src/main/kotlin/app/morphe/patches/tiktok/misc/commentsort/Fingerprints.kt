@@ -5,6 +5,10 @@
 package app.morphe.patches.tiktok.misc.commentsort
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.patch.BytecodePatchContext
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import app.morphe.patches.tiktok.shared.isLazyAbRead
+import app.morphe.patches.tiktok.shared.resolveLazyAbGate
 
 /**
  * The rollout gate. Anchored on the string rather than on the obfuscated lambda class upstream
@@ -17,21 +21,27 @@ import app.morphe.patcher.Fingerprint
  * more, this would bind to whichever came first rather than fail. The eligibility anchor below is
  * the opposite: pinned by name, so it fails loudly instead.
  */
+/** The setting the comment sort menu is shaped by, which both anchors below rest on. */
+internal const val COMMENT_SORT_STYLE_KEY = "comment_sort_opt_style"
+
 internal object CommentSortOptionStyleFingerprint : Fingerprint(
     returnType = "L",
     parameters = listOf("L"),
-    strings = listOf("comment_sort_opt_style"),
+    strings = listOf(COMMENT_SORT_STYLE_KEY),
 )
 
 /**
- * The per-post eligibility check. This one carries no string of its own, so there is nothing to
- * anchor on but the obfuscated owner and the Aweme parameter. It is the anchor most likely to
- * move on a new build; because it is pinned by name it fails the patch rather than binding to
- * something else.
+ * The per-post eligibility check.
+ *
+ * <p>Its class was written here as `LX/0nmj;` and it carries no string of its own, so there was
+ * nothing to hold on to but that name. What it does have is a lazily read AB value, and the key
+ * that value reads is `comment_sort_opt_style`, the same one the style fingerprint above is
+ * anchored on. That key is TikTok's own name and is on all three builds.
  */
-internal object CommentSortEligibilityFingerprint : Fingerprint(
-    definingClass = "LX/0nmj;",
-    name = "LIZ",
-    returnType = "Z",
-    parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;"),
-)
+internal fun BytecodePatchContext.resolveCommentSortEligibility(): MutableMethod =
+    resolveLazyAbGate("Comment sort controls", COMMENT_SORT_STYLE_KEY) { method ->
+        method.returnType == "Z" &&
+            method.parameterTypes.map(CharSequence::toString) ==
+            listOf("Lcom/ss/android/ugc/aweme/feed/model/Aweme;") &&
+            method.isLazyAbRead()
+    }
