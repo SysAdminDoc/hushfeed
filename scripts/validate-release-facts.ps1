@@ -360,20 +360,24 @@ if ($VerifyPublishedAsset) {
         }
         # A matching hash proves the published file is the one this checkout has. It does not
         # prove either of them is what the released commit builds, and on v0.28.0 the two came
-        # apart: the bundle was built while HEAD was still two commits back, so it carried that
-        # commit's pinned timestamp, was published, and then the release commit was made. The
-        # hashes agreed at the time and the README's offer to rebuild and compare was false for
-        # the rest of the release. The pin is the only field that carries the answer, so read it
-        # back out of what is actually published and hold it to the commit being released.
-        $pinnedEpoch = $env:SOURCE_DATE_EPOCH
-        if ([string]::IsNullOrWhiteSpace($pinnedEpoch)) {
-            $pinnedEpoch = (& git -C $rootPath log -1 --format=%ct 2>$null | Select-Object -First 1)
+        # apart: the bundle was built while HEAD was still two commits back, was published, and
+        # then the release commit was made. The hashes agreed at the time and the README's offer
+        # to rebuild and compare was false for the rest of the release. The pin is the only field
+        # that carries the answer, so read it back out of what is actually published.
+        #
+        # Held to the tag, not to HEAD. The claim being checked is that somebody who checks out
+        # v<version> and builds it gets the published file, and HEAD stops being that commit the
+        # moment anything lands on top. SOURCE_DATE_EPOCH is deliberately not consulted: it is
+        # the same variable the build reads, so accepting it here would compare the builder's
+        # input against itself and agree no matter which commit the bundle came from.
+        $releaseTag = "v$releaseVersion"
+        $taggedEpoch = (& git -C $rootPath log -1 --format=%ct "refs/tags/$releaseTag" 2>$null | Select-Object -First 1)
+        $taggedEpoch = "$taggedEpoch".Trim()
+        if ($taggedEpoch -notmatch '^\d+$') {
+            throw ("No commit found for $releaseTag, so the published bundle cannot be held to " +
+                'the commit it claims to come from. Create the tag before validating the release.')
         }
-        $pinnedEpoch = "$pinnedEpoch".Trim()
-        if ($pinnedEpoch -notmatch '^\d+$') {
-            throw 'Could not read the commit timestamp the bundle should be pinned to.'
-        }
-        $expectedStamp = [long]$pinnedEpoch * 1000
+        $expectedStamp = [long]$taggedEpoch * 1000
         Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction SilentlyContinue
         $publishedStamp = $null
         $zip = [System.IO.Compression.ZipFile]::OpenRead($temporaryArtifact)
@@ -387,9 +391,9 @@ if ($VerifyPublishedAsset) {
             $publishedStamp = [long]$stampMatch.Groups[1].Value
         } finally { $zip.Dispose() }
         if ($publishedStamp -ne $expectedStamp) {
-            throw ("The published $assetName is pinned to $publishedStamp but the commit being " +
-                "released is $expectedStamp. Rebuild the bundle from this commit and upload that " +
-                'file, so rebuilding from the tag reproduces the published hash.')
+            throw ("The published $assetName is pinned to $publishedStamp but $releaseTag is " +
+                "$expectedStamp. Rebuild the bundle from the tagged commit and upload that file, " +
+                'so rebuilding from the tag reproduces the published hash.')
         }
         Write-Host ("[release] published bundle is pinned to the released commit; timestamp=" + $publishedStamp)
         Write-Host ("[release] verified " + $assetName + " from the indexed URL; sha256=" + $publishedHash)
