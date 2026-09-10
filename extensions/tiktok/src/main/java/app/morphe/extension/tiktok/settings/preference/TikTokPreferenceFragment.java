@@ -34,6 +34,7 @@ import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.shared.settings.Setting;
 import app.morphe.extension.shared.settings.preference.AbstractPreferenceFragment;
+import app.morphe.extension.tiktok.blockauthor.BlockAuthorOverlay;
 import app.morphe.extension.tiktok.featuregatelab.FeatureGateLabFragment;
 import app.morphe.extension.tiktok.featuregatelab.FeatureGateLabRuntime;
 import app.morphe.extension.tiktok.settings.Settings;
@@ -188,6 +189,11 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             }
         } else {
             super.syncSettingWithPreference(pref, setting, applySettingToPreference);
+        }
+        if (!applySettingToPreference
+                && (setting == Settings.BLOCK_AUTHOR_BUTTON
+                || setting == Settings.NOT_INTERESTED_BUTTON)) {
+            BlockAuthorOverlay.refresh();
         }
     }
 

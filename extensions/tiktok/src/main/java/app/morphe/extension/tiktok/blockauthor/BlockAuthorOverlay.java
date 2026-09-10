@@ -30,6 +30,7 @@ import app.morphe.extension.tiktok.settings.preference.SettingsUi;
 import app.morphe.extension.tiktok.settings.L10n;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.notinterested.NotInterested;
+import app.morphe.extension.tiktok.wellbeing.SessionBudget;
 
 import java.lang.ref.WeakReference;
 
@@ -79,6 +80,11 @@ public final class BlockAuthorOverlay {
     private BlockAuthorOverlay() {
     }
 
+    /** Applies changed control settings without waiting for a different creator. */
+    public static void refresh() {
+        onAuthorChanged(CurrentVideoAuthor.get());
+    }
+
     /** @param author the new current author, or null when the current item has none. */
     static void onAuthorChanged(VideoAuthor author) {
         if (!Settings.BLOCK_AUTHOR_BUTTON.get() && !notInterestedEnabled()) {
@@ -103,6 +109,8 @@ public final class BlockAuthorOverlay {
         if (button == null) {
             return;
         }
+        // A control enabled from settings can be attached after a retained hold panel.
+        visible = visible && !SessionBudget.isLocked();
         int wanted = visible && Settings.BLOCK_AUTHOR_BUTTON.get() ? View.VISIBLE : View.GONE;
         if (button.getVisibility() != wanted) {
             button.setVisibility(wanted);
@@ -140,8 +148,7 @@ public final class BlockAuthorOverlay {
     }
 
     /**
-     * Re-checks whether the feed is on screen. Runs on every layout pass, so it does
-     * nothing but read a cached view's selected state.
+     * Re-checks the cached feed selection and the active hold on each layout pass.
      */
     private static void syncVisibility() {
         Activity activity = Utils.getActivity();

@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Enabling the block or Not interested button now attaches it to the current creator immediately. Disabling the last button removes the controls. A daily-budget hold keeps those controls hidden while the feed is covered.
+
 * The phone helper rejects a log query without its required filter. That usage error no longer exits successfully after printing an error.
 
 * The phone helper reports failed activity, log and frame-stat queries instead of hiding their exit status behind output filters. A screenshot no longer claims success when its foreground check fails.

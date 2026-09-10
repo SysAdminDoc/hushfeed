@@ -64,7 +64,7 @@ The Settings patch adds the entry point and is selected by default. Deselect it 
 | `Confirm feed interactions` | Adds optional second-tap protection to Follow and the like heart. The red ring expires after four seconds and resets when the video changes. |
 | `AMOLED dark theme` | Replaces the dark background palette with black or a chosen opaque color. Select the patch and its color in the patcher. Light theme colors stay unchanged. |
 | `Always show publish date` | Keeps the video's publish date visible in its author information. |
-| `Not interested button` | Sends feedback about the current video through TikTok's own service. The button works independently of the block switch. |
+| `Not interested button` | Sends feedback about the current video through TikTok's own service. The button works independently of the block switch. Changing either switch updates the controls immediately, and a daily-budget hold keeps them hidden. |
 | `Block author button` | Adds a button to the video player that blocks the account that posted the current video in one tap, with an undo banner. A companion button hides the creator locally without a server call, and the Feed filter page keeps a searchable list for removing individual entries. Long press the block button to move it. A second button blocks the current sound. |
 | `Comment tools` | Hides comments containing chosen words or from chosen accounts, and turns the thumbs down on each comment into a block button. A switch hides comments made of an image or a sticker rather than words, and another puts a box above the comments that narrows them to what you are looking for. |
 | `Copy comments without username` | Copies only the comment text without including the creator's username. |
