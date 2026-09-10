@@ -91,12 +91,15 @@ val customOfflineVideosLimitPatch = bytecodePatch(
         }
 
         OfflineModeOptionEnumFingerprint.method.apply {
+            // The enum's own type, off the match. It was written here as LX/0mE9;, which is the
+            // 46.2.3 name and nothing else.
+            val optionEnum = definingClass
             val customEnumFieldWriteIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.SPUT_OBJECT &&
                     getReference<FieldReference>()?.let { field ->
-                        field.definingClass == "LX/0mE9;" &&
+                        field.definingClass == optionEnum &&
                             field.name == "DOWNLOAD_200_VIDEOS" &&
-                            field.type == "LX/0mE9;"
+                            field.type == optionEnum
                     } == true
             }
             val customEnumConstructorIndex = indexOfFirstInstructionReversedOrThrow(
@@ -104,7 +107,7 @@ val customOfflineVideosLimitPatch = bytecodePatch(
             ) {
                 (opcode == Opcode.INVOKE_DIRECT || opcode == Opcode.INVOKE_DIRECT_RANGE) &&
                     getReference<MethodReference>()?.let { reference ->
-                        reference.definingClass == "LX/0mE9;" &&
+                        reference.definingClass == optionEnum &&
                             reference.name == "<init>" &&
                             reference.returnType == "V" &&
                             reference.parameterTypes.size == 5
