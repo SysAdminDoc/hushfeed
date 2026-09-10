@@ -145,6 +145,78 @@ class NativeFocusBridgeTest {
             method.implementation!!.tryBlocks.single().exceptionHandlers.single().handlerCodeAddress)
     }
 
+    @Test
+    fun `the registers and the wrapper are read off the host call rather than assumed`() {
+        // A newer build renames the wrapper and lays the arguments out in other registers. The
+        // first version of this bridge asserted v3, v2, v1, v0 and the name LX/0UUp;->j4, which
+        // is the 46.2.3 build written into the patch. Everything here differs from that.
+        val method = nativeOwnerMethod("anything", 8, """
+            iget-object v7, p0, LX/1Gr4;->LIZ:$audio
+            if-eqz v7, :done
+            iget-object v5, p0, LX/1Gr4;->LIZIZ:LX/1Gr5;
+            if-eqz v5, :done
+            const/4 v6, 3
+            const/4 v4, 2
+            invoke-static {v7, v5, v6, v4}, LX/2ZZZ;->q9($audio${listener}II)I
+            :done
+            return-void
+        """, 7)
+
+        method.captureNativeFocusRequest()
+
+        val code = method.implementation!!.instructions
+        assertEquals(Opcode.INVOKE_STATIC, code[6].opcode)
+        assertCall(code[6] as ReferenceInstruction, "LX/2ZZZ;", "q9",
+            listOf(audio, listener, "I", "I"), "I", listOf(7, 5, 6, 4))
+        // The answer lands in the last argument's register, which nothing reads again, and
+        // the listener handed to the extension is the one the host handed to the platform.
+        assertEquals(Opcode.MOVE_RESULT, code[7].opcode)
+        assertEquals(4, (code[7] as OneRegisterInstruction).registerA)
+        assertCall(code[8] as ReferenceInstruction, extension, "onNativeFocusRequestResult",
+            listOf("Ljava/lang/Object;", "I"), "V", listOf(5, 4))
+        assertEquals(Opcode.RETURN_VOID, code[9].opcode)
+    }
+
+    @Test
+    fun `abandon takes its listener from the call it precedes`() {
+        val method = nativeOwnerMethod("anything", 9, """
+            iget-object v6, p0, LX/1Gr4;->LIZ:$audio
+            if-eqz v6, :done
+            iget-object v8, p0, LX/1Gr4;->LIZIZ:LX/1Gr5;
+            if-eqz v8, :done
+            invoke-virtual {v6, v8}, $audio->abandonAudioFocus($listener)I
+            :done
+            return-void
+        """, 5)
+
+        method.captureNativeFocusAbandon()
+
+        val code = method.implementation!!.instructions
+        assertCall(code[4] as ReferenceInstruction, extension, "onNativeFocusAbandon",
+            listOf("Ljava/lang/Object;"), "V", listOf(8))
+        assertCall(code[5] as ReferenceInstruction, audio, "abandonAudioFocus",
+            listOf(listener), "I", listOf(6, 8))
+    }
+
+    @Test
+    fun `a request that is not the last thing its method does is refused`() {
+        // The answer register is only free because the host returns straight after the call.
+        // A build that reads it afterwards would have the extension's result clobber it, and
+        // that has to be a loud failure at patch time rather than a quiet one on a phone.
+        val method = nativeOwnerMethod("anything", 6, """
+            iget-object v3, p0, LX/1Gr4;->LIZ:$audio
+            iget-object v2, p0, LX/1Gr4;->LIZIZ:LX/1Gr5;
+            const/4 v1, 3
+            const/4 v0, 2
+            invoke-static {v3, v2, v1, v0}, LX/2ZZZ;->q9($audio${listener}II)I
+            move-result v0
+            return-void
+        """, 6)
+        val error = runCatching { method.captureNativeFocusRequest() }.exceptionOrNull()
+        assertEquals(true, error is IllegalStateException)
+        assertEquals(true, error!!.message!!.contains("last thing"))
+    }
+
     private fun assertCall(instruction: ReferenceInstruction, type: String, name: String,
                            parameters: List<String>, result: String, registers: List<Int>) {
         val target = instruction.reference as MethodReference
