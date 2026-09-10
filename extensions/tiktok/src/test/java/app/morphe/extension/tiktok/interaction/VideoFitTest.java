@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import app.morphe.extension.tiktok.SettingsContextRule;
+import app.morphe.extension.tiktok.interaction.narrowed.NarrowedResult;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
@@ -80,18 +81,6 @@ public class VideoFitTest {
     public static final class Uncopyable {
         public int getWidth() { return 1440; }
         public int getHeight() { return 2560; }
-    }
-
-    /** A result whose copy is not public, as a build that narrowed it would hand over. */
-    public static final class Tucked {
-        final int width, height;
-        Tucked(int width, int height) { this.width = width; this.height = height; }
-        public int getWidth() { return width; }
-        public int getHeight() { return height; }
-        public Object getResultOperator() { return null; }
-        Tucked copy(int width, int height, Float translateX, Float translateY, Object operator) {
-            return new Tucked(width, height);
-        }
     }
 
     @Test public void theWholeVideoLandsInsideTheWindowWhicheverWayItOverflows() {
@@ -252,12 +241,15 @@ public class VideoFitTest {
             assertEquals(506, VideoFit.fitWidthFor(uncopyable, video));
             assertSame(uncopyable, VideoFit.fitted(video, uncopyable));
 
-            // A copy that is not public is still the copy to remake the result through.
-            Tucked tucked = new Tucked(1440, 2560);
-            Object remade = VideoFit.fitted(video, tucked);
-            assertNotSame(tucked, remade);
-            assertEquals(506, ((Tucked) remade).getWidth());
-            assertEquals(900, ((Tucked) remade).getHeight());
+            // A copy that is not public, on a class in another package, is still the copy to
+            // remake the result through. VideoFit sits outside TikTok's package the way it sits
+            // outside this one, so the copy is found among what the class declares and has to be
+            // made accessible before it can be called.
+            NarrowedResult narrowed = new NarrowedResult(1440, 2560);
+            Object remade = VideoFit.fitted(video, narrowed);
+            assertNotSame(narrowed, remade);
+            assertEquals(506, ((NarrowedResult) remade).getWidth());
+            assertEquals(900, ((NarrowedResult) remade).getHeight());
         } finally {
             Settings.FIT_VIDEO_TO_SCREEN.save(false);
         }

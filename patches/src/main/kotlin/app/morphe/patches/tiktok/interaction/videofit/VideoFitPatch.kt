@@ -109,17 +109,17 @@ val videoFitPatch = bytecodePatch(
                 "Fit video to the screen: VideoAdaptionResult has no $getter()I."
             }
         }
-        check(resultClass.methods.any { it.name == "getResultOperator" && it.parameterTypes.isEmpty() }) {
+        val operator = checkNotNull(
+            resultClass.methods.firstOrNull { it.name == "getResultOperator" && it.parameterTypes.isEmpty() },
+        ) {
             "Fit video to the screen: VideoAdaptionResult has no getResultOperator()."
         }
-        check(
-            resultClass.methods.any {
-                it.name == "copy" && it.parameterTypes.size == 5 &&
-                    it.parameterTypes.take(4).map(CharSequence::toString) ==
-                    listOf("I", "I", "Ljava/lang/Float;", "Ljava/lang/Float;")
-            },
-        ) {
-            "Fit video to the screen: VideoAdaptionResult has no copy(int, int, Float, Float, operator)."
+        // The copy takes the operator back as its last argument, and the extension hands it what
+        // the getter answered. A copy whose last parameter is some other type would throw on
+        // every fitted video, and the throw is caught, which is the silent no-op refused here.
+        val copy = listOf("I", "I", "Ljava/lang/Float;", "Ljava/lang/Float;", operator.returnType)
+        check(resultClass.methods.any { it.name == "copy" && it.parameterTypes.map(CharSequence::toString) == copy }) {
+            "Fit video to the screen: VideoAdaptionResult has no copy(int, int, Float, Float, ${operator.returnType})."
         }
 
         // Each helper has to be the only method of its shape in the app. The patcher hands back
