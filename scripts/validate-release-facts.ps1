@@ -358,6 +358,40 @@ if ($VerifyPublishedAsset) {
         if ($listedHash -ne $publishedHash) {
             throw "SHA256SUMS.txt lists $listedHash for $assetName, but the hosted artifact is $publishedHash."
         }
+        # A matching hash proves the published file is the one this checkout has. It does not
+        # prove either of them is what the released commit builds, and on v0.28.0 the two came
+        # apart: the bundle was built while HEAD was still two commits back, so it carried that
+        # commit's pinned timestamp, was published, and then the release commit was made. The
+        # hashes agreed at the time and the README's offer to rebuild and compare was false for
+        # the rest of the release. The pin is the only field that carries the answer, so read it
+        # back out of what is actually published and hold it to the commit being released.
+        $pinnedEpoch = $env:SOURCE_DATE_EPOCH
+        if ([string]::IsNullOrWhiteSpace($pinnedEpoch)) {
+            $pinnedEpoch = (& git -C $rootPath log -1 --format=%ct 2>$null | Select-Object -First 1)
+        }
+        $pinnedEpoch = "$pinnedEpoch".Trim()
+        if ($pinnedEpoch -notmatch '^\d+$') {
+            throw 'Could not read the commit timestamp the bundle should be pinned to.'
+        }
+        $expectedStamp = [long]$pinnedEpoch * 1000
+        Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction SilentlyContinue
+        $publishedStamp = $null
+        $zip = [System.IO.Compression.ZipFile]::OpenRead($temporaryArtifact)
+        try {
+            $manifestEntry = $zip.GetEntry('META-INF/MANIFEST.MF')
+            if ($null -eq $manifestEntry) { throw "The published $assetName has no META-INF/MANIFEST.MF." }
+            $reader = New-Object IO.StreamReader($manifestEntry.Open())
+            try { $manifestText = $reader.ReadToEnd() } finally { $reader.Dispose() }
+            $stampMatch = [regex]::Match($manifestText, '(?m)^Timestamp: (\d+)')
+            if (-not $stampMatch.Success) { throw "The published $assetName manifest has no Timestamp line." }
+            $publishedStamp = [long]$stampMatch.Groups[1].Value
+        } finally { $zip.Dispose() }
+        if ($publishedStamp -ne $expectedStamp) {
+            throw ("The published $assetName is pinned to $publishedStamp but the commit being " +
+                "released is $expectedStamp. Rebuild the bundle from this commit and upload that " +
+                'file, so rebuilding from the tag reproduces the published hash.')
+        }
+        Write-Host ("[release] published bundle is pinned to the released commit; timestamp=" + $publishedStamp)
         Write-Host ("[release] verified " + $assetName + " from the indexed URL; sha256=" + $publishedHash)
         # No caller passed -DesktopJar and nothing in the repo set the variable, so this check
         # printed "NOT COUNTED" and passed on every run it has ever had. A switch named
