@@ -53,10 +53,10 @@ val subtitleToolsPatch = bytecodePatch(
                 "Subtitle tools: ${renderer.type} does not hold exactly one FrameLayout to read " +
                     "the caption root from.",
             )
-        // The fourth parameter is not read. It was a boolean on 46.2.3 and 46.7.3 and is an
-        // edit-hint enum (NONE, TAP_TO_EDIT, EDIT_CTA, EDIT_CTA_HIGHLIGHTED) on 46.8.3, so
-        // pinning it to Z found nothing there. The hook takes the first four registers and the
-        // extension never wanted the fifth.
+        // The fourth parameter is not read. It is a boolean only on 46.2.3; both 46.7.3 and
+        // 46.8.3 pass an edit-hint enum (NONE, TAP_TO_EDIT, EDIT_CTA, EDIT_CTA_HIGHLIGHTED)
+        // there, so pinning it to Z found nothing on either. The hook takes the first four
+        // registers and the extension never wanted the fifth.
         val render = renderer.methods.singleOrNull {
             it.returnType == "V" && it.parameterTypes.size == 4 &&
                 it.parameterTypes[0] == "Ljava/lang/String;" &&

@@ -69,10 +69,11 @@ internal fun BytecodePatchContext.coordinateLongPressCallbacks(): List<MutableMe
     }
     val shared = found[0].first.interfaces.toSet() intersect found[1].first.interfaces.toSet()
     val declaresCallback = shared.singleOrNull()?.let { type ->
-        classDefByOrNull(type)?.methods?.singleOrNull()?.let {
-            it.returnType == "V" && it.parameterTypes.map(CharSequence::toString) == listOf("F", "F")
+        classDefByOrNull(type)?.methods?.singleOrNull { method ->
+            method.returnType == "V" &&
+                method.parameterTypes.map(CharSequence::toString) == listOf("F", "F")
         }
-    } == true
+    } != null
     if (!declaresCallback) {
         throw PatchException(
             "Long-press controls: the two feed coordinate listeners no longer share one " +

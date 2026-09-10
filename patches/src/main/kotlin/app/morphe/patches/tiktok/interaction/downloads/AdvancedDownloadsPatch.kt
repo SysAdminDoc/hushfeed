@@ -98,8 +98,18 @@ private fun Method.isAvatarLongPressHandler(classDef: ClassDef) =
     returnType == "V" &&
         parameterTypes.map(CharSequence::toString) == listOf(classDef.type, VIEW)
 
+/**
+ * Whether any string constant of the method contains [value].
+ *
+ * <p>Containment, not equality, because that is what the fingerprint `strings` filter does: it
+ * takes a constant that *contains* the literal it wants. An exact test here would let a build
+ * that renamed `photo` to something with `photo` inside it satisfy the own-profile fingerprint
+ * and this exclusion at once, and both fingerprints would then land on the same method.
+ */
 private fun Method.holdsString(value: String) =
-    implementation?.instructions?.any { it.getReference<StringReference>()?.string == value } == true
+    implementation?.instructions?.any {
+        it.getReference<StringReference>()?.string?.contains(value) == true
+    } == true
 
 private object OwnProfileAvatarLongPressFingerprint : Fingerprint(
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC, AccessFlags.FINAL),
@@ -190,8 +200,19 @@ val advancedDownloadsPatch = bytecodePatch(
             "invoke-static/range { p2 .. p2 }, ${EXTENSION}ProfileAvatarSaver;->" +
                 "attachAvatar(Landroid/view/View;)V",
         )
-        listOf(OwnProfileAvatarLongPressFingerprint, OtherProfileAvatarLongPressFingerprint).forEach {
-            val handler = it.method
+        val avatarHandlers = listOf(
+            OwnProfileAvatarLongPressFingerprint,
+            OtherProfileAvatarLongPressFingerprint,
+        ).map { it.method }
+        // One fingerprint is the other's strings plus two, so a build that blurred the two apart
+        // would have them both land here and one gesture would go unhooked with nothing said.
+        if (avatarHandlers.distinctBy { "${it.definingClass}->${it.name}" }.size != avatarHandlers.size) {
+            throw PatchException(
+                "Advanced downloads: both profile avatar handlers resolved to " +
+                    "${avatarHandlers.first().definingClass}->${avatarHandlers.first().name}.",
+            )
+        }
+        avatarHandlers.forEach { handler ->
             handler.interceptProfileAvatarLongPress(
                 mutableClassDefBy(handler.definingClass).avatarCaptureField(),
             )

@@ -133,11 +133,11 @@ val featureGateLabPatch = bytecodePatch(
             .patchRawAbBoundary()
 
         val settingsManager = mutableClassDefBy(ABMOCK_SETTINGS_MANAGER_DESCRIPTOR)
-        // Static, because these read their key from p0. The shape alone does not say so, and the
-        // patch below counts registers from it.
+        // By shape, like the table above: these were `LJII` and `LJIIIIZZ`, which are R8's names
+        // on a class whose own name is kept, and each shape is the only one of its kind here.
+        // Static, because this one reads its key from p0 and the shape does not say so.
         val objectGetterWithoutDefault = settingsManager.methods.singleOrNull {
-            it.name == "LJII" &&
-                it.returnType == "Ljava/lang/Object;" &&
+            it.returnType == "Ljava/lang/Object;" &&
                 it.parameterTypes == listOf("Ljava/lang/String;", "Ljava/lang/Class;") &&
                 AccessFlags.STATIC.value and it.accessFlags != 0
         } ?: throw PatchException("Feature Gate Lab SettingsManager static object boundary without default not found")
@@ -149,8 +149,7 @@ val featureGateLabPatch = bytecodePatch(
         )
 
         val objectGetterWithDefault = settingsManager.methods.singleOrNull {
-            it.name == "LJIIIIZZ" &&
-                it.returnType == "Ljava/lang/Object;" &&
+            it.returnType == "Ljava/lang/Object;" &&
                 it.parameterTypes == listOf(
                     "Ljava/lang/String;",
                     "Ljava/lang/Class;",

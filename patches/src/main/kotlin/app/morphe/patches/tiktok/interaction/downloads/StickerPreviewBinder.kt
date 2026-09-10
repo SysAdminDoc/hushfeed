@@ -4,6 +4,7 @@ import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.util.findMutableMethodOf
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
@@ -49,6 +50,11 @@ internal fun BytecodePatchContext.resolveStickerPreviewBind(): MutableMethod {
         if (SMART_IMAGE_VIEW !in fieldTypes || TUX_TEXT_VIEW !in fieldTypes) return@classDefForEach
         classDef.methods.forEach { method ->
             if (!method.isStickerPreviewBind()) return@forEach
+            // An instance method: the save button hook hands p0 and p1 to the extension as the
+            // row and its payload, and the call sites read the row out of the invoke's first
+            // register. A static bind of the same declared signature would put the boolean where
+            // the payload belongs, apply cleanly, and fail the verifier on a phone.
+            if (AccessFlags.STATIC.value and method.accessFlags != 0) return@forEach
             val payload = classDefByOrNull(method.parameterTypes[0].toString()) ?: return@forEach
             if (payload.fields.none { it.type == URL_MODEL }) return@forEach
             found += classDef to method

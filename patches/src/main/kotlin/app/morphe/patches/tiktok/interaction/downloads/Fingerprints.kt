@@ -7,7 +7,6 @@ package app.morphe.patches.tiktok.interaction.downloads
 import app.morphe.patcher.Fingerprint
 import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.AccessFlags
-import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 internal object AclCommonShareFingerprint : Fingerprint(
@@ -164,7 +163,8 @@ internal object ImagePostMediaCopyFingerprint : Fingerprint(
                     )
             }
             .orEmpty()
-        inserts.size >= 2 && inserts.map { it.definingClass }.distinct().size == 1
+        val distinct = inserts.distinctBy { "${it.definingClass}->${it.name}" }
+        distinct.size >= 2 && distinct.map { it.definingClass }.distinct().size == 1
     },
 )
 
@@ -182,13 +182,17 @@ internal object StickerPreviewSourceFingerprint : Fingerprint(
         "Lkotlin/jvm/functions/Function0;",
     ),
     // The parameter list names StickerItem, which TikTok does not rename, and no other method
-    // in any of the three builds shares it. The class and the method were `LX/0UL9;` and `LJ`
-    // on 46.2.3 and are `LX/0WU6;` and `LX/0m0M;` on the two builds since, so what is left is
+    // in any of the three builds shares it. The class was `LX/0UL9;` on 46.2.3 and is `LX/0WU6;`
+    // and `LX/0m0M;` on the two builds since, its own name `LJ` throughout, so what is left is
     // that it calls the preview bind, by that bind's shape rather than by its name.
+    //
+    // Instance, because the source hook reads the StickerItem out of p2 and a static method of
+    // the same declared parameter list would have the View there.
     custom = { method, _ ->
-        method.implementation?.instructions?.any { instruction ->
-            instruction.getReference<MethodReference>()?.isStickerPreviewBind() == true
-        } == true
+        AccessFlags.STATIC.value and method.accessFlags == 0 &&
+            method.implementation?.instructions?.any { instruction ->
+                instruction.getReference<MethodReference>()?.isStickerPreviewBind() == true
+            } == true
     },
 )
 
