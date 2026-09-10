@@ -189,6 +189,17 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                     Settings.UNCAP_REFRESH_RATE
             ));
         }
+        if (SettingsStatus.launcherShortcutsEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide the launcher shortcuts",
+                    "Empty the menu that opens when you press and hold TikTok's icon on the home "
+                            + "screen. Turning this off asks TikTok to build them again. Tapping "
+                            + "the icon still opens the app, and a shortcut you pinned yourself "
+                            + "stays where you put it.",
+                    Settings.HIDE_LAUNCHER_SHORTCUTS
+            ));
+        }
 
     }
 }

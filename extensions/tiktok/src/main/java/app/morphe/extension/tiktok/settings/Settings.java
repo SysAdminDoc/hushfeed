@@ -72,6 +72,15 @@ public class Settings extends BaseSettings {
             new BooleanSetting("fit_video_to_screen", FALSE);
     public static final BooleanSetting UNCAP_REFRESH_RATE =
             new BooleanSetting("uncap_refresh_rate", FALSE);
+    public static final BooleanSetting HIDE_LAUNCHER_SHORTCUTS =
+            new BooleanSetting("hide_launcher_shortcuts", FALSE);
+    /**
+     * Whether the launcher shortcuts were taken away by {@link #HIDE_LAUNCHER_SHORTCUTS}. No row
+     * of its own: it is how turning that switch back off knows there is something to put back,
+     * rather than asking TikTok to rebuild for somebody who never turned it on.
+     */
+    public static final BooleanSetting LAUNCHER_SHORTCUTS_REMOVED =
+            new BooleanSetting("launcher_shortcuts_removed", FALSE);
     public static final BooleanSetting ALLOW_DUET_AND_STITCH =
             new BooleanSetting("allow_duet_and_stitch", FALSE);
     public static final BooleanSetting HIDE_FOLLOWER_NOTIFICATIONS =

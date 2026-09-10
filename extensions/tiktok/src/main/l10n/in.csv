@@ -14,7 +14,9 @@ Completed an interrupted settings change. Restart TikTok to apply it.,Perubahan 
 Copy the sound link,Salin tautan suara
 Copy the video link,Salin tautan video
 Current: %1$s,Saat ini: %1$s
+"Empty the menu that opens when you press and hold TikTok's icon on the home screen. Turning this off asks TikTok to build them again. Tapping the icon still opens the app, and a shortcut you pinned yourself stays where you put it.","Kosongkan menu yang terbuka saat ikon TikTok di layar beranda ditekan dan ditahan. Menonaktifkannya akan meminta TikTok membuatnya kembali. Mengetuk ikon tetap membuka aplikasi, dan pintasan yang Anda sematkan sendiri tetap berada di tempatnya."
 Full comment sort options,Opsi urutan komentar lengkap
+Hide the launcher shortcuts,Sembunyikan pintasan peluncur
 Link copied,Tautan disalin
 No videos remained after Hushfeed applied your feed filters to one batch. Most matches: %1$s.,Tidak ada video tersisa setelah Hushfeed menerapkan filter feed pada satu kelompok. Paling sering cocok: %1$s.
 Not blocked,Tidak diblokir

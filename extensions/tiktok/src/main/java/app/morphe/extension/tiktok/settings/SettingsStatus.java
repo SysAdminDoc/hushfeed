@@ -67,6 +67,7 @@ public class SettingsStatus {
     public static boolean inboxFilterEnabled = false;
     public static boolean videoFitEnabled = false;
     public static boolean refreshRateEnabled = false;
+    public static boolean launcherShortcutsEnabled = false;
     public static boolean duetStitchEnabled = false;
     public static boolean notificationControlsEnabled = false;
     public static boolean hideSuggestedAccountsEnabled = false;
@@ -213,6 +214,10 @@ public class SettingsStatus {
 
     public static void enableRefreshRate() {
         refreshRateEnabled = true;
+    }
+
+    public static void enableLauncherShortcuts() {
+        launcherShortcutsEnabled = true;
     }
 
     public static void enableVideoFit() {

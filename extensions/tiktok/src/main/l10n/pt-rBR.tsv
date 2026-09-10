@@ -133,6 +133,8 @@ Creators hidden from later feed batches by the player action. Search the list an
 Current: %1$s	Agora: %1$s
 Current: %1$s %2$s	Agora: %1$s %2$s
 Custom SIM details	Dados de SIM personalizados
+Empty the menu that opens when you press and hold TikTok's icon on the home screen. Turning this off asks TikTok to build them again. Tapping the icon still opens the app, and a shortcut you pinned yourself stays where you put it.	Esvaziar o menu que abre ao manter pressionado o ícone do TikTok na tela inicial. Ao desativar, o TikTok é solicitado a criá-los novamente. Tocar no ícone continua abrindo o app, e um atalho fixado por você permanece onde foi colocado.
+Hide the launcher shortcuts	Ocultar os atalhos do inicializador
 Use your own offline videos limit	Usar o seu próprio limite de vídeos offline
 Daily time budget	Limite diário de tempo
 Daily video budget	Limite diário de vídeos

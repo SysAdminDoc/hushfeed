@@ -190,6 +190,7 @@ Downloads,Downloads
 "Drop the notification saying somebody new followed you before it reaches the drawer. Every other notification is left alone, and the follower still appears in the Inbox.","Drop the notification saying somebody new followed you before it reaches the drawer. Every other notification is left alone, and the follower still appears in the Inbox."
 "Each area, how many of the things it looks for are in this build and how many are not.","Each area, how many of the things it looks for are in this build and how many are not."
 Effective getter result,Effective getter result
+"Empty the menu that opens when you press and hold TikTok's icon on the home screen. Turning this off asks TikTok to build them again. Tapping the icon still opens the app, and a shortcut you pinned yourself stays where you put it.","Empty the menu that opens when you press and hold TikTok's icon on the home screen. Turning this off asks TikTok to build them again. Tapping the icon still opens the app, and a shortcut you pinned yourself stays where you put it."
 Enable,Enable
 Enable diagnostic logging,Enable diagnostic logging
 Enable hold-and-slide 2x lock,Enable hold-and-slide 2x lock
@@ -322,6 +323,7 @@ Hide the floating promotional badge over the feed.,Hide the floating promotional
 Hide the follow button on the feed,Hide the follow button on the feed
 Hide the friend recommendation card and the other cards TikTok slots between videos.,Hide the friend recommendation card and the other cards TikTok slots between videos.
 Hide the heart and its count in the right column.,Hide the heart and its count in the right column.
+Hide the launcher shortcuts,Hide the launcher shortcuts
 Hide the like button,Hide the like button
 Hide the music disc,Hide the music disc
 Hide the music line,Hide the music line
