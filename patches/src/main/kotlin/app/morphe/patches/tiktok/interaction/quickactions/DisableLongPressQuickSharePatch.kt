@@ -37,7 +37,7 @@ val disableLongPressQuickSharePatch = bytecodePatch(
                 "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableDisableLongPressQuickShare()V",
         )
 
-        LongPressQuickShareGateFingerprint.method.apply {
+        resolveLongPressQuickShareGate().apply {
             // The register the gate is actually returning in, and every return of it. v0 was
             // right only because this compiles to a single register today, and nothing said so.
             findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN }.forEach { returnIndex ->

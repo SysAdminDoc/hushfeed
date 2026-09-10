@@ -15,15 +15,6 @@ internal object QuickCommentReactionGateFingerprint : Fingerprint(
     },
 )
 
-internal object LongPressQuickShareGateFingerprint : Fingerprint(
-    returnType = "I",
-    parameters = emptyList(),
-    custom = { method, classDef ->
-        classDef.type == "LX/0BJV;" &&
-            method.name == "LIZ"
-    },
-)
-
 internal object LongPressRepostGateFingerprint : Fingerprint(
     definingClass = "Lcom/ss/android/ugc/aweme/feed/assem/digg/VideoDiggAssem;",
     returnType = "Z",
