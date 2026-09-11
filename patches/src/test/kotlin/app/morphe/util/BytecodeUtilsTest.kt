@@ -14,6 +14,8 @@ import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstructio
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction12x
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction23x
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction21s
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableStringReference
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction21c
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction35c
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
 import org.junit.Assert.assertEquals
@@ -180,6 +182,28 @@ class BytecodeUtilsTest {
         assertEquals(Opcode.INVOKE_STATIC, opcodeAt(body, 3))
         assertEquals(Opcode.MOVE_RESULT, opcodeAt(body, 4))
         assertEquals(Opcode.CONST, opcodeAt(body, 5))
+    }
+
+    @Test
+    fun `a settings key's result is the answer of the call it is handed to, not of a call in between`() {
+        // Auto advance and comment sort override the value read with a settings key. A call
+        // that lands between the key and the lookup has an answer of its own, and the first
+        // move-result after the string, which is what both sites took, is that one.
+        val ready = ImmutableMethodReference("Lcom/example/Other;", "ready", emptyList(), "Z")
+        val lookup = ImmutableMethodReference(
+            "Lcom/example/Settings;", "get", listOf("Ljava/lang/String;"), "Z",
+        )
+        val body = method(
+            "Z",
+            ImmutableInstruction21c(Opcode.CONST_STRING, 0, ImmutableStringReference("panel_auto_scroll")),
+            ImmutableInstruction35c(Opcode.INVOKE_STATIC, 0, 0, 0, 0, 0, 0, ready),
+            ImmutableInstruction11x(Opcode.MOVE_RESULT, 1),
+            ImmutableInstruction35c(Opcode.INVOKE_STATIC, 1, 0, 0, 0, 0, 0, lookup),
+            ImmutableInstruction11x(Opcode.MOVE_RESULT, 2),
+            ImmutableInstruction11x(Opcode.RETURN, 2),
+        )
+
+        assertEquals(4, body.indexOfLiteralCallResult(0))
     }
 
     @Test

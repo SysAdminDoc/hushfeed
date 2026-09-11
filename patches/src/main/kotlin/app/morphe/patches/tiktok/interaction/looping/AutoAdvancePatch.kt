@@ -24,6 +24,7 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
+import app.morphe.util.indexOfLiteralCallResult
 
 private const val EXTENSION = "Lapp/morphe/extension/tiktok/interaction/AutoAdvance;"
 private const val COMPONENT = "Lcom/ss/android/ugc/feed/platform/panel/autoscroll/AutoScrollComponent;"
@@ -257,9 +258,11 @@ val autoAdvancePatch = bytecodePatch(
         check(panelStringIndex >= 0) {
             "Auto advance: the panel_auto_scroll string is gone from the settings panel."
         }
-        val panelResultIndex = panelInstructions.withIndex().first { (index, instruction) ->
-            index > panelStringIndex && instruction.opcode == Opcode.MOVE_RESULT
-        }.index
+        // The answer of the call the key is handed to, followed through the key's register. The
+        // first move-result after the string was taken before, and a call landing between the
+        // string and the settings read owns a result of its own, which the switch would then
+        // have overridden instead.
+        val panelResultIndex = panelAction.indexOfLiteralCallResult(panelStringIndex)
         val panelRegister = (panelInstructions[panelResultIndex] as OneRegisterInstruction).registerA
         panelAction.addInstructions(
             panelResultIndex + 1,
