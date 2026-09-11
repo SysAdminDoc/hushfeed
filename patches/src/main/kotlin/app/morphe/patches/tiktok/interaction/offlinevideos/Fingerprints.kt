@@ -12,22 +12,16 @@ internal object OfflineModeSheetOptionsFingerprint : Fingerprint(
 )
 
 /**
- * The class holding the two option lists the offline sheet reads.
- *
- * <p>Still named, and the name is the 46.2.3 one. It is worse than a stale literal: on 46.7.3 and
- * 46.8.3 `LX/0sIr;` belongs to two unrelated classes, one of which has no `<clinit>` at all. The
- * two static `List` fields the patch goes on to rewrite are required here so that a build where
- * the name has landed on something else is refused at the fingerprint rather than part way
- * through the injection. Finding this class by what it is, is a ROADMAP item.
+ * The offline mode detail page, which keeps its name, asks the class holding the offline option
+ * lists a static question while it makes its view. That is how the holder is found: it is
+ * renamed per build and was rebuilt between them, `LX/0sIr;` with two lists on 46.2.3 and
+ * `LX/18A3;` with four on 46.8.3, where `LX/0sIr;` belongs to unrelated classes.
  */
-internal object OfflineModeOptionConfigFingerprint : Fingerprint(
+internal object OfflineModeDetailViewCreatedFingerprint : Fingerprint(
+    definingClass = "Lcom/ss/android/ugc/aweme/offlinemode/ui/OfflineModeDetailPageComponent;",
+    name = "onViewCreated",
     returnType = "V",
-    custom = { method, classDef ->
-        classDef.type == "LX/0sIr;" &&
-            method.name == "<clinit>" &&
-            method.parameterTypes.isEmpty() &&
-            classDef.fields.count { it.type == "Ljava/util/List;" } == 2
-    },
+    parameters = listOf("Landroid/view/View;", "Landroid/os/Bundle;"),
 )
 
 /**

@@ -26,6 +26,8 @@
 
 * The thumbs down that Comment tools turns into a block button is found by what it does now. TikTok installs the like and the dislike touch handlers back to back, and the patch used to take the second of the two by the name of the view it sat on. It now follows each handler to the code that runs on a touch and takes the one that asks whether the comment is disliked, so the block gesture can't end up on the like button if the two ever swap places. The same change lets Comment tools apply to TikTok 46.7.3 and 46.8.3, where it used to fail.
 
+* Custom offline videos limit finds TikTok's lists of offline choices through the offline page that reads them, instead of by the name the class had in 46.2.3. Newer builds keep four lists instead of two, and the custom limit is added to every one of them, so the patch applies to TikTok 46.7.3 and 46.8.3 as well.
+
 * The pre-push check runs the patch module's tests as well as the runtime ones, and treats the version catalog, the settings script, the dependency verification file and the Gradle wrapper as release facts. A push touching only one of those ran no gate at all. A README edit on a clean checkout is no longer blocked by a release check that wanted a built bundle it had just said it didn't need.
 
 * The device scripts read as success when adb refused an install, chose the clean APK by file size, could carry one dex2oat exit code over to the next run, left gigabytes of unpacked APK behind, and wrote an empty screenshot when the capture failed. Each of those is fixed. The verification probe compiles again and holds its broadcasts to the DUMP permission, which the shell has and an ordinary app can only be given over adb.
