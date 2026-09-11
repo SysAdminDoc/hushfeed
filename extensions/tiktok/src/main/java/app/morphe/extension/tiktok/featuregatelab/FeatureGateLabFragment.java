@@ -1045,10 +1045,20 @@ public final class FeatureGateLabFragment extends Fragment {
                 reviewLoadedImport(readLoadedJson(encoded));
             } catch (Throwable throwable) {
                 Logger.printException(() -> "Loaded-value file import failed", throwable);
-                postToast(L10n.t(Utils.getContext(),
-                        "Loaded-value file is invalid or too large"));
+                // A refusal the review could name says what it was. A file from another build
+                // used to be reported as invalid or too large, the same as a corrupt one.
+                postToast(throwable instanceof ImportRefused
+                        ? throwable.getMessage()
+                        : L10n.t(Utils.getContext(), "Loaded-value file is invalid or too large"));
             }
         });
+    }
+
+    /** A loaded-value file the review turned down, with the reason already in the reader's words. */
+    private static final class ImportRefused extends IllegalArgumentException {
+        ImportRefused(String sentence) {
+            super(sentence);
+        }
     }
 
     private void reviewLoadedImport(JSONObject imported) throws Exception {
@@ -1056,10 +1066,10 @@ public final class FeatureGateLabFragment extends Fragment {
         FeatureGateCatalog.Snapshot currentSnapshot = snapshot;
         if (activity == null || currentSnapshot == null) return;
         if (!"loaded_values".equals(imported.optString("payload_kind"))) {
-            throw new IllegalArgumentException("Unsupported Feature Gate Lab export type");
+            throw new ImportRefused(L10n.t(activity, "This file isn't a loaded-values export from the Feature Gate Lab."));
         }
         if (!FeatureGateLabStore.TARGET_VERSION.equals(imported.optString("tiktok_version"))) {
-            throw new IllegalArgumentException("Loaded values target a different TikTok version");
+            throw new ImportRefused(L10n.t(activity, "These loaded values are for a different TikTok version."));
         }
 
         Map<String, FeatureGateLabStore.Rule> existingRules = rulesByIdentity();
@@ -1068,9 +1078,9 @@ public final class FeatureGateLabFragment extends Fragment {
         int same = 0;
         int unavailable = 0;
         int malformed = 0;
-        if (sourceRules == null) throw new IllegalArgumentException("Missing loaded values");
+        if (sourceRules == null) throw new ImportRefused(L10n.t(activity, "This file has no loaded values in it."));
         if (sourceRules.length() > MAX_IMPORT_RULES) {
-            throw new IllegalArgumentException("Loaded values contain too many rules");
+            throw new ImportRefused(L10n.t(activity, "This file has more loaded values than the Lab takes at once."));
         }
         {
             for (int i = 0; i < sourceRules.length(); i++) {

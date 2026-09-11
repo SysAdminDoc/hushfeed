@@ -809,6 +809,10 @@ Exported %1$d loaded values,%1$d nilai yang dimuat diekspor
 Loaded-value file export failed,Ekspor berkas nilai yang dimuat gagal
 Loaded-value file export failed; cleanup also failed,Ekspor berkas nilai yang dimuat gagal; pembersihannya juga gagal
 Loaded-value file is invalid or too large,Berkas nilai yang dimuat tidak valid atau terlalu besar
+This file isn't a loaded-values export from the Feature Gate Lab.,Berkas ini bukan ekspor nilai yang dimuat dari Feature Gate Lab.
+These loaded values are for a different TikTok version.,Nilai yang dimuat ini untuk versi TikTok yang berbeda.
+This file has no loaded values in it.,Berkas ini tidak berisi nilai yang dimuat.
+This file has more loaded values than the Lab takes at once.,Berkas ini berisi lebih banyak nilai yang dimuat daripada yang bisa diterima Lab sekaligus.
 "Imported %1$d disabled values. %2$d already matched, %3$d unavailable, %4$d rejected. Undo last Lab change is in the menu.","%1$d nilai nonaktif diimpor. %2$d sudah cocok, %3$d tidak tersedia, %4$d ditolak. Batalkan perubahan Lab terakhir ada di menu."
 Could not change Lab settings.,Pengaturan Lab tidak bisa diubah.
 None of these gates had an override to reset.,Tidak satu pun gate ini punya penggantian untuk diatur ulang.

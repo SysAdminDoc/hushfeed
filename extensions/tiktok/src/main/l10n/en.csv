@@ -740,8 +740,12 @@ The story couldn't be saved.,The story couldn't be saved.
 "The video couldn't be saved. Try again, or choose Automatic.","The video couldn't be saved. Try again, or choose Automatic."
 There is no Lab change to undo.,There is no Lab change to undo.
 There was nothing to put back,There was nothing to put back
+These loaded values are for a different TikTok version.,These loaded values are for a different TikTok version.
 This catalog entry is no longer available. Refresh the Lab and try again.,This catalog entry is no longer available. Refresh the Lab and try again.
 This configuration has no fields that can be copied and changed safely on this build.,This configuration has no fields that can be copied and changed safely on this build.
+This file has more loaded values than the Lab takes at once.,This file has more loaded values than the Lab takes at once.
+This file has no loaded values in it.,This file has no loaded values in it.
+This file isn't a loaded-values export from the Feature Gate Lab.,This file isn't a loaded-values export from the Feature Gate Lab.
 "This line opens a rule and does not finish it: %1$s. Write two phrases as ""a"" & ""b"" for both, or ""a"" !& ""b"" for the first without the second.","This line opens a rule and does not finish it: %1$s. Write two phrases as ""a"" & ""b"" for both, or ""a"" !& ""b"" for the first without the second."
 "This phone has no file picker, so there is no way to choose a file here.","This phone has no file picker, so there is no way to choose a file here."
 This phone has no folder picker. Type the folder into the row instead.,This phone has no folder picker. Type the folder into the row instead.

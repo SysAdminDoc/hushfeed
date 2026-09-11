@@ -48,7 +48,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1690);
+        Map<String, String> table = new HashMap<>(1698);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -1586,10 +1586,18 @@ public final class L10nTranslations {
                 "Es gibt keine Lab-Änderung, die sich rückgängig machen ließe.");
         table.put("There was nothing to put back",
                 "Es gab nichts zurückzuholen");
+        table.put("These loaded values are for a different TikTok version.",
+                "Diese geladenen Werte gehören zu einer anderen TikTok-Version.");
         table.put("This catalog entry is no longer available. Refresh the Lab and try again.",
                 "Dieser Katalogeintrag ist nicht mehr verfügbar. Das Labor aktualisieren und es erneut versuchen.");
         table.put("This configuration has no fields that can be copied and changed safely on this build.",
                 "Diese Konfiguration hat keine Felder, die sich in diesem Build gefahrlos kopieren und ändern lassen.");
+        table.put("This file has more loaded values than the Lab takes at once.",
+                "Diese Datei enthält mehr geladene Werte, als das Lab auf einmal annimmt.");
+        table.put("This file has no loaded values in it.",
+                "Diese Datei enthält keine geladenen Werte.");
+        table.put("This file isn't a loaded-values export from the Feature Gate Lab.",
+                "Diese Datei ist kein Export geladener Werte aus dem Feature Gate Lab.");
         table.put("This line opens a rule and does not finish it: %1$s. Write two phrases as \"a\" & \"b\" for both, or \"a\" !& \"b\" for the first without the second.",
                 "Diese Zeile beginnt eine Regel und beendet sie nicht: %1$s. Schreiben Sie zwei Wendungen als \"a\" & \"b\" für beide oder als \"a\" !& \"b\" für die erste ohne die zweite.");
         table.put("This phone has no file picker, so there is no way to choose a file here.",
@@ -1656,6 +1664,9 @@ public final class L10nTranslations {
                 "Es laufen bereits zu viele Medienspeicherungen. Versuche es gleich noch einmal.");
         table.put("Translate comments as they load, using TikTok's own translator.",
                 "Kommentare beim Laden übersetzen, mit TikToks eigenem Übersetzer.");
+    }
+
+    private static void fillDe13(Map<String, String> table) {
         table.put("Transparent",
                 "Transparent");
         table.put("Try a country name, or a two-letter code",
@@ -1664,9 +1675,6 @@ public final class L10nTranslations {
                 "Versuche ein anderes Wort oder lösche die Suche.");
         table.put("Turned off %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.",
                 "%1$d von %2$d Schaltern ausgeschaltet; die übrigen nehmen kein true oder false. TikTok neu starten, damit das gilt.");
-    }
-
-    private static void fillDe13(Map<String, String> table) {
         table.put("Turned off %1$d gates. Restart TikTok to apply this.",
                 "%1$d Schalter ausgeschaltet. TikTok neu starten, damit das gilt.");
         table.put("Turned off 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.",
@@ -1779,6 +1787,9 @@ public final class L10nTranslations {
                 "Millisekunde");
         table.put("milliseconds",
                 "Millisekunden");
+    }
+
+    private static void fillDe14(Map<String, String> table) {
         table.put("ms",
                 "ms");
         table.put("or",
@@ -1787,9 +1798,6 @@ public final class L10nTranslations {
                 "Punkt");
         table.put("points",
                 "Punkte");
-    }
-
-    private static void fillDe14(Map<String, String> table) {
         table.put("second",
                 "Sekunde");
         table.put("seconds",
@@ -1803,7 +1811,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(1690);
+        Map<String, String> table = new HashMap<>(1698);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -3341,10 +3349,18 @@ public final class L10nTranslations {
                 "No hay ningún cambio del Lab que deshacer.");
         table.put("There was nothing to put back",
                 "No había nada que recuperar");
+        table.put("These loaded values are for a different TikTok version.",
+                "Estos valores cargados son de otra versión de TikTok.");
         table.put("This catalog entry is no longer available. Refresh the Lab and try again.",
                 "Esta entrada del catálogo ya no está disponible. Actualiza el Laboratorio e inténtalo otra vez.");
         table.put("This configuration has no fields that can be copied and changed safely on this build.",
                 "Esta configuración no tiene campos que se puedan copiar y cambiar con seguridad en esta compilación.");
+        table.put("This file has more loaded values than the Lab takes at once.",
+                "Este archivo tiene más valores cargados de los que el Lab acepta de una vez.");
+        table.put("This file has no loaded values in it.",
+                "Este archivo no contiene valores cargados.");
+        table.put("This file isn't a loaded-values export from the Feature Gate Lab.",
+                "Este archivo no es una exportación de valores cargados del Feature Gate Lab.");
         table.put("This line opens a rule and does not finish it: %1$s. Write two phrases as \"a\" & \"b\" for both, or \"a\" !& \"b\" for the first without the second.",
                 "Esta línea abre una regla y no la termina: %1$s. Escribe dos frases como \"a\" & \"b\" para pedir las dos, o \"a\" !& \"b\" para la primera sin la segunda.");
         table.put("This phone has no file picker, so there is no way to choose a file here.",
@@ -3411,6 +3427,9 @@ public final class L10nTranslations {
                 "Ya se están guardando demasiados archivos. Inténtalo dentro de un momento.");
         table.put("Translate comments as they load, using TikTok's own translator.",
                 "Traducir los comentarios a medida que se cargan, con el traductor propio de TikTok.");
+    }
+
+    private static void fillEs13(Map<String, String> table) {
         table.put("Transparent",
                 "Transparente");
         table.put("Try a country name, or a two-letter code",
@@ -3419,9 +3438,6 @@ public final class L10nTranslations {
                 "Prueba con otra palabra o borra la búsqueda.");
         table.put("Turned off %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.",
                 "%1$d interruptores de %2$d apagados; los demás no aceptan un valor true o false. Reinicia TikTok para aplicar esto.");
-    }
-
-    private static void fillEs13(Map<String, String> table) {
         table.put("Turned off %1$d gates. Restart TikTok to apply this.",
                 "%1$d interruptores apagados. Reinicia TikTok para aplicar esto.");
         table.put("Turned off 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.",
@@ -3534,6 +3550,9 @@ public final class L10nTranslations {
                 "milisegundo");
         table.put("milliseconds",
                 "milisegundos");
+    }
+
+    private static void fillEs14(Map<String, String> table) {
         table.put("ms",
                 "ms");
         table.put("or",
@@ -3542,9 +3561,6 @@ public final class L10nTranslations {
                 "punto");
         table.put("points",
                 "puntos");
-    }
-
-    private static void fillEs14(Map<String, String> table) {
         table.put("second",
                 "segundo");
         table.put("seconds",
@@ -3558,7 +3574,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1690);
+        Map<String, String> table = new HashMap<>(1698);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -5096,10 +5112,18 @@ public final class L10nTranslations {
                 "Tidak ada perubahan Lab yang bisa dibatalkan.");
         table.put("There was nothing to put back",
                 "Tidak ada yang bisa dikembalikan");
+        table.put("These loaded values are for a different TikTok version.",
+                "Nilai yang dimuat ini untuk versi TikTok yang berbeda.");
         table.put("This catalog entry is no longer available. Refresh the Lab and try again.",
                 "Entri katalog ini sudah tidak tersedia. Segarkan Lab dan coba lagi.");
         table.put("This configuration has no fields that can be copied and changed safely on this build.",
                 "Konfigurasi ini tidak punya bidang yang bisa disalin dan diubah dengan aman di build ini.");
+        table.put("This file has more loaded values than the Lab takes at once.",
+                "Berkas ini berisi lebih banyak nilai yang dimuat daripada yang bisa diterima Lab sekaligus.");
+        table.put("This file has no loaded values in it.",
+                "Berkas ini tidak berisi nilai yang dimuat.");
+        table.put("This file isn't a loaded-values export from the Feature Gate Lab.",
+                "Berkas ini bukan ekspor nilai yang dimuat dari Feature Gate Lab.");
         table.put("This line opens a rule and does not finish it: %1$s. Write two phrases as \"a\" & \"b\" for both, or \"a\" !& \"b\" for the first without the second.",
                 "Baris ini memulai sebuah aturan dan tidak menyelesaikannya: %1$s. Tulis dua frasa sebagai \"a\" & \"b\" untuk keduanya, atau \"a\" !& \"b\" untuk yang pertama tanpa yang kedua.");
         table.put("This phone has no file picker, so there is no way to choose a file here.",
@@ -5166,6 +5190,9 @@ public final class L10nTranslations {
                 "Terlalu banyak penyimpanan media yang sedang berjalan. Coba lagi sebentar.");
         table.put("Translate comments as they load, using TikTok's own translator.",
                 "Terjemahkan komentar saat dimuat, memakai penerjemah TikTok sendiri.");
+    }
+
+    private static void fillIn13(Map<String, String> table) {
         table.put("Transparent",
                 "Transparan");
         table.put("Try a country name, or a two-letter code",
@@ -5174,9 +5201,6 @@ public final class L10nTranslations {
                 "Coba kata lain atau hapus pencarian.");
         table.put("Turned off %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.",
                 "%1$d dari %2$d gate dimatikan; sisanya tidak menerima nilai true atau false. Mulai ulang TikTok agar berlaku.");
-    }
-
-    private static void fillIn13(Map<String, String> table) {
         table.put("Turned off %1$d gates. Restart TikTok to apply this.",
                 "%1$d gate dimatikan. Mulai ulang TikTok agar berlaku.");
         table.put("Turned off 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.",
@@ -5289,6 +5313,9 @@ public final class L10nTranslations {
                 "milidetik");
         table.put("milliseconds",
                 "milidetik");
+    }
+
+    private static void fillIn14(Map<String, String> table) {
         table.put("ms",
                 "ms");
         table.put("or",
@@ -5297,9 +5324,6 @@ public final class L10nTranslations {
                 "poin");
         table.put("points",
                 "poin");
-    }
-
-    private static void fillIn14(Map<String, String> table) {
         table.put("second",
                 "detik");
         table.put("seconds",
@@ -5313,7 +5337,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(1690);
+        Map<String, String> table = new HashMap<>(1698);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -6851,10 +6875,18 @@ public final class L10nTranslations {
                 "Não há nenhuma alteração do Lab para desfazer.");
         table.put("There was nothing to put back",
                 "Não havia nada para trazer de volta");
+        table.put("These loaded values are for a different TikTok version.",
+                "Estes valores carregados são de outra versão do TikTok.");
         table.put("This catalog entry is no longer available. Refresh the Lab and try again.",
                 "Esta entrada do catálogo não está mais disponível. Atualize o Laboratório e tente de novo.");
         table.put("This configuration has no fields that can be copied and changed safely on this build.",
                 "Esta configuração não tem campos que dê para copiar e mudar com segurança nesta build.");
+        table.put("This file has more loaded values than the Lab takes at once.",
+                "Este arquivo tem mais valores carregados do que o Lab aceita de uma vez.");
+        table.put("This file has no loaded values in it.",
+                "Este arquivo não contém valores carregados.");
+        table.put("This file isn't a loaded-values export from the Feature Gate Lab.",
+                "Este arquivo não é uma exportação de valores carregados do Feature Gate Lab.");
         table.put("This line opens a rule and does not finish it: %1$s. Write two phrases as \"a\" & \"b\" for both, or \"a\" !& \"b\" for the first without the second.",
                 "Esta linha abre uma regra e não a fecha: %1$s. Escreva duas frases como \"a\" & \"b\" para pedir as duas, ou \"a\" !& \"b\" para a primeira sem a segunda.");
         table.put("This phone has no file picker, so there is no way to choose a file here.",
@@ -6921,6 +6953,9 @@ public final class L10nTranslations {
                 "Muitos salvamentos de mídia já estão em andamento. Tente daqui a pouco.");
         table.put("Translate comments as they load, using TikTok's own translator.",
                 "Traduzir os comentários conforme eles carregam, com o tradutor do próprio TikTok.");
+    }
+
+    private static void fillPt_rBR13(Map<String, String> table) {
         table.put("Transparent",
                 "Transparente");
         table.put("Try a country name, or a two-letter code",
@@ -6929,9 +6964,6 @@ public final class L10nTranslations {
                 "Tente outra palavra ou limpe a busca.");
         table.put("Turned off %1$d gates of %2$d; the rest do not take a true or false value. Restart TikTok to apply this.",
                 "%1$d de %2$d gates desligados; os demais não aceitam um valor true ou false. Reinicie o TikTok para aplicar.");
-    }
-
-    private static void fillPt_rBR13(Map<String, String> table) {
         table.put("Turned off %1$d gates. Restart TikTok to apply this.",
                 "%1$d gates desligados. Reinicie o TikTok para aplicar.");
         table.put("Turned off 1 gate of %1$d; the rest do not take a true or false value. Restart TikTok to apply this.",
@@ -7044,6 +7076,9 @@ public final class L10nTranslations {
                 "milissegundo");
         table.put("milliseconds",
                 "milissegundos");
+    }
+
+    private static void fillPt_rBR14(Map<String, String> table) {
         table.put("ms",
                 "ms");
         table.put("or",
@@ -7052,9 +7087,6 @@ public final class L10nTranslations {
                 "ponto");
         table.put("points",
                 "pontos");
-    }
-
-    private static void fillPt_rBR14(Map<String, String> table) {
         table.put("second",
                 "segundo");
         table.put("seconds",

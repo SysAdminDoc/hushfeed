@@ -808,6 +808,10 @@ Exported %1$d loaded values	%1$d valores carregados exportados
 Loaded-value file export failed	A exportação do arquivo de valores carregados falhou
 Loaded-value file export failed; cleanup also failed	A exportação do arquivo de valores carregados falhou e a limpeza também
 Loaded-value file is invalid or too large	O arquivo de valores carregados é inválido ou grande demais
+This file isn't a loaded-values export from the Feature Gate Lab.	Este arquivo não é uma exportação de valores carregados do Feature Gate Lab.
+These loaded values are for a different TikTok version.	Estes valores carregados são de outra versão do TikTok.
+This file has no loaded values in it.	Este arquivo não contém valores carregados.
+This file has more loaded values than the Lab takes at once.	Este arquivo tem mais valores carregados do que o Lab aceita de uma vez.
 Imported %1$d disabled values. %2$d already matched, %3$d unavailable, %4$d rejected. Undo last Lab change is in the menu.	%1$d valores desligados importados. %2$d já coincidiam, %3$d não estão disponíveis e %4$d foram recusados. Desfazer a última mudança do Lab está no menu.
 Could not change Lab settings.	Não foi possível alterar as configurações do Lab.
 None of these gates had an override to reset.	Nenhum destes gates tinha uma substituição para redefinir.

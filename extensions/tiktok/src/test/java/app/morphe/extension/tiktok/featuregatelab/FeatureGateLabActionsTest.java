@@ -338,6 +338,24 @@ public class FeatureGateLabActionsTest {
         }
     }
 
+    @Test public void aFileFromAnotherTikTokSaysSoInsteadOfCallingItCorrupt() throws Exception {
+        try (var owner = Robolectric.buildActivity(TestActivity.class).setup().visible()) {
+            var activity = owner.get();
+            var fragment = attach(activity);
+            JSONObject root = new JSONObject().put("payload_kind", "loaded_values")
+                    .put("tiktok_version", "46.8.3")
+                    .put("rules", new JSONArray().put(rule("gate", "true")));
+            action(fragment, 3);
+            var started = Shadows.shadowOf(activity).getNextStartedActivityForResult();
+            var uri = android.net.Uri.parse("content://lab-test/other-build.json");
+            Shadows.shadowOf(activity.getContentResolver()).registerInputStream(uri,
+                    new ByteArrayInputStream(root.toString().getBytes(StandardCharsets.UTF_8)));
+            fragment.onActivityResult(started.requestCode, Activity.RESULT_OK, new Intent().setData(uri));
+            waitFor("These loaded values are for a different TikTok version.");
+            assertTrue(FeatureGateLabStore.rules().isEmpty());
+        }
+    }
+
     @Test public void boundedImportParserRejectsDuplicateDeepInvalidAndOverlargeInput() throws Exception {
         assertLoadedJsonRejected(("{\"payload_kind\":\"loaded_values\","
                 + "\"payload_kind\":\"loaded_values\",\"tiktok_version\":\"46.2.3\",\"rules\":[]}")
