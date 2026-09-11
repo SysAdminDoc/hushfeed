@@ -166,6 +166,24 @@ public class SettingsBackupTest {
         }
     }
 
+    @Test public void aBackupWithMoreLabRulesThanTheLabKeepsIsRefusedByName() throws Exception {
+        // Some 26,000 of these fit the 2 MB cap. Restored, they made every later backup and Lab
+        // undo copy too large to write, which refused Restore, Reset and every Lab change.
+        String baseline = SettingsBackup.create(false);
+        JSONObject many = new JSONObject(baseline);
+        org.json.JSONArray rules = many.getJSONObject("lab").getJSONArray("rules");
+        for (int i = 0; i < 2000; i++) {
+            rules.put(new JSONObject().put("manager", "abmock").put("key", "gate" + i)
+                    .put("type", "BOOLEAN").put("value", "true").put("force", true));
+        }
+
+        assertEquals(SettingsBackup.Reason.LAB_RULES, reasonFor(many.toString()));
+        assertEquals("That settings backup holds more Feature Gate Lab rules than the Lab takes. "
+                + "Nothing was altered.", sentenceFor(many.toString()));
+        assertEquals(baseline, SettingsBackup.create(false));
+        assertTrue(FeatureGateLabStore.rules().isEmpty());
+    }
+
     @Test public void aBackupFromAnotherTikTokVersionRestoresSettingsAndLeavesTheLabAlone() throws Exception {
         // The target stamp is there for the Lab rules, which name gates in one TikTok build. It
         // used to refuse the whole file, so the day this project retargets, every backup anyone

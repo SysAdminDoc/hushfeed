@@ -109,7 +109,7 @@ public final class FeatureGateLabFragment extends Fragment {
     private static final int REQUEST_IMPORT_LOADED = 0x6f11;
     private static final int MAX_COMPRESSED_IMPORT_BYTES = 4 * 1024 * 1024;
     private static final int MAX_JSON_IMPORT_BYTES = 8 * 1024 * 1024;
-    private static final int MAX_IMPORT_RULES = 1024;
+    private static final int MAX_IMPORT_RULES = FeatureGateLabStore.MAX_RULES;
     private static final SettingsJson.Limits IMPORT_JSON_LIMITS = new SettingsJson.Limits(
             24, 8192, 64 * 1024, MAX_IMPORT_RULES, MAX_JSON_IMPORT_BYTES);
     private static final int FILTER_ALL = 0;

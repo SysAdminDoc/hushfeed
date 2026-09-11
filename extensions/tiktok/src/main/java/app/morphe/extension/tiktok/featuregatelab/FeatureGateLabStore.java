@@ -220,6 +220,15 @@ public final class FeatureGateLabStore {
                 && left.enabled == right.enabled;
     }
 
+    /**
+     * The most rules the Lab keeps. Its own import already stopped here; a settings backup, the
+     * undo copy and the journal went through parseSettings with no count at all, so a hand-edited
+     * backup of some 26,000 rules fitted the 2 MB file cap, restored, and then made every later
+     * backup and every Lab undo copy too large to write, which refused Restore, Reset and every
+     * Lab change after it.
+     */
+    public static final int MAX_RULES = 1024;
+
     /** Decode the entire backup before any setting or rule is changed. */
     public static List<Rule> parseSettings(JSONObject root) throws JSONException {
         if (!Integer.valueOf(1).equals(root.get("schema")) || !TARGET_VERSION.equals(root.optString("tiktok_version"))
@@ -228,6 +237,10 @@ public final class FeatureGateLabStore {
             throw new JSONException("Invalid Lab backup or TikTok version");
         }
         JSONArray items = root.getJSONArray("rules");
+        if (items.length() > MAX_RULES) {
+            throw new JSONException("Lab backup holds " + items.length() + " rules, past the "
+                    + MAX_RULES + " the Lab keeps");
+        }
         List<Rule> rules = new ArrayList<>();
         java.util.Set<String> ids = new java.util.HashSet<>();
         for (int i = 0; i < items.length(); i++) {

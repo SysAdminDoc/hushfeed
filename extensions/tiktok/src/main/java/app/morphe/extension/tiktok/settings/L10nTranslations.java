@@ -48,7 +48,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(1698);
+        Map<String, String> table = new HashMap<>(1700);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -1525,6 +1525,8 @@ public final class L10nTranslations {
                 "Das ist ein Video heute");
         table.put("That settings backup holds a value Hushfeed cannot read. Nothing was altered.",
                 "Diese Einstellungssicherung enthält einen Wert, den Hushfeed nicht lesen kann. Es wurde nichts geändert.");
+        table.put("That settings backup holds more Feature Gate Lab rules than the Lab takes. Nothing was altered.",
+                "Diese Einstellungssicherung enthält mehr Feature-Gate-Lab-Regeln, als das Lab annimmt. Es wurde nichts geändert.");
         table.put("That settings backup is damaged or only partly downloaded. Nothing was altered.",
                 "Diese Einstellungssicherung ist beschädigt oder nur teilweise heruntergeladen. Es wurde nichts geändert.");
         table.put("That settings backup is incomplete, so it may have been cut short. Nothing was altered.",
@@ -1539,11 +1541,11 @@ public final class L10nTranslations {
                 "Der Diagnosebericht ließ sich nicht exportieren.");
         table.put("The diagnostic report could not be saved yet. Try again in a moment.",
                 "Der Diagnosebericht ließ sich noch nicht speichern. Versuche es gleich noch einmal.");
-        table.put("The feed does not end. This is a fine time to leave it.",
-                "Der Feed hört nicht auf. Jetzt ist ein guter Zeitpunkt zu gehen.");
     }
 
     private static void fillDe12(Map<String, String> table) {
+        table.put("The feed does not end. This is a fine time to leave it.",
+                "Der Feed hört nicht auf. Jetzt ist ein guter Zeitpunkt zu gehen.");
         table.put("The feed is open again",
                 "Der Feed ist wieder offen");
         table.put("The last change is undone. Restart TikTok to apply all changes.",
@@ -1662,11 +1664,11 @@ public final class L10nTranslations {
                 "Platzhalter: {date}, {media_id}. Gilt für Bild- und Video-Sticker.");
         table.put("Too many media saves are already running. Try again shortly.",
                 "Es laufen bereits zu viele Medienspeicherungen. Versuche es gleich noch einmal.");
-        table.put("Translate comments as they load, using TikTok's own translator.",
-                "Kommentare beim Laden übersetzen, mit TikToks eigenem Übersetzer.");
     }
 
     private static void fillDe13(Map<String, String> table) {
+        table.put("Translate comments as they load, using TikTok's own translator.",
+                "Kommentare beim Laden übersetzen, mit TikToks eigenem Übersetzer.");
         table.put("Transparent",
                 "Transparent");
         table.put("Try a country name, or a two-letter code",
@@ -1785,11 +1787,11 @@ public final class L10nTranslations {
                 "dp");
         table.put("millisecond",
                 "Millisekunde");
-        table.put("milliseconds",
-                "Millisekunden");
     }
 
     private static void fillDe14(Map<String, String> table) {
+        table.put("milliseconds",
+                "Millisekunden");
         table.put("ms",
                 "ms");
         table.put("or",
@@ -1811,7 +1813,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(1698);
+        Map<String, String> table = new HashMap<>(1700);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -3288,6 +3290,8 @@ public final class L10nTranslations {
                 "Eso es un vídeo hoy");
         table.put("That settings backup holds a value Hushfeed cannot read. Nothing was altered.",
                 "Esa copia de seguridad contiene un valor que Hushfeed no puede leer. No se ha cambiado nada.");
+        table.put("That settings backup holds more Feature Gate Lab rules than the Lab takes. Nothing was altered.",
+                "Esa copia de seguridad de ajustes tiene más reglas del Feature Gate Lab de las que el Lab acepta. No se ha cambiado nada.");
         table.put("That settings backup is damaged or only partly downloaded. Nothing was altered.",
                 "Esa copia de seguridad está dañada o solo se descargó en parte. No se ha cambiado nada.");
         table.put("That settings backup is incomplete, so it may have been cut short. Nothing was altered.",
@@ -3302,11 +3306,11 @@ public final class L10nTranslations {
                 "No se pudo exportar el informe de diagnóstico.");
         table.put("The diagnostic report could not be saved yet. Try again in a moment.",
                 "Todavía no se pudo guardar el informe de diagnóstico. Inténtalo de nuevo en un momento.");
-        table.put("The feed does not end. This is a fine time to leave it.",
-                "El feed no se acaba. Este es un buen momento para dejarlo.");
     }
 
     private static void fillEs12(Map<String, String> table) {
+        table.put("The feed does not end. This is a fine time to leave it.",
+                "El feed no se acaba. Este es un buen momento para dejarlo.");
         table.put("The feed is open again",
                 "El feed está abierto otra vez");
         table.put("The last change is undone. Restart TikTok to apply all changes.",
@@ -3425,11 +3429,11 @@ public final class L10nTranslations {
                 "Comodines: {date}, {media_id}. Sirve para los stickers de imagen y de vídeo.");
         table.put("Too many media saves are already running. Try again shortly.",
                 "Ya se están guardando demasiados archivos. Inténtalo dentro de un momento.");
-        table.put("Translate comments as they load, using TikTok's own translator.",
-                "Traducir los comentarios a medida que se cargan, con el traductor propio de TikTok.");
     }
 
     private static void fillEs13(Map<String, String> table) {
+        table.put("Translate comments as they load, using TikTok's own translator.",
+                "Traducir los comentarios a medida que se cargan, con el traductor propio de TikTok.");
         table.put("Transparent",
                 "Transparente");
         table.put("Try a country name, or a two-letter code",
@@ -3548,11 +3552,11 @@ public final class L10nTranslations {
                 "dp");
         table.put("millisecond",
                 "milisegundo");
-        table.put("milliseconds",
-                "milisegundos");
     }
 
     private static void fillEs14(Map<String, String> table) {
+        table.put("milliseconds",
+                "milisegundos");
         table.put("ms",
                 "ms");
         table.put("or",
@@ -3574,7 +3578,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(1698);
+        Map<String, String> table = new HashMap<>(1700);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -5051,6 +5055,8 @@ public final class L10nTranslations {
                 "Itu satu video hari ini");
         table.put("That settings backup holds a value Hushfeed cannot read. Nothing was altered.",
                 "Cadangan pengaturan itu memuat nilai yang tidak dapat dibaca Hushfeed. Tidak ada yang diubah.");
+        table.put("That settings backup holds more Feature Gate Lab rules than the Lab takes. Nothing was altered.",
+                "Cadangan pengaturan itu berisi lebih banyak aturan Feature Gate Lab daripada yang bisa diterima Lab. Tidak ada yang diubah.");
         table.put("That settings backup is damaged or only partly downloaded. Nothing was altered.",
                 "Cadangan pengaturan itu rusak atau hanya terunduh sebagian. Tidak ada yang diubah.");
         table.put("That settings backup is incomplete, so it may have been cut short. Nothing was altered.",
@@ -5065,11 +5071,11 @@ public final class L10nTranslations {
                 "Laporan diagnostik tidak bisa diekspor.");
         table.put("The diagnostic report could not be saved yet. Try again in a moment.",
                 "Laporan diagnostik belum bisa disimpan. Coba lagi sebentar.");
-        table.put("The feed does not end. This is a fine time to leave it.",
-                "Feed tidak ada habisnya. Ini saat yang baik untuk berhenti.");
     }
 
     private static void fillIn12(Map<String, String> table) {
+        table.put("The feed does not end. This is a fine time to leave it.",
+                "Feed tidak ada habisnya. Ini saat yang baik untuk berhenti.");
         table.put("The feed is open again",
                 "Feed terbuka lagi");
         table.put("The last change is undone. Restart TikTok to apply all changes.",
@@ -5188,11 +5194,11 @@ public final class L10nTranslations {
                 "Token: {date}, {media_id}. Berlaku untuk stiker gambar dan video.");
         table.put("Too many media saves are already running. Try again shortly.",
                 "Terlalu banyak penyimpanan media yang sedang berjalan. Coba lagi sebentar.");
-        table.put("Translate comments as they load, using TikTok's own translator.",
-                "Terjemahkan komentar saat dimuat, memakai penerjemah TikTok sendiri.");
     }
 
     private static void fillIn13(Map<String, String> table) {
+        table.put("Translate comments as they load, using TikTok's own translator.",
+                "Terjemahkan komentar saat dimuat, memakai penerjemah TikTok sendiri.");
         table.put("Transparent",
                 "Transparan");
         table.put("Try a country name, or a two-letter code",
@@ -5311,11 +5317,11 @@ public final class L10nTranslations {
                 "dp");
         table.put("millisecond",
                 "milidetik");
-        table.put("milliseconds",
-                "milidetik");
     }
 
     private static void fillIn14(Map<String, String> table) {
+        table.put("milliseconds",
+                "milidetik");
         table.put("ms",
                 "ms");
         table.put("or",
@@ -5337,7 +5343,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(1698);
+        Map<String, String> table = new HashMap<>(1700);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -6814,6 +6820,8 @@ public final class L10nTranslations {
                 "Isso dá um vídeo hoje");
         table.put("That settings backup holds a value Hushfeed cannot read. Nothing was altered.",
                 "Esse backup tem um valor que o Hushfeed não consegue ler. Nada foi alterado.");
+        table.put("That settings backup holds more Feature Gate Lab rules than the Lab takes. Nothing was altered.",
+                "Esse backup de configurações tem mais regras do Feature Gate Lab do que o Lab aceita. Nada foi alterado.");
         table.put("That settings backup is damaged or only partly downloaded. Nothing was altered.",
                 "Esse backup está danificado ou só foi baixado em parte. Nada foi alterado.");
         table.put("That settings backup is incomplete, so it may have been cut short. Nothing was altered.",
@@ -6828,11 +6836,11 @@ public final class L10nTranslations {
                 "O relatório de diagnóstico não pôde ser exportado.");
         table.put("The diagnostic report could not be saved yet. Try again in a moment.",
                 "O relatório de diagnóstico ainda não pôde ser salvo. Tente de novo em instantes.");
-        table.put("The feed does not end. This is a fine time to leave it.",
-                "O feed não acaba. Esta é uma boa hora para largá-lo.");
     }
 
     private static void fillPt_rBR12(Map<String, String> table) {
+        table.put("The feed does not end. This is a fine time to leave it.",
+                "O feed não acaba. Esta é uma boa hora para largá-lo.");
         table.put("The feed is open again",
                 "O feed está aberto de novo");
         table.put("The last change is undone. Restart TikTok to apply all changes.",
@@ -6951,11 +6959,11 @@ public final class L10nTranslations {
                 "Curingas: {date}, {media_id}. Serve para os stickers de imagem e de vídeo.");
         table.put("Too many media saves are already running. Try again shortly.",
                 "Muitos salvamentos de mídia já estão em andamento. Tente daqui a pouco.");
-        table.put("Translate comments as they load, using TikTok's own translator.",
-                "Traduzir os comentários conforme eles carregam, com o tradutor do próprio TikTok.");
     }
 
     private static void fillPt_rBR13(Map<String, String> table) {
+        table.put("Translate comments as they load, using TikTok's own translator.",
+                "Traduzir os comentários conforme eles carregam, com o tradutor do próprio TikTok.");
         table.put("Transparent",
                 "Transparente");
         table.put("Try a country name, or a two-letter code",
@@ -7074,11 +7082,11 @@ public final class L10nTranslations {
                 "dp");
         table.put("millisecond",
                 "milissegundo");
-        table.put("milliseconds",
-                "milissegundos");
     }
 
     private static void fillPt_rBR14(Map<String, String> table) {
+        table.put("milliseconds",
+                "milissegundos");
         table.put("ms",
                 "ms");
         table.put("or",

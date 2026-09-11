@@ -213,6 +213,9 @@ public final class SettingsBackupPreference extends Preference
                         case VALUE:
                             return "That settings backup holds a value Hushfeed cannot read. "
                                     + "Nothing was altered.";
+                        case LAB_RULES:
+                            return "That settings backup holds more Feature Gate Lab rules than "
+                                    + "the Lab takes. Nothing was altered.";
                         default:
                             return "The settings backup was rejected. Nothing was altered.";
                     }

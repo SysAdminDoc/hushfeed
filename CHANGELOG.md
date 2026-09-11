@@ -40,6 +40,8 @@
 
 * Automatic video advance and Comment sort controls override the setting they read by following the setting's key to the lookup it is handed to. They used to take the first answer after the key, which on a build with another call in between would have been some other value.
 
+* A settings backup carrying more Feature Gate Lab rules than the Lab keeps is refused, and the refusal says so. A hand-edited one used to restore, and after that every backup, every Reset and every Lab change failed because the next copy was too large to write.
+
 * The pre-push check runs the patch module's tests as well as the runtime ones, and treats the version catalog, the settings script, the dependency verification file and the Gradle wrapper as release facts. A push touching only one of those ran no gate at all. A README edit on a clean checkout is no longer blocked by a release check that wanted a built bundle it had just said it didn't need.
 
 * The device scripts read as success when adb refused an install, chose the clean APK by file size, could carry one dex2oat exit code over to the next run, left gigabytes of unpacked APK behind, and wrote an empty screenshot when the capture failed. Each of those is fixed. The verification probe compiles again and holds its broadcasts to the DUMP permission, which the shell has and an ordinary app can only be given over adb.

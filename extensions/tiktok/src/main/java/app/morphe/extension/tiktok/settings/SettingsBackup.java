@@ -52,6 +52,8 @@ public final class SettingsBackup {
         SCHEMA,
         INCOMPLETE,
         VALUE,
+        /** More Feature Gate Lab rules than the Lab keeps, which only a hand-edited file has. */
+        LAB_RULES,
         UNKNOWN
     }
 
@@ -449,6 +451,12 @@ public final class SettingsBackup {
             // Leaving the Lab exactly as it is, rather than clearing it: the backup says nothing
             // about this TikTok build, so it is not evidence that the user wanted no rules.
             return new Snapshot(updates, null, false, false, false, absent);
+        }
+        // Refused by name before the rules are read, so the reader hears what was wrong with
+        // the file rather than the unexplained rejection a parse failure would give.
+        JSONArray labRules = lab.optJSONArray("rules");
+        if (labRules != null && labRules.length() > FeatureGateLabStore.MAX_RULES) {
+            throw new RejectedBackup(Reason.LAB_RULES, "Too many Feature Gate Lab rules");
         }
         return new Snapshot(updates, FeatureGateLabStore.parseSettings(lab),
                 lab.getBoolean("master"), lab.getBoolean("acknowledged"), true, absent);
