@@ -10,7 +10,9 @@ import android.widget.ListView;
 
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.BaseSettings;
+import app.morphe.extension.tiktok.SettingsContextRule;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -22,6 +24,8 @@ import org.robolectric.shadows.ShadowAlertDialog;
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
 public class LogExportFilterPreferenceTest {
+    @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
+
     @Test
     public void clearingEveryKindLeavesNothingToApply() {
         try (var controller = Robolectric.buildActivity(Activity.class).setup()) {
