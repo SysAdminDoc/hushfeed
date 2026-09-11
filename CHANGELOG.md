@@ -22,7 +22,7 @@
 
 * Resume videos after scrolling no longer writes three of TikTok's internal class names into the code it adds. Those names only mean the right thing on 46.2.3. On a newer TikTok they belong to other classes, so the patch applied without complaint there and the first video played to the end with the switch on would have stopped the app. It now reads where TikTok keeps its playback positions off TikTok's own code, and refuses a build where that doesn't add up.
 
-* Comment tools reads the reply row's model off TikTok's own code too, instead of naming it. The search box above the comments uses that model to keep a collapsed reply row collapsed, and all four of the names it needs are different on a newer TikTok.
+* Comment tools reads the reply row's model off TikTok's own code too, instead of naming it. The search box above the comments uses that model to keep a collapsed reply row collapsed, and three of the four names it needs are different on a newer TikTok.
 
 * The thumbs down that Comment tools turns into a block button is found by what it does now. TikTok installs the like and the dislike touch handlers back to back, and the patch used to take the second of the two by the name of the view it sat on. It now follows each handler to the code that runs on a touch and takes the one that asks whether the comment is disliked, so the block gesture can't end up on the like button if the two ever swap places. The same change lets Comment tools apply to TikTok 46.7.3 and 46.8.3, where it used to fail.
 
