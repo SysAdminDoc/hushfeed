@@ -135,6 +135,7 @@ public class LogExportFilterPreference extends Preference {
                         checked[0] = false;
                         alertDialog.getListView().setItemChecked(0, false);
                     }
+                    applyWhenSomethingIsChosen(alertDialog, checked);
                 })
                 .setPositiveButton(positiveText(), (dialog, which) -> {
                     BaseSettings.DEBUG_LOG_FILTERS.save(serialize(checked));
@@ -143,6 +144,19 @@ public class LogExportFilterPreference extends Preference {
                 .setNegativeButton(negativeText(), null)
                 .show();
         onDialogShown(shownDialog);
+        applyWhenSomethingIsChosen(shownDialog, checked);
+    }
+
+    /**
+     * Apply only takes a choice. With every box cleared it used to save "all", and the row then
+     * said it included every diagnostic event, the opposite of what was just chosen.
+     */
+    private static void applyWhenSomethingIsChosen(AlertDialog dialog, boolean[] checked) {
+        android.widget.Button apply = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        if (apply == null) return;
+        boolean any = false;
+        for (boolean value : checked) any |= value;
+        apply.setEnabled(any);
     }
 
     protected void onDialogShown(AlertDialog dialog) {

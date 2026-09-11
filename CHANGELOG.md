@@ -34,6 +34,8 @@
 
 * A crash report that was being written when the app died is read back from the last whole copy. It used to look as though no crash had been saved.
 
+* The included diagnostics picker won't apply with every kind cleared. It used to save that as all events and then say it included all of them.
+
 * The pre-push check runs the patch module's tests as well as the runtime ones, and treats the version catalog, the settings script, the dependency verification file and the Gradle wrapper as release facts. A push touching only one of those ran no gate at all. A README edit on a clean checkout is no longer blocked by a release check that wanted a built bundle it had just said it didn't need.
 
 * The device scripts read as success when adb refused an install, chose the clean APK by file size, could carry one dex2oat exit code over to the next run, left gigabytes of unpacked APK behind, and wrote an empty screenshot when the capture failed. Each of those is fixed. The verification probe compiles again and holds its broadcasts to the DUMP permission, which the shell has and an ordinary app can only be given over adb.
