@@ -76,11 +76,8 @@ val openExternalLinksPatch = bytecodePatch(
         }
         // Past index 0 a local can be live: whatever the host loaded before super.onCreate
         // and reads after it. The register is one nothing is holding at that point, not v0.
+        // Only move-result and if-eqz name it, and both reach v255, so any free register does.
         val sparkResult = SparkActivityOnCreateFingerprint.method.findFreeRegister(superOnCreateIndex + 1)
-        check(sparkResult <= 15) {
-            "Open links in external browser: no register below v16 is free after SparkActivity's " +
-                "super.onCreate, and the branch below cannot name v$sparkResult."
-        }
         SparkActivityOnCreateFingerprint.method.addInstructionsWithLabels(
             superOnCreateIndex + 1,
             """

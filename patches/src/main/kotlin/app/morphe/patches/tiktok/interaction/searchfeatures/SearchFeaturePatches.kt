@@ -36,15 +36,13 @@ private fun BytecodePatchContext.patchBooleanGate(
         }
         returns.asReversed()
             .forEach { returnIndex ->
+                // The range form names any register a return can hold, so a wide frame is no
+                // reason to refuse the gate.
                 val register = getInstruction<OneRegisterInstruction>(returnIndex).registerA
-                check(register <= 15) {
-                    "Search features: $definingClass->$name returns from v$register, past what " +
-                        "the plain invoke can name."
-                }
                 addInstructions(
                     returnIndex,
                     """
-                        invoke-static {v$register}, $FEATURE_CONTROLS_DESCRIPTOR->$extensionMethod(Z)Z
+                        invoke-static/range {v$register .. v$register}, $FEATURE_CONTROLS_DESCRIPTOR->$extensionMethod(Z)Z
                         move-result v$register
                     """,
                 )

@@ -30,6 +30,8 @@
 
 * The Hook status row in Hushfeed's debug settings says so when a build has renamed the bottom navigation tabs. The block button relies on the Home tab to tell the feed from other screens, and on a build without it the button quietly stopped hiding itself off the feed.
 
+* Search features, Allow Duet and Stitch and Open links in external browser no longer refuse a build just because the value they read sits in a high register. They use the instruction forms that reach it.
+
 * The pre-push check runs the patch module's tests as well as the runtime ones, and treats the version catalog, the settings script, the dependency verification file and the Gradle wrapper as release facts. A push touching only one of those ran no gate at all. A README edit on a clean checkout is no longer blocked by a release check that wanted a built bundle it had just said it didn't need.
 
 * The device scripts read as success when adb refused an install, chose the clean APK by file size, could carry one dex2oat exit code over to the next run, left gigabytes of unpacked APK behind, and wrote an empty screenshot when the capture failed. Each of those is fixed. The verification probe compiles again and holds its broadcasts to the DUMP permission, which the shell has and an ordinary app can only be given over adb.

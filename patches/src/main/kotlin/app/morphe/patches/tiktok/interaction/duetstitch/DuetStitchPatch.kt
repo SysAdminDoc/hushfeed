@@ -69,15 +69,12 @@ val duetStitchPatch = bytecodePatch(
                     "Allow Duet and Stitch: ${fingerprint.name} does not return a value."
                 }
                 returns.asReversed().forEach { index ->
+                    // The range form names any register a return can hold.
                     val setting = getInstruction<OneRegisterInstruction>(index).registerA
-                    check(setting <= 15) {
-                        "Allow Duet and Stitch: ${fingerprint.name} returns from v$setting, " +
-                            "past what the plain invoke below can name."
-                    }
                     addInstructions(
                         index,
                         """
-                            invoke-static { v$setting }, $EXTENSION->setting(I)I
+                            invoke-static/range { v$setting .. v$setting }, $EXTENSION->setting(I)I
                             move-result v$setting
                         """,
                     )
