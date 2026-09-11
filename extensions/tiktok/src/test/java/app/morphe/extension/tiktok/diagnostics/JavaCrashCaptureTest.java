@@ -92,6 +92,21 @@ public class JavaCrashCaptureTest {
         assertTrue(report.contains("[url omitted]"));
     }
 
+    @Test public void aWriteCutShortLeavesTheLastWholeReportReadable() throws Exception {
+        var context = org.robolectric.RuntimeEnvironment.getApplication();
+        String whole = "schema: 1\ncomplete: true\nthe last whole report\n";
+        LogBufferManager.persistCrashReport(context, whole);
+        // What a death in the middle of the next write leaves behind: AtomicFile moved the good
+        // copy aside to .bak before it began, and the base file holds the start of the new one.
+        java.io.File base = new java.io.File(context.getFilesDir(), "morphe_java_crash_report_v1.txt");
+        java.io.File backup = new java.io.File(base.getPath() + ".bak");
+        assertTrue(base.renameTo(backup));
+        java.nio.file.Files.write(base.toPath(), "schema: 1\ncomp".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+
+        assertEquals(whole, LogBufferManager.readCrashReport(context));
+        assertFalse("the half written copy is gone once the whole one is back", backup.exists());
+    }
+
     @Test public void aReportPastTheCeilingSaysSoAndIsCutOnACharacter() throws Exception {
         var context = org.robolectric.RuntimeEnvironment.getApplication();
         // Well past 64,000 bytes, and every character two bytes wide, so a cut at the byte

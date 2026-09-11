@@ -471,12 +471,17 @@ public final class LogBufferManager {
 
     private static String readCrashReport(Context context, String fileName) {
         if (context == null) return "";
-        File file = new File(context.getFilesDir(), fileName);
-        if (!file.isFile() || file.length() <= 0 || file.length() > CRASH_MAX_BYTES) return "";
+        AtomicFile atomicFile = new AtomicFile(new File(context.getFilesDir(), fileName));
 
         synchronized (CRASH_FILE_LOCK) {
-            try (FileInputStream input = new FileInputStream(file)) {
-                byte[] data = new byte[(int) file.length()];
+            // Read through the AtomicFile the report was written with. A process that died in
+            // the middle of a write left the last whole report in the .bak file, which openRead()
+            // puts back before it opens anything; reading the base file directly read the half
+            // written one, or nothing at all, as though no crash had been saved.
+            try (FileInputStream input = atomicFile.openRead()) {
+                long length = atomicFile.getBaseFile().length();
+                if (length <= 0 || length > CRASH_MAX_BYTES) return "";
+                byte[] data = new byte[(int) length];
                 int offset = 0;
                 while (offset < data.length) {
                     int read = input.read(data, offset, data.length - offset);
