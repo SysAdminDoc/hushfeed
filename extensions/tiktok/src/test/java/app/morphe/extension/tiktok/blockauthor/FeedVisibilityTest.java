@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import android.app.Activity;
 import android.view.View;
+import app.morphe.extension.shared.diagnostics.HookStatus;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -35,6 +36,29 @@ public class FeedVisibilityTest {
             video.setVisibility(View.VISIBLE);
             FeedVisibility.onDetailDestroyed(page);
             assertFalse(FeedVisibility.isDetailVisible());
+        }
+    }
+
+    /**
+     * What a reshuffled resource table looks like from here: the tab names resolve to nothing.
+     * The block button then cannot tell the feed from any other screen, and the Hook status row
+     * has to say so, the way the caption, comment, inbox and share sheet lookups do.
+     */
+    @Test public void aBuildWithoutTheTabIdsSaysSoOnTheHookStatusRow() {
+        try (var controller = Robolectric.buildActivity(Activity.class).setup().visible()) {
+            Activity activity = controller.get();
+            HookStatus.clear();
+            FeedVisibility.resolveForTests(activity.getPackageName(), "o1k", 0);
+            FeedVisibility.resolveForTests(activity.getPackageName(), "o1l", 0);
+
+            assertNull(FeedVisibility.homeTabView(activity));
+            assertNull(FeedVisibility.inboxTabView(activity));
+
+            assertEquals(java.util.Arrays.asList("view id 'o1k'", "view id 'o1l'"),
+                    HookStatus.missing("bottom navigation"));
+            assertTrue(String.join(" ", HookStatus.report()).contains("bottom navigation"));
+        } finally {
+            HookStatus.clear();
         }
     }
 }

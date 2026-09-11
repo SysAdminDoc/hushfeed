@@ -9,6 +9,7 @@ package app.morphe.extension.tiktok.blockauthor;
 import android.app.Activity;
 import android.view.View;
 
+import app.morphe.extension.shared.diagnostics.HookStatus;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.ResourceIdCache;
 
@@ -46,6 +47,13 @@ public final class FeedVisibility {
      */
     private static final ResourceIdCache IDS = new ResourceIdCache();
     private static volatile boolean warnedMissing;
+
+    /**
+     * The Hook status row these tabs are reported under. A build that renames the ids used to
+     * say nothing here: the block button just stopped hiding itself off the feed, and every
+     * sibling lookup of this kind already said which id was gone.
+     */
+    private static final String FAMILY = "bottom navigation";
 
     // Fragment instances are weak keys, and values never retain the fragment or its view.
     // Lifecycle hooks are injected into TikTok's kept DetailPageFragment methods.
@@ -153,9 +161,11 @@ public final class FeedVisibility {
             int id = IDS.resolve(activity.getResources(), activity.getPackageName(),
                     resourceName, false);
             if (id == 0) {
+                HookStatus.missingViewId(FAMILY, resourceName);
                 if (HOME_TAB_RESOURCE_NAME.equals(resourceName)) warnMissing();
                 return null;
             }
+            HookStatus.bound(FAMILY, resourceName);
 
             View tab = activity.findViewById(id);
             if (tab == null) {
@@ -168,6 +178,11 @@ public final class FeedVisibility {
             Logger.printException(() -> "Could not resolve the " + resourceName + " tab", ex);
             return null;
         }
+    }
+
+    /** Stands in for this build's resource table in tests. */
+    static void resolveForTests(String packageName, String name, int id) {
+        IDS.putForTests(packageName, name, id);
     }
 
     /** API 24's own is above the payload's floor. */
