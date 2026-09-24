@@ -14,6 +14,12 @@
     run answers "which patches still apply on this build" rather than being refused before it
     starts. The package still has to be the catalog's.
 
+    A clean run then holds the patched APK's resource table to the stock one with
+    ResourceTableCheck.java: every resource of every package has to resolve by its id with its
+    type and each configuration's value, and every file and reference the patched values name
+    has to be there. A failure names the id. What the patches rewrote, what the rebuild renamed
+    and what was added go in a report beside the result file.
+
 .EXAMPLE
     scripts/verify-all-patches.ps1 -Apk C:\path\to\native-fixture.apk `
         -DesktopJar C:\path\to\morphe-desktop.jar -WorkDir C:\path\to\scratch
@@ -138,8 +144,22 @@ try {
     if ($cliExitCode -ne 0) { Write-Warning "The desktop CLI exited with $cliExitCode." }
     if (-not $validation.Valid) { Write-Warning "[verify] $($validation.Reason)" }
     if ($cliExitCode -eq 0 -and $validation.Valid) {
-        Write-Host '[verify] success: every requested patch applied to a valid APK.'
-        $exitCode = 0
+        # The rebuilt resource table against the stock one. A resource patch has Morphe decode and
+        # rebuild all twelve packages of TikTok's table, and an id the rebuild loses only fails
+        # when TikTok inflates it (upstream #84, layout 0x7e03004d in the search package).
+        $resourceReport = Resolve-WithinRoot -Path (Join-Path $workRoot "verify-all-resources-$runId.txt") -Root $workRoot
+        $global:LASTEXITCODE = 0
+        $resourceOutput = @(& $Java '-Xmx4g' '-cp' $DesktopJar (Join-Path $PSScriptRoot 'ResourceTableCheck.java') `
+            $Apk $out $resourceReport 2>&1)
+        $resourceExitCode = $LASTEXITCODE
+        $resourceOutput | ForEach-Object { Write-Host "[verify] $_" }
+        Write-Host "[verify] resource report: $resourceReport"
+        if ($resourceExitCode -eq 0) {
+            Write-Host '[verify] success: every requested patch applied to a valid APK whose resource table holds every stock resource.'
+            $exitCode = 0
+        } else {
+            Write-Warning "[verify] the patched resource table failed its check against the stock one (exit $resourceExitCode)."
+        }
     }
 } finally {
     Remove-GeneratedPath -Path $runDir -Root $workRoot

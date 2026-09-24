@@ -34,12 +34,15 @@ so update them in the same commit that moves `patches-bundle.json` to the new re
 bundle and `SHA256SUMS.txt`, run it again with `-VerifyPublishedAsset` to check the indexed URL,
 the local artifact hash and the hosted checksum entry. The local release helpers are
 `scripts/gen-l10n.py`, `scripts/verify-all-patches.ps1`, `scripts/patch-for-device.ps1` and
-`scripts/measure-patch-heap.ps1`; the last three need a Morphe desktop jar and a fixture APK.
+`scripts/measure-patch-heap.ps1`. The last three need a Morphe desktop jar and a fixture APK.
 Anything more than one of them needs goes in `scripts/common.ps1`, which they all dot-source:
 the work-directory path guard, the cleanup that refuses to delete outside it, the version read
 and the desktop CLI lookup live there rather than in four copies that drift apart. Run
 `scripts/test-script-contracts.ps1` after changing a PowerShell helper. The local pre-push hook
-runs it automatically for files under `scripts/`.
+runs it automatically for files under `scripts/`. A change to `scripts/ResourceTableCheck.java`
+or `scripts/verify-all-patches.ps1` also runs `scripts/test-resource-table-check.ps1`, which
+builds small APKs with the SDK's aapt2 and checks that a lost id, file, style item or reference
+fails and names the id.
 The jar runs on JDK 21 or newer, so set `HUSHFEED_JAVA` or `JAVA_HOME` if that is not the `java`
 first on your PATH. An explicit `-Java` directory must contain `bin/java.exe` or `bin/java`.
 

@@ -282,6 +282,14 @@ try {
     $touchesInjectedRegisterVerifier = @($paths | Where-Object {
         $_ -in $injectedRegisterVerifierPaths
     }).Count -gt 0
+    $resourceTableCheckPaths = @(
+        'scripts/ResourceTableCheck.java',
+        'scripts/test-resource-table-check.ps1',
+        'scripts/verify-all-patches.ps1'
+    )
+    $touchesResourceTableCheck = @($paths | Where-Object {
+        $_ -in $resourceTableCheckPaths
+    }).Count -gt 0
     $injectedRegisterDevicePaths = @(
         'scripts/injected-register-device.ps1',
         'scripts/test-injected-register-device.ps1',
@@ -353,13 +361,18 @@ try {
     }
 
     if ($touchesScripts) {
-        # Script, notice, failure message. The two injected-register suites run only when their
-        # own files moved; each one is the pushed commit's copy, run against that commit.
+        # Script, notice, failure message. The two injected-register suites and the resource
+        # table check's run only when their own files moved; each one is the pushed commit's
+        # copy, run against that commit.
         $suites = @(, @('scripts/test-script-contracts.ps1', 'scripts changed, running their contract tests',
             'The script contract tests did not pass.'))
         if ($touchesInjectedRegisterVerifier) {
             $suites += , @('scripts/test-injected-registers.ps1', 'injected-register verifier changed, running its fixture tests',
                 'The injected-register verifier fixture tests did not pass.')
+        }
+        if ($touchesResourceTableCheck) {
+            $suites += , @('scripts/test-resource-table-check.ps1', 'resource table check changed, running its fixture tests',
+                'The resource table check fixture tests did not pass.')
         }
         if ($touchesInjectedRegisterDevice) {
             $suites += , @('scripts/test-injected-register-device.ps1', 'injected-register device helper changed, running its cleanup fixtures',
