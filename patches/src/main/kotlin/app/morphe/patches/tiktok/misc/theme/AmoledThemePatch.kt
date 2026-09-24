@@ -43,10 +43,9 @@ val amoledThemePatch = resourcePatch(
         if (!Regex("#[0-9a-fA-F]{6}|#[fF]{2}[0-9a-fA-F]{6}").matches(color)) {
             throw PatchException("Background color must be opaque #RRGGBB or #FFRRGGBB")
         }
-        // Verified dark-only palette in 46.2.3 and 47.0.3. Window backgrounds already resolve
-        // attr/fx_ to a40; the light styles use their separate light palette. a4a is the
-        // fifth member of the same dark token block (attr/fxx), read by 48 layouts.
-        val backgrounds = setOf("a3y", "a40", "a41", "a43", "a4a")
+        // The dark token block's background grays under this build's own names. Read before any
+        // file is touched: a build whose palette was never read is refused with nothing changed.
+        val backgrounds = darkBackgroundColors(packageMetadata.versionName)
         val found = mutableSetOf<String>()
         val styleItemsFound = mutableSetOf<String>()
         val valuesDirectories = get("res").listFiles().orEmpty()
@@ -129,6 +128,40 @@ internal fun renamedPathCollisions(
     // The folder check comes first and is free: a clash can only sit where the decoder writes,
     // and on a clean input none of the archive's folders is one of those.
     name.substringBeforeLast('/', "") in decodedDirectories && aliasOf(name) != name && isDecoded(name)
+}
+
+/**
+ * The dark theme's background grays, per build: the opaque dark grays of the color token block
+ * the dark app themes set (attrs fx8 to fyf on 46.2.3, g3w to g54 on 47.0.3), which the surfaces
+ * read. The names are each build's own and move. 47.0.3 added a color ahead of the block, so
+ * every gray moved one name along, and 46.x's names there are the brand red a4a, the orange a3y
+ * and the see-through white overlays a40 and a43, which the patch painted black until this was
+ * read off the fixture (AmoledPaletteTest holds every fixture's block to its entry here). The
+ * block's pure black is a token of its own and stays. The fifth gray (fxx, g4l on 47.0.3) is
+ * the one 48 layouts read on 46.2.3 and 50 on 47.0.3.
+ */
+internal val DARK_BACKGROUND_COLORS: Map<String, Set<String>> = run {
+    val beforeFortySeven = setOf("a3y", "a40", "a41", "a43", "a4a")
+    linkedMapOf(
+        "46.2.3" to beforeFortySeven,
+        "46.7.3" to beforeFortySeven,
+        "46.8.3" to beforeFortySeven,
+        "46.9.3" to beforeFortySeven,
+        "47.0.3" to setOf("a3z", "a41", "a42", "a44", "a4b"),
+    )
+}
+
+/** This build's background grays, or a refusal: a name carried over from another build is a guess. */
+internal fun darkBackgroundColors(versionName: String?): Set<String> =
+    versionName?.let { DARK_BACKGROUND_COLORS[it] } ?: throw PatchException(unreadPaletteRefusal(versionName))
+
+internal fun unreadPaletteRefusal(versionName: String?): String {
+    val build = if (versionName.isNullOrBlank()) "this TikTok build" else "TikTok $versionName"
+    val known = DARK_BACKGROUND_COLORS.keys.toList()
+    return "AMOLED dark theme hasn't read the dark palette of $build, so nothing was changed. " +
+        "TikTok renames its colors from one build to the next, and a name taken from another " +
+        "build can paint an accent or an overlay black. The palette is known for TikTok " +
+        known.dropLast(1).joinToString(", ") + " and " + known.last() + "."
 }
 
 /** The builds this patch is declared for, where the sheet style names are known to be right. */

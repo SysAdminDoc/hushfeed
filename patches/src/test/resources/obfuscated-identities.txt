@@ -93,7 +93,11 @@ patches/src/main/kotlin/app/morphe/patches/tiktok/misc/settings/SettingsPatch.kt
 patches/src/main/kotlin/app/morphe/patches/tiktok/misc/settings/SettingsPatch.kt|l0
 patches/src/main/kotlin/app/morphe/patches/tiktok/misc/settings/SettingsPatch.kt|l1
 patches/src/main/kotlin/app/morphe/patches/tiktok/misc/theme/AmoledThemePatch.kt|a3y
+patches/src/main/kotlin/app/morphe/patches/tiktok/misc/theme/AmoledThemePatch.kt|a3z
 patches/src/main/kotlin/app/morphe/patches/tiktok/misc/theme/AmoledThemePatch.kt|a40
 patches/src/main/kotlin/app/morphe/patches/tiktok/misc/theme/AmoledThemePatch.kt|a41
+patches/src/main/kotlin/app/morphe/patches/tiktok/misc/theme/AmoledThemePatch.kt|a42
 patches/src/main/kotlin/app/morphe/patches/tiktok/misc/theme/AmoledThemePatch.kt|a43
+patches/src/main/kotlin/app/morphe/patches/tiktok/misc/theme/AmoledThemePatch.kt|a44
 patches/src/main/kotlin/app/morphe/patches/tiktok/misc/theme/AmoledThemePatch.kt|a4a
+patches/src/main/kotlin/app/morphe/patches/tiktok/misc/theme/AmoledThemePatch.kt|a4b

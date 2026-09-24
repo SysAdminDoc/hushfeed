@@ -61,6 +61,22 @@ class AmoledStyleItemsTest {
         assertEquals(setOf("agk", "c3"), sheetStyleItems(null, setOf("47.0.3")))
     }
 
+    /** 47.0.3 moved every gray one name along; the 46.x names there are an accent and overlays. */
+    @Test
+    fun `the palette is each build's own and a build never read is refused`() {
+        assertEquals(setOf("a3z", "a41", "a42", "a44", "a4b"), darkBackgroundColors("47.0.3"))
+        listOf("46.2.3", "46.7.3", "46.8.3", "46.9.3").forEach { version ->
+            assertEquals(version, setOf("a3y", "a40", "a41", "a43", "a4a"), darkBackgroundColors(version))
+        }
+        declaredVersions().forEach { assertTrue("no palette for declared $it", darkBackgroundColors(it).size == 5) }
+        assertRefused { darkBackgroundColors("47.1.2") }
+        assertRefused { darkBackgroundColors(null) }
+        val refusal = unreadPaletteRefusal("47.1.2")
+        assertTrue(refusal, refusal.contains("TikTok 47.1.2") && refusal.contains("nothing was changed"))
+        assertTrue(refusal, refusal.endsWith("46.2.3, 46.7.3, 46.8.3, 46.9.3 and 47.0.3."))
+        assertTrue(unreadPaletteRefusal(null).contains("this TikTok build"))
+    }
+
     private fun assertRefused(check: () -> Unit) {
         try {
             check()
