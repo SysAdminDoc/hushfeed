@@ -5,6 +5,7 @@
 package app.morphe.patches.tiktok.misc.settings
 
 import app.morphe.Fixtures
+import app.morphe.takes
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -70,14 +71,14 @@ class LaunchCrashKeepListTest {
         assertTrue("the declared 47.0.3 fixture is missing", apks.any { it.name.contains("47.0.3") })
         for (apk in apks) {
             val container = DexFileFactory.loadDexContainer(apk, Opcodes.getDefault())
+            // The patch's own fingerprint picks the initialiser, so a string it gains that a build
+            // lacks fails here and not only in a full apply.
             val owners = container.dexEntryNames.flatMap { entry ->
                 container.getEntry(entry)!!.dexFile.classes.filter { classDef ->
-                    classDef.methods.any { method ->
-                        method.name == "<clinit>" && method.hasStrings("launch_crash_intercept_sp", "safe_mode_config_sp")
-                    }
+                    classDef.methods.any { method -> LaunchCrashKeepListFingerprint.takes(method, classDef) }
                 }
             }
-            assertEquals("${apk.name}: one keep-list owner", 1, owners.size)
+            assertEquals("${apk.name}: classes whose initialiser LaunchCrashKeepListFingerprint takes", 1, owners.size)
             val owner = owners.single()
             val init = MutableMethod(owner.methods.single { it.name == "<clinit>" })
 
