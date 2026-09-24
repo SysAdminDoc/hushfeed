@@ -4,10 +4,12 @@
 
 .DESCRIPTION
     The stock APK is a feature package with id 0x7e, the shape of TikTok's df_search_biz whose
-    layout/bj went missing upstream (#84): two colors, a theme and one layout. Each patched APK
-    moves one thing. An unchanged table, a rewritten color and a renamed entry pass and are
-    reported; a lost layout, a layout file missing from the archive, a lost style item and a
-    reference to nothing fail, and each failure names the id.
+    layout/bj went missing upstream (#84): two colors (one with a night value), a theme on a base
+    theme, and one layout. Each patched APK moves one thing. An unchanged table, a rewritten color
+    and a renamed entry pass and are reported. A lost layout, a layout file missing from the
+    archive, a changed layout file, a lost style item, a changed parent, a lost night value, a
+    reference to nothing, a renamed type and a missing package fail, and each failure names what
+    it lost.
 #>
 [CmdletBinding()]
 param(
@@ -48,9 +50,17 @@ $colors = @'
     <color name="surface">#ff121212</color>
 </resources>
 '@
+$nightColors = @'
+<resources>
+    <color name="surface">#ff000000</color>
+</resources>
+'@
 $styles = @'
 <resources>
-    <style name="SearchTheme">
+    <style name="BaseTheme">
+        <item name="android:windowNoTitle">true</item>
+    </style>
+    <style name="SearchTheme" parent="BaseTheme">
         <item name="android:windowBackground">@color/surface</item>
         <item name="android:textColorPrimary">@color/accent</item>
     </style>
@@ -67,7 +77,7 @@ $layout = @'
     chose are written out; with -StableIds every build keeps the stock build's ids.
 #>
 function New-ResourceApk {
-    param([string]$Name, [System.Collections.IDictionary]$Files, [string]$EmitIds, [string]$StableIds)
+    param([string]$Name, [System.Collections.IDictionary]$Files, [string]$EmitIds, [string]$StableIds, [string]$PackageId = '0x7e')
     $dir = Join-Path $caseRoot $Name
     foreach ($entry in $Files.GetEnumerator()) {
         $path = Join-Path $dir ($entry.Key -replace '/', [System.IO.Path]::DirectorySeparatorChar)
@@ -81,7 +91,7 @@ function New-ResourceApk {
         -Description "aapt2 compile for $Name"
     $apk = Join-Path $caseRoot "$Name.apk"
     $link = @('link', '-o', $apk, '-I', $androidJar, '--manifest', $manifestPath,
-        '--package-id', '0x7e', '--allow-reserved-package-id')
+        '--package-id', $PackageId, '--allow-reserved-package-id')
     if ($EmitIds) { $link += @('--emit-ids', $EmitIds) }
     if ($StableIds) { $link += @('--stable-ids', $StableIds) }
     Invoke-Checked -Program $Aapt2 -Arguments ($link + @($compiled)) -Description "aapt2 link for $Name"
@@ -97,6 +107,28 @@ function Copy-ApkWith {
     return $apk
 }
 
+function Edit-Table {
+    param([string]$Name, [byte[]]$Find, [byte[]]$Replace, [string]$What)
+    return Copy-ApkWith -From $stockApk -Name $Name -Change {
+        param($archive)
+        $entry = $archive.GetEntry('resources.arsc')
+        $stream = $entry.Open()
+        try { $buffer = [System.IO.MemoryStream]::new(); $stream.CopyTo($buffer); $bytes = $buffer.ToArray() } finally { $stream.Dispose() }
+        $hits = @()
+        for ($i = 0; $i -le $bytes.Length - $Find.Length; $i++) {
+            $match = $true
+            for ($j = 0; $j -lt $Find.Length; $j++) { if ($bytes[$i + $j] -ne $Find[$j]) { $match = $false; break } }
+            if ($match) { $hits += $i }
+        }
+        if ($hits.Count -ne 1) { throw "expected one $What in the table, found $($hits.Count)" }
+        $Replace.CopyTo($bytes, $hits[0])
+        $entry.Delete()
+        $replacement = $archive.CreateEntry('resources.arsc', [System.IO.Compression.CompressionLevel]::NoCompression)
+        $out = $replacement.Open()
+        try { $out.Write($bytes, 0, $bytes.Length) } finally { $out.Dispose() }
+    }
+}
+
 function Invoke-Check {
     param([string]$Patched, [string]$Name)
     $report = Join-Path $caseRoot "$Name-report.txt"
@@ -106,11 +138,13 @@ function Invoke-Check {
     [pscustomobject]@{ ExitCode = $LASTEXITCODE; Output = ($output -join "`n"); Report = $report }
 }
 
+# The call lines themselves, not any mention: the help text names the check too, and the gate's
+# path list names this suite without running it.
 $verifyText = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'verify-all-patches.ps1') -Raw
-Assert-True ($verifyText -match 'ResourceTableCheck\.java') `
-    'verify-all-patches.ps1 does not hold the patched resource table to the stock one.'
+Assert-True ($verifyText -match '(?m)^[^#\r\n]*&\s*\$Java\b[^\r\n]*ResourceTableCheck\.java') `
+    'verify-all-patches.ps1 does not run ResourceTableCheck.java.'
 $prePushText = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'pre-push.ps1') -Raw
-Assert-True ($prePushText -match 'scripts/test-resource-table-check\.ps1') `
+Assert-True ($prePushText -match "(?m)^\s*\`$suites \+= , @\('scripts/test-resource-table-check\.ps1'") `
     'The push gate does not run the resource table check fixtures.'
 
 $Java = Resolve-Java -Explicit $Java
@@ -139,6 +173,7 @@ try {
     $ids = Join-Path $caseRoot 'stock-ids.txt'
     $stockFiles = [ordered]@{
         'res/values/colors.xml' = $colors
+        'res/values-night/colors.xml' = $nightColors
         'res/values/styles.xml' = $styles
         'res/layout/bj.xml' = $layout
     }
@@ -158,6 +193,7 @@ try {
         'res/values/colors.xml' = $colors -replace '#ffff3b5c', '#ff000000'
         'res/values/styles.xml' = $styles
         'res/layout/bj.xml' = $layout
+        'res/values-night/colors.xml' = $nightColors
     }
     $black = Invoke-Check -Patched (New-ResourceApk -Name 'rewritten' -Files $blackFiles -StableIds $ids) -Name 'rewritten'
     Assert-True ($black.ExitCode -eq 0) "A rewritten color failed the check.`n$($black.Output)"
@@ -170,6 +206,7 @@ try {
         'res/values/colors.xml' = $colors -replace '"accent"', '"accent_renamed"'
         'res/values/styles.xml' = $styles -replace '@color/accent<', '@color/accent_renamed<'
         'res/layout/bj.xml' = $layout
+        'res/values-night/colors.xml' = $nightColors
     }
     $renamed = Invoke-Check -Patched (New-ResourceApk -Name 'renamed' -Files $renamedFiles -StableIds $renamedIds) -Name 'renamed'
     Assert-True ($renamed.ExitCode -eq 0) "A renamed entry that keeps its id failed.`n$($renamed.Output)"
@@ -179,6 +216,7 @@ try {
     $noLayoutFiles = [ordered]@{
         'res/values/colors.xml' = $colors
         'res/values/styles.xml' = $styles
+        'res/values-night/colors.xml' = $nightColors
     }
     $lost = Invoke-Check -Patched (New-ResourceApk -Name 'lost-layout' -Files $noLayoutFiles -StableIds $ids) -Name 'lost-layout'
     Assert-True ($lost.ExitCode -eq 1) "A table that lost layout/bj passed.`n$($lost.Output)"
@@ -202,11 +240,69 @@ try {
         'res/values/colors.xml' = $colors
         'res/values/styles.xml' = $styles -replace '(?m)^\s*<item name="android:textColorPrimary">@color/accent</item>\r?\n', ''
         'res/layout/bj.xml' = $layout
+        'res/values-night/colors.xml' = $nightColors
     }
     $item = Invoke-Check -Patched (New-ResourceApk -Name 'lost-item' -Files $noItemFiles -StableIds $ids) -Name 'lost-item'
     Assert-True ($item.ExitCode -eq 1) "A style that lost an item passed.`n$($item.Output)"
     Assert-True ($item.Output -match ([regex]::Escape("FAIL $($idOf['style/SearchTheme']) style/SearchTheme [default] item 0x01010036") + '.*the item is gone')) `
         "The lost item's failure did not name the style and the attr.`n$($item.Output)"
+
+    $noNightFiles = [ordered]@{
+        'res/values/colors.xml' = $colors
+        'res/values/styles.xml' = $styles
+        'res/layout/bj.xml' = $layout
+    }
+    $night = Invoke-Check -Patched (New-ResourceApk -Name 'lost-night' -Files $noNightFiles -StableIds $ids) -Name 'lost-night'
+    Assert-True ($night.ExitCode -eq 1) "A color that lost its night value passed.`n$($night.Output)"
+    Assert-True ($night.Output -match ([regex]::Escape("FAIL $($idOf['color/surface']) color/surface [night") + '[^\]]*\]: the value is gone')) `
+        "The lost night value's failure did not name the id and the configuration.`n$($night.Output)"
+
+    $orphanFiles = [ordered]@{
+        'res/values/colors.xml' = $colors
+        'res/values-night/colors.xml' = $nightColors
+        'res/values/styles.xml' = $styles -replace ' parent="BaseTheme"', ''
+        'res/layout/bj.xml' = $layout
+    }
+    $orphan = Invoke-Check -Patched (New-ResourceApk -Name 'lost-parent' -Files $orphanFiles -StableIds $ids) -Name 'lost-parent'
+    Assert-True ($orphan.ExitCode -eq 1) "A style that lost its parent passed.`n$($orphan.Output)"
+    Assert-True ($orphan.Output -match ([regex]::Escape("FAIL $($idOf['style/SearchTheme']) style/SearchTheme [default]: its parent @$($idOf['style/BaseTheme']) became @null"))) `
+        "The lost parent's failure did not name the style and both parents.`n$($orphan.Output)"
+
+    $changedFile = Copy-ApkWith -From $stockApk -Name 'changed-file' -Change {
+        param($archive)
+        $entry = $archive.GetEntry('res/layout/bj.xml')
+        $stream = $entry.Open()
+        try { $buffer = [System.IO.MemoryStream]::new(); $stream.CopyTo($buffer); $bytes = $buffer.ToArray() } finally { $stream.Dispose() }
+        $entry.Delete()
+        $replacement = $archive.CreateEntry('res/layout/bj.xml', [System.IO.Compression.CompressionLevel]::NoCompression)
+        $out = $replacement.Open()
+        try { $out.Write($bytes, 0, $bytes.Length); $out.Write([byte[]](0, 0, 0, 0), 0, 4) } finally { $out.Dispose() }
+    }
+    $changed = Invoke-Check -Patched $changedFile -Name 'changed-file'
+    Assert-True ($changed.ExitCode -eq 1) "A layout file with other bytes passed.`n$($changed.Output)"
+    Assert-True ($changed.Output -match [regex]::Escape("FAIL $($idOf['layout/bj']) layout/bj [default]: res/layout/bj.xml is not the file the stock archive holds for it")) `
+        "The changed file's failure did not name the id and the path.`n$($changed.Output)"
+
+    # A type renamed in the table's own type pool: every color resolves to a type called colox.
+    # The pool is UTF-16 as aapt2 writes type names (length 5, then the characters); UTF-8 is the
+    # other layout a pool can have.
+    try {
+        $typeRenamed = Edit-Table -Name 'renamed-type' -What 'UTF-16 type name "color"' `
+            -Find ([byte[]](5, 0, 99, 0, 111, 0, 108, 0, 111, 0, 114, 0)) -Replace ([byte[]](5, 0, 99, 0, 111, 0, 108, 0, 111, 0, 120, 0))
+    } catch {
+        $typeRenamed = Edit-Table -Name 'renamed-type-utf8' -What 'UTF-8 type name "color"' `
+            -Find ([byte[]](5, 5, 99, 111, 108, 111, 114)) -Replace ([byte[]](5, 5, 99, 111, 108, 111, 120))
+    }
+    $type = Invoke-Check -Patched $typeRenamed -Name 'renamed-type'
+    Assert-True ($type.ExitCode -eq 1) "A table whose color type changed name passed.`n$($type.Output)"
+    Assert-True ($type.Output -match ([regex]::Escape("FAIL $($idOf['color/accent']) color/accent: is colox/accent in the patched table"))) `
+        "The changed type's failure did not name the id and both types.`n$($type.Output)"
+
+    $otherPackage = New-ResourceApk -Name 'other-package' -Files $stockFiles -PackageId '0x7f'
+    $package = Invoke-Check -Patched $otherPackage -Name 'other-package'
+    Assert-True ($package.ExitCode -eq 1) "A table without the stock package passed.`n$($package.Output)"
+    Assert-True ($package.Output -match 'FAIL package 0x7e com\.zhiliaoapp\.musically\.df_search_biz: not in the patched table') `
+        "The missing package's failure did not name the package.`n$($package.Output)"
 
     # A value that points at nothing: the theme's window background, as bytes, moved to an id the
     # table does not have.
