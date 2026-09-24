@@ -359,6 +359,8 @@ The exported report also carries a feed filter table, and that one counts whethe
 
 Feature Gate Lab saves its master switch immediately. Its menu can reset overrides while the switch is off, reset all Lab data, or undo the last reset or import. Imported values stay disabled. The Lab holds up to 1,024 saved rules, and it rejects a save or import that would exceed that limit before anything changes. Reset all Lab data can recover an older oversized store without clearing other Hushfeed settings. Changes run in the background and report their result with a notification. Every filtered list in settings, the hidden creator editor, the share checklist and the Lab shows and announces its current result count. Removing a hidden creator says which entry was removed and moves focus to the next action. The recorder discards an interrupted session before taking the next baseline. Copied recorder reports use Android's sensitive-content flag on supported versions. Reports above 60,000 characters stay off the clipboard and use Save JSON. The undo copy stores Lab configuration privately; full-reset undo also restores captured observations during the same app run. Other patch preferences are unchanged.
 
+The Lab can also bring back a missing See translation link. If captions in another language never show one, TikTok may have turned caption translation off for your account. On the test account two App AB values did that together, `feed_translation_reverse` and `cla_translate_button_weaken_v2`, both at 1. Setting both to 0 and restarting TikTok brought the link back, and either one alone didn't.
+
 <img src="assets/settings/lab.png" alt="Feature Gate Lab with immediate master control and settings menu" width="300" />
 
 <br>
