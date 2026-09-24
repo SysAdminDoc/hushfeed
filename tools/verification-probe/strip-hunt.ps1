@@ -13,6 +13,11 @@
     says. The tally at the end says how often each key came up; an anchor also carries TikTok's
     type number for it.
 
+    The probe reads a video's lists as the app holds them, after Hushfeed's own switches took their
+    kinds out, so a banner a switch removes (the search banner under Hide bottom search bar, for
+    one) never shows up here. The export's CaptionStrip and BottomBanner lines count every kind
+    before any switch acts, so read the probe's report action after a hunt as well.
+
     With -Shots, the first video of each new key other than a place is screenshotted to
     work/strip-hunt/, so a key can be matched with what its strip showed. The pictures show other
     people's videos, and work/ never goes into git.
