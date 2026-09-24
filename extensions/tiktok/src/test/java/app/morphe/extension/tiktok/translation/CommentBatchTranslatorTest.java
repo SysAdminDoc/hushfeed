@@ -491,6 +491,42 @@ public class CommentBatchTranslatorTest {
     }
 
     /** Robolectric advances SystemClock.elapsedRealtime as the paused looper is idled. */
+    @Test public void aBatchTikTokTranslatedOnItsOwnIsJudgedByTheKeywordFilterBeforeItShows() {
+        // The switch is off, so nothing here asked for the batch, but the keyword filter has a
+        // word to look for, and the completion is the one place a translation can be judged
+        // before TikTok writes it into the comment and repaints the cell.
+        Settings.COMMENT_BATCH_TRANSLATION.save(false);
+        Settings.COMMENT_KEYWORD_FILTER.save(true);
+        Settings.COMMENT_BLOCKED_KEYWORDS.save("the");
+        try {
+            Comment comment = new Comment("aid-own", "cid-own");
+            comment.text = "el gato";
+            Anchor anchor = new Anchor(comment, new TranslationContext("aid-own"));
+            View cell = new View(context);
+            cell.setLayoutParams(new android.view.ViewGroup.LayoutParams(
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                    android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
+            CommentBatchTranslator.registerCommentCell(cell, anchor);
+            assertEquals("the switch is off, so nothing should have been asked for",
+                    0, NativeManager.requests);
+            assertEquals("a clean comment's cell was touched", View.VISIBLE, cell.getVisibility());
+            int handled = CommentBatchTranslator.completionsHandledForTests();
+
+            CommentBatchTranslator.onNativeBatchComplete(new Runner(
+                    Arrays.asList(new Translation("cid-own", "the cat")), comment));
+
+            assertEquals("a batch nobody asked for was counted as handled", handled,
+                    CommentBatchTranslator.completionsHandledForTests());
+            assertEquals("the cell showing a blocked translation is still up",
+                    View.GONE, cell.getVisibility());
+            assertEquals(0, cell.getLayoutParams().height);
+        } finally {
+            Settings.COMMENT_KEYWORD_FILTER.save(false);
+            Settings.COMMENT_BLOCKED_KEYWORDS.save("");
+            app.morphe.extension.tiktok.comment.TranslatedCommentFilter.resetForTests();
+        }
+    }
+
     private static void idleFor(long millis) {
         Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(millis));
     }
@@ -653,6 +689,7 @@ public class CommentBatchTranslatorTest {
         private final String aid;
         private final String cid;
         boolean translated;
+        String text;
 
         Comment(String aid, String cid) {
             this.aid = aid;
@@ -663,7 +700,19 @@ public class CommentBatchTranslatorTest {
         public String getAwemeId() { return aid; }
         public String getCid() { return cid; }
         public boolean isTranslated() { return translated; }
+        public String getText() { return text; }
         public String getCommentLanguage() { return "zh"; }
+    }
+
+    /** Stands in for TikTok's TranslationResult, the shape the completion runner carries. */
+    public static final class Translation {
+        public final String contentId;
+        public final String translatedContent;
+
+        Translation(String contentId, String translatedContent) {
+            this.contentId = contentId;
+            this.translatedContent = translatedContent;
+        }
     }
 
     /**
