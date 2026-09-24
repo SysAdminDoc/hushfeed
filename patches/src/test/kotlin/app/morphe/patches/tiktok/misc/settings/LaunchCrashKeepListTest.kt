@@ -40,6 +40,15 @@ class LaunchCrashKeepListTest {
         assertEquals("LIZIZ", store.name)
     }
 
+    /** 46.x's list has no language preferences entry; the launch-crash one finds it all the same. */
+    @Test
+    fun `a list without TikTok's language preferences is found by its launch-crash entry`() {
+        val init = keepListInit(withLanguage = false)
+        keepHushfeedPreferenceFiles(init, listOf(init, sharedPrefsWalker(reads = "LIZIZ")))
+
+        assertEquals("LIZIZ", assertHelperFeedsTheStore(init).name)
+    }
+
     @Test
     fun `a list nothing reads while deleting is refused before anything is written`() {
         val init = keepListInit()
@@ -51,33 +60,38 @@ class LaunchCrashKeepListTest {
         assertEquals("a refused list was still changed", before, init.implementation!!.instructions.map { it.opcode })
     }
 
+    /**
+     * Every fixture, the forced 46.x builds with the declared one: the Settings patch every other
+     * patch depends on starts here, so a build it can't find the list on loses them all.
+     */
     @Test
-    fun `47_0_3's keep-list is the one its shared_prefs walker reads`() {
-        val apks = Fixtures.apks().filter { it.name.contains("47.0.3") }
-        assertEquals("one retained 47.0.3 fixture", 1, apks.size)
-        val container = DexFileFactory.loadDexContainer(apks.single(), Opcodes.getDefault())
-        val owners = container.dexEntryNames.flatMap { entry ->
-            container.getEntry(entry)!!.dexFile.classes.filter { classDef ->
-                classDef.methods.any { method ->
-                    method.name == "<clinit>" &&
-                        method.hasStrings("launch_crash_intercept_sp", "safe_mode_config_sp", "key_language_sp_key")
+    fun `every fixture's keep-list is the one its shared_prefs walker reads`() {
+        val apks = Fixtures.apks()
+        assertTrue("the declared 47.0.3 fixture is missing", apks.any { it.name.contains("47.0.3") })
+        for (apk in apks) {
+            val container = DexFileFactory.loadDexContainer(apk, Opcodes.getDefault())
+            val owners = container.dexEntryNames.flatMap { entry ->
+                container.getEntry(entry)!!.dexFile.classes.filter { classDef ->
+                    classDef.methods.any { method ->
+                        method.name == "<clinit>" && method.hasStrings("launch_crash_intercept_sp", "safe_mode_config_sp")
+                    }
                 }
             }
+            assertEquals("${apk.name}: one keep-list owner", 1, owners.size)
+            val owner = owners.single()
+            val init = MutableMethod(owner.methods.single { it.name == "<clinit>" })
+
+            keepHushfeedPreferenceFiles(init, owner.methods)
+
+            val store = assertHelperFeedsTheStore(init)
+            val walker = owner.methods.single { it.hasStrings("shared_prefs") }
+            assertTrue(
+                "${apk.name}: the extended list isn't the one the shared_prefs walker reads",
+                walker.implementation!!.instructions.any {
+                    it.opcode == Opcode.SGET_OBJECT && it.getReference<FieldReference>() == store
+                },
+            )
         }
-        assertEquals("unique 47.0.3 keep-list owner", 1, owners.size)
-        val owner = owners.single()
-        val init = MutableMethod(owner.methods.single { it.name == "<clinit>" })
-
-        keepHushfeedPreferenceFiles(init, owner.methods)
-
-        val store = assertHelperFeedsTheStore(init)
-        val walker = owner.methods.single { it.hasStrings("shared_prefs") }
-        assertTrue(
-            "the extended list isn't the one the shared_prefs walker reads",
-            walker.implementation!!.instructions.any {
-                it.opcode == Opcode.SGET_OBJECT && it.getReference<FieldReference>() == store
-            },
-        )
     }
 
     @Test
@@ -121,17 +135,19 @@ class LaunchCrashKeepListTest {
         return wanted.all { it in found }
     }
 
-    /** The initialiser as 47.0.3 writes it: ten names into one array, then a second, shorter list. */
-    private fun keepListInit(): MutableMethod {
+    /**
+     * The initialiser as 47.0.3 writes it: ten names into one array, then a second, shorter list.
+     * 46.x writes the same first array without the language preferences, nine names.
+     */
+    private fun keepListInit(withLanguage: Boolean = true): MutableMethod {
         val names = listOf(
             "safe_mode_config_sp", "safe_mode_exception_repo", "safe_mode_v2_status",
             "cold_boot_launch_protector", "launch_crash_intercept_sp", "aweme_user",
             "token_shared_preference", "sp_TicketGuardHelper", "com.bytedance.sdk.account_setting",
-            "key_language_sp_key",
-        )
+        ) + if (withLanguage) listOf("key_language_sp_key") else emptyList()
         val body = StringBuilder()
         names.forEachIndexed { register, name -> body.append("const-string v$register, \"$name\"\n") }
-        body.append("filled-new-array/range {v0 .. v9}, [Ljava/lang/String;\n")
+        body.append("filled-new-array/range {v0 .. v${names.size - 1}}, [Ljava/lang/String;\n")
         body.append("move-result-object v0\n")
         body.append("sput-object v0, $OWNER->LIZIZ:[Ljava/lang/String;\n")
         body.append("const-string v1, \"token_shared_preference\"\n")

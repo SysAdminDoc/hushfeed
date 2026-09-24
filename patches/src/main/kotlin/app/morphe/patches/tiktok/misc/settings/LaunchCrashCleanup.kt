@@ -20,38 +20,44 @@ private const val LAUNCH_CRASH_CLEANUP_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/settings/LaunchCrashCleanup;"
 private const val CONTRACT = "Settings: TikTok's launch-crash keep-list"
 
-/** One of TikTok's own files on the keep-list; the array holding it is the one to extend. */
-private const val KEPT_LANGUAGE_PREFERENCES = "key_language_sp_key"
+/**
+ * One of TikTok's own files on the keep-list on every build read (46.2.3 to 47.0.3); the array
+ * holding it is the one to extend. 47.0.3 appended its language preferences
+ * (`key_language_sp_key`) to the same list, which 46.x's doesn't name, so that name can't be the
+ * anchor: it stopped the Settings patch, and all 73 patches that depend on it, on every forced
+ * 46.x build.
+ */
+private const val KEPT_LAUNCH_CRASH_PREFERENCES = "launch_crash_intercept_sp"
 
 /**
  * The static initialiser that builds the keep-list of TikTok's launch-crash cleanup.
  *
  * <p>On the third launch crash in a row, TikTok deletes every file in `shared_prefs` whose name
- * isn't on this list (`X.03JS` on 47.0.3). Hushfeed's settings weren't on it, so a crash loop
- * erased all of them one start before Hushfeed's safe mode could pause anything. TikTok's
- * SafeMode dialog runs the same deletion when its clean button is pressed.
+ * isn't on this list (`X.03JS` on 47.0.3, `X.0CpP` on 46.2.3). Hushfeed's settings weren't on
+ * it, so a crash loop erased all of them one start before Hushfeed's safe mode could pause
+ * anything. TikTok's SafeMode dialog runs the same deletion when its clean button is pressed.
  */
 internal object LaunchCrashKeepListFingerprint : Fingerprint(
     name = "<clinit>",
     returnType = "V",
     parameters = emptyList(),
-    strings = listOf("launch_crash_intercept_sp", "safe_mode_config_sp", KEPT_LANGUAGE_PREFERENCES),
+    strings = listOf(KEPT_LAUNCH_CRASH_PREFERENCES, "safe_mode_config_sp"),
 )
 
 /**
  * Adds Hushfeed's preferences files to the keep-list [clinit] builds.
  *
- * <p>The list is the first `String[]` stored after TikTok's own language preferences are named,
- * and it has to be the one a method of the same class reads while walking `shared_prefs`. That
- * is checked before anything is written, so a build where the arrays moved refuses instead of
- * extending a list nothing reads.
+ * <p>The list is the first `String[]` stored after TikTok's own launch-crash preferences are
+ * named, and it has to be the one a method of the same class reads while walking `shared_prefs`.
+ * That is checked before anything is written, so a build where the arrays moved refuses instead
+ * of extending a list nothing reads.
  */
 internal fun keepHushfeedPreferenceFiles(clinit: MutableMethod, ownerMethods: Iterable<Method>) {
     val instructions = clinit.implementationOrPatchException(CONTRACT).instructions.toList()
     val nameIndex = instructions.indexOfFirst {
-        it.getReference<StringReference>()?.string == KEPT_LANGUAGE_PREFERENCES
+        it.getReference<StringReference>()?.string == KEPT_LAUNCH_CRASH_PREFERENCES
     }
-    if (nameIndex < 0) throw PatchException("$CONTRACT: the list no longer names $KEPT_LANGUAGE_PREFERENCES.")
+    if (nameIndex < 0) throw PatchException("$CONTRACT: the list no longer names $KEPT_LAUNCH_CRASH_PREFERENCES.")
     val storeIndex = (nameIndex until instructions.size).firstOrNull { index ->
         instructions[index].opcode == Opcode.SPUT_OBJECT &&
             instructions[index].getReference<FieldReference>()?.type == "[Ljava/lang/String;"
