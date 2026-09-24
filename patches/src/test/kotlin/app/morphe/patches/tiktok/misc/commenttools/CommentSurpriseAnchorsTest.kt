@@ -190,6 +190,13 @@ class CommentSurpriseAnchorsTest {
             "the play call's scene is copied from v${copies.single().registerB}, and the parameters start at v$firstParameter",
             copies.single().registerB >= firstParameter,
         )
+        // What the patch itself marks the site with, which a register that holds the struct at
+        // the constructor would fail verification of the whole class with.
+        assertEquals(
+            "the register the patch marks the page site with",
+            copies.single().registerB,
+            commentPageSceneRegister(instructions, constructor, play, firstParameter),
+        )
     }
 
     /** The moves, by opcode: dexlib2's Opcode.name is the smali mnemonic, so a name test reads "move/from16". */

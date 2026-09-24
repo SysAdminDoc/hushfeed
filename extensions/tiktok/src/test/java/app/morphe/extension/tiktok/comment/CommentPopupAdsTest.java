@@ -45,8 +45,9 @@ public class CommentPopupAdsTest {
 
     /**
      * A surprise sent with a comment page is judged by the scene the page was fetched for: the
-     * default scene is a campaign's whatever the server wrote on the surprise, and TikTok's own
-     * celebrations ask for scenes of their own.
+     * default scene is a campaign's whatever the server wrote on the surprise, and the one other
+     * scene a page is fetched for, the author's own first comment (6), is TikTok's own
+     * celebration whatever the keyword says.
      */
     @Test public void aCommentPageSurpriseIsJudgedByTheSceneThePageWasFetchedFor() {
         Settings.HIDE_COMMENT_EGGS.save(true);
@@ -55,12 +56,26 @@ public class CommentPopupAdsTest {
         assertNull("the default scene is a campaign's, whatever the type says",
                 CommentTools.commentSurprise(firstCommentShaped));
         Surprise campaignShaped = new Surprise(3, "#summerdrop");
-        CommentTools.surpriseFromPage(5);
-        assertSame("the milestone scene is TikTok's own, whatever the keyword says",
-                campaignShaped, CommentTools.commentSurprise(campaignShaped));
         CommentTools.surpriseFromPage(6);
-        assertSame("the author's first comment scene is TikTok's own",
+        assertSame("the author's first comment scene is TikTok's own, whatever the keyword says",
                 campaignShaped, CommentTools.commentSurprise(campaignShaped));
+    }
+
+    /**
+     * An unmarked construction, which 46.2.3's image-comment publish is, is named on the
+     * Diagnostics row only while the switch is on: with it off nothing is decided, so nothing
+     * is missing.
+     */
+    @Test public void anUnmarkedSiteIsNamedOnlyWhileTheSwitchIsOn() {
+        Settings.HIDE_COMMENT_EGGS.save(false);
+        Surprise surprise = new Surprise(3, "#summerdrop");
+        assertSame(surprise, CommentTools.commentSurprise(surprise));
+        assertTrue("an unmarked site was named with the switch off: " + HookStatus.missing("comment popup ads"),
+                HookStatus.missing("comment popup ads").isEmpty());
+
+        Settings.HIDE_COMMENT_EGGS.save(true);
+        CommentTools.commentSurprise(surprise);
+        assertEquals(1, HookStatus.missing("comment popup ads").size());
     }
 
     @Test public void theMilestoneBuilderKeepsWhatItReplays() {

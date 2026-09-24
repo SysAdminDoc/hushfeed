@@ -9,7 +9,7 @@ package app.morphe.patches.tiktok.misc.commenttools
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
@@ -18,9 +18,12 @@ import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionOrThrow
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
@@ -53,7 +56,9 @@ private const val COMMENT_RESPONSE = "Lcom/ss/android/ugc/aweme/comment/model/Co
  * own first comment) ask for scenes of their own. The publish response builds it from the
  * surprise sent with a typed comment, where type 1 is the first-comment celebration. The
  * milestone builder replays a cached first-comment surprise. Each site is a fingerprint of its
- * own shape, so a build that adds a fourth stops here, and the anchors test pins the three.
+ * own shape, and the anchors test pins the three on 47.0.3. A construction none of them marks,
+ * which 46.2.3 has in its image-comment publish, falls back to the old content rule, and the
+ * Diagnostics row names it while the switch is on.
  *
  * <p>Through 0.58.0 this hooked the method that names comment_easter_egg_trigger. That method
  * only reports the animation to analytics, and its callers start the animation after it
@@ -157,27 +162,69 @@ val hideCommentEggsPatch = bytecodePatch(
         CommentPageSurpriseFingerprint.method.apply {
             val constructor = indexOfStructConstructor()
             val play = indexOfFirstInstructionOrThrow(constructor) { getReference<MethodReference>()?.isPlayCall() == true }
-            // (this, struct, scene, string): the scene is the call's third register. It is a
-            // copy made after the constructor, so the register it was copied from is the one
-            // that holds the scene before it; a build that passes it uncopied hands the register
-            // itself.
-            val sceneAtPlay = when (val call = getInstruction(play)) {
-                is FiveRegisterInstruction -> call.registerE
-                is RegisterRangeInstruction -> call.startRegister + 2
-                else -> throw IllegalStateException("Hide comment popup ads: the play call is not an invoke this reads.")
-            }
-            val scene = ((constructor + 1) until play).firstNotNullOfOrNull { index ->
-                val instruction = getInstruction(index)
-                if (instruction.opcode in MOVES && instruction is TwoRegisterInstruction && instruction.registerA == sceneAtPlay) {
-                    instruction.registerB
-                } else {
-                    null
-                }
-            } ?: sceneAtPlay
+            val scene = commentPageSceneRegister(
+                implementation!!.instructions.toList(),
+                constructor,
+                play,
+                implementation!!.registerCount - numberOfParameterRegisters(),
+            )
             addInstructions(
                 constructor,
                 "invoke-static/range {v$scene .. v$scene}, $EXTENSION_CLASS_DESCRIPTOR->surpriseFromPage(I)V",
             )
         }
     }
+}
+
+/** Whether this instruction writes [register], either half of a wide write included. */
+private fun Instruction.writes(register: Int): Boolean {
+    if (this !is OneRegisterInstruction || !opcode.setsRegister()) return false
+    return registerA == register || (opcode.setsWideRegister() && registerA + 1 == register)
+}
+
+/** The registers a method's parameters take, `this` included when it has one. */
+private fun Method.numberOfParameterRegisters(): Int =
+    (if (AccessFlags.STATIC.isSet(accessFlags)) 0 else 1) +
+        parameterTypes.sumOf { if (it.toString() == "J" || it.toString() == "D") 2 else 1 }
+
+/**
+ * The register that holds the comment page's scene at the struct's constructor, which is where
+ * the page site's mark goes. The play call (this, struct, scene, string) takes the scene as its
+ * third register. On every fixture that is a copy made after the constructor with a plain `move`,
+ * so the register it was copied from holds the int scene before it. With no such copy, the play
+ * call's own register is taken only when it is a parameter register nothing writes before the
+ * play call, since then it holds the same int at the constructor. Anything else stops the build:
+ * the register the play call reads can hold the struct itself at the constructor (it does on
+ * every fixture), and handing that to an int parameter fails verification of the whole class.
+ */
+internal fun commentPageSceneRegister(
+    instructions: List<Instruction>,
+    constructor: Int,
+    play: Int,
+    firstParameterRegister: Int,
+): Int {
+    val sceneAtPlay = when (val call = instructions[play]) {
+        is FiveRegisterInstruction -> call.registerE
+        is RegisterRangeInstruction -> call.startRegister + 2
+        else -> throw PatchException("Hide comment popup ads: the play call is not an invoke this reads.")
+    }
+    ((constructor + 1) until play).reversed().forEach { index ->
+        val instruction = instructions[index]
+        if (instruction.writes(sceneAtPlay)) {
+            if (instruction.opcode in MOVES && instruction is TwoRegisterInstruction) {
+                val source = instruction.registerB
+                if (((constructor + 1) until index).none { instructions[it].writes(source) }) return source
+            }
+            throw PatchException(
+                "Hide comment popup ads: the comment page's scene reaches the play call through " +
+                    "${instruction.opcode.name}, not a copy this can follow back to the constructor.",
+            )
+        }
+    }
+    val writtenBeforePlay = (0 until play).any { instructions[it].writes(sceneAtPlay) }
+    if (sceneAtPlay >= firstParameterRegister && !writtenBeforePlay) return sceneAtPlay
+    throw PatchException(
+        "Hide comment popup ads: the comment page's scene (v$sceneAtPlay at the play call) is not a copy " +
+            "or an untouched parameter, so what it holds at the constructor is unknown.",
+    )
 }

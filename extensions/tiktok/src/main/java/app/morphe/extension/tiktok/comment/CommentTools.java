@@ -86,8 +86,9 @@ public final class CommentTools {
         SURPRISE_ORIGIN.remove();
         if (surprise == null) return null;
         HookStatus.bound(EGGS_FAMILY, "CommentSurpriseStruct constructor");
-        noteSurpriseOrigin(origin);
         if (!Settings.HIDE_COMMENT_EGGS.get()) return surprise;
+        // After the switch: a construction no site marks is only worth naming while it matters.
+        noteSurpriseOrigin(origin);
         return keepSurprise(origin, surprise) ? surprise : null;
     }
 
@@ -97,8 +98,10 @@ public final class CommentTools {
     static final int FIRST_COMMENT_SURPRISE = 1;
 
     /**
-     * The comment-page scene a campaign's surprise arrives with. TikTok's own celebrations ask
-     * for scenes of their own: the first-comment milestone (5) and the author's own first comment (6).
+     * The comment-page scene a campaign's surprise arrives with. The page is fetched for this
+     * default scene or for the author's own first comment (6), TikTok's own celebration. The
+     * first-comment milestone (5) is a scene the publish request carries, not a page's, and its
+     * celebration comes back with the published comment or through the milestone builder.
      */
     static final int PAGE_SCENE_DEFAULT = 0;
 
@@ -143,7 +146,9 @@ public final class CommentTools {
      * <p>On the comment page the scene the page was fetched for says so: a campaign's surprise
      * arrives with the default scene, and TikTok's own celebrations ask for scenes of their own.
      * On the publish path the server's type says so: 1 is the first-comment celebration, and
-     * TikTok's own code tests nothing else about a published surprise before playing it. The
+     * TikTok's own code reads the type of a published surprise only to name its analytics event
+     * (first_comment_surprise_trigger for 1, comment_easter_egg_trigger for the rest) and, in
+     * the player, to skip type 3 (function_disable). The
      * milestone builder replays a cached first-comment surprise and is TikTok's own. A
      * construction the patch did not mark, which a host update could add, falls back to the
      * content: the type, then the keyword.
