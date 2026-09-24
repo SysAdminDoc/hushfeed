@@ -90,6 +90,38 @@ public class SearchLynxCardsTest {
         assertFalse(SearchLynxCards.isDrama(new DynamicPatch(OTHER_SCHEMA, "music")));
         assertFalse(SearchLynxCards.isDrama(new DynamicPatch(null, null)));
         assertFalse(SearchLynxCards.isDrama(null));
+        // 47.0.3's own names for the block, and names that only say "drama".
+        assertTrue(SearchLynxCards.isDrama(new DynamicPatch(null, "short_drama_general_card")));
+        assertTrue(SearchLynxCards.isDrama(new DynamicPatch(
+                "sslocal://lynxview?channel=short_drama_search_card_rlynx2", null)));
+        assertTrue(SearchLynxCards.isDrama(new DynamicPatch(null, "minidrama_hub")));
+        assertFalse(SearchLynxCards.isDrama(new DynamicPatch(null, "tv_drama_hub")));
+        assertFalse(SearchLynxCards.isDrama(new DynamicPatch("sslocal://lynxview?channel=melodrama_card", null)));
+    }
+
+    /** A row bound again while the list scrolls holds the same card: the export counts it once. */
+    @Test public void aCardRowsKeepBindingIsCountedOnce() {
+        FeedFilterCounters.clear();
+        Settings.HIDE_MINI_DRAMAS.save(true);
+        View row = row();
+        DynamicPatch drama = new DynamicPatch(DRAMA_SCHEMA, null);
+        for (int bind = 0; bind < 3; bind++) {
+            SearchLynxCards.onHolderBound(new Cell(row), new Object(), drama);
+        }
+        assertCollapsed(row);
+        assertTrue("the rebinds were counted as three cards: " + lynxLine(),
+                lynxLine().startsWith(SearchLynxCards.SOURCE + ": 1 lists, 1 items, 1 removed"));
+
+        SearchLynxCards.onHolderBound(new Cell(row), new Object(), new DynamicPatch(DRAMA_SCHEMA, null));
+        assertTrue("a new card in the row was not counted: " + lynxLine(),
+                lynxLine().startsWith(SearchLynxCards.SOURCE + ": 2 lists, 2 items, 2 removed"));
+    }
+
+    private static String lynxLine() {
+        for (String line : FeedFilterCounters.report()) {
+            if (line.startsWith(SearchLynxCards.SOURCE + ":")) return line;
+        }
+        return "no " + SearchLynxCards.SOURCE + " line";
     }
 
     /** Only the template's name leaves the schema: never the search the other parameters carry. */

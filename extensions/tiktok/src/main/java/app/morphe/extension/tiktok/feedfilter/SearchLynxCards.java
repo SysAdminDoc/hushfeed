@@ -25,10 +25,12 @@ import java.util.WeakHashMap;
  *
  * <p>TikTok 47.0.3 streams the Top results in chunks, and a chunk that carries no card still
  * carries patches, from which the page's model builds a Lynx card and slots it into the list. So
- * the card never passes through the result list the other search filters read. Every one of them
- * is bound by the Lynx card cell, whose bind hands this the cell and its item. A card Hide mini
- * dramas takes has its row collapsed to nothing, and the row comes back on the bind that hands
- * the cell another card, or any bind once the switch is off.
+ * the card never passes through the result list the other search filters read. It is judged where
+ * its row binds it instead: the Top results adapter hands each card to one of two holders (the
+ * ten-parameter one, or DynamicViewHolder for the cards TikTok routes there), and both hand this
+ * (holder, fragment, patch); the other lists' Lynx card cell hands (cell, item). A card Hide mini
+ * dramas takes has its row collapsed to nothing, and the row comes back on the bind that hands it
+ * another card, or on any bind once the switch is off.
  */
 public final class SearchLynxCards {
     /** Route name for the diagnostic report. */
@@ -36,7 +38,7 @@ public final class SearchLynxCards {
     static final String DRAMA_REASON = "miniDramaCard";
 
     private static final Object LOCK = new Object();
-    /** Rows this collapsed, with the width, height and visibility they had. */
+    /** Rows this collapsed, with the height and visibility they had. */
     private static final WeakHashMap<View, int[]> COLLAPSED = new WeakHashMap<>();
     /** The card each row was last bound to, so a late re-collapse can tell a rebind happened. */
     private static final WeakHashMap<View, Object> BOUND = new WeakHashMap<>();
@@ -55,8 +57,8 @@ public final class SearchLynxCards {
     }
 
     /**
-     * The results list's own Lynx holder is binding {@code patch} into its row: the one the Top
-     * results bind a streamed card through, hooked as (holder, fragment, patch).
+     * One of the Top results' Lynx holders is binding {@code patch} into its row, hooked as
+     * (holder, fragment, patch) on both.
      */
     public static void onHolderBound(Object holder, Object fragment, Object patch) {
         try {
@@ -78,34 +80,48 @@ public final class SearchLynxCards {
         Object itemView = Reflect.readField(holder, "itemView");
         if (!(itemView instanceof View)) return;
         View row = (View) itemView;
+        // A row is bound again and again while the list scrolls; the export counts a card once
+        // for each time a row takes it, not once per bind.
+        boolean fresh;
         synchronized (LOCK) {
-            BOUND.put(row, patch);
+            fresh = BOUND.put(row, patch) != patch;
         }
         String kind = kind(patch);
-        FeedFilterCounters.sawList(SOURCE, 1);
-        FeedFilterCounters.sawKind(SOURCE, kind);
+        if (fresh) {
+            FeedFilterCounters.sawList(SOURCE, 1);
+            FeedFilterCounters.sawKind(SOURCE, kind);
+        }
         if (BaseSettings.DEBUG.get()) {
             String shape = schemaShape(Reflect.readField(patch, "schema"));
             Logger.printDebug(() -> "[Morphe TikTok FeedFilter] search lynx card: " + kind + " | " + shape);
         }
         if (Settings.HIDE_MINI_DRAMAS.get() && isDrama(patch)) {
             collapse(row);
-            FeedFilterCounters.removed(SOURCE, 1, DRAMA_REASON);
+            if (fresh) FeedFilterCounters.removed(SOURCE, 1, DRAMA_REASON);
             // TikTok's own bind runs after this and may size the row again, so once it has
-            // returned the row is collapsed again, if it still holds this card.
+            // returned the row is collapsed again, if it still holds this card. The pass runs on
+            // the main looper, where nothing may escape either.
             row.post(() -> {
-                Object current;
-                synchronized (LOCK) {
-                    current = BOUND.get(row);
+                try {
+                    Object current;
+                    synchronized (LOCK) {
+                        current = BOUND.get(row);
+                    }
+                    if (current == patch && Settings.HIDE_MINI_DRAMAS.get()) collapse(row);
+                } catch (Throwable failure) {
+                    warnOnce(failure);
                 }
-                if (current == patch && Settings.HIDE_MINI_DRAMAS.get()) collapse(row);
             });
         } else {
             restore(row);
         }
     }
 
-    /** A drama module: the Lynx template or the server's source type for the card names dramas. */
+    /**
+     * A short-drama module: the Lynx template or the server's source type names short or mini
+     * dramas (short_drama_general_card, short_drama_search_card_rlynx2 on 47.0.3). A card that only
+     * says "drama", a TV-drama hub or a melodrama, is not one.
+     */
     static boolean isDrama(Object patch) {
         if (patch == null) return false;
         return namesDrama(lynxTemplate(Reflect.readField(patch, "schema")))
@@ -113,8 +129,15 @@ public final class SearchLynxCards {
     }
 
     private static boolean namesDrama(String name) {
-        return name != null && name.toLowerCase(Locale.ROOT).contains("drama");
+        if (name == null) return false;
+        String folded = name.toLowerCase(Locale.ROOT);
+        for (String token : DRAMA_TOKENS) {
+            if (folded.contains(token)) return true;
+        }
+        return false;
     }
+
+    private static final String[] DRAMA_TOKENS = {"short_drama", "shortdrama", "mini_drama", "minidrama"};
 
     /** The Lynx data an item carries: the one field whose type is TikTok's DynamicPatch. */
     static Object patchOf(Object item) {

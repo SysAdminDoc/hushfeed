@@ -476,6 +476,7 @@ internal object SearchLynxCardBindFingerprint : Fingerprint(
 
 internal const val SEARCH_MIX_FEED_DESCRIPTOR = "Lcom/ss/android/ugc/aweme/search/pages/result/topsearch/core/model/SearchMixFeed;"
 internal const val DYNAMIC_PATCH_DESCRIPTOR = "Lcom/ss/android/ugc/aweme/discover/mixfeed/DynamicPatch;"
+internal const val LYNX_SSR_INFO_DESCRIPTOR = "Lcom/ss/android/ugc/aweme/search/pages/result/topsearch/core/model/LynxSSRInfo;"
 
 /**
  * The Top results list's own Lynx card holder binding a card's data into its row (LX/0J8X;->P5
@@ -490,8 +491,26 @@ internal object SearchLynxHolderBindFingerprint : Fingerprint(
         val parameters = method.parameterTypes.map { it.toString() }
         parameters.size == 10 &&
             parameters[1] == DYNAMIC_PATCH_DESCRIPTOR &&
-            parameters[4] == "Lcom/ss/android/ugc/aweme/search/pages/result/topsearch/core/model/LynxSSRInfo;" &&
+            parameters[4] == LYNX_SSR_INFO_DESCRIPTOR &&
             parameters[8] == SEARCH_MIX_FEED_DESCRIPTOR
+    },
+)
+
+/**
+ * The results adapter's other Lynx card holder. The adapter's bind hands a card to this one
+ * instead of [SearchLynxHolderBindFingerprint]'s when TikTok routes it here: feed type 996 always,
+ * and feed type 65514 when its template is on the server's `dynamic_new_arch_white_list` (empty by
+ * default). DynamicViewHolder keeps its real name on every fixture; its bind takes eight
+ * parameters, the fragment first, the DynamicPatch second and the Lynx server-render info fifth.
+ */
+internal object SearchDynamicHolderBindFingerprint : Fingerprint(
+    definingClass = "Lcom/ss/android/ugc/aweme/search/lynx/core/ui/viewholder/DynamicViewHolder;",
+    returnType = "V",
+    custom = { method, _ ->
+        val parameters = method.parameterTypes.map { it.toString() }
+        parameters.size == 8 &&
+            parameters[1] == DYNAMIC_PATCH_DESCRIPTOR &&
+            parameters[4] == LYNX_SSR_INFO_DESCRIPTOR
     },
 )
 

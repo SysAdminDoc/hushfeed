@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.tiktok.feedfilter
 
+import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
@@ -17,6 +18,7 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.patches.tiktok.misc.theme.declaredVersions
 import app.morphe.patches.tiktok.shared.callThroughLocals
 import app.morphe.patches.tiktok.shared.guardAtEntry
 import app.morphe.patches.tiktok.shared.objectIn
@@ -248,14 +250,17 @@ val feedFilterPatch = bytecodePatch(
         )
         // The server-drawn Lynx cards in search, TikTok's Short Drama block among them, are built
         // from a results chunk's patches and never pass through the list above, so each one is
-        // judged where its row binds it: the Top results' own holder as (this, fragment, patch),
-        // and the other lists' Lynx cell as (this cell, item). Builds without either keep the
-        // rest of the feed filter.
-        SearchLynxHolderBindFingerprint.methodOrNull?.addInstructions(
-            0,
-            "invoke-static/range {p0 .. p2}, $SEARCH_LYNX_CARDS_CLASS_DESCRIPTOR->onHolderBound(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V",
-        )
-        SearchLynxCardBindFingerprint.methodOrNull?.addInstructions(
+        // judged where its row binds it: the Top results adapter hands a card to one of two
+        // holders, each as (this, fragment, patch), and the other lists' Lynx cell binds
+        // (this cell, item). All three are required on a build the patch is declared for, where
+        // a missing one would let the block back in without a word; a build the patch is forced
+        // onto keeps the rest of the feed filter without them.
+        val declaredBuild = packageMetadata.versionName in declaredVersions()
+        fun lynxBind(fingerprint: Fingerprint) = if (declaredBuild) fingerprint.method else fingerprint.methodOrNull
+        val holderBound = "invoke-static/range {p0 .. p2}, $SEARCH_LYNX_CARDS_CLASS_DESCRIPTOR->onHolderBound(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V"
+        lynxBind(SearchLynxHolderBindFingerprint)?.addInstructions(0, holderBound)
+        lynxBind(SearchDynamicHolderBindFingerprint)?.addInstructions(0, holderBound)
+        lynxBind(SearchLynxCardBindFingerprint)?.addInstructions(
             0,
             "invoke-static/range {p0 .. p1}, $SEARCH_LYNX_CARDS_CLASS_DESCRIPTOR->onCardBound(Ljava/lang/Object;Ljava/lang/Object;)V",
         )
