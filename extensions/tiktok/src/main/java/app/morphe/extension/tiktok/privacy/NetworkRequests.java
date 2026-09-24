@@ -69,7 +69,7 @@ public final class NetworkRequests implements LogBufferManager.ReportSection {
                 bound = true;
                 HookStatus.bound("api requests", "SsHttpCall chain");
             }
-            if (isLogHost(host) && BaseSettings.DEBUG.get()) notePath(request, bucket(host));
+            if (BaseSettings.DEBUG.get() && isLogHost(host)) notePath(request, bucket(host));
         } catch (Throwable failure) {
             if (!warned) {
                 warned = true;

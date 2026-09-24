@@ -4,11 +4,16 @@
  */
 package app.morphe.extension.tiktok.telemetry;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.Settings;
+
+import com.bytedance.applog.priority.PriorityHttpResponse;
+
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,5 +52,19 @@ public class DisableTelemetryPatchTest {
         Utils.setContext(null);
         Settings.DISABLE_ANALYTICS.save(true);
         assertFalse(DisableTelemetryPatch.isTelemetryDisabled());
+    }
+
+    /**
+     * The priority uploader's checker takes a reply as delivered only for a 2xx code whose data
+     * says message success and carries the SDK's magic tag (TelemetrySendAnchorsTest pins that
+     * checker on 47.0.3), so the guarded send has to hand back exactly that.
+     */
+    @Test
+    public void thePriorityReplyIsTheOneItsCheckerTakesAsDelivered() throws Exception {
+        PriorityHttpResponse reply = (PriorityHttpResponse) DisableTelemetryPatch.deliveredPriorityResponse();
+        assertEquals(200, reply.getCode());
+        JSONObject data = new JSONObject(reply.getData());
+        assertEquals("success", data.optString("message"));
+        assertEquals("ss_app_log", data.optString("magic_tag"));
     }
 }

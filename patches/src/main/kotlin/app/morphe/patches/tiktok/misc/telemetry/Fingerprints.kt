@@ -203,12 +203,12 @@ internal object NpthSecondInitTaskFingerprint : Fingerprint(
 )
 
 /**
- * The AppLog pack send. Every pack upload to the log hosts' app_log path goes through this one
- * method: the pack worker and the real-time sender hand it a pack and read the status it
- * returns, and it parses the server's config out of the response. On 47.0.3 it is
- * LX/03R3;->LJFF([String], [B, config, [String], I, String, Map, Z, I, pack)I. Named by the two
- * strings only it carries together: the response's magic tag and the forward header, both of
- * which the SDK has kept across builds.
+ * The AppLog pack send. The pack worker and the real-time sender hand it a pack and read the
+ * status it returns, and it parses the server's config out of the response. The forward worker
+ * and the priority uploader post on their own, through the SDK's network client, and have
+ * fingerprints of their own below. On 47.0.3 it is LX/03R3;->LJFF([String], [B, config,
+ * [String], I, String, Map, Z, I, pack)I. Named by the two strings only it carries together: the
+ * response's magic tag and the forward header, both of which the SDK has kept across builds.
  */
 internal object AppLogSendPackFingerprint : Fingerprint(
     returnType = "I",
@@ -233,6 +233,19 @@ internal object AppLogForwardSendFingerprint : Fingerprint(
             method.parameterTypes[1].toString() == "Ljava/util/List;" &&
             method.parameterTypes[2].toString() == "Lorg/json/JSONObject;"
     },
+)
+
+/**
+ * The AppLog priority uploader: events the SDK sends ahead of the pack queue, posted straight
+ * through its network client. The native priority engine posts through the same method. Its
+ * callers take a 2xx reply whose data says message success and magic_tag ss_app_log as
+ * delivered and drop the events. Real names on every fixture.
+ */
+internal object AppLogPrioritySendFingerprint : Fingerprint(
+    definingClass = "Lcom/bytedance/applog/priority/PriorityCallbackImpl;",
+    name = "doHttpPost",
+    returnType = "Lcom/bytedance/applog/priority/PriorityHttpResponse;",
+    parameters = listOf("Ljava/lang/String;", "[B", "Lkotlin/Pair;"),
 )
 
 /**

@@ -7,6 +7,7 @@
  */
 package app.morphe.patches.tiktok.misc.telemetry
 
+import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
@@ -149,34 +150,58 @@ val disableTelemetryPatch = bytecodePatch(
         NpthCoreInitTaskFingerprint.method.returnEarlyIfTelemetryDisabled { "return-void" }
         NpthSecondInitTaskFingerprint.method.returnEarlyIfTelemetryDisabled { "return-void" }
 
-        // The AppLog packs themselves. With every entry point above guarded, the SDK still sent its
-        // packs to the log hosts (10 requests, 134 KB over 20 videos on the S22 with the switch on):
-        // the session's launch and terminate events, and events fed through entry points the
-        // facade does not route. The send answers 200 without a request, so the worker takes the
-        // pack as delivered and clears it, rather than keeping it to retry or upload later.
-        AppLogSendPackFingerprint.method.returnEarlyIfTelemetryDisabled { register ->
-            """
-                const/16 v$register, 0xc8
-                return v$register
-            """
-        }
-
-        // The forward mirrors. The forward worker deletes its rows and then posts them through
-        // the SDK's network client rather than the pack send, so a pair of forward requests (one
-        // to the forward path, one to its backup, 26 KB together on the S22) outlived the guard
-        // above. Returning before the post leaves nothing behind: the rows are already gone.
-        AppLogForwardSendFingerprint.method.returnEarlyIfTelemetryDisabled { "return-void" }
-
-        // The install SDK's activation check: a fetch of the log host's app_alert_check path once
-        // a start, with the advertising id, carrier, SIM region and time zone in the query. The
-        // job only reads the reply for the word success, so the helper answers success without
-        // the fetch and the job marks itself done as it would have. Device registration is a
-        // different job and is not touched.
-        InstallActiveCheckFingerprint.method.returnEarlyIfTelemetryDisabled { register ->
-            """
-                const/4 v$register, 0x1
-                return v$register
-            """
+        TELEMETRY_SEND_GUARDS.forEach { guard ->
+            guard.fingerprint.method.returnEarlyIfTelemetryDisabled(guard.answer)
         }
     }
 }
+
+/** What a guarded send answers with the switch on, in place of its request. */
+internal class TelemetrySendGuard(val fingerprint: Fingerprint, val answer: (register: Int) -> String)
+
+/** The status the AppLog pack send answers with, which both of its callers read as sent. */
+internal const val PACK_SENT_STATUS = 200
+
+/** What the install SDK's activation helper answers with: true, the job's success. */
+internal const val ACTIVE_CHECK_PASSED = 1
+
+/**
+ * The sends that still reached the log hosts with every entry point above guarded (10 requests,
+ * 134 KB over 20 videos on the S22 with the switch on), each answered the way its caller reads
+ * success so nothing is kept to retry or send later.
+ */
+internal val TELEMETRY_SEND_GUARDS = listOf(
+    // The AppLog packs: the session's launch and terminate events, and events fed through entry
+    // points the facade does not route. The worker takes a 200 as delivered and clears the pack.
+    TelemetrySendGuard(AppLogSendPackFingerprint) { register ->
+        """
+            const/16 v$register, $PACK_SENT_STATUS
+            return v$register
+        """
+    },
+    // The forward mirrors. The forward worker deletes its rows and then posts them through the
+    // SDK's network client rather than the pack send, so a pair of forward requests (26 KB on the
+    // S22) outlived the guard above. Returning before the post leaves nothing behind.
+    TelemetrySendGuard(AppLogForwardSendFingerprint) { "return-void" },
+    // The install SDK's activation check: a fetch of the log host's app_alert_check path once a
+    // start, with the advertising id, carrier, SIM region and time zone in the query. The job only
+    // reads the reply for the word success, so the helper answers success without the fetch.
+    // Device registration is a different job and is not touched.
+    TelemetrySendGuard(InstallActiveCheckFingerprint) { register ->
+        """
+            const/4 v$register, $ACTIVE_CHECK_PASSED
+            return v$register
+        """
+    },
+    // The priority uploader posts events ahead of the pack queue through the network client too.
+    // None went out on the S22, but a priority config stored before the switch went on could
+    // still turn it on, and the pack send's guard means no newer config arrives to turn it off.
+    TelemetrySendGuard(AppLogPrioritySendFingerprint) { register ->
+        """
+            invoke-static {}, $EXTENSION_CLASS_DESCRIPTOR->deliveredPriorityResponse()Ljava/lang/Object;
+            move-result-object v$register
+            check-cast v$register, Lcom/bytedance/applog/priority/PriorityHttpResponse;
+            return-object v$register
+        """
+    },
+)

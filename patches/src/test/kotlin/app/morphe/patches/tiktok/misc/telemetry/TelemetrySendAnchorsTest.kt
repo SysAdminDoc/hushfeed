@@ -7,7 +7,10 @@ import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import org.junit.Assert.assertEquals
@@ -66,19 +69,66 @@ class TelemetrySendAnchorsTest {
         assertEquals("the send's parameter count", 10, send.parameters.size)
 
         val callers = methods().filter { method -> method.calls().any { it.matches(send) } }.map { method ->
-            Caller(
-                method.definingClass, method.name,
-                method.implementation!!.instructions.any {
-                    it is NarrowLiteralInstruction && it.opcode == Opcode.CONST_16 && it.narrowLiteral == 200
-                },
-            )
+            Caller(method.definingClass, method.name, method.comparesResultOf(send, PACK_SENT_STATUS))
         }.toList()
         val others = callers.filter { it.owner != send.owner || it.name != send.name }
         assertEquals("callers besides the send's own retry: $others", 2, others.size)
         for (caller in others) {
-            assertTrue("${caller.owner}->${caller.name} does not compare the status with 200", caller.comparesWith200)
+            assertTrue(
+                "${caller.owner}->${caller.name} does not compare the send's result with the status the guard answers ($PACK_SENT_STATUS)",
+                caller.comparesWithAnswer,
+            )
         }
         assertEquals("the two callers are of two classes", 2, others.map { it.owner }.toSet().size)
+    }
+
+    /**
+     * The patch's own list of guards, each against what its caller reads on 47.0.3: the pack
+     * answer is the status both callers compare with, the activation answer is the non-zero the
+     * active job branches on, the forward send stops before its post, and the priority send hands
+     * back the extension's reply, whose data the priority checker requires. A guard dropped from
+     * the list, or an answer changed to one the caller reads as failure, fails here.
+     */
+    @Test
+    fun `47_0_3 guards every send that reached the log hosts with the answer its caller reads as success`() {
+        assertEquals(
+            "the guarded sends",
+            setOf(AppLogSendPackFingerprint, AppLogForwardSendFingerprint, InstallActiveCheckFingerprint, AppLogPrioritySendFingerprint),
+            TELEMETRY_SEND_GUARDS.map { it.fingerprint }.toSet(),
+        )
+        fun answer(fingerprint: Any) = TELEMETRY_SEND_GUARDS.single { it.fingerprint == fingerprint }.answer(7)
+            .lines().map(String::trim).filter(String::isNotEmpty)
+        assertEquals(listOf("const/16 v7, $PACK_SENT_STATUS", "return v7"), answer(AppLogSendPackFingerprint))
+        assertEquals(listOf("return-void"), answer(AppLogForwardSendFingerprint))
+        assertEquals(listOf("const/4 v7, $ACTIVE_CHECK_PASSED", "return v7"), answer(InstallActiveCheckFingerprint))
+        assertNotEquals("the activation answer is the job's failure", 0, ACTIVE_CHECK_PASSED)
+        val priority = answer(AppLogPrioritySendFingerprint)
+        assertTrue("the priority guard does not hand back the extension's reply: $priority",
+            priority.first().endsWith("->deliveredPriorityResponse()Ljava/lang/Object;") && priority.last() == "return-object v7")
+
+        // The active job branches on the helper's answer, true being the success it records.
+        val helper = methods().single { method ->
+            ACTIVE_TAG in method.strings() && method.returnType == "Z" && method.parameterTypes.size == 6
+        }.signature()
+        val job = methods().single { method -> method.calls().any { it.matches(helper) } }
+        assertTrue("the active job does not branch on the helper's answer", job.branchesOnResultOf(helper))
+
+        // The priority uploader is the method the fingerprint names, and every checker of its
+        // reply takes it as delivered only with message success and the SDK's magic tag, which is
+        // what the extension's reply carries (DisableTelemetryPatchTest).
+        val priorityClass = classes().single { it.type == "Lcom/bytedance/applog/priority/PriorityCallbackImpl;" }
+        assertEquals(1, priorityClass.methods.count {
+            it.name == "doHttpPost" && it.returnType == PRIORITY_RESPONSE &&
+                it.parameterTypes.map(Any::toString) == listOf("Ljava/lang/String;", "[B", "Lkotlin/Pair;")
+        })
+        val checkers = methods().filter { method ->
+            method.returnType == "Z" && method.parameterTypes.map(Any::toString) == listOf(PRIORITY_RESPONSE, "Ljava/util/Map;")
+        }.map { it.signature() to it.strings() }.toList()
+        assertTrue("no method checks a priority reply", checkers.isNotEmpty())
+        for ((checker, strings) in checkers) {
+            assertTrue("$checker reads a reply by something other than message success and the magic tag: $strings",
+                strings.containsAll(listOf("message", "success", "magic_tag", "ss_app_log")))
+        }
     }
 
     /**
@@ -184,9 +234,93 @@ class TelemetrySendAnchorsTest {
 
     private data class Signature(val owner: String, val name: String, val parameters: List<String>, val returnType: String)
 
-    private data class Caller(val owner: String, val name: String, val comparesWith200: Boolean)
+    private data class Caller(val owner: String, val name: String, val comparesWithAnswer: Boolean)
+
+    /**
+     * Whether the int this method gets back from [target] is compared with [literal]: from the
+     * call's `move-result`, along every path the code can take while the result register still
+     * holds it, an if-eq or if-ne on that register and one whose last write before the branch was
+     * a constant of [literal].
+     */
+    private fun Method.comparesResultOf(target: Signature, literal: Int): Boolean {
+        val instructions = implementation!!.instructions.toList()
+        val addresses = IntArray(instructions.size)
+        var address = 0
+        for ((index, instruction) in instructions.withIndex()) {
+            addresses[index] = address
+            address += instruction.codeUnits
+        }
+        val indexAt = addresses.withIndex().associate { (index, at) -> at to index }
+        fun successors(index: Int): List<Int> {
+            val instruction = instructions[index]
+            val next = if (index + 1 < instructions.size) listOf(index + 1) else emptyList()
+            if (instruction.opcode in ENDS) return emptyList()
+            if (instruction !is OffsetInstruction) return next
+            val jump = indexAt[addresses[index] + instruction.codeOffset]
+            return when (instruction.opcode) {
+                Opcode.GOTO, Opcode.GOTO_16, Opcode.GOTO_32 -> listOfNotNull(jump)
+                Opcode.PACKED_SWITCH, Opcode.SPARSE_SWITCH, Opcode.FILL_ARRAY_DATA -> next
+                else -> next + listOfNotNull(jump)
+            }
+        }
+        fun constantBefore(index: Int, register: Int): Int? {
+            for (back in index - 1 downTo 0) {
+                val instruction = instructions[back]
+                if (instruction is OneRegisterInstruction && instruction.opcode.setsRegister() && instruction.registerA == register) {
+                    return (instruction as? NarrowLiteralInstruction)?.narrowLiteral
+                }
+            }
+            return null
+        }
+        for ((index, instruction) in instructions.withIndex()) {
+            val reference = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: continue
+            if (!reference.matches(target)) continue
+            val moveResult = instructions.getOrNull(index + 1) as? OneRegisterInstruction ?: continue
+            if (moveResult.opcode != Opcode.MOVE_RESULT) continue
+            val result = moveResult.registerA
+            val seen = mutableSetOf<Int>()
+            val pending = ArrayDeque(listOf(index + 2))
+            while (pending.isNotEmpty()) {
+                val at = pending.removeFirst()
+                if (at >= instructions.size || !seen.add(at)) continue
+                val current = instructions[at]
+                if (current is TwoRegisterInstruction && (current.opcode == Opcode.IF_EQ || current.opcode == Opcode.IF_NE)) {
+                    val other = when (result) {
+                        current.registerA -> current.registerB
+                        current.registerB -> current.registerA
+                        else -> null
+                    }
+                    if (other != null && constantBefore(at, other) == literal) return true
+                }
+                if (current is OneRegisterInstruction && current.opcode.setsRegister() && current.registerA == result) continue
+                pending.addAll(successors(at))
+            }
+        }
+        return false
+    }
+
+    /** Whether the boolean this method gets back from [target] decides a branch (if-eqz or if-nez on it). */
+    private fun Method.branchesOnResultOf(target: Signature): Boolean {
+        val instructions = implementation!!.instructions.toList()
+        for ((index, instruction) in instructions.withIndex()) {
+            val reference = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: continue
+            if (!reference.matches(target)) continue
+            val moveResult = instructions.getOrNull(index + 1) as? OneRegisterInstruction ?: continue
+            if (moveResult.opcode != Opcode.MOVE_RESULT) continue
+            val result = moveResult.registerA
+            for (next in instructions.drop(index + 2).take(24)) {
+                if (next is OneRegisterInstruction && (next.opcode == Opcode.IF_EQZ || next.opcode == Opcode.IF_NEZ) &&
+                    next.registerA == result
+                ) return true
+                if (next is OneRegisterInstruction && next.opcode.setsRegister() && next.registerA == result) break
+            }
+        }
+        return false
+    }
 
     private companion object {
+        val ENDS = setOf(Opcode.RETURN_VOID, Opcode.RETURN, Opcode.RETURN_WIDE, Opcode.RETURN_OBJECT, Opcode.THROW)
+        const val PRIORITY_RESPONSE = "Lcom/bytedance/applog/priority/PriorityHttpResponse;"
         const val FORWARD_LINE = "trySendForward start requestId={}, url={}"
         const val ACTIVE_TAG = "Register#active http error = "
         const val REGISTER_TAG = "Register#doRegister http error = "
