@@ -2,11 +2,16 @@ package app.morphe.extension.tiktok.feedfilter;
 
 import static org.junit.Assert.*;
 
+import app.morphe.extension.shared.diagnostics.FeedFilterCounters;
+import app.morphe.extension.shared.settings.BaseSettings;
+import app.morphe.extension.shared.settings.preference.LogBufferManager;
 import app.morphe.extension.tiktok.SettingsContextRule;
 import app.morphe.extension.tiktok.settings.Settings;
 import com.ss.android.ugc.aweme.feed.model.Aweme;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,6 +30,11 @@ public class LocationBadgeFilterTest {
         public String getComponentKey() { return key; }
         Anchor(String key) { this.key = key; }
     }
+    public static class TypedAnchor extends Anchor {
+        final int type;
+        public int getType() { return type; }
+        TypedAnchor(String key, int type) { super(key); this.type = type; }
+    }
     public static class Video extends Aweme {
         List<?> anchors;
         public List<?> getAnchors() { return anchors; }
@@ -37,11 +47,20 @@ public class LocationBadgeFilterTest {
         Settings.HIDE_LOCATION_LABELS.save(false);
         Settings.FILTER_LOCATION_VIDEOS.save(false);
         FeedItemsFilter.resetDiagnosticsForTests();
+        LocationBadgeFilter.resetStripKindsForTests();
+        LogBufferManager.clearLogBuffer();
     }
     @After public void restoreSettings() {
         Settings.HIDE_LOCATION_LABELS.save(hide);
         Settings.FILTER_LOCATION_VIDEOS.save(filter);
+        BaseSettings.DEBUG.resetToDefault();
         FeedItemsFilter.resetDiagnosticsForTests();
+        LocationBadgeFilter.resetStripKindsForTests();
+        LogBufferManager.clearLogBuffer();
+    }
+
+    private static int times(String report, String text) {
+        return report.split(Pattern.quote(text), -1).length - 1;
     }
 
     @Test public void onlyTheExactNativePlaceComponentIsEvidence() {
@@ -92,5 +111,85 @@ public class LocationBadgeFilterTest {
         assertTrue(rule.getEnabled());
         assertTrue(rule.getFiltered(new Video(List.of(new Anchor("anchor_poi")))));
         assertFalse(rule.getFiltered(new Video(List.of(new Anchor("anchor_effect")))));
+    }
+
+    @Test public void eachStripKindIsNamedOnceWithLoggingOnWhateverThePlaceSwitchesSay() {
+        BaseSettings.DEBUG.save(true);
+        List<?> anchors = Arrays.asList(new TypedAnchor("anchor_movie_tok", 61), new Anchor("anchor_poi"), null,
+                new Object(), new TypedAnchor("anchor_movie_tok", 61), new TypedAnchor("anchor_effect", 28));
+        assertSame(anchors, LocationBadgeFilter.visibleAnchors(anchors));
+        assertSame(anchors, LocationBadgeFilter.visibleAnchors(anchors));
+
+        String report = LogBufferManager.buildExportText();
+        assertEquals(report, 1, times(report, "Caption strip served: anchor_movie_tok/61"));
+        assertEquals(report, 1, times(report, "Caption strip served: anchor_effect/28"));
+        assertEquals(report, 1, times(report, "Caption strip served: anchor_poi"));
+        assertEquals(report, 3, times(report, "Caption strip served: "));
+    }
+
+    @Test public void aStripKindMetWithLoggingOffIsNamedOnceLoggingIsOn() {
+        List<?> anchors = List.of(new TypedAnchor("anchor_sport", 101));
+        assertSame(anchors, LocationBadgeFilter.visibleAnchors(anchors));
+        assertFalse(LogBufferManager.buildExportText().contains("Caption strip served"));
+
+        BaseSettings.DEBUG.save(true);
+        assertSame(anchors, LocationBadgeFilter.visibleAnchors(anchors));
+        String report = LogBufferManager.buildExportText();
+        assertEquals(report, 1, times(report, "Caption strip served: anchor_sport/101"));
+    }
+
+    @Test public void namingStripsLeavesHidingPlacesAsItWas() {
+        BaseSettings.DEBUG.save(true);
+        Settings.HIDE_LOCATION_LABELS.save(true);
+        Anchor effect = new TypedAnchor("anchor_effect", 28);
+        List<?> anchors = Arrays.asList(new Anchor("anchor_poi"), effect);
+
+        assertEquals(List.of(effect), LocationBadgeFilter.visibleAnchors(anchors));
+        assertEquals(2, anchors.size());
+        String report = LogBufferManager.buildExportText();
+        assertEquals(report, 1, times(report, "Caption strip served: anchor_poi"));
+        assertEquals(report, 1, times(report, "Caption strip served: anchor_effect/28"));
+    }
+
+    @Test public void onlyIdentifierKeysAreNamedAndNoMoreThanThirtyTwoKinds() {
+        BaseSettings.DEBUG.save(true);
+        List<Object> anchors = new ArrayList<>();
+        anchors.add(new Anchor("Find Lemon8 recipes"));
+        anchors.add(new Anchor("x".repeat(81)));
+        anchors.add(new Anchor(""));
+        for (int kind = 0; kind < 40; kind++) anchors.add(new TypedAnchor("anchor_kind_" + kind, kind));
+
+        LocationBadgeFilter.visibleAnchors(anchors);
+        String report = LogBufferManager.buildExportText();
+        assertFalse(report, report.contains("Lemon8"));
+        assertEquals(report, 32, times(report, "Caption strip served: "));
+        assertEquals(report, 1, times(report, "Caption strip served: anchor_kind_31/31"));
+        assertEquals(report, 0, times(report, "Caption strip served: anchor_kind_32/"));
+    }
+
+    @Test public void theExportCountsEachStripKindWithLoggingOff() {
+        List<?> first = Arrays.asList(new TypedAnchor("anchor_movie_tok", 61), new Anchor("anchor_poi"), null,
+                new Object(), new Anchor("Find Lemon8 recipes"));
+        assertSame(first, LocationBadgeFilter.visibleAnchors(first));
+        List<?> second = List.of(new TypedAnchor("anchor_effect", 28));
+        assertSame(second, LocationBadgeFilter.visibleAnchors(second));
+        assertTrue(LocationBadgeFilter.visibleAnchors(List.of()).isEmpty());
+
+        String report = String.join("|", FeedFilterCounters.report());
+        assertTrue(report, report.contains("CaptionStrip: 3 lists, 6 items, 0 removed. "
+                + "Kinds: anchor_effect/28 1, anchor_movie_tok/61 1, anchor_poi 1"));
+        assertFalse(report, report.contains("Lemon8"));
+        assertFalse(LogBufferManager.buildExportText().contains("Caption strip served"));
+    }
+
+    @Test public void theExportCountsThePlacesHidingTookOut() {
+        Settings.HIDE_LOCATION_LABELS.save(true);
+        Anchor effect = new TypedAnchor("anchor_effect", 28);
+        assertEquals(List.of(effect), LocationBadgeFilter.visibleAnchors(
+                Arrays.asList(new Anchor("anchor_poi"), effect, new Anchor("anchor_poi"))));
+
+        String report = String.join("|", FeedFilterCounters.report());
+        assertTrue(report, report.contains("CaptionStrip: 1 lists, 3 items, 2 removed. Last reason: placeLabel. "
+                + "Kinds: anchor_poi 2, anchor_effect/28 1"));
     }
 }

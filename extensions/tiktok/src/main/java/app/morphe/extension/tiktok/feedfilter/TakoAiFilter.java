@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.diagnostics.FeedFilterCounters;
 import app.morphe.extension.shared.diagnostics.HookStatus;
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.tiktok.blockauthor.Reflect;
@@ -18,10 +19,8 @@ import com.ss.android.ugc.aweme.feed.model.banner.BannerCommonKey;
 import com.ss.android.ugc.aweme.feed.model.banner.BannerCommonStruct;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class TakoAiFilter {
@@ -280,9 +279,10 @@ public final class TakoAiFilter {
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static List filterBanners(Aweme video, List banners) {
         HookStatus.bound(HOOK_FAMILY, BANNERS_READ);
-        if (banners == null || banners.isEmpty()) return banners;
+        if (banners == null) return banners;
         try {
-            noteBannerKinds(banners);
+            countBanners(banners);
+            if (banners.isEmpty()) return banners;
             boolean hideAsk = Settings.HIDE_TAKO_AI.get();
             boolean hideSearch = Settings.HIDE_BOTTOM_SEARCH_BAR.get();
             if (containsAskBanner(banners)) {
@@ -291,21 +291,27 @@ public final class TakoAiFilter {
             if (!hideAsk && !hideSearch) return banners;
 
             List kept = null;
-            boolean removedAsk = false, removedSearch = false;
+            int removedAsk = 0, removedSearch = 0;
             for (int i = 0; i < banners.size(); i++) {
                 Object banner = banners.get(i);
                 boolean ask = hideAsk && isAskBanner(banner);
                 boolean search = hideSearch && isSearchBanner(banner);
                 if (ask || search) {
                     if (kept == null) kept = new ArrayList(banners.subList(0, i));
-                    removedAsk |= ask;
-                    removedSearch |= search;
+                    if (ask) removedAsk++;
+                    else removedSearch++;
                 } else if (kept != null) kept.add(banner);
             }
             if (kept == null) return banners;
             if (video != null) video.setBanners(kept);
-            if (removedAsk) logAskBannerHidden();
-            if (removedSearch) HookStatus.bound("feed bottom search", "search banner removed");
+            if (removedAsk > 0) {
+                logAskBannerHidden();
+                FeedFilterCounters.removed(BANNER_SOURCE, removedAsk, ASK_BANNER_REASON);
+            }
+            if (removedSearch > 0) {
+                HookStatus.bound("feed bottom search", "search banner removed");
+                FeedFilterCounters.removed(BANNER_SOURCE, removedSearch, SEARCH_BANNER_REASON);
+            }
             return kept;
         } catch (Throwable failure) {
             // A build whose banner model moved: leave the banners as TikTok sent them and say so.
@@ -314,31 +320,32 @@ public final class TakoAiFilter {
         }
     }
 
-    private static final int MAX_BANNER_KINDS = 32;
-    private static final Set<String> BANNER_KINDS_SEEN =
-            Collections.newSetFromMap(new ConcurrentHashMap<>());
+    /** The export's route for the banners under a video, one list per read of the getter. */
+    static final String BANNER_SOURCE = "BottomBanner";
+    static final String ASK_BANNER_REASON = "takoAskBanner";
+    static final String SEARCH_BANNER_REASON = "searchBanner";
+    private static final FeedServedKinds BANNER_KINDS = new FeedServedKinds("Bottom banner");
 
     /**
-     * Names each kind of bottom banner once, with diagnostic logging on, so an export says which
-     * banners a phone is served. Issue #6 took two releases to reach this route because nothing
-     * could say what the bar under the video was; the next export names it.
+     * Counts the banners each read hands out, by kind, whatever the logging switch says, so an
+     * export says which banners a phone is served. Issue #6 took two releases to reach this route
+     * because nothing could say what the bar under the video was; the next export names it.
      */
-    private static void noteBannerKinds(List<?> banners) {
+    private static void countBanners(List<?> banners) {
+        FeedFilterCounters.sawList(BANNER_SOURCE, banners.size());
         for (Object banner : banners) {
             if (!(banner instanceof BannerCommonStruct)) continue;
             BannerCommonKey key = ((BannerCommonStruct) banner).bannerKey;
-            String kind = key == null ? null : key.componentKey;
-            if (kind == null || BANNER_KINDS_SEEN.contains(kind)
-                    || BANNER_KINDS_SEEN.size() >= MAX_BANNER_KINDS) continue;
-            if (BANNER_KINDS_SEEN.add(kind) && BaseSettings.DEBUG.get()) {
-                Logger.printInfo(() -> "[Morphe TikTok TakoAI] Bottom banner served: " + kind);
-            }
+            String kind = FeedServedKinds.kind(key == null ? null : key.componentKey, null);
+            if (kind == null) continue;
+            FeedFilterCounters.sawKind(BANNER_SOURCE, kind);
+            BANNER_KINDS.note(kind);
         }
     }
 
     /** Forgets the banner kinds already named, between deterministic runtime tests. */
     static void resetBannerKindsForTests() {
-        BANNER_KINDS_SEEN.clear();
+        BANNER_KINDS.resetForTests();
     }
 
     private static boolean containsAskBanner(List<?> banners) {
