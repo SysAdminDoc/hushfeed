@@ -77,25 +77,145 @@ public final class CommentTools {
      * whose constructor calls this. Null leaves them nothing to play: each one checks the
      * surprise for null before it touches it.
      *
-     * <p>The same struct carries TikTok's own first-comment celebration, which is no advert and
-     * stays. See {@link #isTriggeredSurprise}.
+     * <p>The same struct carries TikTok's own celebrations, which are no advert and stay. Which
+     * is which is decided by where the struct is being built, which the patch says just before
+     * each constructor call, on the same thread: see {@link #keepSurprise}.
      */
     public static Object commentSurprise(Object surprise) {
+        SurpriseOrigin origin = SURPRISE_ORIGIN.get();
+        SURPRISE_ORIGIN.remove();
         if (surprise == null) return null;
-        HookStatus.bound("comment popup ads", "CommentSurpriseStruct constructor");
-        return Settings.HIDE_COMMENT_EGGS.get() && isTriggeredSurprise(surprise) ? null : surprise;
+        HookStatus.bound(EGGS_FAMILY, "CommentSurpriseStruct constructor");
+        noteSurpriseOrigin(origin);
+        if (!Settings.HIDE_COMMENT_EGGS.get()) return surprise;
+        return keepSurprise(origin, surprise) ? surprise : null;
     }
+
+    private static final String EGGS_FAMILY = "comment popup ads";
 
     /** TikTok's own first-comment celebration: the publish path reports it as first_comment_surprise_trigger. */
     static final int FIRST_COMMENT_SURPRISE = 1;
 
     /**
-     * A surprise that words in a comment set off. The server names the keyword that matched, and
-     * a first-comment celebration is a surprise of its own type that no word sets off.
+     * The comment-page scene a campaign's surprise arrives with. TikTok's own celebrations ask
+     * for scenes of their own: the first-comment milestone (5) and the author's own first comment (6).
+     */
+    static final int PAGE_SCENE_DEFAULT = 0;
+
+    /** Where a comment surprise struct is being built, said by the patch just before its constructor. */
+    static final class SurpriseOrigin {
+        static final int PAGE = 1;
+        static final int PUBLISH = 2;
+        static final int MILESTONE = 3;
+        final int path;
+        final int scene;
+
+        SurpriseOrigin(int path, int scene) {
+            this.path = path;
+            this.scene = scene;
+        }
+    }
+
+    private static final ThreadLocal<SurpriseOrigin> SURPRISE_ORIGIN = new ThreadLocal<>();
+    private static volatile boolean notedPageSite;
+    private static volatile boolean notedPublishSite;
+    private static volatile boolean notedMilestoneSite;
+    private static volatile boolean notedUnmarkedSite;
+
+    /** The comment-page loader is about to build a struct from the page it fetched for {@code scene}. */
+    public static void surpriseFromPage(int scene) {
+        SURPRISE_ORIGIN.set(new SurpriseOrigin(SurpriseOrigin.PAGE, scene));
+    }
+
+    /** The publish response is about to build a struct from the surprise sent with a typed comment. */
+    public static void surpriseFromPublish() {
+        SURPRISE_ORIGIN.set(new SurpriseOrigin(SurpriseOrigin.PUBLISH, 0));
+    }
+
+    /** The publish view model is about to replay a cached first-comment surprise as a milestone. */
+    public static void surpriseFromMilestone() {
+        SURPRISE_ORIGIN.set(new SurpriseOrigin(SurpriseOrigin.MILESTONE, 0));
+    }
+
+    /**
+     * Whether a surprise is TikTok's own, by where it comes from.
+     *
+     * <p>On the comment page the scene the page was fetched for says so: a campaign's surprise
+     * arrives with the default scene, and TikTok's own celebrations ask for scenes of their own.
+     * On the publish path the server's type says so: 1 is the first-comment celebration, and
+     * TikTok's own code tests nothing else about a published surprise before playing it. The
+     * milestone builder replays a cached first-comment surprise and is TikTok's own. A
+     * construction the patch did not mark, which a host update could add, falls back to the
+     * content: the type, then the keyword.
+     */
+    static boolean keepSurprise(SurpriseOrigin origin, Object surprise) {
+        if (origin == null) return !isTriggeredSurprise(surprise);
+        switch (origin.path) {
+            case SurpriseOrigin.PAGE: return origin.scene != PAGE_SCENE_DEFAULT;
+            case SurpriseOrigin.PUBLISH: return isFirstCommentSurprise(surprise);
+            case SurpriseOrigin.MILESTONE: return true;
+            default: return !isTriggeredSurprise(surprise);
+        }
+    }
+
+    /**
+     * Each site is reported once: found, so the Diagnostics row can say the build carries the
+     * three marked sites, or, for a construction no site marked, missing, which is what a fourth
+     * site added by a host update looks like.
+     */
+    private static void noteSurpriseOrigin(SurpriseOrigin origin) {
+        if (origin == null) {
+            if (!notedUnmarkedSite) {
+                notedUnmarkedSite = true;
+                HookStatus.missingMember(EGGS_FAMILY, "marked site",
+                        "com.ss.android.ugc.aweme.comment.model.CommentSurpriseStruct", "constructor caller");
+            }
+            return;
+        }
+        switch (origin.path) {
+            case SurpriseOrigin.PAGE:
+                if (!notedPageSite) {
+                    notedPageSite = true;
+                    HookStatus.bound(EGGS_FAMILY, "comment page site");
+                }
+                break;
+            case SurpriseOrigin.PUBLISH:
+                if (!notedPublishSite) {
+                    notedPublishSite = true;
+                    HookStatus.bound(EGGS_FAMILY, "publish site");
+                }
+                break;
+            case SurpriseOrigin.MILESTONE:
+                if (!notedMilestoneSite) {
+                    notedMilestoneSite = true;
+                    HookStatus.bound(EGGS_FAMILY, "milestone site");
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    static void resetSurpriseOriginForTests() {
+        SURPRISE_ORIGIN.remove();
+        notedPageSite = false;
+        notedPublishSite = false;
+        notedMilestoneSite = false;
+        notedUnmarkedSite = false;
+    }
+
+    /** The first-comment celebration, by the type the server writes on it. */
+    static boolean isFirstCommentSurprise(Object surprise) {
+        Object type = Reflect.property(surprise, "getSurpriseType", "surpriseType");
+        return type instanceof Number && ((Number) type).intValue() == FIRST_COMMENT_SURPRISE;
+    }
+
+    /**
+     * The content rule, for a construction the patch did not mark: a first-comment type stays,
+     * and a surprise that names the keyword it matched goes.
      */
     static boolean isTriggeredSurprise(Object surprise) {
-        Object type = Reflect.property(surprise, "getSurpriseType", "surpriseType");
-        if (type instanceof Number && ((Number) type).intValue() == FIRST_COMMENT_SURPRISE) return false;
+        if (isFirstCommentSurprise(surprise)) return false;
         return Reflect.string(surprise, "getKeyword", "keyword") != null;
     }
 

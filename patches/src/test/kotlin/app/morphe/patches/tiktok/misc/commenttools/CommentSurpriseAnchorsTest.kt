@@ -126,6 +126,85 @@ class CommentSurpriseAnchorsTest {
         assertEquals("first-comment reports behind a surprise type test against 1: $guardedCalls", 1, guardedCalls.size)
     }
 
+    /**
+     * The struct is built in three places, and the patch marks each one just before the
+     * constructor so the extension can decide by path: the comment-page loader, which hands the
+     * struct with the scene it fetched the page for to the one method that plays it; the
+     * publish response; and the milestone builder, which replays a cached first-comment
+     * surprise. A fourth site would build a struct the constructor's hook can only judge by
+     * content, so it fails here first. The page loader's scene is pinned to come from a
+     * parameter register, which is the one the patch reads before the constructor.
+     */
+    @Test
+    fun `47_0_3 builds the surprise struct in three places the patch can tell apart`() {
+        val apk = Fixtures.apks().single { it.name.contains("47.0.3") }
+        val container = DexFileFactory.loadDexContainer(apk, Opcodes.getDefault())
+        val builders = container.dexEntryNames.asSequence()
+            .flatMap { container.getEntry(it)!!.dexFile.classes.asSequence() }
+            .flatMap { it.methods.asSequence() }
+            .filter { method -> method.references().any { it.constructs(struct) } }
+            .toList()
+        val shapes = builders.associate { method ->
+            val references = method.references()
+            "${method.definingClass}->${method.name}" to listOfNotNull(
+                "page".takeIf {
+                    references.readsField(COMMENT_ITEM_LIST, "commentSurprise") &&
+                        references.any { it is MethodReference && it.isPlayCall(struct) }
+                },
+                "publish".takeIf { references.readsField(COMMENT_RESPONSE, "commentSurprise") },
+                "milestone".takeIf {
+                    references.any { it is FieldReference && it.name == "FIRST_COMMENT_MILESTONE" } &&
+                        references.any { it is MethodReference && it.definingClass == "Landroid/util/LruCache;" && it.name == "get" }
+                },
+            )
+        }
+        assertEquals("a site that builds the struct has no shape, or two: $shapes", emptyList<String>(),
+            shapes.filterValues { it.size != 1 }.keys.toList())
+        assertEquals(
+            "sites that build the struct: $shapes",
+            listOf("milestone", "page", "publish"), shapes.values.flatten().sorted(),
+        )
+
+        val page = builders.single { shapes.getValue("${it.definingClass}->${it.name}") == listOf("page") }
+        val instructions = page.implementation!!.instructions.toList()
+        val constructor = instructions.indexOfFirst { ((it as? ReferenceInstruction)?.reference as? MethodReference)?.constructs(struct) == true }
+        val play = instructions.withIndex().first { (index, instruction) ->
+            index > constructor && ((instruction as? ReferenceInstruction)?.reference as? MethodReference)?.isPlayCall(struct) == true
+        }.index
+        val sceneAtPlay = (instructions[play] as FiveRegisterInstruction).registerE
+        val between = (constructor + 1 until play).map { index ->
+            val instruction = instructions[index]
+            "$index ${instruction.opcode.name} ${(instruction as? TwoRegisterInstruction)?.let { "v${it.registerA} <- v${it.registerB}" } ?: ""}"
+        }
+        val copies = (constructor + 1 until play).mapNotNull { index ->
+            (instructions[index] as? TwoRegisterInstruction)?.takeIf {
+                instructions[index].opcode in MOVES && it.registerA == sceneAtPlay
+            }
+        }
+        assertEquals(
+            "one copy of the play call's scene (v$sceneAtPlay) between the constructor at $constructor and the play call at $play: $between",
+            1, copies.size,
+        )
+        val firstParameter = page.implementation!!.registerCount - page.parameterTypes.size
+        assertTrue(
+            "the play call's scene is copied from v${copies.single().registerB}, and the parameters start at v$firstParameter",
+            copies.single().registerB >= firstParameter,
+        )
+    }
+
+    /** The moves, by opcode: dexlib2's Opcode.name is the smali mnemonic, so a name test reads "move/from16". */
+    private val MOVES = setOf(Opcode.MOVE, Opcode.MOVE_FROM16, Opcode.MOVE_16)
+
+    private fun Method.references() = implementation?.instructions?.mapNotNull { (it as? ReferenceInstruction)?.reference }.orEmpty()
+
+    private fun Any.constructs(type: String) = this is MethodReference && definingClass == type && name == "<init>"
+
+    private fun List<Any>.readsField(owner: String, field: String) =
+        any { it is FieldReference && it.definingClass == owner && it.name == field }
+
+    private fun MethodReference.isPlayCall(type: String) =
+        parameterTypes.map { it.toString() } == listOf(type, "I", "Ljava/lang/String;") && returnType == "V"
+
     private fun calls(instruction: Instruction, target: Method): Boolean {
         val reference = (instruction as ReferenceInstruction).reference as? MethodReference ?: return false
         return reference.definingClass == target.definingClass && reference.name == target.name &&
@@ -175,5 +254,7 @@ class CommentSurpriseAnchorsTest {
 
     private companion object {
         const val SURPRISE = "Lcom/ss/android/ugc/aweme/comment/model/CommentSurprise;"
+        const val COMMENT_ITEM_LIST = "Lcom/ss/android/ugc/aweme/comment/model/CommentItemList;"
+        const val COMMENT_RESPONSE = "Lcom/ss/android/ugc/aweme/comment/model/CommentResponse;"
     }
 }

@@ -2,9 +2,11 @@ package app.morphe.extension.tiktok.comment;
 
 import static org.junit.Assert.*;
 
+import app.morphe.extension.shared.diagnostics.HookStatus;
 import app.morphe.extension.shared.settings.PausedProcess;
 import app.morphe.extension.tiktok.SettingsContextRule;
 import app.morphe.extension.tiktok.settings.Settings;
+import java.util.List;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,6 +23,83 @@ public class CommentPopupAdsTest {
     @After public void tearDown() {
         PausedProcess.set(false);
         Settings.HIDE_COMMENT_EGGS.resetToDefault();
+        CommentTools.resetSurpriseOriginForTests();
+        HookStatus.clear();
+    }
+
+    /**
+     * A surprise sent with a comment you posted is TikTok's own only when it is the
+     * first-comment kind. The keyword said nothing: a campaign's surprise with none written on
+     * it played, and TikTok's own code never reads the keyword before playing.
+     */
+    @Test public void aPublishedSurpriseKeepsOnlyTheFirstCommentKind() {
+        Settings.HIDE_COMMENT_EGGS.save(true);
+        Surprise campaignWithoutAWord = new Surprise(3, null);
+        CommentTools.surpriseFromPublish();
+        assertNull("a published surprise that names no word is still a campaign's",
+                CommentTools.commentSurprise(campaignWithoutAWord));
+        Surprise firstComment = new Surprise(CommentTools.FIRST_COMMENT_SURPRISE, "#word");
+        CommentTools.surpriseFromPublish();
+        assertSame(firstComment, CommentTools.commentSurprise(firstComment));
+    }
+
+    /**
+     * A surprise sent with a comment page is judged by the scene the page was fetched for: the
+     * default scene is a campaign's whatever the server wrote on the surprise, and TikTok's own
+     * celebrations ask for scenes of their own.
+     */
+    @Test public void aCommentPageSurpriseIsJudgedByTheSceneThePageWasFetchedFor() {
+        Settings.HIDE_COMMENT_EGGS.save(true);
+        Surprise firstCommentShaped = new Surprise(CommentTools.FIRST_COMMENT_SURPRISE, null);
+        CommentTools.surpriseFromPage(CommentTools.PAGE_SCENE_DEFAULT);
+        assertNull("the default scene is a campaign's, whatever the type says",
+                CommentTools.commentSurprise(firstCommentShaped));
+        Surprise campaignShaped = new Surprise(3, "#summerdrop");
+        CommentTools.surpriseFromPage(5);
+        assertSame("the milestone scene is TikTok's own, whatever the keyword says",
+                campaignShaped, CommentTools.commentSurprise(campaignShaped));
+        CommentTools.surpriseFromPage(6);
+        assertSame("the author's first comment scene is TikTok's own",
+                campaignShaped, CommentTools.commentSurprise(campaignShaped));
+    }
+
+    @Test public void theMilestoneBuilderKeepsWhatItReplays() {
+        Settings.HIDE_COMMENT_EGGS.save(true);
+        Surprise replayed = new Surprise(3, "#summerdrop");
+        CommentTools.surpriseFromMilestone();
+        assertSame(replayed, CommentTools.commentSurprise(replayed));
+    }
+
+    @Test public void aMarkIsSpentByTheConstructionItWasSetFor() {
+        Settings.HIDE_COMMENT_EGGS.save(true);
+        Surprise campaign = new Surprise(3, "#summerdrop");
+        CommentTools.surpriseFromMilestone();
+        assertSame(campaign, CommentTools.commentSurprise(campaign));
+        assertNull("the mark outlived the construction it was set for",
+                CommentTools.commentSurprise(campaign));
+    }
+
+    /** A site the patch did not mark, which a host update could add, is judged by content and named on the Diagnostics row. */
+    @Test public void anUnmarkedConstructionFallsBackToTheContentAndIsNamedOnce() {
+        Settings.HIDE_COMMENT_EGGS.save(true);
+        HookStatus.clear();
+        Surprise firstComment = new Surprise(CommentTools.FIRST_COMMENT_SURPRISE, null);
+        assertNull(CommentTools.commentSurprise(new Surprise(3, "#summerdrop")));
+        assertSame(firstComment, CommentTools.commentSurprise(firstComment));
+        List<String> missing = HookStatus.missing("comment popup ads");
+        assertEquals("an unmarked site is not named exactly once: " + missing, 1, missing.size());
+        assertTrue(missing.get(0), missing.get(0).contains("CommentSurpriseStruct"));
+        assertTrue("the family is missing from the row: " + HookStatus.report(),
+                HookStatus.report().stream().anyMatch(line -> line.startsWith("comment popup ads:")));
+    }
+
+    @Test public void theSwitchOffKeepsEveryPath() {
+        Settings.HIDE_COMMENT_EGGS.save(false);
+        Surprise campaign = new Surprise(3, "#summerdrop");
+        CommentTools.surpriseFromPage(CommentTools.PAGE_SCENE_DEFAULT);
+        assertSame(campaign, CommentTools.commentSurprise(campaign));
+        CommentTools.surpriseFromPublish();
+        assertSame(campaign, CommentTools.commentSurprise(campaign));
     }
 
     @Test public void theSwitchOnDropsAKeywordSurpriseAndOffKeepsIt() {
