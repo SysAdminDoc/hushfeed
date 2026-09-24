@@ -83,6 +83,10 @@ Login trouble is the most common complaint about any patched TikTok. These are t
 - Facebook login can't work on a patched build. Facebook checks the app's signing key, and a patched TikTok carries your manager's key instead of TikTok's. Log in with your email or phone number and a code, or with Google.
 - Hide CAPTCHA popups leaves login and account checks on screen, so it shouldn't be the cause. If a login stalls with nothing showing, turn it off and try once more to rule it out.
 
+### A LIVE auction says bidding is unavailable
+
+A bid from a patched TikTok can fail with "Bidding is temporarily unavailable", and other payments may be refused the same way. TikTok's security library, the one that signs every request the app sends, reads the app's signing certificate. A patched TikTok carries your manager's certificate instead of TikTok's, and no patch can change what that library reads. Bid and buy from the official app.
+
 ### Patching stops at 24 or 25 percent
 
 The manager has run short of memory. Step 4 of [Install](#install) says which limit to change and what to try if it still stalls.
