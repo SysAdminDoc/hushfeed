@@ -211,6 +211,9 @@ public final class Probe extends Instrumentation {
                     case "banner-evidence":
                         Log.i(TAG, "ok banner-evidence\n" + bannerEvidence(intent.getStringExtra("aid")));
                         break;
+                    case "stripkeys":
+                        Log.i(TAG, "ok stripkeys " + stripKeys());
+                        break;
                     case "webviews": {
                         // Which page a WebView is showing and what it was built with. Hosts and
                         // paths only: a query can carry tokens, so it is never printed.
@@ -2211,6 +2214,52 @@ public final class Probe extends Instrumentation {
             return "banners=" + banners.size() + "\nsearchBanners=" + search + "\ntakoBanners=" + tako
                     + "\notherBanners=" + unknown + "\nexpectedPublicVideo=" + (expectedId == null ? "not checked" :
                     String.valueOf(expectedId.equals(model.getMethod("getAid").invoke(aweme))));
+        }
+
+        /**
+         * The component keys of the current video's anchors (the strips above the caption) and
+         * bottom banners, as TikTok names them: anchor_poi, anchor_3rdparty, bottom_banner_search_rs.
+         * Identifiers only, never a strip's text.
+         */
+        private String stripKeys() throws Exception {
+            Object aweme = loader.loadClass("app.morphe.extension.tiktok.blockauthor.CurrentVideoAuthor")
+                    .getMethod("getAweme").invoke(null);
+            if (aweme == null) return "aweme=null";
+            Class<?> model = loader.loadClass("com.ss.android.ugc.aweme.feed.model.Aweme");
+            List<String> anchorKeys = new ArrayList<>();
+            Object anchors = model.getMethod("getAnchors").invoke(aweme);
+            if (anchors instanceof List) {
+                for (Object anchor : (List<?>) anchors) {
+                    Object key = anchor == null ? null : anchor.getClass().getMethod("getComponentKey").invoke(anchor);
+                    Object type = anchor == null ? null : optionalCall(anchor, "getType");
+                    anchorKeys.add(safeKey(key) + "/" + (type instanceof Number ? type : "?"));
+                }
+            }
+            List<String> bannerKeys = new ArrayList<>();
+            Object banners = model.getMethod("getBanners").invoke(aweme);
+            if (banners instanceof List) {
+                for (Object banner : (List<?>) banners) {
+                    Object key = banner == null ? null : banner.getClass().getField("bannerKey").get(banner);
+                    Object component = key == null ? null : key.getClass().getField("componentKey").get(key);
+                    bannerKeys.add(safeKey(component));
+                }
+            }
+            return "anchors=" + anchorKeys + " banners=" + bannerKeys;
+        }
+
+        /** A component key as TikTok spells them, or a placeholder for anything that is not one. */
+        private static String safeKey(Object key) {
+            if (!(key instanceof String)) return "none";
+            String text = (String) key;
+            return text.matches("[a-z0-9_]{1,80}") ? text : "not-a-key";
+        }
+
+        private static Object optionalCall(Object target, String method) {
+            try {
+                return target.getClass().getMethod(method).invoke(target);
+            } catch (Throwable ignored) {
+                return null;
+            }
         }
 
         /** Real current model and patched native getter, on a detached list. No place or creator text. */
