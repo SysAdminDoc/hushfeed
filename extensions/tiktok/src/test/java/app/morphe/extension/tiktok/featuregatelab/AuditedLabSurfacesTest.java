@@ -2,7 +2,6 @@ package app.morphe.extension.tiktok.featuregatelab;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -27,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,9 +58,20 @@ public class AuditedLabSurfacesTest {
         Shadows.shadowOf(Looper.getMainLooper()).idle();
         FeatureGateDetailFragment.setDetailChangeTestHookForTests(null);
         FeatureGateCatalog.resetForTests();
+        FeatureGateLabFragment.resetForTests();
         FeatureGateLabSession.resetForTests();
         FeatureGateLabUndo.resetForTests();
         SettingsManagerObservationRecorder.clear();
+    }
+
+    /** The fake catalogue and the session this began are not left for the next class to find. */
+    @After public void leaveNothingBehind() throws Exception {
+        FeatureGateLabFragment.awaitSearchForTests();
+        FeatureGateCatalog.awaitForTests();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        FeatureGateCatalog.resetForTests();
+        FeatureGateLabSession.resetForTests();
+        Utils.setContext(RuntimeEnvironment.getApplication());
     }
 
     @Test public void aSearchThatMatchesNothingSaysSoAndOffersToClearItself() throws Exception {
@@ -146,8 +157,9 @@ public class AuditedLabSurfacesTest {
             assertEquals("Back did not leave the page", 0, manager.getBackStackEntryCount());
             assertFalse(detail.isAdded());
             assertTrue("the Lab did not come back", lab.isAdded());
-            assertNotEquals("nothing was typed, so nothing was lost",
-                    "Field edits were not saved", ShadowToast.getTextOfLatestToast());
+            // No toast at all: nothing was typed, so there was nothing to say was lost.
+            assertNull("a toast was shown on the way back: " + ShadowToast.getTextOfLatestToast(),
+                    ShadowToast.getTextOfLatestToast());
         }
     }
 

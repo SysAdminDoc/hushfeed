@@ -98,7 +98,7 @@ public class TabSelectionPreference extends Preference {
     private void refreshSummary() {
         Set<String> selected = parseEnabledKeys(value);
         List<OptionRow> observedOptions = getObservedOptions();
-        if (nothingSeenYet(observedOptions)) {
+        if (nothingSeenYet()) {
             setSummary(bottomTabs ? "Open the feed once so Hushfeed can see which bottom tabs TikTok loaded." : "Open the feed once so Hushfeed can see which tabs TikTok loaded.");
             return;
         }
@@ -174,7 +174,7 @@ public class TabSelectionPreference extends Preference {
         int optionInset = Math.max(1, SettingsUi.dp(getContext(), 1));
         optionsContainer.setPadding(optionInset, optionInset, optionInset, optionInset);
 
-        boolean empty = nothingSeenYet(observedOptions);
+        boolean empty = nothingSeenYet();
         if (empty) {
             TextView emptyState = new TextView(context);
             emptyState.setText(L10n.t(context, bottomTabs
@@ -268,15 +268,22 @@ public class TabSelectionPreference extends Preference {
     }
 
     /**
-     * True until TikTok has been seen loading a tab beyond the ones every install has.
+     * True until TikTok has been seen loading its tabs.
      *
-     * <p>Home and Profile are added to every bottom list and For You to every feed list, so
-     * a list of only those is one TikTok has not been watched loading yet. The bottom list
-     * was held to one row, which its two always-present rows never met, so its "open the
-     * feed once" state could not show and the row summary named tabs nothing had loaded.
+     * <p>Read from the observed setting, not the row count. The setting starts as the one tab
+     * every install has (Home, or For You), and the observer writes the whole bar it saw, Home
+     * and Profile included, so a stored value with nothing beyond that first tab is one TikTok
+     * has not been watched loading yet, and a bar seen to hold only Home and Profile is not.
+     * The bottom list used to be held to one row, which its two always-present rows never met,
+     * so its "open the feed once" state could not show and the row said All loaded tabs before
+     * anything had loaded.
      */
-    private boolean nothingSeenYet(List<OptionRow> observedOptions) {
-        return observedOptions.size() <= (bottomTabs ? 2 : 1);
+    private boolean nothingSeenYet() {
+        Set<String> observed = new LinkedHashSet<>(bottomTabs
+                ? BottomNavigationTabOptions.parseObservedKeys(Settings.BOTTOM_NAVIGATION_OBSERVED_TABS.savedValue())
+                : NavigationTabOptions.parseObservedKeys(Settings.FEED_NAVIGATION_OBSERVED_TABS.savedValue()));
+        observed.remove(bottomTabs ? BottomNavigationTabOptions.HOME : NavigationTabOptions.HOT);
+        return observed.isEmpty();
     }
 
     /** Puts every row's tick in step with the selection, without rebuilding the dialog. */

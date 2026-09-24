@@ -173,13 +173,18 @@ class RuntimeViewIdAnchorsTest {
     }
 
     /**
-     * An owner that loads many ids used to pass any of them. Every group's tell is now held to
-     * the other ids its owner loads on the declared target: pointed at any one of them, the
-     * group must fail. The review's own examples are asserted by name as well, so a change to
-     * the sweep cannot quietly drop them.
+     * A tell has to be doing work: its owner loads more than one id, so the line would fail
+     * without one, and the verdict already holds that the tell picks the group's id alone.
+     *
+     * <p>The first form of this test swapped each group's id for a sibling and expected
+     * BROKEN, which the verdict guarantees by construction: the tell is evaluated against the
+     * owner's uses, and the name only enters as the answer to compare against, so 801 swaps
+     * could not fail for any reason but the test's own wiring. What can fail is a tell carried
+     * by a single-id owner, decoration the next edit to that owner will trust. An owner that
+     * loads ids the verdict cannot see, through an array payload, is reported by owned() itself.
      */
     @Test
-    fun `every owner tells its id apart from every other id it loads`() {
+    fun `every tell is carried by an owner that needs one`() {
         val compatibility = AppCompatibilities.tiktok4703().single()
         val version = checkNotNull(compatibility.targets.single().version)
         val apk = Fixtures.files {
@@ -188,41 +193,14 @@ class RuntimeViewIdAnchorsTest {
         val appPackage = checkNotNull(compatibility.packageName)
         val anchors = anchors()
         val facts = facts(apk, anchors, appPackage)
-        val baseline = coverage(facts, anchors, appPackage)
-        val owned = baseline.filter { it.state == State.OWNED }
-        assertTrue("too few owned groups to sweep: ${owned.size}", owned.size > 40)
-        val survived = mutableListOf<String>()
-        var tried = 0
-        for (verdict in owned) {
-            val anchor = verdict.anchor
-            val names = facts.tables[packageOf(anchor, appPackage)].orEmpty()
-            val wanted = names.getValue(anchor.names.first { it in names }).single()
-            for (other in verdict.candidates - wanted) {
-                // A sibling with no single name of its own in this package cannot be pointed at.
-                val otherName = names.entries.firstOrNull { (_, ids) -> ids == listOf(other) }?.key ?: continue
-                tried++
-                val result = coverage(facts, listOf(anchor.copy(names = listOf(otherName))), appPackage).single()
-                if (result.state != State.BROKEN) {
-                    survived += "${anchor.lookup} pointed at $otherName (${hex(other)}) still passes: ${result.detail}"
-                }
-            }
-        }
-        assertTrue("the owners offered too few sibling ids to try: $tried", tried > 50)
-        assertEquals(emptyList<String>(), survived)
-        println("${apk.name}: $tried sibling ids tried against ${owned.size} owners, none passed")
-
-        val examples = mapOf(
-            "inbox/InboxFilter.java|SYSTEM_ROW_IDS|uy5" to "kp1",
-            "inbox/InboxFilter.java|HEADER_SEARCH_IDS|kp1" to "fg5",
-            "feed/VideoOverlayHider.java|SURVEY_IDS|f7u" to "liy",
-            "comment/CommentTools.java|DISLIKE_BUTTON_IDS|k0k" to "mmt",
-            "comment/CommentTools.java|DISLIKE_ICON_IDS|mmt" to "k0k",
-        )
-        val changed = anchors.filter { it.lookup in examples }.map { it.copy(names = listOf(examples.getValue(it.lookup))) }
-        assertEquals("the review's examples are not all in the table", examples.size, changed.size)
-        val passed = coverage(facts, changed, appPackage).filter { it.state != State.BROKEN }
-            .map { "${it.anchor.lookup} at ${it.anchor.names}: ${it.detail}" }
-        assertEquals(emptyList<String>(), passed)
+        val owned = coverage(facts, anchors, appPackage).filter { it.state == State.OWNED }
+        assertTrue("too few owned groups to check: ${owned.size}", owned.size > 40)
+        val told = owned.filter { it.anchor.tell != null }
+        assertTrue("too few tells to check: ${told.size}", told.size > 10)
+        val idle = told.filter { it.candidates.size < 2 }
+            .map { "${it.anchor.lookup}: ${it.anchor.tell} on an owner that loads ${it.candidates.size} id" }
+        assertEquals(emptyList<String>(), idle)
+        println("${apk.name}: ${told.size} tells, each on an owner that loads ${told.minOf { it.candidates.size }} ids or more")
     }
 
     private data class Anchor(
@@ -294,6 +272,8 @@ class RuntimeViewIdAnchorsTest {
         val layouts: Map<Int, List<String>>,
         val elements: Map<String, List<IdUse>>,
         val semantic: SemanticLiterals,
+        /** Every id in every package's table, to tell a table id among the literals a class loads. */
+        val allIds: Set<Int>,
     )
 
     private fun facts(apk: File, anchors: List<Anchor>, appPackage: String): Facts {
@@ -325,7 +305,7 @@ class RuntimeViewIdAnchorsTest {
                 }
             }
         }
-        return Facts(tables, loaded, classUses, layouts, elements, semantic)
+        return Facts(tables, loaded, classUses, layouts, elements, semantic, allIds)
     }
 
     /** The layouts a layout owner inflates, in the order of their ids, each path once. */
@@ -413,6 +393,19 @@ class RuntimeViewIdAnchorsTest {
             }
         }
         val candidates = uses.map { it.id }.toSet()
+        // A table id the owner loads with no use this can read comes through an array payload,
+        // which no tell can name. It is a sibling the line cannot be told from, so the line is
+        // broken until the owner loads it another way or the group moves, rather than passing
+        // as a single-id owner while the payload holds the rest.
+        if (owner is Owner.ClassLiteral) {
+            val unseen = facts.loaded[descriptor(owner.className)].orEmpty().intersect(facts.allIds) - candidates
+            if (unseen.isNotEmpty()) {
+                return Coverage(anchor, State.BROKEN,
+                    "$loads, but it also loads ${unseen.size} table id(s) with no use this can read, an array payload: " +
+                        unseen.joinToString { hex(it) },
+                    candidates)
+            }
+        }
         val tell = anchor.tell
         if (tell == null) {
             return if (candidates.size <= 1) Coverage(anchor, State.OWNED, loads, candidates)

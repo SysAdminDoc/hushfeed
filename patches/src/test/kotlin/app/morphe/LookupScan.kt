@@ -81,6 +81,10 @@ internal object LookupScan {
             val source = Source(file.relativeTo(root).invariantSeparatorsPath, text)
             for (call in calls(source)) {
                 val site = "${source.path}:${lineOf(text, call.offset)}"
+                if (call.problem != null) {
+                    untraced += Untraced(site, call.problem)
+                    continue
+                }
                 val trace = trace(source, call.nameExpr, call.packageExpr, source.enclosing(call.offset), 0, mutableSetOf())
                 for (problem in trace.problems) untraced += Untraced(site, problem)
                 for ((named, packageSuffix) in trace.values) {
@@ -95,23 +99,53 @@ internal object LookupScan {
         return Result(lookups, untraced, framework)
     }
 
-    private class Call(val offset: Int, val nameExpr: String, val packageExpr: String)
+    /** A lookup call site, or a call in the shape of one that could not be read, with why. */
+    private class Call(val offset: Int, val nameExpr: String, val packageExpr: String, val problem: String? = null)
 
-    /** Every `<cache>.resolve(res, package, name, retry)` on a ResourceIdCache and every `getIdentifier(name, "id", package)`. */
+    /**
+     * Every `<cache>.resolve(res, package, name, retry)` on a ResourceIdCache and every
+     * `getIdentifier(name, "id", package)`.
+     *
+     * <p>A call in either shape that cannot be read the way this reads it is returned as a
+     * problem rather than passed over: a resolve with too few arguments, a four-argument resolve
+     * on a cache this file does not declare, or a getIdentifier whose type is not written as a
+     * literal would otherwise be a lookup that reaches the phone with no table line. A literal
+     * type other than "id" (a dimension, a raw resource) is not a view id and is left alone.
+     */
     private fun calls(source: Source): List<Call> {
         val text = source.text
         val caches = RESOURCE_ID_CACHE_FIELD.findAll(text).map { it.groupValues[1] }.toSet()
         val found = mutableListOf<Call>()
         for (match in RESOLVE_CALL.findAll(text)) {
-            if (source.quoted[match.range.first] || match.groupValues[1] !in caches) continue
+            if (source.quoted[match.range.first]) continue
+            val receiver = match.groupValues[1]
             val arguments = splitArguments(argumentText(text, match.range.last + 1))
-            if (arguments.size < 3) continue
+            if (receiver !in caches) {
+                if (arguments.size == 4) found += Call(match.range.first, "", "",
+                    "a four-argument resolve on $receiver looks like a ResourceIdCache lookup, but this file declares no cache of that name")
+                continue
+            }
+            if (arguments.size < 3) {
+                found += Call(match.range.first, "", "",
+                    "a resolve on $receiver with ${arguments.size} argument(s) cannot be read as (resources, package, name, retry)")
+                continue
+            }
             found += Call(match.range.first, arguments[2].trim(), arguments[1].trim())
         }
         for (match in GET_IDENTIFIER_CALL.findAll(text)) {
             if (source.quoted[match.range.first]) continue
             val arguments = splitArguments(argumentText(text, match.range.last + 1))
-            if (arguments.size != 3 || arguments[1].trim() != "\"id\"") continue
+            if (arguments.size != 3) {
+                found += Call(match.range.first, "", "",
+                    "a getIdentifier with ${arguments.size} argument(s) cannot be read as (name, type, package)")
+                continue
+            }
+            val type = arguments[1].trim()
+            if (!LITERAL.matches(type)) {
+                found += Call(match.range.first, "", "", "the type of a getIdentifier call is not written as a literal: $type")
+                continue
+            }
+            if (type != "\"id\"") continue
             found += Call(match.range.first, arguments[0].trim(), arguments[2].trim())
         }
         return found
@@ -200,13 +234,19 @@ internal object LookupScan {
             return emptyList<Named>() to listOf("$trimmed is not a constant, a local array, a loop variable or a parameter that could be traced")
         }
         METHOD_CALL.matchEntire(trimmed)?.let { match ->
-            // An array a method builds: every String constant its body names counts. Loose on
-            // purpose, since a new constant fed in there is what has to be caught.
+            // An array a method builds: every String constant its body names counts, and so
+            // does every literal written inside braces there, an array built on the spot or a
+            // local array's initializer. Loose on purpose, since a new name fed in there, as a
+            // constant or as a literal, is what has to be caught.
             val body = methodBody(source, match.groupValues[1])
                 ?: return emptyList<Named>() to listOf("${match.groupValues[1]}() is not declared in ${source.path}")
             val referenced = IDENTIFIER_TOKEN.findAll(body).map { it.value }.distinct()
-                .filter { source.constants[it]?.let { constant -> constant.dims >= 0 } == true }
-            val results = referenced.map { names(source, it, depth + 1) }.toList()
+                .filter { it in source.constants }
+            val results = referenced.map { names(source, it, depth + 1) }.toMutableList()
+            for (braced in BRACED.findAll(body)) {
+                val literals = LITERAL.findAll(braced.groupValues[1]).map { it.groupValues[1] }.toList()
+                if (literals.isNotEmpty()) results += listOf(Named("inline", literals)) to emptyList<String>()
+            }
             return results.flatMap { it.first } to results.flatMap { it.second }
         }
         return emptyList<Named>() to listOf("cannot read the name expression $trimmed")
@@ -241,7 +281,9 @@ internal object LookupScan {
         val trimmed = expr.trim()
         if (depth > MAX_DEPTH) return emptySet<String>() to listOf("$trimmed traced too deep")
         if (trimmed.isEmpty() || trimmed == "\"\"") return emptySet<String>() to emptyList()
-        if (GET_PACKAGE_NAME.containsMatchIn(trimmed)) return setOf("app") to emptyList()
+        // The whole expression, not any expression containing the call: `x.getPackageName() +
+        // ".df_search_biz"` is the suffix, read by the concatenation below, not the app.
+        if (GET_PACKAGE_NAME.matches(trimmed)) return setOf("app") to emptyList()
         LITERAL.matchEntire(trimmed)?.let { return setOf(suffixOf(it.groupValues[1])) to emptyList() }
         ternary(trimmed)?.let { (left, right) ->
             val a = packages(source, left, method, depth + 1, seen)
@@ -278,13 +320,18 @@ internal object LookupScan {
 
     private class Caller(val offset: Int, val arguments: List<String>)
 
-    /** Every call of the method in its file, the declaration itself left out. */
+    /**
+     * Every call of the method in its file, the declaration itself left out, and only the calls
+     * with as many arguments as the method has parameters: an overload of another arity would
+     * otherwise be read at this method's parameter index.
+     */
     private fun callers(source: Source, method: Header): List<Caller> {
         val text = source.text
         val headerStarts = source.headers.map { it.start..it.bodyStart }
         return Regex("""(?<![\w.])${Regex.escape(method.name)}\s*\(""").findAll(text)
             .filter { match -> !source.quoted[match.range.first] && headerStarts.none { match.range.first in it } }
             .map { Caller(it.range.first, splitArguments(argumentText(text, it.range.last + 1)).map { a -> a.trim() }) }
+            .filter { it.arguments.count { a -> a.isNotEmpty() } == method.parameters.size }
             .toList()
     }
 
@@ -341,6 +388,10 @@ internal object LookupScan {
             when {
                 inString -> { current.append(c); if (c == '\\') { i++; if (i < arguments.length) current.append(arguments[i]) } else if (c == '"') inString = false }
                 c == '"' -> { inString = true; current.append(c) }
+                // A lambda's arrow is not a closing angle bracket: counted as one, it put the
+                // rest of the list one level down and the commas after it were never split on,
+                // so a call handing a lambda counted fewer arguments than it has.
+                c == '-' && i + 1 < arguments.length && arguments[i + 1] == '>' -> { current.append("->"); i++ }
                 c == '(' || c == '[' || c == '{' || c == '<' -> { depth++; current.append(c) }
                 c == ')' || c == ']' || c == '}' || c == '>' -> { depth--; current.append(c) }
                 c == ',' && depth == 0 -> { parts += current.toString(); current.setLength(0) }
@@ -405,6 +456,10 @@ internal object LookupScan {
     private val INDEXED = Regex("""([A-Za-z_$][\w$]*)\s*\[[^\]]+]""")
     private val ARRAY_LITERAL = Regex("""new\s+String\s*\[]\s*\{(.*)}""", RegexOption.DOT_MATCHES_ALL)
     private val METHOD_CALL = Regex("""(\w+)\s*\(\s*\)""")
-    private val GET_PACKAGE_NAME = Regex("""\.getPackageName\s*\(\s*\)""")
-    private val CONCAT = Regex("""(\w+)\s*\+\s*"([^"]+)"""")
+    /** The inside of one pair of braces with no braces of its own: an array initializer, or a plain block. */
+    private val BRACED = Regex("""\{([^{}]*)}""")
+    /** `x.getPackageName()` as the whole expression, whatever chain of fields and calls x is. */
+    private val GET_PACKAGE_NAME = Regex("""(?:[\w$]+(?:\s*\(\s*\))?\s*\.\s*)*getPackageName\s*\(\s*\)""")
+    /** A base expression plus a literal: a constant, or a getPackageName() chain, and its suffix. */
+    private val CONCAT = Regex("""(.+?)\s*\+\s*"([^"]+)"""", RegexOption.DOT_MATCHES_ALL)
 }
