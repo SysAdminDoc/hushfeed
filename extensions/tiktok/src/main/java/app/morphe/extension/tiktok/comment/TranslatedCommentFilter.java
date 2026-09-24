@@ -18,11 +18,9 @@ import app.morphe.extension.tiktok.settings.Settings;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
@@ -35,17 +33,21 @@ import java.util.WeakHashMap;
  * phrase the original lacked could appear on screen (S22, 2026-09-23: 2 of 14 shown bodies with
  * translation on, 0 of 14 with it off).
  *
- * <p>Two moments cover it. When a batch completes, and before TikTok applies it (the hook sits
- * at the start of the completion), each result's translated text is judged against the comment
+ * <p>Two moments cover it, both hooked by Comment tools, which owns the switch. When a text
+ * batch completes, and before TikTok applies it (the hook sits at the start of the completion
+ * that marks comments translated), each result's translated text is judged against the comment
  * it answers and the cell bound to a blocked one is collapsed. On every later bind, a comment
  * TikTok marks translated is judged by the text the cell will show: {@code text}, which the
  * batch replaced, and {@code translatedText}, which the supplement path fills beside the
- * original. A cell is collapsed by zeroing its layout size and hiding it, and a recycled cell
- * gets both back on the bind that hands it a clean comment.
+ * original. A cell is collapsed by zeroing its layout size and hiding it, and gets both back on
+ * the bind that hands it a clean comment, or any bind once the filter is off.
  *
  * <p>Untranslated comments are left to the page filter. They were judged when the page loaded,
  * and re-judging them on every bind would turn a filter that removes rows into one that also
- * hides the rows it could not remove, which is a different feature.
+ * hides the rows it could not remove, which is a different feature. A voice comment's translated
+ * transcript is left alone for the same reason its original transcript is: the page filter
+ * never judged transcripts, and TikTok's audio completion writes neither the comment's text nor
+ * its translated flag.
  */
 public final class TranslatedCommentFilter {
     private static final String FAMILY = "comment keyword filter";
@@ -76,13 +78,22 @@ public final class TranslatedCommentFilter {
         return Settings.COMMENT_KEYWORD_FILTER.get() && !rules().isEmpty();
     }
 
+    /** Whether some cell is still collapsed, so a bind has one to give back. */
+    public static boolean anyCollapsed() {
+        synchronized (LOCK) {
+            return !COLLAPSED.isEmpty();
+        }
+    }
+
     /**
      * A cell was bound to {@code comment}. Remembers the pair, collapses the cell when the
      * comment is shown translated and the translation is blocked, and gives a collapsed cell
-     * its size back otherwise, the switch going off included.
+     * its size back otherwise, the switch going off included. With the filter off and nothing
+     * collapsed there is nothing to do.
      */
     public static void onCellBound(View itemView, Object comment) {
         if (itemView == null || comment == null) return;
+        if (!active() && !anyCollapsed()) return;
         try {
             String cid = Reflect.string(comment, "getCid", "cid");
             synchronized (LOCK) {
@@ -110,42 +121,56 @@ public final class TranslatedCommentFilter {
     }
 
     /**
+     * A text batch completed: read the comments it asked about and the results off TikTok's
+     * batch runner (see {@code CommentBatchTranslator#completedBatch}) and judge them before
+     * TikTok applies them. Hooked by Comment tools at the start of every completion that marks
+     * comments translated.
+     */
+    public static void onTextBatchComplete(Object runner) {
+        if (runner == null || !active()) return;
+        try {
+            Object[] batch = app.morphe.extension.tiktok.translation.CommentBatchTranslator.completedBatch(runner);
+            if (batch != null) onTranslationsReady((List<?>) batch[0], batch[1]);
+        } catch (Throwable ex) {
+            Logger.printException(() -> "Comment keyword filter could not read a finished translation", ex);
+        }
+    }
+
+    /**
      * A batch completed and TikTok is about to apply it. Judges each result's translated text
      * against the comment it answers and collapses the cell bound to a blocked one.
      *
-     * <p>Pairs by the result's content id when the host writes one, else by position, which is
-     * how TikTok's own completion pairs them (it skips the batch when the counts differ, and so
-     * does this).
+     * <p>Pairs by position, which is how TikTok's text completion applies them: it skips the
+     * whole batch when the counts differ, and so does this, since nothing it skips gets shown.
      */
     public static void onTranslationsReady(List<?> comments, Object results) {
         if (comments == null || comments.isEmpty() || results == null || !active()) return;
         try {
             List<Object> answers = elements(results);
-            if (answers.isEmpty()) return;
-            boolean carries = carriesTranslatedContent(answers.get(0));
+            Object sample = null;
+            for (Object answer : answers) {
+                if (answer != null) {
+                    sample = answer;
+                    break;
+                }
+            }
+            if (sample == null) return;
+            boolean carries = carriesTranslatedContent(sample);
             if (!reportedTranslatedContent) {
                 reportedTranslatedContent = true;
                 if (carries) HookStatus.bound(FAMILY, "translation result text");
-                else HookStatus.missingMember(FAMILY, "field", answers.get(0).getClass().getName(),
+                else HookStatus.missingMember(FAMILY, "field", sample.getClass().getName(),
                         "translatedContent");
             }
             if (!carries) return;
-
-            Map<String, Object> byId = new HashMap<>();
-            for (Object answer : answers) {
-                String id = Reflect.string(answer, "getContentId", "contentId");
-                if (id != null) byId.put(id, answer);
-            }
-            boolean byPosition = byId.isEmpty() && answers.size() == comments.size();
+            if (answers.size() != comments.size()) return;
 
             List<View> cells = new ArrayList<>();
             for (int index = 0; index < comments.size(); index++) {
                 Object comment = comments.get(index);
                 if (comment == null) continue;
                 String cid = Reflect.string(comment, "getCid", "cid");
-                Object answer = cid == null ? null : byId.get(cid);
-                if (answer == null && byPosition) answer = answers.get(index);
-                if (answer == null) continue;
+                Object answer = answers.get(index);
                 String translation = Reflect.string(answer, "getTranslatedContent", "translatedContent");
                 if (!KeywordRules.anyMatches(rules(), translation)) continue;
                 Logger.printDebug(() -> "Comment filter hides a comment whose translation matches");
@@ -198,16 +223,14 @@ public final class TranslatedCommentFilter {
                 || Reflect.field(type, "translatedContent") != null;
     }
 
+    /** The results in their positions, a null one kept in its slot so pairing by position holds. */
     private static List<Object> elements(Object results) {
         List<Object> list = new ArrayList<>();
         if (results instanceof Iterable<?>) {
-            for (Object element : (Iterable<?>) results) if (element != null) list.add(element);
+            for (Object element : (Iterable<?>) results) list.add(element);
         } else if (results.getClass().isArray()) {
             int length = java.lang.reflect.Array.getLength(results);
-            for (int index = 0; index < length; index++) {
-                Object element = java.lang.reflect.Array.get(results, index);
-                if (element != null) list.add(element);
-            }
+            for (int index = 0; index < length; index++) list.add(java.lang.reflect.Array.get(results, index));
         } else {
             list.add(results);
         }

@@ -23,9 +23,11 @@ import app.morphe.util.findMutableMethodOf
 import app.morphe.util.findInstructionIndicesReversedOrThrow
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.ClassDef
+import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/translation/CommentBatchTranslator;"
@@ -100,6 +102,56 @@ private fun BytecodePatchContext.completionCarriers(): List<MutableMethod> {
     }
     return carriers
 }
+
+private const val COMMENT_DESCRIPTOR = "Lcom/ss/android/ugc/aweme/comment/model/Comment;"
+
+/**
+ * The completion carriers that apply a text batch: the ones that mark comments translated.
+ * The audio completion carries the same anchor but writes a voice comment's transcript and
+ * leaves the comment's text and its translated flag alone. Comment tools judges translations
+ * here, before TikTok applies them.
+ *
+ * <p>Lenient where [completionCarriers] is strict: a carrier of a shape the hook cannot take is
+ * left out rather than stopping the build, since the comment filters do not own this hook and
+ * still judge every translated comment at its bind without it.
+ */
+internal fun BytecodePatchContext.textTranslationCompletionCarriers(): List<MutableMethod> {
+    val carriers = mutableListOf<MutableMethod>()
+    classDefForEach { classDef ->
+        for (method in classDef.methods) {
+            if (isTextTranslationCompletionCarrier(classDef, method)) {
+                carriers += mutableClassDefBy(classDef).findMutableMethodOf(method)
+            }
+        }
+    }
+    return carriers
+}
+
+/**
+ * Whether [method] of [classDef] finishes a text batch in a shape the completion hook can take:
+ * it carries the completion anchor, marks comments translated, returns V, and is either an
+ * outlined static taking the runner or the runner's own `run()`.
+ */
+internal fun isTextTranslationCompletionCarrier(classDef: ClassDef, method: Method): Boolean {
+    val instructions = method.implementation?.instructions ?: return false
+    if (instructions.none { it.getReference<StringReference>()?.string == COMPLETION_ANCHOR }) return false
+    val marksTranslated = instructions.any { instruction ->
+        instruction.getReference<MethodReference>()?.let {
+            it.definingClass == COMMENT_DESCRIPTOR && it.name == "setTranslated"
+        } == true
+    }
+    if (!marksTranslated) return false
+    val isStatic = AccessFlags.STATIC.isSet(method.accessFlags)
+    val outlined = isStatic && method.parameterTypes.size == 1 &&
+        method.parameterTypes.single().startsWith("L")
+    val own = !isStatic && method.name == "run" && method.parameterTypes.isEmpty() &&
+        classDef.holdsResultsAndTask()
+    return method.returnType == "V" && (outlined || own)
+}
+
+/** Whether [method] carries the batch completion anchor at all, text or audio. */
+internal fun carriesTranslationCompletionAnchor(method: Method): Boolean =
+    method.implementation?.instructions?.any { it.getReference<StringReference>()?.string == COMPLETION_ANCHOR } == true
 
 /** Exactly two instance reference fields, one of them a List: the results and the task. */
 private fun ClassDef.holdsResultsAndTask(): Boolean {

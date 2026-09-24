@@ -28,6 +28,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.RobolectricTestRunner;
@@ -490,36 +493,43 @@ public class CommentBatchTranslatorTest {
                 1, NativeManager.requests);
     }
 
-    /** Robolectric advances SystemClock.elapsedRealtime as the paused looper is idled. */
-    @Test public void aBatchTikTokTranslatedOnItsOwnIsJudgedByTheKeywordFilterBeforeItShows() {
-        // The switch is off, so nothing here asked for the batch, but the keyword filter has a
-        // word to look for, and the completion is the one place a translation can be judged
-        // before TikTok writes it into the comment and repaints the cell.
+    /**
+     * The keyword filter reads a finished batch through {@link CommentBatchTranslator#completedBatch}:
+     * the comments TikTok asked about and the results it got, off the runner its completion hook
+     * is handed. The filter's own hook is Comment tools', so the translator's completion leaves a
+     * batch it did not ask for alone even with the filter on, and judging it is covered where the
+     * filter lives (TranslatedCommentFilterTest).
+     */
+    @Test public void aFinishedBatchIsReadOffTikTokRunnerForTheKeywordFilter() {
         Settings.COMMENT_BATCH_TRANSLATION.save(false);
         Settings.COMMENT_KEYWORD_FILTER.save(true);
         Settings.COMMENT_BLOCKED_KEYWORDS.save("the");
         try {
             Comment comment = new Comment("aid-own", "cid-own");
             comment.text = "el gato";
+            List<Translation> results = Arrays.asList(new Translation("cid-own", "the cat"));
+            Runner runner = new Runner(results, comment);
+
+            Object[] batch = CommentBatchTranslator.completedBatch(runner);
+            assertNotNull("the runner's batch was not read", batch);
+            assertEquals(Arrays.asList(comment), batch[0]);
+            assertSame(results, batch[1]);
+            assertNull("a runner that lost its task was read anyway",
+                    CommentBatchTranslator.completedBatch(new RunnerWithoutTask(results)));
+            assertNull(CommentBatchTranslator.completedBatch(null));
+
             Anchor anchor = new Anchor(comment, new TranslationContext("aid-own"));
             View cell = new View(context);
             cell.setLayoutParams(new android.view.ViewGroup.LayoutParams(
                     android.view.ViewGroup.LayoutParams.MATCH_PARENT,
                     android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
             CommentBatchTranslator.registerCommentCell(cell, anchor);
-            assertEquals("the switch is off, so nothing should have been asked for",
-                    0, NativeManager.requests);
-            assertEquals("a clean comment's cell was touched", View.VISIBLE, cell.getVisibility());
             int handled = CommentBatchTranslator.completionsHandledForTests();
-
-            CommentBatchTranslator.onNativeBatchComplete(new Runner(
-                    Arrays.asList(new Translation("cid-own", "the cat")), comment));
-
+            CommentBatchTranslator.onNativeBatchComplete(runner);
             assertEquals("a batch nobody asked for was counted as handled", handled,
                     CommentBatchTranslator.completionsHandledForTests());
-            assertEquals("the cell showing a blocked translation is still up",
-                    View.GONE, cell.getVisibility());
-            assertEquals(0, cell.getLayoutParams().height);
+            assertEquals("the translator judged a batch the filter's own hook owns",
+                    View.VISIBLE, cell.getVisibility());
         } finally {
             Settings.COMMENT_KEYWORD_FILTER.save(false);
             Settings.COMMENT_BLOCKED_KEYWORDS.save("");
@@ -527,6 +537,7 @@ public class CommentBatchTranslatorTest {
         }
     }
 
+    /** Robolectric advances SystemClock.elapsedRealtime as the paused looper is idled. */
     private static void idleFor(long millis) {
         Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(millis));
     }

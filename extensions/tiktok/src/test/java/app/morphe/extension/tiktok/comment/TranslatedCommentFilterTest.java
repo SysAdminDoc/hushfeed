@@ -90,6 +90,9 @@ public class TranslatedCommentFilterTest {
     @After public void tearDown() {
         Settings.COMMENT_KEYWORD_FILTER.save(false);
         Settings.COMMENT_BLOCKED_KEYWORDS.save("");
+        Settings.BLOCK_FROM_COMMENT.resetToDefault();
+        Settings.COMMENT_LINKS.resetToDefault();
+        Settings.COMMENT_BATCH_TRANSLATION.resetToDefault();
         HookStatus.clear();
         TranslatedCommentFilter.resetForTests();
     }
@@ -252,6 +255,159 @@ public class TranslatedCommentFilterTest {
         List<String> missing = HookStatus.missing(FAMILY);
         assertEquals(missing.toString(), 1, missing.size());
         assertTrue(missing.toString(), missing.get(0).contains("isTranslated"));
+    }
+
+    /**
+     * TikTok's completion collapses a cell, and the LiveData rebind that follows collapses it
+     * again. The second collapse must not save the collapsed size as the original, or the cell
+     * would stay hidden once it is given back.
+     */
+    @Test public void aCellCollapsedTwiceGetsItsOwnSizeBack() {
+        Comment comment = new Comment("cid-1", "the cat");
+        comment.isTranslated = true;
+        View cell = cell();
+        TranslatedCommentFilter.onCellBound(cell, comment);
+        TranslatedCommentFilter.onTranslationsReady(Arrays.asList(comment),
+                Arrays.asList(new Result("cid-1", "the cat")));
+        TranslatedCommentFilter.onCellBound(cell, comment);
+        assertCollapsed(cell);
+
+        Settings.COMMENT_KEYWORD_FILTER.save(false);
+        TranslatedCommentFilter.onCellBound(cell, comment);
+
+        assertShowing(cell);
+    }
+
+    /**
+     * TikTok's text completion applies results by position whatever ids they carry, so the
+     * translation judged for a comment is the one that will land in it.
+     */
+    @Test public void resultsPairByPositionEvenWhenTheyCarryIds() {
+        Comment first = new Comment("cid-1", "el gato");
+        Comment second = new Comment("cid-2", "un perro");
+        View firstCell = cell();
+        View secondCell = cell();
+        TranslatedCommentFilter.onCellBound(firstCell, first);
+        TranslatedCommentFilter.onCellBound(secondCell, second);
+
+        TranslatedCommentFilter.onTranslationsReady(Arrays.asList(first, second),
+                Arrays.asList(new Result("cid-2", "the dog"), new Result("cid-1", "a cat")));
+
+        assertCollapsed(firstCell);
+        assertShowing(secondCell);
+    }
+
+    /** A batch whose count differs is skipped by TikTok whatever its ids say, and so here. */
+    @Test public void resultsWithIdsThatDoNotMatchTheCountAreNotApplied() {
+        Comment first = new Comment("cid-1", "el gato");
+        Comment second = new Comment("cid-2", "un perro");
+        View firstCell = cell();
+        TranslatedCommentFilter.onCellBound(firstCell, first);
+
+        TranslatedCommentFilter.onTranslationsReady(Arrays.asList(first, second),
+                Arrays.asList(new Result("cid-1", "the cat")));
+
+        assertShowing(firstCell);
+    }
+
+    @Test public void aMissingResultKeepsItsPlace() {
+        Comment first = new Comment("cid-1", "el gato");
+        Comment second = new Comment("cid-2", "un perro");
+        View firstCell = cell();
+        View secondCell = cell();
+        TranslatedCommentFilter.onCellBound(firstCell, first);
+        TranslatedCommentFilter.onCellBound(secondCell, second);
+
+        TranslatedCommentFilter.onTranslationsReady(Arrays.asList(first, second),
+                Arrays.asList(null, new Result("cid-2", "the dog")));
+
+        assertShowing(firstCell);
+        assertCollapsed(secondCell);
+    }
+
+    /**
+     * A batch TikTok translated on its own, finishing through the text completion Comment tools
+     * hooks: the runner is read the way the translator reads it and the cell showing the blocked
+     * translation goes before TikTok writes it in, with the translation switch off.
+     */
+    @Test public void aFinishedTextBatchIsJudgedThroughTikTokRunner() {
+        Settings.COMMENT_BATCH_TRANSLATION.save(false);
+        Comment first = new Comment("cid-1", "el gato");
+        Comment second = new Comment("cid-2", "un perro");
+        View firstCell = cell();
+        View secondCell = cell();
+        TranslatedCommentFilter.onCellBound(firstCell, first);
+        TranslatedCommentFilter.onCellBound(secondCell, second);
+
+        TranslatedCommentFilter.onTextBatchComplete(new Runner(
+                Arrays.asList(new Result("cid-1", "the cat"), new Result("cid-2", "a dog")),
+                Arrays.asList(first, second)));
+
+        assertCollapsed(firstCell);
+        assertShowing(secondCell);
+
+        TranslatedCommentFilter.onTextBatchComplete(new Object());
+        TranslatedCommentFilter.onTextBatchComplete(null);
+    }
+
+    /**
+     * The production bind path is Comment tools', and it has to give a collapsed cell back once
+     * the filter goes off, however the other comment tools are set, since a pooled cell keeps
+     * its zero size until something restores it.
+     */
+    @Test public void theCommentToolsBindGivesACollapsedCellBackOnceTheFilterIsOff() {
+        Settings.BLOCK_FROM_COMMENT.save(false);
+        Settings.COMMENT_LINKS.save(false);
+        CellComment comment = new CellComment("cid-1", "the cat");
+        comment.isTranslated = true;
+        View cell = cell();
+
+        CommentTools.registerCommentCell(cell, new CellManager(comment));
+        assertCollapsed(cell);
+
+        Settings.COMMENT_KEYWORD_FILTER.save(false);
+        CommentTools.registerCommentCell(cell, new CellManager(new CellComment("cid-2", "un perro")));
+
+        assertShowing(cell);
+        assertFalse(TranslatedCommentFilter.anyCollapsed());
+    }
+
+    /** The comment a bound cell's state holder carries, with the members Comment tools looks for. */
+    public static class CellComment extends Comment {
+        CellComment(String cid, String text) {
+            super(cid, text);
+        }
+
+        public Object getUser() { return null; }
+    }
+
+    /** A bound cell's state holder, which is where Comment tools finds the comment. */
+    public static class CellManager {
+        public final Object comment;
+
+        CellManager(Object comment) {
+            this.comment = comment;
+        }
+    }
+
+    /** TikTok's batch task: the comments it asked about. */
+    public static class Task {
+        public final List<Object> LIZ;
+
+        Task(List<?> requested) {
+            LIZ = new java.util.ArrayList<>(requested);
+        }
+    }
+
+    /** TikTok's batch runner, as the completion hook is handed it: results, then the task. */
+    public static class Runner {
+        public final Object l0;
+        public final Task l1;
+
+        Runner(Object results, List<?> requested) {
+            l0 = results;
+            l1 = new Task(requested);
+        }
     }
 
     private static View cell() {

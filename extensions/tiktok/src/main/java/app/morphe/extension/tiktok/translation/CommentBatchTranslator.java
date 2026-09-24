@@ -15,7 +15,6 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.diagnostics.HookStatus;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.BaseSettings;
-import app.morphe.extension.tiktok.comment.TranslatedCommentFilter;
 import app.morphe.extension.tiktok.settings.Settings;
 
 import java.lang.ref.WeakReference;
@@ -147,22 +146,16 @@ public final class CommentBatchTranslator {
 
     public static void registerCommentCell(View itemView, Object manager) {
         if (itemView == null || manager == null) return;
-        boolean translating = !disabledForSession && Settings.COMMENT_BATCH_TRANSLATION.get();
-        // The keyword filter judges a translated comment at its bind, TikTok's own
-        // translations included, so the cell is read whenever it has a word to look for.
-        boolean judging = TranslatedCommentFilter.active();
-        if (!translating && !judging) return;
+        if (disabledForSession || !Settings.COMMENT_BATCH_TRANSLATION.get()) return;
 
         try {
             AnchorParts parts = resolveAnchorParts(manager);
             if (parts == null) {
                 // Nothing on the cell's manager looks like a comment plus a native translator,
                 // so every comment of this kind takes this path and the feature does nothing.
-                if (translating) noteCellAnchorMiss(manager.getClass().getName());
+                noteCellAnchorMiss(manager.getClass().getName());
                 return;
             }
-            if (judging) TranslatedCommentFilter.onCellBound(itemView, parts.comment);
-            if (!translating) return;
             noteCellAnchorResolved(manager.getClass().getName());
             HookStatus.bound(FAMILY, "cell anchor");
             Object comment = parts.comment;
@@ -337,11 +330,6 @@ public final class CommentBatchTranslator {
         // translation batch whether or not the feature asked for one. With the switch off and
         // nothing outstanding there is nothing here to do, and everything below it walks the
         // declared fields of two objects and takes the global lock on TikTok's thread.
-        boolean judging = TranslatedCommentFilter.active();
-        if (!judging && !Settings.COMMENT_BATCH_TRANSLATION.get() && outstandingRequests == 0) return;
-        // Before TikTok applies the batch, which is what the index 0 injection is for: the
-        // keyword filter gets to see each translation and hide its cell before it is shown.
-        if (judging) judgeTranslations(runner);
         if (!Settings.COMMENT_BATCH_TRANSLATION.get() && outstandingRequests == 0) return;
 
         completionsHandledForTests++;
@@ -417,21 +405,16 @@ public final class CommentBatchTranslator {
     }
 
     /**
-     * The keyword filter's look at a finished batch. Reads the runner quietly: a member that is
-     * missing is reported further down, by the feature that owns the hook, when it is on.
+     * The comments a finished batch asked about and the results it got, as {@code {requested,
+     * results}}, read quietly off TikTok's batch runner as a completion hook sees it, or null
+     * when the runner does not have that shape. The keyword filter reads a batch through this.
      */
-    private static void judgeTranslations(Object runner) {
-        if (runner == null) return;
-        try {
-            Object results = readFieldQuiet(runner, runnerField(runner.getClass(), "l0", true));
-            Object task = readFieldQuiet(runner, runnerField(runner.getClass(), "l1", false));
-            Object requested = readFieldQuiet(task, "LIZ");
-            if (requested instanceof List) {
-                TranslatedCommentFilter.onTranslationsReady((List<?>) requested, results);
-            }
-        } catch (Throwable ex) {
-            Logger.printDebug(() -> "[Morphe CommentBatchTranslator] keyword judge failed", asException(ex));
-        }
+    public static Object[] completedBatch(Object runner) {
+        if (runner == null) return null;
+        Object results = readFieldQuiet(runner, runnerField(runner.getClass(), "l0", true));
+        Object task = readFieldQuiet(runner, runnerField(runner.getClass(), "l1", false));
+        Object requested = readFieldQuiet(task, "LIZ");
+        return requested instanceof List ? new Object[] {requested, results} : null;
     }
 
     private static void translateLoadedBatchIfReady(Object anchor, boolean allowVisibleFallback) {

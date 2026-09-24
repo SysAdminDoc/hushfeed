@@ -20,6 +20,7 @@ import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.patches.tiktok.misc.translation.BaseCommentCellBindFingerprint
 import app.morphe.patches.tiktok.misc.translation.CommentListLoadedFingerprint
+import app.morphe.patches.tiktok.misc.translation.textTranslationCompletionCarriers
 import app.morphe.patches.tiktok.shared.callThroughLocals
 import app.morphe.patches.tiktok.shared.constantBefore
 import app.morphe.patches.tiktok.shared.dispatchTarget
@@ -47,6 +48,7 @@ import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/comment/CommentTools;"
+private const val TRANSLATED_COMMENT_FILTER_DESCRIPTOR = "Lapp/morphe/extension/tiktok/comment/TranslatedCommentFilter;"
 private const val COMMENT_DESCRIPTOR = "Lcom/ss/android/ugc/aweme/comment/model/Comment;"
 private const val COMMENT_LIST_DESCRIPTOR = "Lcom/ss/android/ugc/aweme/comment/model/CommentItemList;"
 private const val TOUCH_LISTENER_DESCRIPTOR = "Landroid/view/View\$OnTouchListener;"
@@ -142,6 +144,22 @@ val commentToolsPatch = bytecodePatch(
         // The patcher keeps writes made by a patch that later fails. Each resolver below returns
         // a deferred write, so even the last reply/list/register refusal leaves the APK untouched.
         applyAfterCommentToolsPreflight(
+            {
+                // The keyword filter judges a translation as TikTok's text completion finishes,
+                // before the text lands in the comment. It is hooked here, not only by Translate
+                // comments, because the filter's switch is Comment tools' own and TikTok's own
+                // translations reach it without that patch.
+                val carriers = textTranslationCompletionCarriers()
+                val write: CommentToolsWrite = {
+                    carriers.forEach { carrier ->
+                        carrier.addInstructions(
+                            0,
+                            "invoke-static/range {p0 .. p0}, $TRANSLATED_COMMENT_FILTER_DESCRIPTOR->onTextBatchComplete(Ljava/lang/Object;)V",
+                        )
+                    }
+                }
+                write
+            },
             {
                 val writes = compactCommentHeaderComponents.keys.map { owner ->
                     val method = mutableClassDefBy(owner).methods.singleOrNull(::isCompactCommentHeaderBind)
