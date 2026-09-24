@@ -4,15 +4,19 @@ import static org.junit.Assert.*;
 
 import app.morphe.extension.shared.diagnostics.DiagnosticCategory;
 import app.morphe.extension.shared.diagnostics.DiagnosticRedactor;
+import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.shared.settings.preference.LogBufferManager;
 import app.morphe.extension.tiktok.SettingsContextRule;
+import java.util.ArrayList;
 import java.util.List;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLog;
 
 /** The API request counts the Network request report adds to the diagnostic export. */
 @RunWith(RobolectricTestRunner.class)
@@ -25,6 +29,61 @@ public class NetworkRequestsTest {
 
     @Before public void reset() {
         NetworkRequests.resetForTests();
+        ShadowLog.clear();
+    }
+
+    @After public void debugOff() {
+        BaseSettings.DEBUG.save(false);
+    }
+
+    /**
+     * With debug on, a request to a log host leaves its path in the log, the query cut off and
+     * the host reduced to its domain and kind. That is what a reader chasing the report's log
+     * line needs: the SDK behind a request is named by its path, never by its count.
+     */
+    @Test public void withDebugOnALogHostRequestLeavesItsPathAndNothingElseDoes() {
+        BaseSettings.DEBUG.save(true);
+        NetworkRequests.onCall(new Call(new PathRequest("log16-normal-c-useast1a.tiktokv.com",
+                "/service/2/app_log/?device_id=123&region=us")));
+        NetworkRequests.onCall(new Call(new PathRequest("api16-normal-c-useast1a.tiktokv.com",
+                "/aweme/v1/feed/?count=6")));
+        NetworkRequests.onCall(new Call(new PathRequest("applog.byteoversea.com", "/service/2/app_alert_check/")));
+        assertEquals(List.of(
+                        "[Morphe NetworkRequests] log host path: tiktokv.com log /service/2/app_log/",
+                        "[Morphe NetworkRequests] log host path: byteoversea.com log /service/2/app_alert_check/"),
+                pathLines());
+        // Equal counts sort in map order, so the three lines are held as a set under the header.
+        List<String> lines = NetworkRequests.sectionForTests().lines();
+        assertEquals(HEADER, lines.get(0));
+        assertEquals(java.util.Set.of(
+                        "tiktokv.com log: 1 request, 0 B sent",
+                        "byteoversea.com log: 1 request, 0 B sent",
+                        "tiktokv.com api: 1 request, 0 B sent"),
+                new java.util.HashSet<>(lines.subList(1, lines.size())));
+    }
+
+    @Test public void withDebugOffNoPathIsLogged() {
+        NetworkRequests.onCall(new Call(new PathRequest("log16-normal-c-useast1a.tiktokv.com", "/service/2/app_log/")));
+        assertEquals(List.of(), pathLines());
+        assertEquals(List.of(HEADER, "tiktokv.com log: 1 request, 0 B sent"), NetworkRequests.sectionForTests().lines());
+    }
+
+    /** A build whose request has no path getter still counts the request, and says nothing. */
+    @Test public void aRequestWithoutAPathGetterStillCounts() {
+        BaseSettings.DEBUG.save(true);
+        NetworkRequests.onCall(new Call(new Request("log16-normal-c-useast1a.tiktokv.com", new Body(7))));
+        assertEquals(List.of(), pathLines());
+        assertEquals(List.of(HEADER, "tiktokv.com log: 1 request, 7 B sent"), NetworkRequests.sectionForTests().lines());
+    }
+
+    private static List<String> pathLines() {
+        List<String> lines = new ArrayList<>();
+        for (ShadowLog.LogItem log : ShadowLog.getLogs()) {
+            if (log.msg != null && log.msg.contains("log host path:")) {
+                lines.add(log.msg.substring(log.msg.indexOf("[Morphe NetworkRequests]")));
+            }
+        }
+        return lines;
     }
 
     @Test public void aHostIsKeptByItsDomainAndAKindWithNoRegionInIt() {
@@ -112,6 +171,29 @@ public class NetworkRequestsTest {
 
         public Body getBody() {
             return body;
+        }
+    }
+
+    /** TikTok's client.Request on a build that also answers for its path, the query included. */
+    private static final class PathRequest {
+        private final String host;
+        private final String path;
+
+        PathRequest(String host, String path) {
+            this.host = host;
+            this.path = path;
+        }
+
+        public String getHost() {
+            return host;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public Body getBody() {
+            return null;
         }
     }
 

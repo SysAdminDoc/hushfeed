@@ -8,6 +8,7 @@ package app.morphe.extension.tiktok.privacy;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.diagnostics.HookStatus;
+import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.shared.settings.preference.LogBufferManager;
 
 import java.lang.reflect.Field;
@@ -62,11 +63,13 @@ public final class NetworkRequests implements LogBufferManager.ReportSection {
             }
             Object request = request(call);
             if (request == null) return;
-            record(invokeString(request, "getHost"), bodyLength(request));
+            String host = invokeString(request, "getHost");
+            record(host, bodyLength(request));
             if (!bound) {
                 bound = true;
                 HookStatus.bound("api requests", "SsHttpCall chain");
             }
+            if (isLogHost(host) && BaseSettings.DEBUG.get()) notePath(request, bucket(host));
         } catch (Throwable failure) {
             if (!warned) {
                 warned = true;
@@ -91,6 +94,30 @@ public final class NetworkRequests implements LogBufferManager.ReportSection {
             if (sent >= 0) count[1] += sent;
             else count[2]++;
         }
+    }
+
+    /**
+     * With debug on, the path of a request to a log host, in the log: which SDK sends to those
+     * hosts is what a reader of the report wants to know, and the path names it where the count
+     * cannot. The path only, never the query, and the host only as its domain and kind. Read on
+     * its own so a build whose request has no path getter still counts the request.
+     */
+    private static void notePath(Object request, String bucket) {
+        try {
+            String path = invokeString(request, "getPath");
+            if (path == null) return;
+            int query = path.indexOf('?');
+            String shown = query >= 0 ? path.substring(0, query) : path;
+            Logger.printDebug(() -> "[Morphe NetworkRequests] log host path: " + bucket + " " + shown);
+        } catch (Throwable ignored) {
+            // A path getter that is missing or fails leaves the count as it is.
+        }
+    }
+
+    /** Whether the host's first label says log: the kind the telemetry patches are about. */
+    static boolean isLogHost(String host) {
+        if (host == null || host.trim().isEmpty()) return false;
+        return "log".equals(kind(host.trim().toLowerCase(Locale.ROOT).split("\\.")));
     }
 
     /** "tiktokv.com api": the registrable domain and the kind the first label names. */

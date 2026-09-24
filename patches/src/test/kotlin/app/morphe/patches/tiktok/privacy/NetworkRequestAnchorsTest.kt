@@ -79,6 +79,8 @@ class NetworkRequestAnchorsTest {
 
         val requestClass = classes.getValue(request)
         assertTrue("Request.getHost", requestClass.methods.any { it.name == "getHost" && it.returnType == "Ljava/lang/String;" })
+        // The debug line names a log host's path by this getter; a build without it still counts.
+        assertTrue("Request.getPath", requestClass.methods.any { it.name == "getPath" && it.returnType == "Ljava/lang/String;" })
         assertTrue("Request.getBody", requestClass.methods.any { it.name == "getBody" && it.returnType == body })
         assertTrue("TypedOutput.length", classes.getValue(body).methods.any { it.name == "length" && it.returnType == "J" })
     }

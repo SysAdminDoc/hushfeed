@@ -201,3 +201,54 @@ internal object NpthSecondInitTaskFingerprint : Fingerprint(
     returnType = "V",
     parameters = listOf("Landroid/content/Context;"),
 )
+
+/**
+ * The AppLog pack send. Every pack upload to the log hosts' app_log path goes through this one
+ * method: the pack worker and the real-time sender hand it a pack and read the status it
+ * returns, and it parses the server's config out of the response. On 47.0.3 it is
+ * LX/03R3;->LJFF([String], [B, config, [String], I, String, Map, Z, I, pack)I. Named by the two
+ * strings only it carries together: the response's magic tag and the forward header, both of
+ * which the SDK has kept across builds.
+ */
+internal object AppLogSendPackFingerprint : Fingerprint(
+    returnType = "I",
+    strings = listOf("ss_app_log", "applog_forward"),
+    custom = { method, _ ->
+        method.parameterTypes.size == 10 && method.parameterTypes[1].toString() == "[B"
+    },
+)
+
+/**
+ * The AppLog forward send. The forward worker reads the events flagged for forwarding out of
+ * its own table, deletes them, and posts each pack to the forward hosts straight through the
+ * SDK's network client, never through the pack send above. On 47.0.3 it is
+ * LX/0Aom;->LJII(I, List, JSONObject)V. Named by its own log line, which the SDK has kept
+ * across builds, and by its shape.
+ */
+internal object AppLogForwardSendFingerprint : Fingerprint(
+    returnType = "V",
+    strings = listOf("trySendForward start requestId={}, url={}"),
+    custom = { method, _ ->
+        method.parameterTypes.size == 3 &&
+            method.parameterTypes[1].toString() == "Ljava/util/List;" &&
+            method.parameterTypes[2].toString() == "Lorg/json/JSONObject;"
+    },
+)
+
+/**
+ * The install SDK's activation check. Once a start, the SDK's active job fetches the log host's
+ * app_alert_check path with the advertising id, carrier, SIM region and time zone in the query,
+ * and reads the reply for the word success. This static helper is the one place that fetch goes
+ * out: it takes the SDK's client, the URL and the headers and answers whether the reply said
+ * success. On 47.0.3 it is LX/0fx7;->LIZ(client, String, Z, LX/07Wh, Z, HashMap)Z. Named by the
+ * tag its error lines carry, which the SDK has kept across builds, and by its shape.
+ */
+internal object InstallActiveCheckFingerprint : Fingerprint(
+    returnType = "Z",
+    strings = listOf("Register#active http error = "),
+    custom = { method, _ ->
+        method.parameterTypes.size == 6 &&
+            method.parameterTypes[1].toString() == "Ljava/lang/String;" &&
+            method.parameterTypes[5].toString() == "Ljava/util/HashMap;"
+    },
+)

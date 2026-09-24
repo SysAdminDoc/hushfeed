@@ -148,5 +148,35 @@ val disableTelemetryPatch = bytecodePatch(
         MonitorCrashReportEventFingerprint.method.returnEarlyIfTelemetryDisabled { "return-void" }
         NpthCoreInitTaskFingerprint.method.returnEarlyIfTelemetryDisabled { "return-void" }
         NpthSecondInitTaskFingerprint.method.returnEarlyIfTelemetryDisabled { "return-void" }
+
+        // The AppLog packs themselves. With every entry point above guarded, the SDK still sent its
+        // packs to the log hosts (10 requests, 134 KB over 20 videos on the S22 with the switch on):
+        // the session's launch and terminate events, and events fed through entry points the
+        // facade does not route. The send answers 200 without a request, so the worker takes the
+        // pack as delivered and clears it, rather than keeping it to retry or upload later.
+        AppLogSendPackFingerprint.method.returnEarlyIfTelemetryDisabled { register ->
+            """
+                const/16 v$register, 0xc8
+                return v$register
+            """
+        }
+
+        // The forward mirrors. The forward worker deletes its rows and then posts them through
+        // the SDK's network client rather than the pack send, so a pair of forward requests (one
+        // to the forward path, one to its backup, 26 KB together on the S22) outlived the guard
+        // above. Returning before the post leaves nothing behind: the rows are already gone.
+        AppLogForwardSendFingerprint.method.returnEarlyIfTelemetryDisabled { "return-void" }
+
+        // The install SDK's activation check: a fetch of the log host's app_alert_check path once
+        // a start, with the advertising id, carrier, SIM region and time zone in the query. The
+        // job only reads the reply for the word success, so the helper answers success without
+        // the fetch and the job marks itself done as it would have. Device registration is a
+        // different job and is not touched.
+        InstallActiveCheckFingerprint.method.returnEarlyIfTelemetryDisabled { register ->
+            """
+                const/4 v$register, 0x1
+                return v$register
+            """
+        }
     }
 }
