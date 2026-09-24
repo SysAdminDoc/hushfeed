@@ -47,6 +47,7 @@ private const val PROFILE_DETAIL_PANEL_DESCRIPTOR =
     "Lcom/ss/android/ugc/aweme/detail/panel/ProfileDetailFragmentPanel;"
 private const val TAKO_AI_FILTER_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/feedfilter/TakoAiFilter;"
 private const val CARD_FILTERS_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/feedfilter/CardFilters;"
+private const val SEARCH_LYNX_CARDS_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/feedfilter/SearchLynxCards;"
 private const val FEED_ITEM_LIST_DESCRIPTOR = "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;"
 
 @Suppress("unused")
@@ -244,6 +245,19 @@ val feedFilterPatch = bytecodePatch(
         SearchResultRequestIdFingerprint.method.addInstructions(
             0,
             "invoke-static/range {p0 .. p0}, $EXTENSION_CLASS_DESCRIPTOR->filterSearchAds(Ljava/lang/Object;)V",
+        )
+        // The server-drawn Lynx cards in search, TikTok's Short Drama block among them, are built
+        // from a results chunk's patches and never pass through the list above, so each one is
+        // judged where its row binds it: the Top results' own holder as (this, fragment, patch),
+        // and the other lists' Lynx cell as (this cell, item). Builds without either keep the
+        // rest of the feed filter.
+        SearchLynxHolderBindFingerprint.methodOrNull?.addInstructions(
+            0,
+            "invoke-static/range {p0 .. p2}, $SEARCH_LYNX_CARDS_CLASS_DESCRIPTOR->onHolderBound(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V",
+        )
+        SearchLynxCardBindFingerprint.methodOrNull?.addInstructions(
+            0,
+            "invoke-static/range {p0 .. p1}, $SEARCH_LYNX_CARDS_CLASS_DESCRIPTOR->onCardBound(Ljava/lang/Object;Ljava/lang/Object;)V",
         )
 
         // The Friends tab is a separate feed with its own response type, so none of the

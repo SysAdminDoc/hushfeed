@@ -463,6 +463,39 @@ internal object SearchResultRequestIdFingerprint : Fingerprint(
 )
 
 /**
+ * Binds a server-drawn Lynx card into its row of the search results, TikTok's Short Drama block
+ * among them. TikTok 47.0.3 streams the Top results in chunks and builds these cards from a
+ * chunk's patches, so they never pass through the result list [SearchResultRequestIdFingerprint]
+ * filters. The cell keeps its real name on every fixture, and so does its bind.
+ */
+internal object SearchLynxCardBindFingerprint : Fingerprint(
+    definingClass = "Lcom/ss/android/ugc/aweme/search/lynx/core/ui/component/SearchLynxCardCell;",
+    name = "onBindItemView",
+    returnType = "V",
+)
+
+internal const val SEARCH_MIX_FEED_DESCRIPTOR = "Lcom/ss/android/ugc/aweme/search/pages/result/topsearch/core/model/SearchMixFeed;"
+internal const val DYNAMIC_PATCH_DESCRIPTOR = "Lcom/ss/android/ugc/aweme/discover/mixfeed/DynamicPatch;"
+
+/**
+ * The Top results list's own Lynx card holder binding a card's data into its row (LX/0J8X;->P5
+ * on 47.0.3, called by the results adapter's bind). The Short Drama block is bound here: TikTok
+ * builds it from a streamed chunk's patches and slots it into the adapter, past the result list
+ * [SearchResultRequestIdFingerprint] filters. Named by the real types among its ten parameters:
+ * the DynamicPatch second, the Lynx server-render info fifth and the card itself ninth.
+ */
+internal object SearchLynxHolderBindFingerprint : Fingerprint(
+    returnType = "V",
+    custom = { method, _ ->
+        val parameters = method.parameterTypes.map { it.toString() }
+        parameters.size == 10 &&
+            parameters[1] == DYNAMIC_PATCH_DESCRIPTOR &&
+            parameters[4] == "Lcom/ss/android/ugc/aweme/search/pages/result/topsearch/core/model/LynxSSRInfo;" &&
+            parameters[8] == SEARCH_MIX_FEED_DESCRIPTOR
+    },
+)
+
+/**
  * The Friends tab is its own feed and never arrives as a FeedItemList. Its response carries
  * FriendsFeed wrappers in a real named `friendFeedData` field, and `setRequestId` on that
  * class, which is what the search grid is hooked on, has no callers at all in 46.2.3.

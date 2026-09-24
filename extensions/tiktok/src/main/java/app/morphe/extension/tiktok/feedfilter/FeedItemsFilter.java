@@ -558,6 +558,17 @@ public final class FeedItemsFilter {
         Object patch = Reflect.readField(card, "dynamicPatch");
         if (patch != null) {
             kind.append(Boolean.TRUE.equals(Reflect.readField(patch, "isEcom")) ? " Shop patch" : " patch");
+            String source = searchCardSource(Reflect.readField(patch, "alaSrc"));
+            if (source != null) kind.append(" ").append(source);
+        }
+        if (Reflect.readField(card, "minis") != null) kind.append(" minis");
+        if (Reflect.readField(card, "miniGame") != null) kind.append(" mini game");
+        if (Reflect.readField(card, "entityCard") != null) kind.append(" hub");
+        if (Reflect.readField(card, "nimbleCardInfo") != null) kind.append(" nimble");
+        if (Reflect.readField(card, "commonAladdin") != null) kind.append(" aladdin");
+        if (patch == null) {
+            String source = searchCardSource(Reflect.readField(card, "mAlaSrc"));
+            if (source != null) kind.append(" ").append(source);
         }
         for (String name : SEARCH_AD_FIELDS) {
             if (Reflect.readField(card, name) != null) {
@@ -566,6 +577,21 @@ public final class FeedItemsFilter {
             }
         }
         return kind.toString();
+    }
+
+    /**
+     * A search card's source type (its alaSrc), the name TikTok's server gives the kind of card
+     * it sent, such as a Shop block or a drama module. A card type, not anything the card says:
+     * only letters, digits and underscores are kept, and at most 40 of them.
+     */
+    static String searchCardSource(Object alaSrc) {
+        if (!(alaSrc instanceof String)) return null;
+        StringBuilder out = new StringBuilder();
+        for (char c : ((String) alaSrc).toCharArray()) {
+            if (out.length() == 40) break;
+            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_') out.append(c);
+        }
+        return out.length() == 0 ? null : "src " + out;
     }
 
     /** True when the card is an advert, by its own admission or by the video it wraps. */
