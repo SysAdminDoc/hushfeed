@@ -85,7 +85,7 @@ Login trouble is the most common complaint about any patched TikTok. These are t
 
 ### A LIVE auction says bidding is unavailable
 
-A bid from a patched TikTok can fail with "Bidding is temporarily unavailable", and other payments may be refused the same way. TikTok's security library, the one that signs every request the app sends, reads the app's signing certificate. A patched TikTok carries your manager's certificate instead of TikTok's, and no patch can change what that library reads. Bid and buy from the official app.
+A bid from a patched TikTok can fail with "Bidding is temporarily unavailable", and other payments may be refused the same way. The likely cause is TikTok's security library, which signs the requests TikTok's network stack sends and reads the app's signing certificate while it does. A patched TikTok carries your manager's certificate instead of TikTok's, and Hushfeed doesn't pass itself off as TikTok's own signed app for payment checks. Bid and buy from the official app.
 
 ### Patching stops at 24 or 25 percent
 
