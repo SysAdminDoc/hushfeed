@@ -1251,7 +1251,7 @@
     },
     {
       "name": "Feed tab navigation",
-      "description": "Controls which loaded top and bottom navigation tabs remain visible, blocks newly added tabs when requested, can hide the Tako AI bubble and the unread badges on the bottom tabs, can keep For You from reloading on a Home tap or a pull down, can open TikTok on Following, Friends, Inbox or Profile, and can show TikTok's own feed buttons without a screen reader. Taking the LIVE tab off the bottom bar brings TikTok's LIVE button back to the feed's corner. Switch: Hushfeed settings > Feed tabs.",
+      "description": "Controls which loaded top and bottom navigation tabs remain visible, blocks newly added tabs when requested, can hide the Following and For You names above the feed while swiping between them keeps working, can hide the Tako AI bubble and the unread badges on the bottom tabs, can keep For You from reloading on a Home tap or a pull down, brings TikTok's LIVE button back to the feed's corner when the LIVE tab is taken off the bottom bar, can open TikTok on Following, Friends, Inbox or Profile, and can show TikTok's own feed buttons without a screen reader. Switch: Hushfeed settings > Feed tabs.",
       "category": "Settings",
       "use": true,
       "dependencies": [
@@ -1290,7 +1290,7 @@
     },
     {
       "name": "Fit the video to the screen",
-      "description": "Puts the whole of a vertical video on screen instead of cropping it to the window. On a 9:16 phone nothing changes, because the video already fills it. On a Fold opened up, a squarer phone or a split view the sides or the ends stop being cut off. A second switch does the opposite and crops the video until it covers the screen. Switches: Hushfeed settings > Playback.",
+      "description": "Puts the whole of a vertical video on screen instead of cropping it to the window. On a 9:16 phone nothing changes, because the video already fills it. On a Fold opened up, a squarer phone or a split view the sides or the ends stop being cut off. A second switch, Fill the screen with the video, does the opposite and crops the video until it covers the screen, for the phones where TikTok leaves a black strip under a 9:16 video. Switches: Hushfeed settings > Playback.",
       "category": "Playback",
       "use": false,
       "dependencies": [
@@ -3156,7 +3156,7 @@
     },
     {
       "name": "Show the progress bar",
-      "description": "Shows TikTok's native video seekbar where it would normally be hidden. Switch: Hushfeed settings > App.",
+      "description": "Shows TikTok's native video seekbar where it would normally be hidden, including when one of TikTok's experiments takes it off every video but paid content. Switch: Hushfeed settings > App.",
       "category": "Playback",
       "use": true,
       "dependencies": [
