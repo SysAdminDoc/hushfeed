@@ -553,6 +553,12 @@ Creators hidden on this phone	Creadores ocultos en este dispositivo
 Lock today's budget	Bloquear el presupuesto de hoy
 Logging, hook status and reports	Registros, estado de los hooks e informes
 Long press	Pulsación larga
+Hold speed on Comment	Velocidad al mantener en Comentarios
+A long press on Comment plays the video at the hold speed instead of opening the emoji row. It needs Long press on TikTok default and Seek from the edges off.	Una pulsación larga en Comentarios reproduce el video a la velocidad al mantener en lugar de abrir la fila de emojis. Requiere Pulsación larga en Predeterminado de TikTok y Avanzar desde los bordes desactivado.
+Hold speed on Share	Velocidad al mantener en Compartir
+A long press on Share plays the video at the hold speed instead of opening the quick share row. It needs Long press on TikTok default and Seek from the edges off.	Una pulsación larga en Compartir reproduce el video a la velocidad al mantener en lugar de abrir la fila de compartir rápido. Requiere Pulsación larga en Predeterminado de TikTok y Avanzar desde los bordes desactivado.
+Hold speed on Favorites	Velocidad al mantener en Favoritos
+A long press on Favorites plays the video at the hold speed instead of offering a new collection. It needs Long press on TikTok default and Seek from the edges off.	Una pulsación larga en Favoritos reproduce el video a la velocidad al mantener en lugar de ofrecer una nueva colección. Requiere Pulsación larga en Predeterminado de TikTok y Avanzar desde los bordes desactivado.
 Lowest	La más baja
 Make TikTok yours.	Haz que TikTok sea tuyo.
 Manager	Gestor

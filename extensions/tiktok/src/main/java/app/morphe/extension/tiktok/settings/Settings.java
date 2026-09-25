@@ -18,6 +18,7 @@ import app.morphe.extension.shared.settings.Setting;
 import app.morphe.extension.tiktok.offline.CustomOfflineVideosLimitPatch;
 import app.morphe.extension.shared.settings.StringSetting;
 import app.morphe.extension.tiktok.feedfilter.FeedRuleLimits;
+import app.morphe.extension.tiktok.interaction.GestureActions;
 import app.morphe.extension.tiktok.navigation.BottomNavigationTabOptions;
 import app.morphe.extension.tiktok.navigation.NavigationTabOptions;
 
@@ -118,6 +119,28 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting SAVE_STORY = new BooleanSetting("save_story", FALSE);
     public static final StringSetting DOUBLE_TAP_ACTION = new StringSetting("double_tap_action", "default");
     public static final StringSetting LONG_PRESS_ACTION = new StringSetting("long_press_action", "default");
+    /**
+     * A long press on a side button plays at the hold speed only while TikTok's hold can start
+     * there: the Long press row leaves the press to TikTok, and Seek from the edges isn't seeking
+     * the right third, where the buttons sit. GestureActions.allowNativeEdgeSpeedup decides each
+     * press the same way.
+     */
+    private static final Setting.Availability RAIL_HOLD_POSSIBLE = new Setting.Availability() {
+        @Override
+        public boolean isAvailable() {
+            return !GestureActions.takesLongPress(LONG_PRESS_ACTION.savedValue())
+                    && !(EDGE_SEEK.savedValue() && EDGE_SEEK_SECONDS.savedValue() > 0);
+        }
+    };
+    /** A long press on Comment plays at the hold speed instead of opening the emoji row. */
+    public static final BooleanSetting RAIL_HOLD_COMMENT =
+            new BooleanSetting("rail_hold_comment", FALSE, RAIL_HOLD_POSSIBLE);
+    /** A long press on Share plays at the hold speed instead of opening the quick share row. */
+    public static final BooleanSetting RAIL_HOLD_SHARE =
+            new BooleanSetting("rail_hold_share", FALSE, RAIL_HOLD_POSSIBLE);
+    /** A long press on Favorites plays at the hold speed instead of offering a new collection. */
+    public static final BooleanSetting RAIL_HOLD_FAVORITES =
+            new BooleanSetting("rail_hold_favorites", FALSE, RAIL_HOLD_POSSIBLE);
     /** What a left swipe on a feed video does: TikTok's creator profile, nothing, or the comments. */
     public static final StringSetting SWIPE_LEFT_ACTION = new StringSetting("swipe_left_action", "default");
     public static final BooleanSetting EDGE_SEEK = new BooleanSetting("edge_seek", FALSE);

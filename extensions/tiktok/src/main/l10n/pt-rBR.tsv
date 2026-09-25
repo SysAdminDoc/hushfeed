@@ -553,6 +553,12 @@ Creators hidden on this phone	Criadores escondidos neste aparelho
 Lock today's budget	Travar o limite de hoje
 Logging, hook status and reports	Registros, status dos hooks e relatórios
 Long press	Toque longo
+Hold speed on Comment	Velocidade de segurar em Comentários
+A long press on Comment plays the video at the hold speed instead of opening the emoji row. It needs Long press on TikTok default and Seek from the edges off.	Um toque longo em Comentários reproduz o vídeo na velocidade de segurar em vez de abrir a fileira de emojis. Requer Toque longo no Padrão do TikTok e Avançar pelas bordas desligado.
+Hold speed on Share	Velocidade de segurar em Compartilhar
+A long press on Share plays the video at the hold speed instead of opening the quick share row. It needs Long press on TikTok default and Seek from the edges off.	Um toque longo em Compartilhar reproduz o vídeo na velocidade de segurar em vez de abrir a fileira de compartilhamento rápido. Requer Toque longo no Padrão do TikTok e Avançar pelas bordas desligado.
+Hold speed on Favorites	Velocidade de segurar em Favoritos
+A long press on Favorites plays the video at the hold speed instead of offering a new collection. It needs Long press on TikTok default and Seek from the edges off.	Um toque longo em Favoritos reproduz o vídeo na velocidade de segurar em vez de oferecer uma nova coleção. Requer Toque longo no Padrão do TikTok e Avançar pelas bordas desligado.
 Lowest	A mais baixa
 Make TikTok yours.	Deixe o TikTok do seu jeito.
 Manager	Gerenciador

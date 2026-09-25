@@ -383,6 +383,18 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
                             + "The middle third keeps the Long press action.", Settings.EDGE_SEEK));
             addPreference(new NumberInputPreference(context, "Seek by",
                     "How far each edge press moves the video.", Settings.EDGE_SEEK_SECONDS, "%1$s s"));
+            addPreference(new TogglePreference(context, "Hold speed on Comment",
+                    "A long press on Comment plays the video at the hold speed instead of opening the emoji row. "
+                            + "It needs Long press on TikTok default and Seek from the edges off.",
+                    Settings.RAIL_HOLD_COMMENT));
+            addPreference(new TogglePreference(context, "Hold speed on Share",
+                    "A long press on Share plays the video at the hold speed instead of opening the quick share row. "
+                            + "It needs Long press on TikTok default and Seek from the edges off.",
+                    Settings.RAIL_HOLD_SHARE));
+            addPreference(new TogglePreference(context, "Hold speed on Favorites",
+                    "A long press on Favorites plays the video at the hold speed instead of offering a new collection. "
+                            + "It needs Long press on TikTok default and Seek from the edges off.",
+                    Settings.RAIL_HOLD_FAVORITES));
         }
         // Three more long presses, each its own patch. They sat under Player on the App page,
         // two pages away from the Long press row they belong beside.

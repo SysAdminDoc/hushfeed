@@ -198,9 +198,10 @@ val longPressPatch = bytecodePatch(
     name = "Long-press controls",
     description = "Lets a long press on a video keep TikTok's own action, do nothing, open " +
         "the video's comments, save the original sound, copy the link to the video or its " +
-        "sound, or look the sound up on YouTube Music, and can turn a press on the left or " +
-        "right third of the screen into a jump back " +
-        "or forward. Brings Double-tap controls with it, which supplies the comment control. Switch: Hushfeed settings > Feed screen.",
+        "sound, or look the sound up on YouTube Music. It can also turn a press on the left or " +
+        "right third of the screen into a jump back or forward, and make a long press on " +
+        "Comment, Share or Favorites play at the hold speed instead of opening TikTok's menu. " +
+        "Brings Double-tap controls with it, which supplies the comment control. Switch: Hushfeed settings > Feed screen.",
     default = false,
 ) {
     category("Interaction")
@@ -209,6 +210,14 @@ val longPressPatch = bytecodePatch(
 
     execute {
         EdgeSpeedupEligibilityFingerprint.method.preserveConfiguredLongPressFromEdgeSpeedup()
+        // A long press on Comment, Share or Favorites can play at the hold speed (upstream #87).
+        // TikTok's hold check asks each side button whether a press is on it, and the extension
+        // answers no for a chosen one. That button's own long press, its menu, is skipped for a
+        // press the check let through.
+        EdgeSpeedupEligibilityFingerprint.method.answerRailHitTests()
+        CommentMenuFingerprint.method.skipCommentMenuWhenHeld()
+        FavoritesMenuFingerprint.method.skipFavoritesMenuWhenHeld()
+        ShareViewCreatedFingerprint.method.routeLongClicks("setShareLongClick")
         coordinateLongPressCallbacks().forEach(MutableMethod::hookCoordinateLongPress)
 
         FeedLongPressFingerprint.method.apply {

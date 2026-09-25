@@ -579,6 +579,12 @@ Location-tagged videos	Konum etiketli videolar
 Lock today's budget	Bugünün bütçesini kilitle
 Logging, hook status and reports	Günlük kaydı, kanca durumu ve raporlar
 Long press	Uzun basma
+Hold speed on Comment	Yorumlar'da basılı tutma hızı
+A long press on Comment plays the video at the hold speed instead of opening the emoji row. It needs Long press on TikTok default and Seek from the edges off.	Yorumlar'a uzun basmak emoji satırını açmak yerine videoyu basılı tutma hızında oynatır. Uzun basma TikTok varsayılanında ve Kenarlardan sar kapalı olmalıdır.
+Hold speed on Share	Paylaş'ta basılı tutma hızı
+A long press on Share plays the video at the hold speed instead of opening the quick share row. It needs Long press on TikTok default and Seek from the edges off.	Paylaş'a uzun basmak hızlı paylaşım satırını açmak yerine videoyu basılı tutma hızında oynatır. Uzun basma TikTok varsayılanında ve Kenarlardan sar kapalı olmalıdır.
+Hold speed on Favorites	Favoriler'de basılı tutma hızı
+A long press on Favorites plays the video at the hold speed instead of offering a new collection. It needs Long press on TikTok default and Seek from the edges off.	Favoriler'e uzun basmak yeni bir koleksiyon önermek yerine videoyu basılı tutma hızında oynatır. Uzun basma TikTok varsayılanında ve Kenarlardan sar kapalı olmalıdır.
 Lowest	En düşük
 Make TikTok yours.	TikTok'u kendine göre ayarla.
 Manager	Manager
