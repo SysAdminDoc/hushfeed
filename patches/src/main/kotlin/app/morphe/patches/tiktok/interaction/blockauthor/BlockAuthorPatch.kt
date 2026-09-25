@@ -162,12 +162,16 @@ val blockAuthorPatch = bytecodePatch(
     }
 }
 
-/** The p-register of the one Aweme parameter: past p0 and every parameter before it, wide ones twice. */
+/**
+ * The p-register of the one Aweme parameter: past `this` in p0 when the method has one, and past
+ * every parameter before it, wide ones twice.
+ */
 internal fun com.android.tools.smali.dexlib2.iface.Method.awemeParameterRegister(): Int {
     val parameters = parameterTypes.map(CharSequence::toString)
     val index = parameters.indexOf(PLAYED_AWEME)
     check(index >= 0) { "Block author: the play method takes no Aweme." }
-    return 1 + parameters.take(index).sumOf { if (it == "J" || it == "D") 2 else 1 }
+    val receiver = if (AccessFlags.STATIC.isSet(accessFlags)) 0 else 1
+    return receiver + parameters.take(index).sumOf { if (it == "J" || it == "D") 2 else 1 }
 }
 
 internal fun validateBlockPager(methods: Iterable<com.android.tools.smali.dexlib2.iface.Method>) {

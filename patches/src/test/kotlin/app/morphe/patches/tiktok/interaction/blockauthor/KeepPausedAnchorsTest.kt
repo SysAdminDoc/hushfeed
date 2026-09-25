@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.interaction.blockauthor
 
 import app.morphe.Fixtures
 import app.morphe.takes
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.DexFileFactory
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.Opcodes
@@ -11,8 +12,11 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 import java.io.File
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -33,9 +37,10 @@ class KeepPausedAnchorsTest {
             assertEquals("${apk.name}: ${taken.map { "${it.first.type}->${it.second.name}" }}", 1, taken.size)
             val play = taken.single().second
             val registers = play.implementation!!.registerCount
-            assertEquals("${apk.name}: the Aweme parameter", PLAYED_AWEME,
-                play.parameterTypes[play.awemeParameterRegister() - 1].toString())
-            assertTrue("${apk.name}: no local register for the answer", registers - play.parameterTypes.size - 1 >= 1)
+            assertFalse("${apk.name}: the play method is static, so p0 is not the controller",
+                AccessFlags.STATIC.isSet(play.accessFlags))
+            assertEquals("${apk.name}: the Aweme parameter", PLAYED_AWEME, play.parameterAtRegister(play.awemeParameterRegister()))
+            assertTrue("${apk.name}: no local register for the answer", registers - play.inRegisters() >= 1)
 
             val head = play.implementation!!.instructions.take(12)
             val casting = head.indexOfFirst { it.call()?.name == "blockByCasting" }
@@ -60,6 +65,35 @@ class KeepPausedAnchorsTest {
         assertTrue("a refused play would still play or answer something else",
             source.contains("if-eqz v0, :play\n                    const-string v0, \"\"\n                    return-object v0"))
     }
+
+    @Test
+    fun `the Aweme's register counts this only on an instance method, and a wide parameter twice`() {
+        assertEquals("a static method starts at p0", 1, method(true, "I", PLAYED_AWEME, "Z").awemeParameterRegister())
+        assertEquals("an instance method's p0 is this", 2, method(false, "I", PLAYED_AWEME, "Z").awemeParameterRegister())
+        assertEquals("a long takes two registers", 3, method(false, "J", PLAYED_AWEME).awemeParameterRegister())
+        assertEquals("the Aweme first", 1, method(false, PLAYED_AWEME, "I", "Z", "Z").awemeParameterRegister())
+        val static = method(true, "D", PLAYED_AWEME)
+        assertEquals(PLAYED_AWEME, static.parameterAtRegister(static.awemeParameterRegister()))
+    }
+
+    private fun method(static: Boolean, vararg parameters: String): Method = ImmutableMethod(
+        "LX/Player;", "play", parameters.map { ImmutableMethodParameter(it, null, null) }, "Ljava/lang/String;",
+        AccessFlags.PUBLIC.value or (if (static) AccessFlags.STATIC.value else 0), null, null, null,
+    )
+
+    /** The type of the parameter that starts at p-register [register], as dexlib2 lays them out. */
+    private fun Method.parameterAtRegister(register: Int): String? {
+        var at = if (AccessFlags.STATIC.isSet(accessFlags)) 0 else 1
+        for (type in parameterTypes.map(CharSequence::toString)) {
+            if (at == register) return type
+            at += if (type == "J" || type == "D") 2 else 1
+        }
+        return null
+    }
+
+    /** The registers the method's parameters take, `this` included. */
+    private fun Method.inRegisters(): Int = (if (AccessFlags.STATIC.isSet(accessFlags)) 0 else 1) +
+        parameterTypes.sumOf { if (it.toString() == "J" || it.toString() == "D") 2 else 1 }
 
     private fun com.android.tools.smali.dexlib2.iface.instruction.Instruction.call(): MethodReference? =
         (this as? ReferenceInstruction)?.reference as? MethodReference
