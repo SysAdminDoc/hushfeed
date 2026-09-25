@@ -570,6 +570,10 @@ Limits	Sınırlar
 Link copied	Bağlantı kopyalandı
 Links	Bağlantılar
 Links in comments open	Yorumlardaki bağlantıların açılacağı yer
+More opens the comments	Daha fazla yorumları açar
+Tapping more under a video opens its comments with the whole caption at the top instead of spreading the caption over the video. A tap on the caption itself does the same. Photo posts keep TikTok's own page for this.	Bir videonun altındaki daha fazla seçeneğine dokunmak açıklamayı videonun üzerine yaymak yerine yorumları tüm açıklama en üstte olacak şekilde açar. Açıklamanın kendisine dokunmak da aynısını yapar. Fotoğraf gönderileri bunun için TikTok'un kendi sayfasını kullanmaya devam eder.
+Caption above comments	Yorumların üstünde açıklama
+The comment button also opens a video's comments with its caption at the top.	Yorum düğmesi de bir videonun yorumlarını açıklaması en üstte olacak şekilde açar.
 Loaded current values. Loading all known gates...	Geçerli değerler yüklendi. Bilinen tüm kapılar yükleniyor...
 Loaded values are still being read. Try again in a moment.	Yüklenen değerler hâlâ okunuyor. Birazdan yeniden dene.
 Loaded-value file export failed	Yüklenen değer dosyası dışa aktarılamadı

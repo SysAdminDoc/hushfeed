@@ -544,6 +544,10 @@ Limits	Limites
 Link copied	Link copiado
 Links	Links
 Links in comments open	Os links nos comentários abrem
+More opens the comments	Mais abre os comentários
+Tapping more under a video opens its comments with the whole caption at the top instead of spreading the caption over the video. A tap on the caption itself does the same. Photo posts keep TikTok's own page for this.	Tocar em mais abaixo de um vídeo abre os comentários com a legenda inteira no topo em vez de espalhá-la sobre o vídeo. Tocar na própria legenda faz o mesmo. Posts de fotos mantêm a página do próprio TikTok para isso.
+Caption above comments	Legenda acima dos comentários
+The comment button also opens a video's comments with its caption at the top.	O botão de comentários também abre os comentários de um vídeo com a legenda no topo.
 Loaded current values. Loading all known gates...	Valores atuais carregados. Carregando todos os gates conhecidos...
 Loaded values are still being read. Try again in a moment.	Os valores carregados ainda estão sendo lidos. Tente novamente em instantes.
 Loaded-value file export failed	A exportação do arquivo de valores carregados falhou

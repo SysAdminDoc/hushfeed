@@ -538,6 +538,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_COMMENT_POLLS = new BooleanSetting("hide_comment_polls", FALSE);
     /** Draws a comment poll's results before the reader votes, from the counts TikTok already sends. */
     public static final BooleanSetting SHOW_POLL_RESULTS = new BooleanSetting("show_poll_results", FALSE);
+    /** Tapping "more" under a video opens its comments with the caption at the top (upstream #156). */
+    public static final BooleanSetting CAPTION_OPENS_COMMENTS = new BooleanSetting("caption_opens_comments", FALSE);
+    /** Every video's comments open with its caption at the top. */
+    public static final BooleanSetting CAPTION_ABOVE_COMMENTS = new BooleanSetting("caption_above_comments", FALSE);
     public static final BooleanSetting HIDE_COMMENT_SEARCH_SUGGESTIONS =
             new BooleanSetting("hide_comment_search_suggestions", FALSE, true);
     public static final BooleanSetting COMPACT_COMMENT_HEADER =

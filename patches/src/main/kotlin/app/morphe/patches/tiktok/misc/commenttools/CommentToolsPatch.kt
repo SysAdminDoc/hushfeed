@@ -15,6 +15,7 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.interaction.blockauthor.BlockServiceFingerprint
+import app.morphe.patches.tiktok.interaction.gesture.doubleTapPatch
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
@@ -132,11 +133,13 @@ val commentToolsPatch = bytecodePatch(
         "makes links tappable, can show a poll's results before you vote and can hide pictures, polls or TikTok's suggested-search banner above comments. " +
         "Compact comment header removes the count, controls and suggestion space above the list. " +
         "Easier comment likes extends the heart's touch area into nearby blank space without changing row spacing. " +
-        "A separate search box filters comments already loaded on the video. Each tool has its own switch in Hushfeed settings > Comments.",
+        "A separate search box filters comments already loaded on the video. Tapping more under a video can open " +
+        "its comments with the caption at the top, and the comment button can open them that way too. " +
+        "Brings Double-tap controls with it, which opens the comments. Each tool has its own switch in Hushfeed settings > Comments.",
     default = false,
 ) {
     category("Comments")
-    dependsOn(settingsPatch, sharedExtensionPatch)
+    dependsOn(settingsPatch, sharedExtensionPatch, doubleTapPatch)
 
     compatibleWith(*AppCompatibilities.tiktok4703())
 
@@ -186,6 +189,14 @@ val commentToolsPatch = bytecodePatch(
                 }
                 write
             },
+            {
+                // Tapping more under a video can open its comments with the caption at the top
+                // (upstream #156). The caption's expand asks first and, on yes, Double-tap
+                // controls' comment press opens the sheet. TikTok's comment list starts with the
+                // caption as a row when its opener asks, and the extension answers for that list.
+                CaptionExpandFingerprint.method.resolveCaptionOpensComments()
+            },
+            { CaptionRowFingerprint.method.resolveCaptionRow() },
             {
                 val settingsStatus = SettingsStatusLoadFingerprint.method
                 // Blocking a commenter goes through the same BlockApi as the block button. Fail

@@ -90,6 +90,20 @@ public class CommentsPreferenceCategory extends ConditionalPreferenceCategory {
                             + "it did.",
                     Settings.COMMENT_LINKS
             ));
+            addPreference(new TogglePreference(
+                    context,
+                    "More opens the comments",
+                    "Tapping more under a video opens its comments with the whole caption at the top instead of "
+                            + "spreading the caption over the video. A tap on the caption itself does the same. "
+                            + "Photo posts keep TikTok's own page for this.",
+                    Settings.CAPTION_OPENS_COMMENTS
+            ));
+            addPreference(new TogglePreference(
+                    context,
+                    "Caption above comments",
+                    "The comment button also opens a video's comments with its caption at the top.",
+                    Settings.CAPTION_ABOVE_COMMENTS
+            ));
         }
         if (SettingsStatus.copyCommentsWithoutUsernameEnabled) {
             addPreference(new TogglePreference(

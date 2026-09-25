@@ -223,7 +223,7 @@ public final class GestureActions {
         return true;
     }
 
-    static boolean openComments(String videoId) {
+    public static boolean openComments(String videoId) {
         if (videoId == null || videoId.isEmpty()) return false;
         Map.Entry<Object, CommentControl> hidden = null;
         for (Map.Entry<Object, CommentControl> entry : COMMENTS.entrySet()) {

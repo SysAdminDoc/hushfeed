@@ -195,6 +195,7 @@ Calm feed is on. Restart TikTok to apply every change.,Calm feed is on. Restart 
 Camera and microphone in use,Camera and microphone in use
 Camera in use,Camera in use
 Cancel,Cancel
+Caption above comments,Caption above comments
 Caption background,Caption background
 Caption text size,Caption text size
 Captions,Captions
@@ -647,6 +648,7 @@ Media config (VE),Media config (VE)
 Microphone in use,Microphone in use
 Mini dramas,Mini dramas
 Minimum,Minimum
+More opens the comments,More opens the comments
 More options,More options
 Move down,Move down
 Move left,Move left
@@ -1017,6 +1019,7 @@ Tap again to send,Tap again to send
 Tap the feed Follow button twice within %1$d seconds.,Tap the feed Follow button twice within %1$d seconds.
 Tap the like heart twice within %1$d seconds. Removing a like stays immediate.,Tap the like heart twice within %1$d seconds. Removing a like stays immediate.
 Tap to start the feed,Tap to start the feed
+Tapping more under a video opens its comments with the whole caption at the top instead of spreading the caption over the video. A tap on the caption itself does the same. Photo posts keep TikTok's own page for this.,Tapping more under a video opens its comments with the whole caption at the top instead of spreading the caption over the video. A tap on the caption itself does the same. Photo posts keep TikTok's own page for this.
 Technical details,Technical details
 "Technical details, %1$s","Technical details, %1$s"
 That backup was written by a newer Hushfeed than this one. Nothing was altered.,That backup was written by a newer Hushfeed than this one. Nothing was altered.
@@ -1055,6 +1058,7 @@ The accounts TikTok suggests you follow no longer take up rows in the Inbox.,The
 The activity status control leaves the Inbox header. Whether others see you as active is unchanged.,The activity status control leaves the Inbox header. Whether others see you as active is unchanged.
 "The add people icon leaves the Inbox header. Only the shortcut goes, so friend suggestions elsewhere are unchanged.","The add people icon leaves the Inbox header. Only the shortcut goes, so friend suggestions elsewhere are unchanged."
 The catalog says this key is %1$s and this override is %2$s. Reset the override and make a new one.,The catalog says this key is %1$s and this override is %2$s. Reset the override and make a new one.
+The comment button also opens a video's comments with its caption at the top.,The comment button also opens a video's comments with its caption at the top.
 The diagnostic report couldn't be saved yet. Try again in a moment.,The diagnostic report couldn't be saved yet. Try again in a moment.
 The diagnostic report couldn't be saved. Try again.,The diagnostic report couldn't be saved. Try again.
 The downloader app you chose isn't installed. Check Send links to another app under Downloads.,The downloader app you chose isn't installed. Check Send links to another app under Downloads.
