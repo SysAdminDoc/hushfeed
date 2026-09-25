@@ -238,6 +238,8 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting KEEP_FOR_YOU_ON_PULL_DOWN = new BooleanSetting("keep_for_you_on_pull_down", FALSE);
     /** The tab TikTok opens on from its icon: tiktok (its own pick), for_you, friends, inbox or profile. */
     public static final StringSetting START_PAGE = new StringSetting("start_page", "tiktok");
+    /** TikTok's previous, pause and next buttons on the feed, shown without a screen reader. Off by default. */
+    public static final BooleanSetting SHOW_FEED_BUTTONS = new BooleanSetting("show_feed_buttons", FALSE);
     public static final BooleanSetting HIDE_TAKO_AI = new BooleanSetting("hide_tako_ai", FALSE, true);
     public static final BooleanSetting HIDE_BOTTOM_SEARCH_BAR = new BooleanSetting("hide_bottom_search_bar", FALSE, true);
     public static final BooleanSetting COMMENT_BATCH_TRANSLATION = new BooleanSetting("comment_batch_translation", FALSE);

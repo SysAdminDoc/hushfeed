@@ -839,6 +839,7 @@ Shop posts,Kiriman Shop
 Show,Tampilkan
 Show @username beside a video instead of the display name the creator chose.,"Tampilkan @namapengguna di samping video, bukan nama tampilan pilihan kreator."
 Show search in LIVE,Tampilkan pencarian di LIVE
+Show TikTok's feed buttons,Tampilkan tombol feed TikTok
 Show TikTok's own progress bar on videos where it is normally hidden.,Tampilkan bilah progres TikTok pada video yang biasanya menyembunyikannya.
 "Show TikTok's own sort sheet on every post, with its hot, newest, media and creator options, instead of whichever cut-down row your account was given. Restart TikTok to apply this. It reads the style once per run and remembers it.","Tampilkan lembar pengurutan milik TikTok di setiap publikasi, dengan pilihan populer, terbaru, media dan kreator, bukan baris terpangkas yang didapat akun kamu. Mulai ulang TikTok agar berlaku. Aplikasi membaca gayanya sekali per proses dan mengingatnya."
 "Show the search entry inside TikTok's LIVE drawer, where available. This doesn't add a search box to video comments.",Tampilkan opsi pencarian di panel LIVE TikTok jika tersedia. Ini tidak menambahkan kotak pencarian ke komentar video.
@@ -1018,6 +1019,7 @@ TikTok read it,TikTok sudah membacanya
 TikTok refused the follow: %1$s,TikTok menolak permintaan mengikuti: %1$s
 "TikTok's own daily screen-time reminder sends the app to the background instead of waiting to be dismissed. Coming straight back leaves the reminder on screen, so the limit stays reachable. Needs a daily limit set under TikTok's Settings and privacy, under Time and well-being.","Pengingat waktu layar harian milik TikTok sendiri mengirim aplikasi ke latar belakang, bukan menunggu ditutup. Kalau kamu langsung kembali, pengingatnya tetap di layar, jadi batasnya tetap bisa dijangkau. Perlu batas harian di Pengaturan dan privasi TikTok, di bagian Waktu dan kesehatan."
 TikTok's own value,Nilai milik TikTok
+TikTok's play and pause button and its previous and next buttons appear on the feed. TikTok otherwise shows them only to people who use a screen reader.,Tombol putar dan jeda TikTok serta tombol sebelumnya dan berikutnya muncul di feed. Selain itu TikTok hanya menampilkannya kepada pengguna pembaca layar.
 TikTok's server can put an account into an experiment that empties the Favorites tab on your profile. Keep the tab and its saved videos.,Server TikTok bisa memasukkan akun ke eksperimen yang mengosongkan tab Favorit di profil kamu. Pertahankan tab itu beserta video yang tersimpan.
 TikTok's size,Ukuran TikTok
 Times you can open the feed anyway,Berapa kali kamu bisa tetap membuka feed

@@ -305,3 +305,39 @@ internal fun Method.branchTargets(): Set<Int> {
     }
     return targets
 }
+
+internal const val A11Y_FEED_TOOL = "Lcom/ss/android/ugc/feed/platform/panel/accessibility/A11yFeedToolComponent;"
+
+/**
+ * The check TikTok's feed button row makes before it shows: its own switch for the row, stored as
+ * "settings_switch_on", and an accessibility service with touch exploration running. The row
+ * (play and pause, previous, next) is built into every feed page and stays hidden when this says no.
+ */
+internal object FeedButtonsGateFingerprint : Fingerprint(
+    definingClass = A11Y_FEED_TOOL,
+    returnType = "Z",
+    parameters = listOf(),
+    strings = listOf("settings_switch_on"),
+    custom = { method, _ ->
+        method.implementation?.instructions?.any {
+            it.getReference<MethodReference>()?.name == "isTouchExplorationEnabled"
+        } == true
+    },
+)
+
+/**
+ * How TikTok sets one of the feed row's buttons each time the row updates: its tint for whether it
+ * can act and its accessibility state. Each button in the layout is focusable in touch mode, so
+ * a tap on one that doesn't hold focus only takes it. A screen reader never meets that (it acts
+ * on the button directly), a finger does. Called with the button (a TuxIconView) and whether it can act.
+ */
+internal object FeedButtonStateFingerprint : Fingerprint(
+    definingClass = A11Y_FEED_TOOL,
+    returnType = "V",
+    parameters = listOf("Lcom/bytedance/tux/icon/TuxIconView;", "Z"),
+    custom = { method, _ ->
+        method.implementation?.instructions?.any {
+            it.getReference<MethodReference>()?.name == "setTintColorRes"
+        } == true
+    },
+)

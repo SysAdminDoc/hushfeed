@@ -29,6 +29,7 @@ private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/nav
 private const val TAB_BADGES_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/navigation/TabBadges;"
 private const val FEED_REFRESH_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/navigation/FeedRefresh;"
 private const val START_PAGE_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/navigation/StartPage;"
+private const val FEED_BUTTONS_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/navigation/FeedButtons;"
 
 /** A method reference the way smali writes it after the invoke's registers. */
 private fun com.android.tools.smali.dexlib2.iface.reference.MethodReference.smali(): String =
@@ -55,7 +56,7 @@ private object TopTabLayoutConstructorFingerprint : app.morphe.patcher.Fingerpri
 @Suppress("unused")
 val feedTabNavigationPatch = bytecodePatch(
     name = "Feed tab navigation",
-    description = "Controls which loaded top and bottom navigation tabs remain visible, blocks newly added tabs when requested, can hide the Tako AI bubble and the unread badges on the bottom tabs, can keep For You from reloading on a Home tap or a pull down, and can open TikTok on Friends, Inbox or Profile. Switch: Hushfeed settings > Feed tabs.",
+    description = "Controls which loaded top and bottom navigation tabs remain visible, blocks newly added tabs when requested, can hide the Tako AI bubble and the unread badges on the bottom tabs, can keep For You from reloading on a Home tap or a pull down, can open TikTok on Friends, Inbox or Profile, and can show TikTok's own feed buttons without a screen reader. Switch: Hushfeed settings > Feed tabs.",
     default = true,
 ) {
     category("Settings")
@@ -246,5 +247,29 @@ val feedTabNavigationPatch = bytecodePatch(
                 """,
             )
         }
+
+        // TikTok's feed button row (play and pause, previous, next) shows only while a screen reader
+        // with touch exploration runs. Its check answers yes first when the switch is on.
+        FeedButtonsGateFingerprint.method.apply {
+            requireLocals("Feed tab navigation", 1)
+            addInstructionsWithLabels(
+                0,
+                """
+                    invoke-static {}, $FEED_BUTTONS_CLASS_DESCRIPTOR->showWithoutScreenReader()Z
+                    move-result v0
+                    if-eqz v0, :gate
+                    const/4 v0, 0x1
+                    return v0
+                """,
+                ExternalLabel("gate", getInstruction(0)),
+            )
+        }
+
+        // Each button of that row takes focus on a first tap when no screen reader runs, and only a
+        // second tap presses it. The row's own update hands each button over first, while it shows.
+        FeedButtonStateFingerprint.method.addInstruction(
+            0,
+            "invoke-static {p1}, $FEED_BUTTONS_CLASS_DESCRIPTOR->buttonShown(Landroid/view/View;)V",
+        )
     }
 }

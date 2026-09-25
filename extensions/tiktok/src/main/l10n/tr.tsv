@@ -877,6 +877,7 @@ Show failures on screen	Hataları ekranda göster
 Show gates	Özellik kapılarını göster
 Show last report	Son raporu göster
 Show search in LIVE	CANLI'da aramayı göster
+Show TikTok's feed buttons	TikTok'un akış düğmelerini göster
 Show the Not interested button	İlgilenmiyorum düğmesini göster
 Show the block button on videos	Videolarda engelle düğmesini göster
 Show the block sound button	Sesi engelle düğmesini göster
@@ -1053,6 +1054,7 @@ TikTok read it	TikTok bunu okudu
 TikTok read it, but the override couldn't be applied. Reset it and save it again.	TikTok bunu okudu ama geçersiz kılma uygulanamadı. Sıfırla ve yeniden kaydet.
 TikTok refused the follow: %1$s	TikTok takibi reddetti: %1$s
 TikTok's own value	TikTok'un kendi değeri
+TikTok's play and pause button and its previous and next buttons appear on the feed. TikTok otherwise shows them only to people who use a screen reader.	TikTok'un oynat ve duraklat düğmesi ile önceki ve sonraki düğmeleri akışta görünür. Aksi halde TikTok bunları yalnızca ekran okuyucu kullananlara gösterir.
 TikTok's server can put an account into an experiment that empties the Favorites tab on your profile. Keep the tab and its saved videos.	TikTok'un sunucusu, bir hesabı profilindeki Favoriler sekmesini boşaltan bir deneye sokabilir. Sekmeyi ve kayıtlı videolarını koru.
 TikTok's size	TikTok'un boyutu
 Times you can open the feed anyway	Akışı yine de açabileceğin sefer sayısı

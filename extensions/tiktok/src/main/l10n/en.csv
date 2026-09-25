@@ -919,6 +919,7 @@ Shop order updates and coupon messages no longer take up rows in the Inbox. Your
 Shop posts,Shop posts
 Show,Show
 Show @username beside a video instead of the display name the creator chose.,Show @username beside a video instead of the display name the creator chose.
+Show TikTok's feed buttons,Show TikTok's feed buttons
 Show TikTok's own progress bar on videos where it is normally hidden.,Show TikTok's own progress bar on videos where it is normally hidden.
 "Show TikTok's own sort sheet on every post, with its hot, newest, media and creator options, instead of whichever cut-down row your account was given. Restart TikTok to apply this. It reads the style once per run and remembers it.","Show TikTok's own sort sheet on every post, with its hot, newest, media and creator options, instead of whichever cut-down row your account was given. Restart TikTok to apply this. It reads the style once per run and remembers it."
 Show a video preview thumbnail while dragging the progress bar.,Show a video preview thumbnail while dragging the progress bar.
@@ -1120,6 +1121,7 @@ TikTok refused the follow: %1$s A hidden CAPTCHA may be the cause.,TikTok refuse
 TikTok runs as if it were not patched. Your settings stay as they are.,TikTok runs as if it were not patched. Your settings stay as they are.
 "TikTok's own daily screen-time reminder sends the app to the background instead of waiting to be dismissed. Coming straight back leaves the reminder on screen, so the limit stays reachable. Needs a daily limit set under TikTok's Settings and privacy, under Time and well-being.","TikTok's own daily screen-time reminder sends the app to the background instead of waiting to be dismissed. Coming straight back leaves the reminder on screen, so the limit stays reachable. Needs a daily limit set under TikTok's Settings and privacy, under Time and well-being."
 TikTok's own value,TikTok's own value
+TikTok's play and pause button and its previous and next buttons appear on the feed. TikTok otherwise shows them only to people who use a screen reader.,TikTok's play and pause button and its previous and next buttons appear on the feed. TikTok otherwise shows them only to people who use a screen reader.
 TikTok's server can put an account into an experiment that empties the Favorites tab on your profile. Keep the tab and its saved videos.,TikTok's server can put an account into an experiment that empties the Favorites tab on your profile. Keep the tab and its saved videos.
 TikTok's size,TikTok's size
 Times you can open the feed anyway,Times you can open the feed anyway

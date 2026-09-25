@@ -71,6 +71,13 @@ public class FeedNavigationPreferenceCategory extends ConditionalPreferenceCateg
                 new String[]{StartPage.TIKTOK, StartPage.FOR_YOU, StartPage.FRIENDS, StartPage.INBOX, StartPage.PROFILE}));
         addPreference(new TogglePreference(
                 context,
+                "Show TikTok's feed buttons",
+                "TikTok's play and pause button and its previous and next buttons appear on the feed. "
+                        + "TikTok otherwise shows them only to people who use a screen reader.",
+                Settings.SHOW_FEED_BUTTONS
+        ));
+        addPreference(new TogglePreference(
+                context,
                 "Keep For You on a Home tap",
                 "A tap on Home or on the For You tab while For You is showing no longer reloads it. "
                         + "The video you're on stays.",

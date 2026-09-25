@@ -839,6 +839,7 @@ Shop posts	Publicaciones de la tienda
 Show	Mostrar
 Show @username beside a video instead of the display name the creator chose.	Mostrar @usuario junto al vídeo en vez del nombre visible que eligió el creador.
 Show search in LIVE	Mostrar búsqueda en LIVE
+Show TikTok's feed buttons	Mostrar los botones del feed de TikTok
 Show TikTok's own progress bar on videos where it is normally hidden.	Mostrar la barra de progreso de TikTok en los vídeos donde normalmente está oculta.
 Show TikTok's own sort sheet on every post, with its hot, newest, media and creator options, instead of whichever cut-down row your account was given. Restart TikTok to apply this. It reads the style once per run and remembers it.	Mostrar el panel de orden de TikTok en todas las publicaciones, con sus opciones de populares, más recientes, contenido y creador, en vez de la fila recortada que le tocó a tu cuenta. Reinicia TikTok para que se aplique. Lee el estilo una vez por ejecución y lo recuerda.
 Show the search entry inside TikTok's LIVE drawer, where available. This doesn't add a search box to video comments.	Muestra la opción de búsqueda en el panel de LIVE de TikTok, si está disponible. No añade un cuadro de búsqueda a los comentarios de videos.
@@ -1017,6 +1018,7 @@ TikTok read it	TikTok lo leyó
 TikTok read it, but the override couldn't be applied. Reset it and save it again.	TikTok la leyó, pero la sustitución no se pudo aplicar. Restablécela y guárdala de nuevo.
 TikTok refused the follow: %1$s	TikTok rechazó el seguimiento: %1$s
 TikTok's own value	Valor propio de TikTok
+TikTok's play and pause button and its previous and next buttons appear on the feed. TikTok otherwise shows them only to people who use a screen reader.	El botón de reproducir y pausar de TikTok y sus botones de anterior y siguiente aparecen en el feed. Si no, TikTok solo los muestra a quienes usan un lector de pantalla.
 TikTok's server can put an account into an experiment that empties the Favorites tab on your profile. Keep the tab and its saved videos.	El servidor de TikTok puede meter una cuenta en un experimento que vacía la pestaña Favoritos de tu perfil. Mantiene la pestaña y sus vídeos guardados.
 TikTok's size	Tamano de TikTok
 Times you can open the feed anyway	Veces que puedes abrir el feed de todas formas
