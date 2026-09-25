@@ -56,7 +56,7 @@ private object TopTabLayoutConstructorFingerprint : app.morphe.patcher.Fingerpri
 @Suppress("unused")
 val feedTabNavigationPatch = bytecodePatch(
     name = "Feed tab navigation",
-    description = "Controls which loaded top and bottom navigation tabs remain visible, blocks newly added tabs when requested, can hide the Tako AI bubble and the unread badges on the bottom tabs, can keep For You from reloading on a Home tap or a pull down, can open TikTok on Friends, Inbox or Profile, and can show TikTok's own feed buttons without a screen reader. Switch: Hushfeed settings > Feed tabs.",
+    description = "Controls which loaded top and bottom navigation tabs remain visible, blocks newly added tabs when requested, can hide the Tako AI bubble and the unread badges on the bottom tabs, can keep For You from reloading on a Home tap or a pull down, can open TikTok on Following, Friends, Inbox or Profile, and can show TikTok's own feed buttons without a screen reader. Switch: Hushfeed settings > Feed tabs.",
     default = true,
 ) {
     category("Settings")
@@ -244,6 +244,36 @@ val feedTabNavigationPatch = bytecodePatch(
                 """
                     invoke-static {v${start.activity}, v${start.tag}, p1}, $START_PAGE_CLASS_DESCRIPTOR->coldStartTag(Landroid/app/Activity;Ljava/lang/String;Landroid/os/Bundle;)Ljava/lang/String;
                     move-result-object v${start.tag}
+                """,
+            )
+        }
+
+        // The feed tab across the top a start opens on. The home pager picks it as its view is
+        // built, from TikTok's home page service or else "For You", and switches to it by its tag;
+        // a jump lands on that switch when the service has no answer, so the ask goes on its label.
+        FirstTopTabFingerprint.method.apply {
+            val first = firstTopTab()
+                ?: throw PatchException("Feed tab navigation: the home pager no longer picks its first tab where it did.")
+            addInstructionsAtControlFlowLabel(
+                first.switchAt,
+                """
+                    invoke-static/range {v${first.tag} .. v${first.tag}}, $START_PAGE_CLASS_DESCRIPTOR->firstTopTab(Ljava/lang/String;)Ljava/lang/String;
+                    move-result-object v${first.tag}
+                """,
+            )
+        }
+
+        // Home's default page, where the pager moves once the first frame is up. TikTok takes
+        // Following there when its own "change follow tab" preference is on for a signed-in
+        // account; the start page answers that preference right after a start from the icon.
+        DefaultPageFingerprint.method.apply {
+            val choice = followTabChoice()
+                ?: throw PatchException("Feed tab navigation: the home pager no longer reads its Following default where it did.")
+            addInstructions(
+                choice.insertAt,
+                """
+                    invoke-static/range {v${choice.register} .. v${choice.register}}, $START_PAGE_CLASS_DESCRIPTOR->followingFirst(Z)Z
+                    move-result v${choice.register}
                 """,
             )
         }

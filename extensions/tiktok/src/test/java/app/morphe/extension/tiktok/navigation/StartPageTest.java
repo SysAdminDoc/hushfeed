@@ -3,14 +3,17 @@ package app.morphe.extension.tiktok.navigation;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Looper;
 import app.morphe.extension.shared.diagnostics.HookStatus;
 import app.morphe.extension.tiktok.SettingsContextRule;
 import app.morphe.extension.tiktok.settings.Settings;
+import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,11 +44,13 @@ public class StartPageTest {
     @Before public void setUp() {
         resetSettings();
         HookStatus.clear();
+        StartPage.resetForTests();
     }
 
     @After public void tearDown() {
         resetSettings();
         HookStatus.clear();
+        StartPage.resetForTests();
     }
 
     /** A Setting keeps the value it last loaded in memory, whichever test's store it came from. */
@@ -159,5 +164,104 @@ public class StartPageTest {
         assertFalse(StartPage.isLauncherStart(launcher().setAction(Intent.ACTION_VIEW)));
         assertFalse(StartPage.isLauncherStart(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)));
         assertFalse(StartPage.isLauncherStart(null));
+    }
+
+    @Test public void followingOpensHomeAndThenItsFollowingFeed() {
+        Settings.START_PAGE.save(StartPage.FOLLOWING);
+        assertEquals("the bottom tab is Home", "HOME", start(launcher(), "HOME"));
+        assertEquals("Home's pager switches to Following", "Following", StartPage.firstTopTab("For You"));
+        assertTrue("and takes it as its default page", StartPage.followingFirst(false));
+        assertEquals("every pick right after the start agrees", "Following", StartPage.firstTopTab("For You"));
+        assertTrue(StartPage.followingFirst(false));
+    }
+
+    @Test public void forYouHoldsHomeToForYouWhateverTikTokPicks() {
+        Settings.START_PAGE.save(StartPage.FOR_YOU);
+        assertEquals("HOME", start(launcher(), "SHOP_MALL"));
+        assertEquals("For You", StartPage.firstTopTab("Following"));
+        assertFalse("TikTok's own Following default gives way", StartPage.followingFirst(true));
+    }
+
+    @Test public void theOtherChoicesLeaveHomesPickAlone() {
+        Settings.BOTTOM_NAVIGATION_OBSERVED_TABS.save("HOME,INBOX,PROFILE");
+        for (String choice : new String[]{StartPage.TIKTOK, StartPage.FRIENDS, StartPage.INBOX, StartPage.PROFILE, "somewhere_new"}) {
+            Settings.START_PAGE.save(choice);
+            start(launcher(), "HOME");
+            assertEquals(choice, "Following", StartPage.firstTopTab("Following"));
+            assertTrue(choice, StartPage.followingFirst(true));
+            assertFalse(choice, StartPage.followingFirst(false));
+        }
+    }
+
+    @Test public void aFeedTabTheFeedTabsPageHidesIsNotOpened() {
+        Settings.FEED_NAVIGATION.save(true);
+        Settings.FEED_NAVIGATION_TABS.save("HOT,FRIENDS");
+        Settings.START_PAGE.save(StartPage.FOLLOWING);
+        assertEquals("TikTok's own tab", "SHOP_MALL", start(launcher(), "SHOP_MALL"));
+        assertEquals("Home's own pick", "For You", StartPage.firstTopTab("For You"));
+        assertFalse("and its own default", StartPage.followingFirst(false));
+
+        Settings.FEED_NAVIGATION_TABS.save("FOLLOWING,FRIENDS");
+        Settings.START_PAGE.save(StartPage.FOR_YOU);
+        assertEquals("the bottom tab is still Home", "HOME", start(launcher(), "HOME"));
+        assertEquals("For You stays whatever the list says", "For You", StartPage.firstTopTab("Following"));
+
+        Settings.FEED_NAVIGATION.save(false);
+        Settings.START_PAGE.save(StartPage.FOLLOWING);
+        start(launcher(), "HOME");
+        assertEquals("the feed filter off shows every feed tab", "Following", StartPage.firstTopTab("For You"));
+    }
+
+    @Test public void onlyALauncherStartAsksThePager() {
+        Settings.START_PAGE.save(StartPage.FOLLOWING);
+        start(launcher().putExtra(StartPage.PUSH_TAB, "USER"), "USER");
+        assertEquals("a notification's start", "For You", StartPage.firstTopTab("For You"));
+        assertFalse(StartPage.followingFirst(false));
+        start(launcher(), "HOME");
+        StartPage.coldStartTag(new Host(launcher()), "HOME", new Bundle());
+        assertEquals("a restore after it clears what the start left", "For You", StartPage.firstTopTab("For You"));
+        assertFalse(StartPage.followingFirst(false));
+        start(launcher().setAction(Intent.ACTION_VIEW), "HOME");
+        assertEquals("a pager with no start from the icon before it", "For You", StartPage.firstTopTab("For You"));
+    }
+
+    @Test public void aStartsTopTabAnswersOnlySoLong() {
+        Settings.START_PAGE.save(StartPage.FOLLOWING);
+        start(launcher(), "HOME");
+        shadowOf(Looper.getMainLooper()).idleFor(StartPage.TOP_TAB_WINDOW_MS, TimeUnit.MILLISECONDS);
+        assertEquals("at the end of the wait", "Following", StartPage.firstTopTab("For You"));
+        assertTrue(StartPage.followingFirst(false));
+        shadowOf(Looper.getMainLooper()).idleFor(1, TimeUnit.MILLISECONDS);
+        assertEquals("past it", "For You", StartPage.firstTopTab("For You"));
+        assertFalse(StartPage.followingFirst(false));
+        assertTrue("TikTok's own preference again", StartPage.followingFirst(true));
+    }
+
+    @Test public void theExportCountsThePagersAsksAndTheirAnswers() {
+        int[] found = new int[1];
+        HookStatus.setLineWriter((family, count, missing, truncated, firstMiss) -> {
+            if (StartPage.FAMILY.equals(family)) found[0] = count;
+            return family;
+        });
+        try {
+            StartPage.firstTopTab("For You");
+            StartPage.followingFirst(false);
+            HookStatus.report();
+            assertEquals("the pager's two asks alone", 2, found[0]);
+            Settings.START_PAGE.save(StartPage.FOLLOWING);
+            start(launcher(), "HOME");
+            StartPage.firstTopTab("For You");
+            StartPage.followingFirst(false);
+            HookStatus.report();
+            assertEquals("the start, its choice and both answers", 6, found[0]);
+            Settings.START_PAGE.save(StartPage.FOR_YOU);
+            start(launcher(), "HOME");
+            StartPage.firstTopTab("Following");
+            StartPage.followingFirst(true);
+            HookStatus.report();
+            assertEquals("For You's choice and answers too", 9, found[0]);
+        } finally {
+            HookStatus.setLineWriter(null);
+        }
     }
 }

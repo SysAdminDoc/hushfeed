@@ -13,6 +13,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.SwitchPayload
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
@@ -341,3 +342,108 @@ internal object FeedButtonStateFingerprint : Fingerprint(
         } == true
     },
 )
+
+internal const val HOME_VIEW_PAGER_ASSEM = "Lcom/ss/android/ugc/aweme/main/assems/mainfragment/HomeViewPagerAssem;"
+internal const val HOME_PAGE_EX_SERVICE = "Lcom/ss/android/ugc/aweme/homepage/IHomePageExService;"
+internal const val HOX = "Lcom/bytedance/hox/Hox;"
+
+/**
+ * The home pager's view setup, where it picks the feed tab across the top it opens on. For a
+ * signed-in account outside teen mode that is the tab TikTok's home page service names, else
+ * "For You", handed to Hox's tab switch by its tag. The start page answers there.
+ */
+internal object FirstTopTabFingerprint : Fingerprint(
+    definingClass = HOME_VIEW_PAGER_ASSEM,
+    name = "onViewCreated",
+    returnType = "V",
+    parameters = listOf("Landroid/view/View;"),
+    strings = listOf("For You"),
+    custom = { method, _ -> method.firstTopTab() != null },
+)
+
+/** Where the home pager opens its first feed tab: the tab switch's index and the register with the tag. */
+internal class FirstTopTab(val switchAt: Int, val tag: Int)
+
+/**
+ * The first tab switch in [FirstTopTabFingerprint]'s method: the call on Hox that takes a Bundle,
+ * the tab's tag and a flag, a few steps after TikTok asks its home page service for a default
+ * tab and moves a non-null answer into the register "For You" was loaded into. Null when any of
+ * that no longer holds, so the patch stops instead of handing over the wrong register.
+ */
+internal fun Method.firstTopTab(): FirstTopTab? {
+    val instructions = implementation?.instructions?.toList() ?: return null
+    val service = instructions.indexOfFirst { instruction ->
+        instruction.opcode == Opcode.INVOKE_INTERFACE && instruction.getReference<MethodReference>()?.let {
+            it.definingClass == HOME_PAGE_EX_SERVICE && it.parameterTypes.isEmpty() && it.returnType == "Ljava/lang/String;"
+        } == true
+    }
+    if (service < 0 || instructions.getOrNull(service + 1)?.opcode != Opcode.MOVE_RESULT_OBJECT) return null
+    val answer = (instructions[service + 1] as OneRegisterInstruction).registerA
+    val switchAt = (service + 2 until minOf(instructions.size, service + 6)).firstOrNull { index ->
+        val instruction = instructions[index]
+        instruction.opcode == Opcode.INVOKE_VIRTUAL && instruction.getReference<MethodReference>()?.let {
+            it.definingClass == HOX && it.returnType == "V" &&
+                it.parameterTypes.map(CharSequence::toString) == listOf("Landroid/os/Bundle;", "Ljava/lang/String;", "Z")
+        } == true
+    } ?: return null
+    val tag = (instructions[switchAt] as FiveRegisterInstruction).registerE
+    val answered = instructions.subList(service + 2, switchAt).any {
+        it.opcode == Opcode.MOVE_OBJECT && (it as TwoRegisterInstruction).registerA == tag && it.registerB == answer
+    }
+    val defaulted = instructions.subList(0, service).any {
+        it.opcode == Opcode.CONST_STRING && (it as OneRegisterInstruction).registerA == tag &&
+            it.getReference<StringReference>()?.string == "For You"
+    }
+    return if (answered && defaulted) FirstTopTab(switchAt, tag) else null
+}
+
+internal const val SHARE_PREF_CACHE = "Lcom/ss/android/ugc/aweme/app/SharePrefCache;"
+internal const val TOP_TAB_PROTOCOL = "Lcom/bytedance/tiktok/homepage/mainfragment/TopTabProtocol;"
+
+/**
+ * The home pager's default page, which it moves to once the first frame is up and again when
+ * its tab list is set: the tab TikTok's home page service names, Following when TikTok's own
+ * "change follow tab" preference is on for a signed-in account, else the tab its strip shows,
+ * found among the top tabs by tag. A sibling method reads the same preference for reports, but
+ * never looks at the strip's tabs.
+ */
+internal object DefaultPageFingerprint : Fingerprint(
+    definingClass = HOME_VIEW_PAGER_ASSEM,
+    returnType = "I",
+    parameters = listOf(),
+    custom = { method, _ ->
+        method.followTabChoice() != null && method.implementation!!.instructions.any {
+            it.getReference<MethodReference>()?.let { reference ->
+                reference.definingClass == TOP_TAB_PROTOCOL && reference.name == "getTag"
+            } == true
+        }
+    },
+)
+
+/** Where the default page has read TikTok's "change follow tab" preference: the next index and the register. */
+internal class FollowTabChoice(val insertAt: Int, val register: Int)
+
+/**
+ * The read of TikTok's "change follow tab" preference in [DefaultPageFingerprint]'s method: its
+ * getter on SharePrefCache, the unboxing a few steps on, and the register the answer lands in.
+ * Null when the answer isn't moved into a register or a jump lands right after it.
+ */
+internal fun Method.followTabChoice(): FollowTabChoice? {
+    val instructions = implementation?.instructions?.toList() ?: return null
+    val read = instructions.indexOfFirst { instruction ->
+        instruction.opcode == Opcode.INVOKE_VIRTUAL && instruction.getReference<MethodReference>()?.let {
+            it.definingClass == SHARE_PREF_CACHE && it.name == "getIsChangeFollowTab" && it.parameterTypes.isEmpty()
+        } == true
+    }
+    if (read < 0) return null
+    val unbox = (read + 1 until minOf(instructions.size, read + 8)).firstOrNull { index ->
+        instructions[index].getReference<MethodReference>()?.let {
+            it.definingClass == "Ljava/lang/Boolean;" && it.name == "booleanValue"
+        } == true
+    } ?: return null
+    val result = instructions.getOrNull(unbox + 1)
+    if (result?.opcode != Opcode.MOVE_RESULT) return null
+    val insertAt = unbox + 2
+    if (insertAt >= instructions.size || insertAt in branchTargets()) return null
+    return FollowTabChoice(insertAt, (result as OneRegisterInstruction).registerA)
+}
