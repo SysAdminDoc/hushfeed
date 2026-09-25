@@ -180,12 +180,15 @@ public class TapConfirmationTest {
             Utils.setContext(controller.get());
             Settings.CONFIRM_COMMENT_LIKE.save(true);
             org.robolectric.shadows.ShadowToast.reset();
-            PhotoLike first = new PhotoLike(new Comment("c1", false));
-            assertFalse(TapConfirmation.commentLike(first));
+            // The photo page's like controls are assems: no view to ring, and the patch hands the
+            // comment over itself, since one of them keeps no Comment field at all.
+            Comment comment = new Comment("c1", false);
+            Object first = new Object();
+            assertFalse(TapConfirmation.commentLike(first, comment));
             assertEquals("Tap again to like", String.valueOf(org.robolectric.shadows.ShadowToast.getTextOfLatestToast()));
-            PhotoLike other = new PhotoLike(new Comment("c1", false));
-            assertFalse("another control's tap is a first tap", TapConfirmation.commentLike(other));
-            assertTrue(TapConfirmation.commentLike(other));
+            Object other = new Object();
+            assertFalse("another control's tap is a first tap", TapConfirmation.commentLike(other, comment));
+            assertTrue(TapConfirmation.commentLike(other, comment));
         }
     }
 
