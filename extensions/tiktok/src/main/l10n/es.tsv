@@ -1038,7 +1038,7 @@ Wait a day to loosen the budget	Esperar un día para aflojar el presupuesto
 A change that loosens the budget waits until the day starts over and one that tightens it applies at once. A higher budget or no budget loosens it. So do a shorter hold and more times to open the feed anyway. Moving the hour the day starts and turning this off wait too. A restored backup follows the same rule and Start today over is off while this is on.	Un cambio que afloja el presupuesto espera hasta que el día vuelve a empezar, y uno que lo endurece se aplica al momento. Un presupuesto más alto o ninguno lo afloja. También lo hacen una pausa más corta y más veces para abrir el feed de todas formas. Cambiar la hora en que empieza el día y desactivar esto también esperan. Una copia de seguridad restaurada sigue la misma regla, y Empezar hoy de nuevo no está disponible mientras esto esté activado.
 Changes to %1$s at %2$s	Cambia a %1$s a las %2$s
 Turns off at %1$s	Se desactiva a las %1$s
-That loosens the budget. It applies at %1$s when the day starts over.	Eso afloja el presupuesto. Se aplica a las %1$s, cuando el día vuelve a empezar.
+That loosens the budget. It waits until %1$s.	Eso afloja el presupuesto. Espera hasta las %1$s.
 Today can't start over while Wait a day to loosen the budget is on. The day starts over at %1$s.	Hoy no puede empezar de nuevo mientras Esperar un día para aflojar el presupuesto esté activado. El día vuelve a empezar a las %1$s.
 Today has moved on, so there is nothing to put back	El día ha avanzado, así que no hay nada que recuperar
 Today is back where it was	Hoy está como estaba

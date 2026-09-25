@@ -190,7 +190,7 @@ public final class ScreenTimePreferenceCategory extends ConditionalPreferenceCat
                 if (dialog != null) dialog.dismiss();
             }
             Utils.showToastShort(L10n.f(context,
-                    "That loosens the budget. It applies at %1$s when the day starts over.",
+                    "That loosens the budget. It waits until %1$s.",
                     SessionLockOverlay.timeLabel(at)));
             return false;
         };

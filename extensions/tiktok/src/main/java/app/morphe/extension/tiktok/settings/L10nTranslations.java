@@ -2209,8 +2209,8 @@ public final class L10nTranslations {
                 "Diese Liste enthält zu viele Einträge. Begrenze sie auf höchstens %1$s.");
         table.put("That list is too large. Keep it to %1$s KB or less.",
                 "Diese Liste ist zu groß. Begrenze sie auf höchstens %1$s KB.");
-        table.put("That loosens the budget. It applies at %1$s when the day starts over.",
-                "Das lockert das Budget. Es gilt ab %1$s, wenn der Tag neu beginnt.");
+        table.put("That loosens the budget. It waits until %1$s.",
+                "Das lockert das Budget. Es wartet bis %1$s.");
         table.put("That preset is not recognized. Choose another.",
                 "Ungültige SIM-Vorlage.");
         table.put("That settings backup contains a feed rule list larger than Hushfeed accepts. Nothing was altered.",
@@ -4796,8 +4796,8 @@ public final class L10nTranslations {
                 "Esa lista tiene demasiadas entradas. Limítala a %1$s o menos.");
         table.put("That list is too large. Keep it to %1$s KB or less.",
                 "Esa lista es demasiado grande. Limítala a %1$s KB o menos.");
-        table.put("That loosens the budget. It applies at %1$s when the day starts over.",
-                "Eso afloja el presupuesto. Se aplica a las %1$s, cuando el día vuelve a empezar.");
+        table.put("That loosens the budget. It waits until %1$s.",
+                "Eso afloja el presupuesto. Espera hasta las %1$s.");
         table.put("That preset is not recognized. Choose another.",
                 "Ajuste preestablecido de SIM no válido.");
         table.put("That settings backup contains a feed rule list larger than Hushfeed accepts. Nothing was altered.",
@@ -7383,8 +7383,8 @@ public final class L10nTranslations {
                 "Daftar itu memiliki terlalu banyak entri. Batasi hingga %1$s entri atau kurang.");
         table.put("That list is too large. Keep it to %1$s KB or less.",
                 "Daftar itu terlalu besar. Batasi ukurannya hingga %1$s KB atau kurang.");
-        table.put("That loosens the budget. It applies at %1$s when the day starts over.",
-                "Itu melonggarkan anggaran. Berlaku pukul %1$s saat hari dimulai ulang.");
+        table.put("That loosens the budget. It waits until %1$s.",
+                "Itu melonggarkan anggaran. Menunggu sampai pukul %1$s.");
         table.put("That preset is not recognized. Choose another.",
                 "Pratata SIM tidak sah.");
         table.put("That settings backup contains a feed rule list larger than Hushfeed accepts. Nothing was altered.",
@@ -9970,8 +9970,8 @@ public final class L10nTranslations {
                 "Essa lista tem entradas demais. Limite-a a %1$s ou menos.");
         table.put("That list is too large. Keep it to %1$s KB or less.",
                 "Essa lista é grande demais. Limite-a a %1$s KB ou menos.");
-        table.put("That loosens the budget. It applies at %1$s when the day starts over.",
-                "Isso afrouxa o limite. Vale a partir das %1$s, quando o dia recomeça.");
+        table.put("That loosens the budget. It waits until %1$s.",
+                "Isso afrouxa o limite. Espera até as %1$s.");
         table.put("That preset is not recognized. Choose another.",
                 "Predefinição de SIM inválida.");
         table.put("That settings backup contains a feed rule list larger than Hushfeed accepts. Nothing was altered.",
@@ -12557,8 +12557,8 @@ public final class L10nTranslations {
                 "Bu listede çok fazla giriş var. %1$s veya daha az olsun.");
         table.put("That list is too large. Keep it to %1$s KB or less.",
                 "Bu liste çok büyük. %1$s KB veya daha küçük olsun.");
-        table.put("That loosens the budget. It applies at %1$s when the day starts over.",
-                "Bu bütçeyi gevşetir. Gün yeniden başladığında %1$s saatinde uygulanır.");
+        table.put("That loosens the budget. It waits until %1$s.",
+                "Bu bütçeyi gevşetir. %1$s saatine kadar bekler.");
         table.put("That preset is not recognized. Choose another.",
                 "Bu hazır ayar tanınmıyor. Başka birini seç.");
         table.put("That settings backup contains a feed rule list larger than Hushfeed accepts. Nothing was altered.",

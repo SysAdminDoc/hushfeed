@@ -1041,7 +1041,7 @@ Wait a day to loosen the budget	Lockerungen des Budgets einen Tag warten lassen
 A change that loosens the budget waits until the day starts over and one that tightens it applies at once. A higher budget or no budget loosens it. So do a shorter hold and more times to open the feed anyway. Moving the hour the day starts and turning this off wait too. A restored backup follows the same rule and Start today over is off while this is on.	Eine Änderung, die das Budget lockert, wartet, bis der Tag neu beginnt, und eine, die es verschärft, gilt sofort. Ein höheres Budget oder gar keins lockert es. Das tun auch eine kürzere Haltezeit und mehr Möglichkeiten, den Feed trotzdem zu öffnen. Eine andere Stunde für den Tagesbeginn und das Ausschalten dieser Option warten ebenfalls. Eine wiederhergestellte Sicherung folgt derselben Regel, und Heute neu beginnen ist aus, solange dies an ist.
 Changes to %1$s at %2$s	Ändert sich um %2$s auf %1$s
 Turns off at %1$s	Schaltet sich um %1$s aus
-That loosens the budget. It applies at %1$s when the day starts over.	Das lockert das Budget. Es gilt ab %1$s, wenn der Tag neu beginnt.
+That loosens the budget. It waits until %1$s.	Das lockert das Budget. Es wartet bis %1$s.
 Today can't start over while Wait a day to loosen the budget is on. The day starts over at %1$s.	Heute kann nicht neu beginnen, solange Lockerungen des Budgets einen Tag warten lassen an ist. Der Tag beginnt um %1$s neu.
 Today has moved on, so there is nothing to put back	Der Tag ist weitergezogen, es gibt nichts zurückzuholen
 Today is back where it was	Der heutige Tag ist wieder wie zuvor

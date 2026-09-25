@@ -1039,7 +1039,7 @@ Wait a day to loosen the budget,Tunggu sehari untuk melonggarkan anggaran
 A change that loosens the budget waits until the day starts over and one that tightens it applies at once. A higher budget or no budget loosens it. So do a shorter hold and more times to open the feed anyway. Moving the hour the day starts and turning this off wait too. A restored backup follows the same rule and Start today over is off while this is on.,Perubahan yang melonggarkan anggaran menunggu sampai hari dimulai ulang dan perubahan yang mengetatkannya langsung berlaku. Anggaran yang lebih tinggi atau tanpa anggaran melonggarkannya. Begitu juga penahanan yang lebih singkat dan lebih banyak kesempatan untuk tetap membuka feed. Mengubah jam dimulainya hari dan mematikan ini juga menunggu. Cadangan yang dipulihkan mengikuti aturan yang sama dan Mulai ulang hari ini tidak tersedia selama ini aktif.
 Changes to %1$s at %2$s,Berubah menjadi %1$s pukul %2$s
 Turns off at %1$s,Mati pukul %1$s
-That loosens the budget. It applies at %1$s when the day starts over.,Itu melonggarkan anggaran. Berlaku pukul %1$s saat hari dimulai ulang.
+That loosens the budget. It waits until %1$s.,Itu melonggarkan anggaran. Menunggu sampai pukul %1$s.
 Today can't start over while Wait a day to loosen the budget is on. The day starts over at %1$s.,Hari ini tidak bisa dimulai ulang selama Tunggu sehari untuk melonggarkan anggaran aktif. Hari dimulai ulang pukul %1$s.
 "Today has moved on, so there is nothing to put back","Hari sudah berganti, jadi tidak ada yang bisa dikembalikan"
 Today is back where it was,Hari ini kembali seperti semula

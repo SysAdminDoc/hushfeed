@@ -1040,7 +1040,7 @@ That is one minute today,That is one minute today
 That is one video today,That is one video today
 That list has too many entries. Keep it to %1$s or fewer.,That list has too many entries. Keep it to %1$s or fewer.
 That list is too large. Keep it to %1$s KB or less.,That list is too large. Keep it to %1$s KB or less.
-That loosens the budget. It applies at %1$s when the day starts over.,That loosens the budget. It applies at %1$s when the day starts over.
+That loosens the budget. It waits until %1$s.,That loosens the budget. It waits until %1$s.
 That preset is not recognized. Choose another.,That preset is not recognized. Choose another.
 That settings backup contains a feed rule list larger than Hushfeed accepts. Nothing was altered.,That settings backup contains a feed rule list larger than Hushfeed accepts. Nothing was altered.
 That settings backup holds a value Hushfeed cannot read. Nothing was altered.,That settings backup holds a value Hushfeed cannot read. Nothing was altered.
