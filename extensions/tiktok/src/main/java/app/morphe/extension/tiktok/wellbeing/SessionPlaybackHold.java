@@ -214,6 +214,26 @@ public final class SessionPlaybackHold {
         });
     }
 
+    /** The video the player last reported, or null before any report. */
+    public static String currentAwemeId() {
+        Target target = current;
+        return target == null ? null : target.awemeId;
+    }
+
+    /**
+     * Whether the player of the last reported video is playing it now, or null when there is no
+     * such player or it has moved to another video. Reports stop while a video is paused, so the
+     * last one names the video the reader paused.
+     */
+    public static Boolean currentPlaying() {
+        Target target = current;
+        if (target == null) return null;
+        Object controller = target.controller.get();
+        if (controller == null || !target.isCurrentCell(controller)) return null;
+        Object playing = Reflect.invoke(Reflect.invoke(controller, "getPlayerManager"), "isPlaying");
+        return playing instanceof Boolean ? (Boolean) playing : null;
+    }
+
     /** Runs on each visible hold sync, not only when the panel is first attached. */
     static void pauseIfPlaying() {
         Target target = current;

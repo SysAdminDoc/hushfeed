@@ -320,6 +320,8 @@ public class Settings extends BaseSettings {
      */
     public static final BooleanSetting NO_RESUME_ON_FOREGROUND = new BooleanSetting(
             "no_resume_on_foreground", FALSE, true);
+    /** Leaves a video the reader paused paused when the app comes back. Off by default. */
+    public static final BooleanSetting KEEP_PAUSED_ON_RETURN = new BooleanSetting("keep_paused_on_return", FALSE);
     /**
      * Sends TikTok to the background when TikTok's own daily screen-time reminder comes up,
      * instead of leaving the reminder there to be dismissed. Off by default, read at show

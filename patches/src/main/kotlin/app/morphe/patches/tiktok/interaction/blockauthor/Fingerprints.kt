@@ -72,3 +72,20 @@ internal object PlayerProgressAidFingerprint : Fingerprint(
         method.name == "onPlayProgressChange" && classDef.endsWith("/PlayerController;")
     },
 )
+
+/**
+ * PlayerController's play method: plays the video it is given and answers with a code for why it
+ * didn't, or an empty string. TikTok plays the video on screen again through it as the app comes
+ * back, from the feed panel's resume and again from the video's new surface. Its first check turns
+ * a play down while casting and answers with that empty string. Its parameters move between
+ * builds (int, Aweme, boolean on 46.2.3; Aweme, int, boolean, boolean on 47.0.3), and its log line
+ * does not.
+ */
+internal object PlayerPlayFingerprint : Fingerprint(
+    definingClass = PLAYER_CONTROLLER,
+    returnType = "Ljava/lang/String;",
+    strings = listOf("resumePlay, initialStartTimeMs:"),
+    custom = { method, _ -> method.parameterTypes.count { it.toString() == PLAYED_AWEME } == 1 },
+)
+
+internal const val PLAYED_AWEME = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"

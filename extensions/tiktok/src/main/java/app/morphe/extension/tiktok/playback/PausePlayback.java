@@ -11,6 +11,7 @@ import android.app.Application;
 import android.content.Context;
 import android.graphics.Color;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -255,11 +256,23 @@ public final class PausePlayback {
             installed = true;
             application.registerActivityLifecycleCallbacks(
                     new Application.ActivityLifecycleCallbacks() {
+                        // Before the activity's own lifecycle observers, where TikTok's player
+                        // stops, so the reader's play state is still there to read.
+                        @Override public void onActivityPrePaused(Activity paused) {
+                            KeepPaused.onLeaving(paused);
+                        }
+
+                        @Override public void onActivityPreResumed(Activity resumed) {
+                            KeepPaused.onReturning();
+                        }
+
                         @Override public void onActivityResumed(Activity resumed) {
+                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) KeepPaused.onReturning();
                             onForeground(resumed);
                         }
 
                         @Override public void onActivityPaused(Activity paused) {
+                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) KeepPaused.onLeaving(paused);
                         }
 
                         @Override public void onActivityStopped(Activity stopped) {

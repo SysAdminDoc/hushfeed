@@ -63,6 +63,7 @@ A newer clear replaced that undo. Tap the row again to undo.	Uma limpeza mais re
 A small label on the feed shows the minutes or videos left of today's budget, whichever is closer to running out.	Um rótulo pequeno no feed mostra os minutos ou vídeos restantes do orçamento de hoje.
 A tap on Home or on the For You tab while For You is showing no longer reloads it. The video you're on stays.	Tocar em Início ou na aba Para você enquanto Para você está aberto não recarrega mais o feed. O vídeo que você está vendo continua.
 A tap on a person in the Send to row only selects them. A second tap on the same person within %1$d seconds sends the video.	Tocar em alguém na linha Enviar para apenas seleciona a pessoa. Um segundo toque na mesma pessoa dentro de %1$d segundos envia o vídeo.
+A video you paused stays paused when you come back to the app instead of starting again. One you left playing starts as usual.	Um vídeo que você pausou continua pausado quando você volta ao app em vez de recomeçar. Um que ficou tocando começa como sempre.
 A web address someone left in a comment can be tapped instead of copied out by hand. Tapping anywhere else in the comment still does what it did.	Um endereço da web deixado em um comentário pode ser tocado em vez de copiado na mão. Tocar em qualquer outra parte do comentário continua fazendo o de sempre.
 AI-generated posts	Publicações geradas por IA
 About	Sobre
@@ -503,6 +504,7 @@ Includes all diagnostic events.	Inclui todos os eventos de diagnóstico.
 Includes these events: %1$s	Inclui estes eventos: %1$s
 Inserted cards	Cards inseridos
 Keep a local record of what you have watched and hide those videos when the feed sends them again.	Guardar no aparelho um registro do que você viu e esconder esses vídeos quando o feed os enviar de novo.
+Keep a paused video paused	Manter pausado um vídeo pausado
 Move to the next video when the current one ends. Pauses, open dialogs and screen-time holds stop it. Restart TikTok after changing this.	Avance para o próximo vídeo quando o atual terminar. Pausas, caixas de diálogo abertas e bloqueios de tempo de tela interrompem o avanço. Reinicie o TikTok depois de mudar esta configuração.
 Keep captions in clear display	Manter as legendas com a tela limpa
 Keep going	Continuar

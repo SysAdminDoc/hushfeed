@@ -7,13 +7,17 @@
 package app.morphe.patches.tiktok.interaction.blockauthor
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.inbox.MainActivityOnCreateFingerprint
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
+import app.morphe.patches.tiktok.shared.requireLocals
 import app.morphe.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
@@ -135,7 +139,35 @@ val blockAuthorPatch = bytecodePatch(
             val endRegister = if (parameters.isEmpty()) "p0" else "p1"
             method.addInstruction(0, "invoke-static/range { p0 .. $endRegister }, $visibility->$callback")
         }
+
+        // A video the reader paused stays paused when the app comes back. TikTok plays it again
+        // through PlayerController's play method as the app returns, from the feed panel's resume
+        // and again from the video's new surface, so the answer is asked at its start. A play it
+        // turns down answers the way TikTok's own casting check does, with an empty string.
+        PlayerPlayFingerprint.method.apply {
+            requireLocals("Block author", 1)
+            val aweme = "p${awemeParameterRegister()}"
+            addInstructionsWithLabels(
+                0,
+                """
+                    invoke-static/range { $aweme .. $aweme }, Lapp/morphe/extension/tiktok/playback/KeepPaused;->refusePlay(Ljava/lang/Object;)Z
+                    move-result v0
+                    if-eqz v0, :play
+                    const-string v0, ""
+                    return-object v0
+                """,
+                ExternalLabel("play", getInstruction(0)),
+            )
+        }
     }
+}
+
+/** The p-register of the one Aweme parameter: past p0 and every parameter before it, wide ones twice. */
+internal fun com.android.tools.smali.dexlib2.iface.Method.awemeParameterRegister(): Int {
+    val parameters = parameterTypes.map(CharSequence::toString)
+    val index = parameters.indexOf(PLAYED_AWEME)
+    check(index >= 0) { "Block author: the play method takes no Aweme." }
+    return 1 + parameters.take(index).sumOf { if (it == "J" || it == "D") 2 else 1 }
 }
 
 internal fun validateBlockPager(methods: Iterable<com.android.tools.smali.dexlib2.iface.Method>) {

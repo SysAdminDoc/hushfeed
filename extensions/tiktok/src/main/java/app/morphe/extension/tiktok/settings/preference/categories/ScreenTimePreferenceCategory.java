@@ -53,6 +53,10 @@ public final class ScreenTimePreferenceCategory extends ConditionalPreferenceCat
                         + "come back to the app. Messages, profiles and search are still "
                         + "one tap away.",
                 Settings.NO_RESUME_ON_FOREGROUND));
+        addPreference(new TogglePreference(context, "Keep a paused video paused",
+                "A video you paused stays paused when you come back to the app instead of "
+                        + "starting again. One you left playing starts as usual.",
+                Settings.KEEP_PAUSED_ON_RETURN));
         addPreference(new TogglePreference(context, "Leave when TikTok says time is up",
                 "TikTok's own daily screen-time reminder sends the app to the background "
                         + "instead of waiting to be dismissed. Coming straight back leaves the "

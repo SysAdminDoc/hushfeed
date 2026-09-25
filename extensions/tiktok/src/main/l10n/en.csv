@@ -89,6 +89,7 @@ A newer clear replaced that undo. Tap the row again to undo.,A newer clear repla
 "A small label on the feed shows the minutes or videos left of today's budget, whichever is closer to running out.","A small label on the feed shows the minutes or videos left of today's budget, whichever is closer to running out."
 A tap on Home or on the For You tab while For You is showing no longer reloads it. The video you're on stays.,A tap on Home or on the For You tab while For You is showing no longer reloads it. The video you're on stays.
 A tap on a person in the Send to row only selects them. A second tap on the same person within %1$d seconds sends the video.,A tap on a person in the Send to row only selects them. A second tap on the same person within %1$d seconds sends the video.
+A video you paused stays paused when you come back to the app instead of starting again. One you left playing starts as usual.,A video you paused stays paused when you come back to the app instead of starting again. One you left playing starts as usual.
 A web address someone left in a comment can be tapped instead of copied out by hand. Tapping anywhere else in the comment still does what it did.,A web address someone left in a comment can be tapped instead of copied out by hand. Tapping anywhere else in the comment still does what it did.
 AI-generated posts,AI-generated posts
 About,About
@@ -566,6 +567,7 @@ Inserted cards,Inserted cards
 Keep For You on a Home tap,Keep For You on a Home tap
 Keep For You on a pull down,Keep For You on a pull down
 Keep a local record of what you have watched and hide those videos when the feed sends them again.,Keep a local record of what you have watched and hide those videos when the feed sends them again.
+Keep a paused video paused,Keep a paused video paused
 Keep captions in clear display,Keep captions in clear display
 Keep going,Keep going
 Keep long press from quick sharing,Keep long press from quick sharing

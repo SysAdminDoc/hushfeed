@@ -63,6 +63,7 @@ A newer clear replaced that undo. Tap the row again to undo.	Daha yeni bir temiz
 A small label on the feed shows the minutes or videos left of today's budget, whichever is closer to running out.	Akıştaki küçük bir etiket, bugünkü bütçenden kalan dakikayı veya video sayısını gösterir, hangisi bitmeye daha yakınsa onu.
 A tap on Home or on the For You tab while For You is showing no longer reloads it. The video you're on stays.	Senin İçin açıkken Ana Sayfa'ya ya da Senin İçin sekmesine dokunmak artık akışı yenilemez. İzlediğin video yerinde kalır.
 A tap on a person in the Send to row only selects them. A second tap on the same person within %1$d seconds sends the video.	Şuraya gönder satırındaki bir kişiye dokunmak onu yalnızca seçer. Aynı kişiye %1$d saniye içinde ikinci kez dokunmak videoyu gönderir.
+A video you paused stays paused when you come back to the app instead of starting again. One you left playing starts as usual.	Duraklattığın bir video, uygulamaya döndüğünde yeniden başlamak yerine duraklatılmış kalır. Oynarken bıraktığın bir video her zamanki gibi başlar.
 A web address someone left in a comment can be tapped instead of copied out by hand. Tapping anywhere else in the comment still does what it did.	Birinin yoruma bıraktığı web adresine, elle kopyalamak yerine dokunulabilir. Yorumun başka bir yerine dokunmak yine eskiden ne yapıyorsa onu yapar.
 AI-generated posts	Yapay zeka ile üretilmiş gönderiler
 About	Hakkında
@@ -530,6 +531,7 @@ Includes all diagnostic events.	Tüm tanılama olaylarını içerir.
 Includes these events: %1$s	Şu olayları içerir: %1$s
 Inserted cards	Araya eklenen kartlar
 Keep a local record of what you have watched and hide those videos when the feed sends them again.	İzlediklerinin yerel bir kaydını tut ve akış o videoları yeniden gönderdiğinde onları gizle.
+Keep a paused video paused	Duraklatılan videoyu duraklatılmış tut
 Keep captions in clear display	Temiz ekranda altyazıları koru
 Keep going	Devam et
 Keep the Favorites tab	Favoriler sekmesini koru

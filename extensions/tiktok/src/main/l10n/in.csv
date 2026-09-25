@@ -64,6 +64,7 @@ A newer clear replaced that undo. Tap the row again to undo.,Penghapusan yang le
 "A small label on the feed shows the minutes or videos left of today's budget, whichever is closer to running out.",Label kecil di feed menunjukkan menit atau video yang tersisa dari anggaran hari ini.
 A tap on Home or on the For You tab while For You is showing no longer reloads it. The video you're on stays.,Mengetuk Beranda atau tab Untuk Kamu saat Untuk Kamu sedang tampil tidak lagi memuat ulang feed. Video yang sedang kamu tonton tetap.
 A tap on a person in the Send to row only selects them. A second tap on the same person within %1$d seconds sends the video.,Satu ketukan pada orang di baris Kirim ke hanya memilihnya. Ketukan kedua pada orang yang sama dalam %1$d detik mengirim videonya.
+A video you paused stays paused when you come back to the app instead of starting again. One you left playing starts as usual.,Video yang kamu jeda tetap dijeda saat kamu kembali ke aplikasi alih-alih diputar lagi. Video yang kamu tinggalkan saat diputar mulai seperti biasa.
 A web address someone left in a comment can be tapped instead of copied out by hand. Tapping anywhere else in the comment still does what it did.,"Alamat web yang ditulis seseorang di komentar bisa diketuk, bukan disalin manual. Mengetuk bagian lain dari komentar tetap seperti sebelumnya."
 AI-generated posts,Kiriman buatan AI
 About,Tentang
@@ -502,6 +503,7 @@ Includes all diagnostic events.,Termasuk semua peristiwa diagnostik.
 Includes these events: %1$s,Termasuk peristiwa berikut: %1$s
 Inserted cards,Kartu yang disisipkan
 Keep a local record of what you have watched and hide those videos when the feed sends them again.,Simpan catatan tontonanmu di perangkat dan sembunyikan video itu saat feed mengirimnya lagi.
+Keep a paused video paused,Biarkan video yang dijeda tetap dijeda
 "Move to the next video when the current one ends. Pauses, open dialogs and screen-time holds stop it. Restart TikTok after changing this.","Pindah ke video berikutnya saat video saat ini berakhir. Jeda, dialog terbuka, dan batas waktu layar akan menghentikannya. Mulai ulang TikTok setelah mengubah setelan ini."
 Keep captions in clear display,Pertahankan keterangan saat tampilan bersih
 Keep going,Lanjutkan

@@ -63,6 +63,7 @@ A newer clear replaced that undo. Tap the row again to undo.	Un borrado más rec
 A small label on the feed shows the minutes or videos left of today's budget, whichever is closer to running out.	Una pequeña etiqueta en el feed muestra los minutos o videos restantes del presupuesto de hoy.
 A tap on Home or on the For You tab while For You is showing no longer reloads it. The video you're on stays.	Tocar Inicio o la pestaña Para ti mientras se muestra Para ti ya no lo recarga. El vídeo que estás viendo se queda.
 A tap on a person in the Send to row only selects them. A second tap on the same person within %1$d seconds sends the video.	Al tocar a una persona en la fila Enviar a solo se la selecciona. Un segundo toque sobre la misma persona antes de %1$d segundos envía el vídeo.
+A video you paused stays paused when you come back to the app instead of starting again. One you left playing starts as usual.	Un vídeo que pausaste sigue en pausa cuando vuelves a la app en lugar de empezar de nuevo. Uno que dejaste reproduciéndose empieza como siempre.
 A web address someone left in a comment can be tapped instead of copied out by hand. Tapping anywhere else in the comment still does what it did.	Una dirección web escrita en un comentario se puede tocar en lugar de copiarla a mano. Tocar en cualquier otra parte del comentario sigue haciendo lo de siempre.
 AI-generated posts	Publicaciones generadas por IA
 About	Acerca de
@@ -503,6 +504,7 @@ Includes all diagnostic events.	Incluye todos los eventos de diagnóstico.
 Includes these events: %1$s	Incluye estos eventos: %1$s
 Inserted cards	Tarjetas insertadas
 Keep a local record of what you have watched and hide those videos when the feed sends them again.	Guardar en el dispositivo un registro de lo que has visto y ocultar esos vídeos cuando el feed los vuelva a enviar.
+Keep a paused video paused	Mantener en pausa un vídeo pausado
 Move to the next video when the current one ends. Pauses, open dialogs and screen-time holds stop it. Restart TikTok after changing this.	Pasa al siguiente vídeo cuando termine el actual. Las pausas, los diálogos abiertos y los bloqueos de tiempo de pantalla lo detienen. Reinicia TikTok después de cambiar este ajuste.
 Keep captions in clear display	Mantener los subtítulos con los controles ocultos
 Keep going	Seguir
