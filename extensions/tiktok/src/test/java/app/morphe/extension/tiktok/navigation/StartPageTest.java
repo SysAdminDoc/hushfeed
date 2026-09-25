@@ -264,4 +264,28 @@ public class StartPageTest {
             HookStatus.setLineWriter(null);
         }
     }
+
+    @Test public void aSignedOutInboxLeavesTikTokItsTab() {
+        Settings.START_PAGE.save(StartPage.INBOX);
+        StartPage.signedInForTests = false;
+        assertEquals("TikTok would send a start on Inbox to its login screen", "HOME", start(launcher(), "HOME"));
+        StartPage.signedInForTests = true;
+        assertEquals("NOTIFICATION", start(launcher(), "HOME"));
+        Settings.START_PAGE.save(StartPage.PROFILE);
+        StartPage.signedInForTests = false;
+        assertEquals("Profile shows a sign-up page of its own", "USER", start(launcher(), "HOME"));
+    }
+
+    @Test public void anAccountServiceThatCannotBeReadKeepsTheChoice() {
+        assertTrue(StartPage.signedIn());
+    }
+
+    @Test public void aStartMarkedAsTikToksPushKeepsItsTab() {
+        Settings.START_PAGE.save(StartPage.INBOX);
+        for (String extra : StartPage.PUSH_EXTRAS) {
+            assertEquals(extra, "HOME", start(launcher().putExtra(extra, "1"), "HOME"));
+            assertFalse(extra, StartPage.isLauncherStart(launcher().putExtra(extra, true)));
+        }
+        assertEquals("another extra is not a push", "NOTIFICATION", start(launcher().putExtra("something_else", 1), "HOME"));
+    }
 }

@@ -31,11 +31,16 @@ import app.morphe.extension.tiktok.settings.Settings;
  * asked for either tab answers both for a short while after it.
  *
  * <p>Only a plain start from the launcher changes. A notification, a link or a shortcut keeps the
- * tab it asked for, and an activity Android restores keeps the tab it was on.
+ * tab it asked for, and an activity Android restores keeps the tab it was on. Inbox also needs a
+ * signed-in account, since TikTok sends a start there without one to its login screen.
  */
 public final class StartPage {
     static final String FAMILY = "start page";
     static final String PUSH_TAB = "com.ss.android.ugc.aweme.intent.extra.EXTRA_AWEME_PUSH_TAB";
+    /** The extras TikTok's own push check reads, besides a link: a start with any is a notification's. */
+    static final String[] PUSH_EXTRAS = {"from_notification", "push_id", "is_from_push"};
+    private static final String SERVICE_MANAGER_CLASS = "com.ss.android.ugc.aweme.framework.services.ServiceManager";
+    private static final String ACCOUNT_USER_SERVICE_CLASS = "com.ss.android.ugc.aweme.IAccountUserService";
 
     public static final String TIKTOK = "tiktok";
     public static final String FOR_YOU = "for_you";
@@ -142,16 +147,48 @@ public final class StartPage {
     static void resetForTests() {
         startTopTab = null;
         startedAt = 0;
+        signedInForTests = null;
     }
 
-    /** A tap on the app's icon: the launcher's own intent, with no page, link or notification tab in it. */
+    /**
+     * A tap on the app's icon: the launcher's own intent, with no page, link or notification tab in
+     * it and none of the extras TikTok's own push check reads. Some of TikTok's notifications open
+     * the app with the launcher's intent and mark it only with those.
+     */
     static boolean isLauncherStart(Intent intent) {
-        return intent != null
-                && Intent.ACTION_MAIN.equals(intent.getAction())
-                && intent.hasCategory(Intent.CATEGORY_LAUNCHER)
-                && intent.getData() == null
-                && !intent.hasExtra(PUSH_TAB);
+        if (intent == null
+                || !Intent.ACTION_MAIN.equals(intent.getAction())
+                || !intent.hasCategory(Intent.CATEGORY_LAUNCHER)
+                || intent.getData() != null
+                || intent.hasExtra(PUSH_TAB)) {
+            return false;
+        }
+        for (String extra : PUSH_EXTRAS) {
+            if (intent.hasExtra(extra)) return false;
+        }
+        return true;
     }
+
+    /**
+     * Whether an account is signed in. TikTok sends a start on Inbox without one to its login
+     * screen instead, every time. A build where the account service can't be read keeps the
+     * choice, as before this was asked.
+     */
+    static boolean signedIn() {
+        if (signedInForTests != null) return signedInForTests;
+        try {
+            Class<?> managerClass = Class.forName(SERVICE_MANAGER_CLASS);
+            Object manager = managerClass.getMethod("get").invoke(null);
+            Class<?> accountClass = Class.forName(ACCOUNT_USER_SERVICE_CLASS);
+            Object account = managerClass.getMethod("getService", Class.class).invoke(manager, accountClass);
+            return account == null || !Boolean.FALSE.equals(accountClass.getMethod("isLogin").invoke(account));
+        } catch (Throwable unreadable) {
+            return true;
+        }
+    }
+
+    /** So a test can stand in for TikTok's account service. */
+    static Boolean signedInForTests;
 
     /**
      * TikTok's tag for a choice, or nothing when the choice leaves it to TikTok or asks for a tab
@@ -163,7 +200,7 @@ public final class StartPage {
         if (FOLLOWING.equals(choice)) return topTabShown(NavigationTabOptions.FOLLOWING) ? HOME_TAG : null;
         if (PROFILE.equals(choice)) return PROFILE_TAG;
         if (INBOX.equals(choice)) {
-            return bottomTabShown(BottomNavigationTabOptions.INBOX) ? INBOX_TAG : null;
+            return bottomTabShown(BottomNavigationTabOptions.INBOX) && signedIn() ? INBOX_TAG : null;
         }
         if (FRIENDS.equals(choice)) {
             boolean bottom = BottomNavigationTabOptions.parseObservedKeys(

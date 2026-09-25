@@ -276,6 +276,15 @@ internal fun Method.coldStartTab(): ColdStartTab? {
     if (!restoresTheActivity) return null
     // A jump to the comparison itself would skip anything put in front of it.
     if (join + 1 in branchTargets()) return null
+    // The hook hands over the saved state from p1, the method's last register, so nothing before
+    // it may write that register, a wide write into the one below included.
+    val savedState = implementation!!.registerCount - 1
+    val overwritten = instructions.take(join + 1).any { instruction ->
+        if (!instruction.opcode.setsRegister()) return@any false
+        val written = (instruction as? OneRegisterInstruction)?.registerA ?: return@any false
+        written == savedState || (instruction.opcode.setsWideRegister() && written + 1 == savedState)
+    }
+    if (overwritten) return null
     return ColdStartTab(join + 1, tag, activity)
 }
 

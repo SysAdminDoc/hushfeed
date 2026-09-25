@@ -63,7 +63,9 @@ class StartPageAnchorsTest {
             assertTrue("${apk.name}: the activity v${start.activity}, the tag v${start.tag} or p1 (v$savedState) is past v15",
                 maxOf(start.activity, start.tag, savedState) <= 15)
             assertTrue("${apk.name}: nothing may write p1 before the hook reads it", instructions.take(start.insertAt).none {
-                it.opcode.setsRegister() && (it as? OneRegisterInstruction)?.registerA == savedState
+                it.opcode.setsRegister() && (it as? OneRegisterInstruction)?.registerA?.let { written ->
+                    written == savedState || (it.opcode.setsWideRegister() && written + 1 == savedState)
+                } == true
             })
         }
     }
@@ -124,6 +126,16 @@ class StartPageAnchorsTest {
         assertNull("the switch is not told COLD_BOOT", onCreate(bootField = "ON_NEW_INTENT").coldStartTab())
     }
 
+    @Test
+    fun `a write into the saved state's register before the ask is refused, a wide one included`() {
+        assertTrue("the plain onCreate is read", onCreate().coldStartTab() != null)
+        assertNull("p1 (v15) written", onCreate(savedStateWrite = ImmutableInstruction11x(Opcode.MOVE_RESULT, 15)).coldStartTab())
+        assertNull("v14 and v15 written as one wide value",
+            onCreate(savedStateWrite = ImmutableInstruction11x(Opcode.MOVE_RESULT_WIDE, 14)).coldStartTab())
+        assertTrue("v13 written wide leaves p1 alone",
+            onCreate(savedStateWrite = ImmutableInstruction11x(Opcode.MOVE_RESULT_WIDE, 13)).coldStartTab() != null)
+    }
+
     /**
      * TikTok's shape in miniature: the tag in v4, the activity in v7, the join's "HOME" in v0, the
      * theme restore, then getIntent and the cold-boot switch. The if-nez at index 4 skips the
@@ -134,10 +146,11 @@ class StartPageAnchorsTest {
         restoreRegister: Int = 7,
         comparedRegister: Int = 4,
         bootField: String = "COLD_BOOT",
+        savedStateWrite: Instruction? = null,
     ): Method {
         val assem = "LX/Assem;"
         val boot = "LX/Boot;"
-        val instructions = listOf<Instruction>(
+        val instructions = listOfNotNull(savedStateWrite) + listOf<Instruction>(
             ImmutableInstruction21c(Opcode.CONST_STRING, 4, ImmutableStringReference("SHOP_MALL")),
             ImmutableInstruction21c(Opcode.CONST_STRING, 0, ImmutableStringReference("HOME")),
             ImmutableInstruction35c(Opcode.INVOKE_STATIC, 2, 0, comparedRegister, 0, 0, 0,
