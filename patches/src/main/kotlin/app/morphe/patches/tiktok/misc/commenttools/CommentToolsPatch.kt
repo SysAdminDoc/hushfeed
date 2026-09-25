@@ -129,7 +129,7 @@ val commentToolsPatch = bytecodePatch(
     name = "Comment tools",
     description = "Hides comments that contain chosen words or come from chosen accounts, turns " +
         "the thumbs down on each comment into a block button that shows the block symbol, " +
-        "makes links tappable and can hide pictures, polls or TikTok's suggested-search banner above comments. " +
+        "makes links tappable, can show a poll's results before you vote and can hide pictures, polls or TikTok's suggested-search banner above comments. " +
         "Compact comment header removes the count, controls and suggestion space above the list. " +
         "Easier comment likes extends the heart's touch area into nearby blank space without changing row spacing. " +
         "A separate search box filters comments already loaded on the video. Each tool has its own switch in Hushfeed settings > Comments.",
@@ -170,6 +170,22 @@ val commentToolsPatch = bytecodePatch(
                 write
             },
             { CommentSearchHeaderFactoryFingerprint.method.resolveCommentSearchSuggestions() },
+            {
+                // A comment poll draws its bars and percentages once the poll has ended or the
+                // reader voted, and one method on the poll row answers that for everything the row
+                // draws. The counts are already in the page TikTok fetched, so Show poll results
+                // before voting answers yes first. A tap on an answer is wired without it.
+                val method = PollShowsResultsFingerprint.method
+                method.requireLocals("Comment tools", 1)
+                val write: CommentToolsWrite = {
+                    method.guardAtEntry(
+                        "Comment tools",
+                        "invoke-static {}, $POLL_RESULTS_CLASS_DESCRIPTOR->showBeforeVoting()Z",
+                        "return v0",
+                    )
+                }
+                write
+            },
             {
                 val settingsStatus = SettingsStatusLoadFingerprint.method
                 // Blocking a commenter goes through the same BlockApi as the block button. Fail

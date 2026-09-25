@@ -167,6 +167,12 @@ public class CommentsPreferenceCategory extends ConditionalPreferenceCategory {
                     "Hide voting cards and poll results above the comments, including polls that have ended.",
                     Settings.HIDE_COMMENT_POLLS
             ));
+            addPreference(new TogglePreference(
+                    context,
+                    "Show poll results before voting",
+                    "A comment poll shows how many picked each answer before you vote. Tapping an answer still votes.",
+                    Settings.SHOW_POLL_RESULTS
+            ));
 
             addPreference(new SectionHeadingPreference(context, "Blocking"));
             addPreference(new TogglePreference(

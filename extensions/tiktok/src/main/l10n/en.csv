@@ -77,6 +77,7 @@ source,target
 1 result so far,1 result so far
 1 video left,1 video left
 A Lab change is already running,A Lab change is already running
+A comment poll shows how many picked each answer before you vote. Tapping an answer still votes.,A comment poll shows how many picked each answer before you vote. Tapping an answer still votes.
 A creator pattern is taking too long and was turned off: %1$s,A creator pattern is taking too long and was turned off: %1$s
 A diagnostic report is already being saved,A diagnostic report is already being saved
 A field value couldn't be read. Check the values and try again.,A field value couldn't be read. Check the values and try again.
@@ -931,6 +932,7 @@ Show only videos with this many favorites.,Show only videos with this many favor
 Show only videos with this many likes.,Show only videos with this many likes.
 Show only videos with this many shares.,Show only videos with this many shares.
 Show only videos with this many views.,Show only videos with this many views.
+Show poll results before voting,Show poll results before voting
 Show search in LIVE,Show search in LIVE
 Show the Not interested button,Show the Not interested button
 Show the block button on videos,Show the block button on videos
