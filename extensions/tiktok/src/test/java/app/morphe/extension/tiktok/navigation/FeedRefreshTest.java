@@ -1,5 +1,6 @@
 package app.morphe.extension.tiktok.navigation;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -39,10 +40,14 @@ public class FeedRefreshTest {
         HookStatus.clear();
     }
 
-    /** A Setting keeps the value it last loaded in memory, whichever test's store it came from. */
+    /**
+     * A Setting keeps the value it last loaded in memory, whichever test's store it came from, and
+     * a wrapper mark one test leaves unspent would answer the next test's first ask.
+     */
     private static void resetSwitches() {
         Settings.KEEP_FOR_YOU_ON_TAB_TAP.resetToDefault();
         Settings.KEEP_FOR_YOU_ON_PULL_DOWN.resetToDefault();
+        FeedRefresh.resetForTests();
     }
 
     @Test public void everyRefreshGoesOnWithBothSwitchesOff() {
@@ -71,10 +76,25 @@ public class FeedRefreshTest {
         assertFalse("no fragment", FeedRefresh.keepPull(null));
     }
 
-    @Test public void theRefreshMethodLeavesAPullTriggerToThePanel() {
+    /**
+     * TikTok's accessibility Previous at the top of For You reaches the refresh from the home pager
+     * with the pull trigger. A real pull comes from the panel's listener: with the switch on it ends
+     * at the listener before it gets here, and with the switch off it goes on.
+     */
+    @Test public void aPullTheHomePagerHandsOnIsKeptWithThePullSwitch() {
+        assertTrue("switch off", FeedRefresh.allowRefresh(Trigger.PULL_DOWN_REFRESH));
         Settings.KEEP_FOR_YOU_ON_PULL_DOWN.save(true);
+        assertFalse(FeedRefresh.allowRefresh(Trigger.PULL_DOWN_REFRESH));
+        FeedRefresh.refreshFromWrapper();
+        assertTrue("TikTok's own reload with the pull trigger", FeedRefresh.allowRefresh(Trigger.PULL_DOWN_REFRESH));
+    }
+
+    /** A reload TikTok asks for itself, like the one after you block the creator on screen. */
+    @Test public void tikToksOwnReloadGoesOnAndItsMarkIsSpentByOneAsk() {
         Settings.KEEP_FOR_YOU_ON_TAB_TAP.save(true);
-        assertTrue("a refresh asked for with the pull trigger but no pull", FeedRefresh.allowRefresh(Trigger.PULL_DOWN_REFRESH));
+        FeedRefresh.refreshFromWrapper();
+        assertTrue("the reload after a block", FeedRefresh.allowRefresh(Trigger.CLICK_BOTTOM));
+        assertFalse("the next Home tap", FeedRefresh.allowRefresh(Trigger.CLICK_BOTTOM));
     }
 
     @Test public void aTriggerTheSwitchesDontNameAlwaysRefreshes() {
@@ -85,10 +105,30 @@ public class FeedRefreshTest {
         assertTrue("a name alone is not TikTok's trigger", FeedRefresh.allowRefresh("CLICK_BOTTOM"));
     }
 
-    @Test public void theExportNamesTheHookAndWhatItKept() {
-        Settings.KEEP_FOR_YOU_ON_TAB_TAP.save(true);
-        FeedRefresh.allowRefresh(Trigger.CLICK_BOTTOM);
-        String report = String.join("\n", HookStatus.report());
-        assertTrue(report, report.contains(FeedRefresh.FAMILY));
+    @Test public void theExportCountsEveryKindOfAnswer() {
+        int[] found = new int[1];
+        HookStatus.setLineWriter((family, count, missing, truncated, firstMiss) -> {
+            if (FeedRefresh.FAMILY.equals(family)) found[0] = count;
+            return family;
+        });
+        try {
+            Settings.KEEP_FOR_YOU_ON_TAB_TAP.save(true);
+            Settings.KEEP_FOR_YOU_ON_PULL_DOWN.save(true);
+            FeedRefresh.allowRefresh(Trigger.CLICK_BOTTOM);
+            HookStatus.report();
+            assertEquals("the ask and the kept tap", 2, found[0]);
+            FeedRefresh.allowRefresh(Trigger.PULL_DOWN_REFRESH);
+            HookStatus.report();
+            assertEquals("and the kept Previous at the top", 3, found[0]);
+            FeedRefresh.refreshFromWrapper();
+            FeedRefresh.allowRefresh(Trigger.CLICK_BOTTOM);
+            HookStatus.report();
+            assertEquals("and TikTok's own reload", 4, found[0]);
+            FeedRefresh.keepPull(new FeedRecommendFragment());
+            HookStatus.report();
+            assertEquals("and the pull and the pull kept at the panel", 6, found[0]);
+        } finally {
+            HookStatus.setLineWriter(null);
+        }
     }
 }

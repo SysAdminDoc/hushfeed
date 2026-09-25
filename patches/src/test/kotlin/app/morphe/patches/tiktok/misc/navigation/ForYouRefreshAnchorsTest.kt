@@ -14,14 +14,17 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction10x
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction11x
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction21c
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction22c
 import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction35c
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableFieldReference
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
 import java.io.File
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -123,6 +126,63 @@ class ForYouRefreshAnchorsTest {
         assertEquals("panel", reads.panel.name)
     }
 
+    /**
+     * TikTok's own reloads of For You come through the fragment's refresh wrapper, the one that
+     * turns true into a Home-tap trigger: the reload after you block the creator on screen
+     * (onNodeShow) and its observers. A tap comes from the home pager and a pull from the panel's
+     * listener, which calls the refresh through an interface the fragment implements, both straight
+     * to the refresh. The patch marks the wrapper's call, so the tap switch leaves TikTok's own
+     * reloads alone and nothing else carries the mark.
+     */
+    @Test
+    fun `the refresh wrapper is one method on every fixture, and the reload after a block goes through it`() {
+        for (apk in Fixtures.apks()) {
+            val build = Build(apk)
+            val refresh = build.methods.single { (classDef, method) -> ForYouRefreshFingerprint.takes(method, classDef) }.second
+            val taken = build.methods.filter { (classDef, method) -> ForYouRefreshWrapperFingerprint.takes(method, classDef) }.toList()
+            assertEquals("${apk.name}: ${taken.map { "${it.first.type}->${it.second.name}" }}", 1, taken.size)
+            val wrapper = taken.single().second
+            assertTrue("${apk.name}: the wrapper doesn't call the refresh", wrapper.calls(refresh))
+            val onNodeShow = build.byType.getValue(FOR_YOU_FRAGMENT).methods.single { it.name == "onNodeShow" }
+            val reloads = onNodeShow.implementation!!.instructions.any { instruction ->
+                ((instruction as? ReferenceInstruction)?.reference as? MethodReference)?.let {
+                    it.name == wrapper.name && it.returnType == "Z" && it.parameterTypes.map(Any::toString) == listOf("Z")
+                } == true
+            }
+            assertTrue("${apk.name}: onNodeShow no longer reloads through ${wrapper.name}", reloads)
+            val listener = build.methods.single { (classDef, method) -> PullRefreshListenerFingerprint.takes(method, classDef) }.second
+            val pullsStraight = listener.implementation!!.instructions.any { instruction ->
+                instruction.opcode == Opcode.INVOKE_INTERFACE &&
+                    ((instruction as ReferenceInstruction).reference as MethodReference).let {
+                        it.name == refresh.name && it.parameterTypes.map(Any::toString) == refresh.parameterTypes.map(Any::toString)
+                    }
+            }
+            assertTrue("${apk.name}: the pull listener no longer asks the refresh through its interface", pullsStraight)
+        }
+    }
+
+    /**
+     * The wrapper is the method that asks with TikTok's Home-tap trigger. A method of the fragment
+     * that asks the refresh with some other trigger is not TikTok's own reload of the feed.
+     */
+    @Test
+    fun `a method asking the refresh with another trigger is not taken for the wrapper`() {
+        val trigger = "LX/Trigger;"
+        fun asker(field: String) = ImmutableMethod(
+            FOR_YOU_FRAGMENT, "ek", listOf(ImmutableMethodParameter("Z", null, null)), "Z",
+            AccessFlags.PUBLIC.value or AccessFlags.FINAL.value, null, null,
+            ImmutableMethodImplementation(3, listOf(
+                ImmutableInstruction21c(Opcode.SGET_OBJECT, 0, ImmutableFieldReference(trigger, field, trigger)),
+                ImmutableInstruction35c(Opcode.INVOKE_VIRTUAL, 2, 1, 0, 0, 0, 0,
+                    ImmutableMethodReference(FOR_YOU_FRAGMENT, "qN", listOf(trigger), "Z")),
+                ImmutableInstruction11x(Opcode.MOVE_RESULT, 0),
+                ImmutableInstruction11x(Opcode.RETURN, 0),
+            ), null, null),
+        )
+        assertTrue("the Home-tap trigger", asker("CLICK_BOTTOM").isForYouRefreshWrapper())
+        assertFalse("another trigger", asker("SOMETHING_NEW").isForYouRefreshWrapper())
+    }
+
     /** The home pager passes each tap's trigger by name, so the switch knows a tap from a pull. */
     @Test
     fun `on 47_0_3 the home pager hands the refresh both taps and a pull`() {
@@ -154,6 +214,8 @@ class ForYouRefreshAnchorsTest {
         assertTrue("a kept pull does not stop the panel's spinner", source.contains("invoke-virtual {v0, v1}, \$REFRESH_PANEL->setRefreshing(Z)V"))
         assertTrue("a pull the switch lets through does not go on to TikTok's listener", source.contains("if-eqz v1, :pull"))
         assertTrue("a tap the switch lets through does not go on to TikTok's refresh", source.contains("if-nez v0, :refresh"))
+        assertTrue("TikTok's own reloads are not told apart from a tap",
+            source.contains("ForYouRefreshWrapperFingerprint.method") && source.contains("\$FEED_REFRESH_CLASS_DESCRIPTOR->refreshFromWrapper()V"))
     }
 
     private fun Method.calls(target: Method): Boolean = implementation?.instructions?.any { instruction ->

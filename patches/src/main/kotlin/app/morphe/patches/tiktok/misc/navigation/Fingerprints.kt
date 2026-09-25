@@ -103,6 +103,33 @@ internal object ForYouRefreshFingerprint : Fingerprint(
     custom = { method, _ -> method.parameterTypes.size == 1 },
 )
 
+/**
+ * The For You fragment's refresh wrapper, which turns true into TikTok's Home-tap trigger and
+ * false into its pull trigger before it calls the refresh. TikTok's own reloads come this way (the
+ * one after you block the creator on screen, its observers). A tap comes from the home pager and a
+ * pull from the refresh panel's listener, through an interface the fragment implements, both
+ * straight to the refresh.
+ */
+internal object ForYouRefreshWrapperFingerprint : Fingerprint(
+    definingClass = FOR_YOU_FRAGMENT,
+    returnType = "Z",
+    parameters = listOf("Z"),
+    custom = { method, _ -> method.isForYouRefreshWrapper() },
+)
+
+internal fun Method.isForYouRefreshWrapper(): Boolean {
+    val instructions = implementation?.instructions?.toList() ?: return false
+    val trigger = instructions.firstOrNull {
+        it.opcode == Opcode.SGET_OBJECT && it.getReference<FieldReference>()?.name == "CLICK_BOTTOM"
+    }?.getReference<FieldReference>() ?: return false
+    return instructions.any {
+        it.opcode == Opcode.INVOKE_VIRTUAL && it.getReference<MethodReference>()?.let { call ->
+            call.definingClass == definingClass && call.returnType == "Z" &&
+                call.parameterTypes.map(CharSequence::toString) == listOf(trigger.type)
+        } == true
+    }
+}
+
 internal const val REFRESH_ABILITY = "Lcom/ss/android/ugc/feed/platform/panel/refreshpanel/IRefreshAbility;"
 internal const val EVENT_BUS_EVENT = "Lcom/ss/android/ugc/governance/eventbus/IEvent;"
 

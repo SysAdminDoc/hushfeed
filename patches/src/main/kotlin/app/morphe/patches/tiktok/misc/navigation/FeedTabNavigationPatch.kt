@@ -17,8 +17,10 @@ import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.patches.tiktok.shared.requireLocals
 import app.morphe.util.addInstructionsAtControlFlowLabel
+import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val TOP_TAB_LAYOUT_ABILITY =
     "Lcom/ss/android/ugc/aweme/homepage/ui/view/tab/top/TopTabLayoutAbility;"
@@ -177,6 +179,24 @@ val feedTabNavigationPatch = bytecodePatch(
                 """,
                 ExternalLabel("refresh", getInstruction(0)),
             )
+        }
+
+        // TikTok's own reloads come to the same refresh through the fragment's wrapper with the
+        // Home-tap trigger. The wrapper says so right before each call, so the tap switch lets them
+        // through. A branch can land on the call itself, hence the label move.
+        ForYouRefreshWrapperFingerprint.method.apply {
+            val refresh = ForYouRefreshFingerprint.method
+            val calls = implementation!!.instructions.withIndex().filter { (_, instruction) ->
+                instruction.opcode == Opcode.INVOKE_VIRTUAL &&
+                    instruction.getReference<MethodReference>()?.let {
+                        it.definingClass == refresh.definingClass && it.name == refresh.name &&
+                            it.parameterTypes.map(CharSequence::toString) == refresh.parameterTypes.map(CharSequence::toString)
+                    } == true
+            }.map { it.index }
+            if (calls.isEmpty()) throw PatchException("Feed tab navigation: the refresh wrapper no longer calls the refresh.")
+            calls.asReversed().forEach { index ->
+                addInstructionsAtControlFlowLabel(index, "invoke-static {}, $FEED_REFRESH_CLASS_DESCRIPTOR->refreshFromWrapper()V")
+            }
         }
 
         // A pull down is kept at the refresh panel's pull listener, before it asks the fragment
