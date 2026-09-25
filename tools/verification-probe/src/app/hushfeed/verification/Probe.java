@@ -636,7 +636,21 @@ public final class Probe extends Instrumentation {
                                         ? ((Number) optional(creator, "getFollowStatus")).intValue() != 0 : "unknown")
                                 + " awemeType=" + awemeType
                                 + " live=" + (liveId instanceof Number && ((Number) liveId).longValue() > 0)
-                                + " originalSound=" + originalSound);
+                                + " originalSound=" + originalSound
+                                // What the video says about duets and stitches, as its getters
+                                // hand it back: 0 anyone, 1 the creator's friends only, 2 closed
+                                // for music or a partnership. Allow Duet and Stitch answers 1 as 0
+                                // while it is on, so read these with the switch off to find a
+                                // video its creator closed.
+                                + " duetSetting=" + optional(aweme, "getDuetSetting")
+                                + " stitchSetting=" + optional(aweme, "getStitchSetting")
+                                // The other two places TikTok decides a duet or a stitch: the
+                                // creator's account-wide choice, and the permission block the
+                                // server sends with the video.
+                                + " authorDuet=" + optional(creator, "getDuetSetting")
+                                + " authorStitch=" + optional(creator, "getStitchSetting")
+                                + " permDuet=" + optional(optional(aweme, "getInteractPermission"), "getDuet")
+                                + " permStitch=" + optional(optional(aweme, "getInteractPermission"), "getStitch"));
                         break;
                     }
                     case "textviews": {
