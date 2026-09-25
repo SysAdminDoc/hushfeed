@@ -11,9 +11,12 @@ import app.morphe.extension.tiktok.settings.Settings;
 import java.util.Arrays;
 import java.util.List;
 
+import android.view.View;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.junit.runner.RunWith;
@@ -106,6 +109,44 @@ public class NavigationTabsFilterTest {
         Settings.FEED_NAVIGATION.save(false);
         NavigationTabsFilter.filterTopTabs(Arrays.asList(new GetterTab("For You")));
         assertFalse(NavigationTabsFilter.shouldHideLoneForYouHeader());
+    }
+
+    @Test public void theTabNamesSwitchHidesTheStripAndPutsItBackWhenItGoesOff() {
+        try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup()) {
+            android.app.Activity activity = controller.get();
+            View strip = new View(activity);
+            NavigationTabsFilter.installLoneForYouHeaderHider(strip);
+            Settings.FEED_NAVIGATION_TABS.save("HOT,FOLLOWING");
+            NavigationTabsFilter.filterTopTabs(Arrays.asList(new GetterTab("For You"), new GetterTab("Following")));
+            NavigationTabsFilter.refreshTopTabStrips();
+            assertEquals(View.VISIBLE, strip.getVisibility());
+
+            Settings.HIDE_FEED_TAB_STRIP.save(true);
+            NavigationTabsFilter.refreshTopTabStrips();
+            assertEquals(View.GONE, strip.getVisibility());
+
+            Settings.HIDE_FEED_TAB_STRIP.save(false);
+            NavigationTabsFilter.refreshTopTabStrips();
+            assertEquals("the switch going off did not bring the strip back", View.VISIBLE, strip.getVisibility());
+
+            // A strip TikTok hid itself is not this switch's to bring back.
+            View own = new View(activity);
+            own.setVisibility(View.GONE);
+            NavigationTabsFilter.installLoneForYouHeaderHider(own);
+            Settings.HIDE_FEED_TAB_STRIP.save(true);
+            NavigationTabsFilter.refreshTopTabStrips();
+            Settings.HIDE_FEED_TAB_STRIP.save(false);
+            NavigationTabsFilter.refreshTopTabStrips();
+            assertEquals(View.GONE, own.getVisibility());
+
+            // The lone For You rule hides on its own, and the switch being off changes nothing there.
+            Settings.FEED_NAVIGATION_TABS.save("HOT");
+            NavigationTabsFilter.filterTopTabs(Arrays.asList(new GetterTab("For You"), new GetterTab("Following")));
+            NavigationTabsFilter.refreshTopTabStrips();
+            assertEquals(View.GONE, strip.getVisibility());
+        } finally {
+            Settings.HIDE_FEED_TAB_STRIP.save(false);
+        }
     }
 
     public static class GetterTab {

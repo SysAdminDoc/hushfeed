@@ -21,6 +21,7 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.ResourceIdCache;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.cleardisplay.RememberClearDisplayPatch;
+import app.morphe.extension.tiktok.navigation.NavigationTabsFilter;
 import app.morphe.extension.shared.diagnostics.HookStatus;
 import app.morphe.extension.tiktok.settings.Settings;
 
@@ -254,6 +255,9 @@ public final class VideoOverlayHider {
             if (activity.isFinishing()) {
                 return;
             }
+            // The names above the feed follow their own switch on the strip TikTok's tab filter
+            // hides; this pass is the one thing that runs on every layout, so it carries the ask.
+            NavigationTabsFilter.refreshTopTabStrips();
 
             if (Settings.HIDE_VISUAL_SEARCH.get()) {
                 hide(activity, SEARCH_MODULE_PACKAGE, VISUAL_SEARCH_LAYER_IDS);
@@ -276,10 +280,7 @@ public final class VideoOverlayHider {
             // the first swipe. Following the live state keeps it away until the tap that ends
             // the mode. The persisted setting cannot be used here: the automatic path never
             // writes it, so it would answer false for exactly the case this is meant to fix.
-            // The names above the feed have a switch of their own as well (issue #32): the
-            // pager under them keeps swiping, and the search button is a sibling, not a child.
-            boolean tabStrip = RememberClearDisplayPatch.isClearDisplayNow()
-                    || Settings.HIDE_FEED_TAB_STRIP.get();
+            boolean tabStrip = RememberClearDisplayPatch.isClearDisplayNow();
             boolean counts = Settings.HIDE_RAIL_COUNTS.get();
             boolean[] rail = TRAVERSAL.rail;
             updateRailButtonsWanted(rail);

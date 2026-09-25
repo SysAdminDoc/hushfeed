@@ -51,6 +51,12 @@ public class FeedNavigationPreferenceCategory extends ConditionalPreferenceCateg
         ));
         addPreference(new TogglePreference(
                 context,
+                "Hide the tab names above the feed",
+                "The Following and For You names above the feed go away. Swiping between the feeds and the search button stay as they are.",
+                Settings.HIDE_FEED_TAB_STRIP
+        ));
+        addPreference(new TogglePreference(
+                context,
                 "Filter bottom tabs",
                 "Choose which loaded TikTok bottom navigation tabs should stay visible.",
                 Settings.BOTTOM_NAVIGATION

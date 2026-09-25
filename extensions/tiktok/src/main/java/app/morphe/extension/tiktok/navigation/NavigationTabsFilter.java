@@ -42,6 +42,19 @@ public final class NavigationTabsFilter {
     }
 
     /**
+     * Whether the strip of tab names above the feed should be away: the reader asked for that
+     * (issue #32), or the filtered model is only For You, whose lone label says nothing. The
+     * strip is the names alone; the search button is a sibling and the pager under them keeps
+     * swiping, which is what the switch promises.
+     */
+    static boolean shouldHideTopTabStrip() {
+        return Settings.HIDE_FEED_TAB_STRIP.get() || shouldHideLoneForYouHeader();
+    }
+
+    /** The strips hidden here, so a rule that stops applying puts them back and TikTok's own GONE is left alone. */
+    private static final Set<View> HIDDEN_HERE = Collections.newSetFromMap(new WeakHashMap<>());
+
+    /**
      * Keeps the For You page model intact and hides only TikTok's tab-strip view after it has
      * finished adding children. The search button lives in a separate sibling container.
      */
@@ -56,9 +69,29 @@ public final class NavigationTabsFilter {
         tabStrip.post(() -> updateLoneForYouHeader(tabStrip));
     }
 
+    /**
+     * Applies the strip rule to every strip registered so far. The overlay hider calls this on
+     * each layout pass, so the switch lands on the way back from settings without a restart:
+     * the strip itself lays out again only when TikTok changes it.
+     */
+    public static void refreshTopTabStrips() {
+        View[] strips;
+        synchronized (TOP_TAB_STRIPS) {
+            strips = TOP_TAB_STRIPS.toArray(new View[0]);
+        }
+        for (View strip : strips) {
+            if (strip != null) updateLoneForYouHeader(strip);
+        }
+    }
+
     private static void updateLoneForYouHeader(View tabStrip) {
-        if (shouldHideLoneForYouHeader()) {
-            tabStrip.setVisibility(View.GONE);
+        if (shouldHideTopTabStrip()) {
+            if (tabStrip.getVisibility() != View.GONE) {
+                tabStrip.setVisibility(View.GONE);
+                HIDDEN_HERE.add(tabStrip);
+            }
+        } else if (HIDDEN_HERE.remove(tabStrip)) {
+            tabStrip.setVisibility(View.VISIBLE);
         }
     }
 
