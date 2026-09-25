@@ -1047,7 +1047,7 @@ Changes to %1$s at %2$s	Ändert sich um %2$s auf %1$s
 Turns off at %1$s	Schaltet sich um %1$s aus
 That loosens the budget. It waits until %1$s.	Das lockert das Budget. Es wartet bis %1$s.
 Today can't start over while Wait a day to loosen the budget is on. The day starts over at %1$s.	Heute kann nicht neu beginnen, solange Lockerungen des Budgets einen Tag warten lassen an ist. Der Tag beginnt um %1$s neu.
-Hushfeed can't be paused while Wait a day to loosen the budget is on	Hushfeed kann nicht pausiert werden, solange Lockerungen des Budgets einen Tag warten lassen an ist
+Wait a day to loosen the budget is on, so Hushfeed stays on	Lockerungen des Budgets einen Tag warten lassen ist an, daher bleibt Hushfeed an
 Today has moved on, so there is nothing to put back	Der Tag ist weitergezogen, es gibt nichts zurückzuholen
 Today is back where it was	Der heutige Tag ist wieder wie zuvor
 Today started over. Tap again to put the counts back.	Heute wurde neu gestartet. Zum Zurücksetzen der Zähler erneut tippen.

@@ -1151,7 +1151,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             }
             if (Settings.SESSION_BUDGET_WAIT_TO_LOOSEN.savedValue()) {
                 Utils.showToastShort(L10n.t(context,
-                        "Hushfeed can't be paused while Wait a day to loosen the budget is on"));
+                        "Wait a day to loosen the budget is on, so Hushfeed stays on"));
                 return false;
             }
             return true;
