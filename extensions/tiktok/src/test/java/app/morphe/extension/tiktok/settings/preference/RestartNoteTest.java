@@ -15,8 +15,10 @@ import android.content.Context;
 
 import app.morphe.extension.shared.settings.BooleanSetting;
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.tiktok.SettingsRegistryRule;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -34,6 +36,7 @@ import org.robolectric.annotation.Config;
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
 public class RestartNoteTest {
+    @Rule public final SettingsRegistryRule settingsRegistry = new SettingsRegistryRule();
 
     private Context context;
 

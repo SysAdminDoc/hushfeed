@@ -5,8 +5,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.tiktok.SettingsRegistryRule;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -21,6 +23,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE, sdk = 28)
 public class SettingPersistenceTest {
+    @Rule public final SettingsRegistryRule settingsRegistry = new SettingsRegistryRule();
+
     private static final class FailingSetting extends Setting<String> {
         FailingSetting(String key) {
             super(key, "before", false, false, null, null);

@@ -11,10 +11,12 @@ import android.widget.TextView;
 
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.IntegerSetting;
+import app.morphe.extension.tiktok.SettingsRegistryRule;
 import app.morphe.extension.tiktok.settings.preference.NumberInputPreference;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -28,6 +30,8 @@ import org.robolectric.shadows.ShadowToast;
 @Config(sdk = 28)
 public class NumberInputPreferenceTest {
     public static final class TestActivity extends PreferenceActivity {}
+
+    @Rule public final SettingsRegistryRule settingsRegistry = new SettingsRegistryRule();
 
     /** Reaches the row's own dialog close, which is protected and one package over. */
     static final class Row extends NumberInputPreference {

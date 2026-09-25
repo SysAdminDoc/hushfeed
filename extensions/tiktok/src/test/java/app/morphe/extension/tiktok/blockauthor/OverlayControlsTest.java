@@ -13,6 +13,7 @@ import android.widget.FrameLayout;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.Setting;
 import app.morphe.extension.tiktok.SettingsContextRule;
+import app.morphe.extension.tiktok.SettingsRegistryRule;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.preference.SettingsUi;
 import java.io.File;
@@ -32,6 +33,7 @@ import org.robolectric.shadows.ShadowToast;
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class OverlayControlsTest {
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
+    @Rule public final SettingsRegistryRule settingsRegistry = new SettingsRegistryRule();
 
     /**
      * A saved control position outlives its test, and the layout tests here read the defaults.

@@ -30,6 +30,10 @@ import java.util.stream.Stream;
  * {@code Utils.setContext} inside a method annotated {@code @Before}. A call in {@code @After}
  * does not count: the registry has already been read by then, which is exactly what
  * NumberInputPreferenceTest and ShareModelFilterTest each did.
+ *
+ * <p>It also holds every class that builds a setting of its own to {@link SettingsRegistryRule},
+ * which takes it back out. The bug has the same shape: a planted setting outlives its class, and
+ * a class that runs later in the same sandbox is the one that fails.
  */
 public class SettingsContextGuardTest {
     /**
@@ -41,6 +45,13 @@ public class SettingsContextGuardTest {
 
     private static final Pattern DECLARES_RULE =
             Pattern.compile("@Rule[^;]*\\bnew\\s+SettingsContextRule\\s*\\(", Pattern.DOTALL);
+
+    /** A Setting built by hand, generic or not. It joins the registry for as long as the sandbox lives. */
+    private static final Pattern MAKES_A_SETTING =
+            Pattern.compile("\\bnew\\s+\\w*Setting\\s*(?:<[^>]*>)?\\s*\\(");
+
+    private static final Pattern DECLARES_REGISTRY_RULE =
+            Pattern.compile("@Rule[^;]*\\bnew\\s+SettingsRegistryRule\\s*\\(", Pattern.DOTALL);
 
     /** Where a {@code @Before} method starts, so its body can be brace matched from there. */
     private static final Pattern BEFORE_METHOD = Pattern.compile("@Before\\b(?!Class)");
@@ -70,6 +81,40 @@ public class SettingsContextGuardTest {
                     + " after them in the same sandbox. Add"
                     + " `@Rule public final SettingsContextRule settingsContext = new"
                     + " SettingsContextRule();` to each: " + String.join(", ", offenders));
+        }
+    }
+
+    /**
+     * Every test class that builds a setting takes it back out of the registry when it is done.
+     *
+     * <p>Left in, a planted setting is listed in every later backup in the same sandbox. Two of
+     * them under one key made BudgetRestoreTest's backups incomplete when it happened to run after
+     * NumberInputPreferenceTest, and pass when it ran first.
+     */
+    @Test
+    public void everyTestClassThatMakesASettingTakesItBackOut() throws IOException {
+        List<String> makers = new ArrayList<>();
+        List<String> offenders = new ArrayList<>();
+        for (Path source : testSources()) {
+            String name = source.getFileName().toString();
+            // This class names the pattern, in a string, and builds no setting.
+            if (name.equals("SettingsContextGuardTest.java")) continue;
+            String text = new String(Files.readAllBytes(source), StandardCharsets.UTF_8);
+            if (!MAKES_A_SETTING.matcher(text).find()) continue;
+            makers.add(name);
+            if (!DECLARES_REGISTRY_RULE.matcher(text).find()) offenders.add(name);
+        }
+
+        // OverlayControlsTest builds only the generic form, new Setting<String>(...).
+        assertTrue("the guard did not see a generic Setting being built: " + makers,
+                makers.contains("OverlayControlsTest.java"));
+        assertTrue("the guard did not see a plain Setting being built: " + makers,
+                makers.contains("NumberInputPreferenceTest.java"));
+        if (!offenders.isEmpty()) {
+            fail("These test classes build a Setting and leave it in the registry, where it outlives"
+                    + " the class and turns up in every later backup in the same sandbox. Add"
+                    + " `@Rule public final SettingsRegistryRule settingsRegistry = new"
+                    + " SettingsRegistryRule();` to each: " + String.join(", ", offenders));
         }
     }
 

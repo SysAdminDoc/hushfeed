@@ -15,8 +15,10 @@ import java.util.List;
 
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.StringSetting;
+import app.morphe.extension.tiktok.SettingsRegistryRule;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -35,6 +37,8 @@ import org.robolectric.annotation.Config;
 @Config(sdk = 28)
 public class RangeValueSummaryTest {
     public static final class TestActivity extends PreferenceActivity {}
+
+    @Rule public final SettingsRegistryRule settingsRegistry = new SettingsRegistryRule();
 
     @Before
     public void installContext() {
