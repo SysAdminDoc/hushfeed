@@ -53,10 +53,28 @@ private object TopTabLayoutConstructorFingerprint : app.morphe.patcher.Fingerpri
     custom = { method, _ -> isTopTabLayoutConstructor(method) },
 )
 
+/** Each answer of the LIVE button's bottom tab check goes through [EXTENSION_CLASS_DESCRIPTOR] on its way out. */
+internal fun app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.answerLiveBottomTab() {
+    val returns = implementation!!.instructions.withIndex()
+        .filter { it.value.opcode == Opcode.RETURN }
+        .map { it.index }
+    if (returns.isEmpty()) throw PatchException("Feed tab navigation: $definingClass->$name never returns.")
+    returns.asReversed().forEach { returnIndex ->
+        val register = (implementation!!.instructions[returnIndex] as OneRegisterInstruction).registerA
+        addInstructionsAtControlFlowLabel(
+            returnIndex,
+            """
+                invoke-static/range {v$register .. v$register}, $EXTENSION_CLASS_DESCRIPTOR->liveHasBottomTab(Z)Z
+                move-result v$register
+            """,
+        )
+    }
+}
+
 @Suppress("unused")
 val feedTabNavigationPatch = bytecodePatch(
     name = "Feed tab navigation",
-    description = "Controls which loaded top and bottom navigation tabs remain visible, blocks newly added tabs when requested, can hide the Tako AI bubble and the unread badges on the bottom tabs, can keep For You from reloading on a Home tap or a pull down, can open TikTok on Following, Friends, Inbox or Profile, and can show TikTok's own feed buttons without a screen reader. Switch: Hushfeed settings > Feed tabs.",
+    description = "Controls which loaded top and bottom navigation tabs remain visible, blocks newly added tabs when requested, can hide the Tako AI bubble and the unread badges on the bottom tabs, can keep For You from reloading on a Home tap or a pull down, can open TikTok on Following, Friends, Inbox or Profile, and can show TikTok's own feed buttons without a screen reader. Taking the LIVE tab off the bottom bar brings TikTok's LIVE button back to the feed's corner. Switch: Hushfeed settings > Feed tabs.",
     default = true,
 ) {
     category("Settings")
@@ -78,6 +96,10 @@ val feedTabNavigationPatch = bytecodePatch(
                     "${TopTabModelListFingerprint.method.name}.",
             )
         }
+
+        // The feed's LIVE button hides itself while LIVE has a bottom tab, reading TikTok's own
+        // list, so a LIVE tab taken off the bar here took the button with it (issue #28).
+        LiveBottomTabCheckFingerprint.method.answerLiveBottomTab()
 
         TopTabModelListFingerprint.method.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()

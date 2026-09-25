@@ -87,6 +87,42 @@ public class NavigationTabsFilterTest {
         assertSame(profile, result.get(1));
     }
 
+    @Test public void theCornerLiveButtonComesBackOnlyWhenTheFilterTookTikToksLiveTab() {
+        NavigationTabsFilter.resetLiveBottomTabForTests();
+        try {
+            BottomTab home = new BottomTab("home");
+            BottomTab live = new BottomTab(NavigationTabsFilter.LIVE_BOTTOM_TAB_TAG);
+            BottomTab profile = new BottomTab("me");
+            // The bar TikTok served had LIVE in it, and the reader's list doesn't keep it.
+            Settings.BOTTOM_NAVIGATION_OBSERVED_TABS.save("HOME,PROFILE,RAW:live");
+            Settings.BOTTOM_NAVIGATION_TABS.save("HOME,PROFILE");
+            NavigationTabsFilter.filterBottomTabs(Arrays.asList(home, live, profile));
+            assertFalse("TikTok still hides its corner LIVE button for a tab it no longer shows",
+                    NavigationTabsFilter.liveHasBottomTab(true));
+            // A false from TikTok stays false: this only ever takes a reason away.
+            assertFalse(NavigationTabsFilter.liveHasBottomTab(false));
+
+            // Kept on the bar, the tab is the way in, and TikTok's answer stands.
+            Settings.BOTTOM_NAVIGATION_TABS.save("HOME,PROFILE,RAW:live");
+            NavigationTabsFilter.filterBottomTabs(Arrays.asList(home, live, profile));
+            assertTrue(NavigationTabsFilter.liveHasBottomTab(true));
+
+            // No LIVE tab served at all: nothing was taken, so nothing changes.
+            Settings.BOTTOM_NAVIGATION_TABS.save("HOME,PROFILE");
+            NavigationTabsFilter.filterBottomTabs(Arrays.asList(home, profile));
+            assertTrue(NavigationTabsFilter.liveHasBottomTab(true));
+
+            // With the filter off the bar is TikTok's own, LIVE included.
+            NavigationTabsFilter.filterBottomTabs(Arrays.asList(home, live, profile));
+            assertFalse(NavigationTabsFilter.liveHasBottomTab(true));
+            Settings.BOTTOM_NAVIGATION.save(false);
+            NavigationTabsFilter.filterBottomTabs(Arrays.asList(home, live, profile));
+            assertTrue("the filter was off and the LIVE tab was on the bar", NavigationTabsFilter.liveHasBottomTab(true));
+        } finally {
+            NavigationTabsFilter.resetLiveBottomTabForTests();
+        }
+    }
+
     @Test public void disabledNavigationReturnsTheOriginalListIdentity() {
         Settings.FEED_NAVIGATION.save(false);
         List<GetterTab> tabs = Arrays.asList(new GetterTab("For You"), new GetterTab("Explore"));

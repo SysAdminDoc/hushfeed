@@ -75,6 +75,29 @@ internal object TabDotVisibilityFingerprint : Fingerprint(
     parameters = listOf("I"),
 )
 
+/**
+ * The feed's LIVE button asks whether LIVE already has a bottom tab, and hides itself when it does.
+ * The question is the one static ()Z the button carries on every build (LIZLLL on 47.0.3, LJIIJ on
+ * 46.7.3), and it reads TikTok's own list of bottom tabs, a static CopyOnWriteArrayList the bottom
+ * tab filter never touches.
+ */
+internal object LiveBottomTabCheckFingerprint : Fingerprint(
+    definingClass = LIVE_ICON_GENERATOR,
+    returnType = "Z",
+    parameters = listOf(),
+    custom = { method, _ -> method.isLiveBottomTabCheck() },
+)
+
+internal const val LIVE_ICON_GENERATOR = "Lcom/bytedance/tiktok/homepage/mainfragment/toolbar/LiveIconGenerator;"
+
+internal fun Method.isLiveBottomTabCheck(): Boolean =
+    com.android.tools.smali.dexlib2.AccessFlags.STATIC.isSet(accessFlags) &&
+        com.android.tools.smali.dexlib2.AccessFlags.PUBLIC.isSet(accessFlags) &&
+        returnType == "Z" && parameterTypes.isEmpty() &&
+        implementation?.instructions?.any {
+            it.opcode == Opcode.SGET_OBJECT && it.getReference<FieldReference>()?.type == COPY_ON_WRITE
+        } == true
+
 internal object TopTabModelListFingerprint : Fingerprint(
     definingClass = TAB_ABILITY,
     returnType = "Ljava/util/List;",

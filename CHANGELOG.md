@@ -4,6 +4,7 @@ Every Hushfeed release, newest first.
 
 ## Unreleased
 
+* **TikTok:** Taking the LIVE tab off the bottom bar no longer takes TikTok's LIVE button off the top of the feed too. TikTok hides that corner button while LIVE has a bottom tab, and it checked its own list of bottom tabs, which still had LIVE after Filter bottom tabs removed it, so LIVE had no way in from the feed (#28). Hide the LIVE button still hides the corner button when you want it gone.
 * **TikTok:** Fill the screen with the video, a new switch under Playback beside Fit the video to the screen, crops a video until it covers the whole window, for the phones where TikTok leaves a black strip under a 9:16 video (#29). Turning either of the two switches on turns the other off.
 * **TikTok:** Hide the tab names above the feed, a new switch on the Feed tabs page, takes the Following and For You names off the top of the feed. Swiping between the feeds and the search button stay (#32).
 * **TikTok:** Show the progress bar now beats the two TikTok experiments that hide the seek bar. One hides it on every video except paid content for whoever the server puts in that group, which left the bar gone from the whole feed but present in the drama player, and it can come and go between restarts (#16). The other hides it on any video the server hasn't marked as draggable. Both ran before Hushfeed's switch was asked.
