@@ -61,6 +61,36 @@ class PollResultsAnchorsTest {
     }
 
     @Test
+    fun `an answer's tap votes through a path that never asks the result check, on every fixture`() {
+        for (apk in Fixtures.apks()) {
+            val build = Build(apk)
+            val check = build.methods.single { (classDef, method) -> PollShowsResultsFingerprint.takes(method, classDef) }.second
+            val row = build.byType.getValue(POLL_CELL)
+            // Each answer's click listener hands the row a (item, index) vote. Forcing the result
+            // check must leave that path alone, or answering would stop once results show.
+            val votes = build.methods.filter { (classDef, method) ->
+                // 46.2.3 merges the listeners into one class with static onClick$0 bridges.
+                method.name.startsWith("onClick") && "Landroid/view/View\$OnClickListener;" in classDef.interfaces
+            }.flatMap { (_, method) ->
+                method.implementation!!.instructions.mapNotNull { instruction ->
+                    instruction.call()?.takeIf { call ->
+                        call.definingClass == POLL_CELL && call.returnType == "V" &&
+                            call.parameterTypes.size == 2 && call.parameterTypes[1].toString() == "I"
+                    }?.name
+                }
+            }.toSet()
+            assertTrue("${apk.name}: no answer tap reaches the row", votes.isNotEmpty())
+            votes.forEach { name ->
+                val vote = row.methods.single { it.name == name && it.parameterTypes.size == 2 && it.parameterTypes[1].toString() == "I" }
+                assertTrue("${apk.name}: the vote $name no longer checks TikTok's own poll-ended rule",
+                    vote.implementation!!.instructions.any { it.call()?.let { call -> call.definingClass == POLL_CELL && call.returnType == "Z" } == true })
+                assertTrue("${apk.name}: the vote $name asks the result check the switch answers",
+                    vote.implementation!!.instructions.none { it.calls(check) })
+            }
+        }
+    }
+
+    @Test
     fun `the patch answers yes first while the switch is on`() {
         val root = File("src/main/kotlin").takeIf { it.isDirectory } ?: File("patches/src/main/kotlin")
         val source = File(root, "app/morphe/patches/tiktok/misc/commenttools/CommentToolsPatch.kt").readText()
