@@ -51,6 +51,16 @@ class MarketingHeroTest {
         )
     }
 
+    /** 7fcbb946 took the button out along with this test; both are back, and the button sits above the title. */
+    @Test
+    fun `the README keeps the canonical Ko-fi support link`() {
+        val readme = File(root, "README.md").readText()
+        val link = readme.indexOf("https://ko-fi.com/X8K126YVER")
+
+        assertTrue("the README must keep the project support link", link >= 0)
+        assertTrue("the support button belongs above the title", link < readme.indexOf("\n# Hushfeed"))
+    }
+
     @Test
     fun `the hero keeps its review size and version-free source`() {
         val hero = ImageIO.read(File(root, "assets/readme-hero.png"))
