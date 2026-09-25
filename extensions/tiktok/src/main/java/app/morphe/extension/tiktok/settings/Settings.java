@@ -146,6 +146,9 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting EDGE_SEEK = new BooleanSetting("edge_seek", FALSE);
     public static final BooleanSetting FIT_VIDEO_TO_SCREEN =
             new BooleanSetting("fit_video_to_screen", FALSE);
+    /** The opposite: crop the video until it covers the window (issue #29). Fit wins when both are on. */
+    public static final BooleanSetting FILL_VIDEO_TO_SCREEN =
+            new BooleanSetting("fill_video_to_screen", FALSE);
     public static final BooleanSetting UNCAP_REFRESH_RATE =
             new BooleanSetting("uncap_refresh_rate", FALSE);
     public static final BooleanSetting HIDE_LAUNCHER_SHORTCUTS =

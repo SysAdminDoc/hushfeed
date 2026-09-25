@@ -34,15 +34,31 @@ import app.morphe.extension.tiktok.settings.Settings;
 public final class VideoFit {
     private VideoFit() {}
 
-    /** What the last decision on this thread settled: which result, and the height for it. */
+    /** What the two switches ask for: the whole video inside the window, the window covered, or nothing. */
+    enum Mode { LEAVE_ALONE, FIT, FILL }
+
+    /**
+     * Fit wins when both switches are on. The page keeps them apart, and a restored backup that
+     * carries both should show the whole video rather than crop it.
+     */
+    static Mode mode() {
+        if (Settings.FIT_VIDEO_TO_SCREEN.get()) return Mode.FIT;
+        if (Settings.FILL_VIDEO_TO_SCREEN.get()) return Mode.FILL;
+        return Mode.LEAVE_ALONE;
+    }
+
+    /** What the last decision on this thread settled: which result, the height for it and where it sits. */
     private static final class Fitted {
         final Object result;
         final int height;
+        /** The offsets that centre it, in the order the host asks: across, then down. */
+        final float[] offsets;
         int offsetsRemaining = 2;
 
-        Fitted(Object result, int height) {
+        Fitted(Object result, int height, float[] offsets) {
             this.result = result;
             this.height = height;
+            this.offsets = offsets;
         }
     }
 
@@ -73,22 +89,24 @@ public final class VideoFit {
     public static Object fitted(View view, Object result) {
         if (view == null || result == null) return result;
         try {
-            // The switch before the reads: this runs twice for every video the feed binds, off is
-            // the default, and the reflection below is only worth paying for with it on.
-            if (!Settings.FIT_VIDEO_TO_SCREEN.get()) return result;
+            // The switches before the reads: this runs twice for every video the feed binds, off
+            // is the default, and the reflection below is only worth paying for with one on.
+            Mode mode = mode();
+            if (mode == Mode.LEAVE_ALONE) return result;
             int videoWidth = size(result, "getWidth");
             int videoHeight = size(result, "getHeight");
             if (videoWidth <= 0 || videoHeight <= 0) return result;
             int containerWidth = containerWidth(view);
             int containerHeight = containerHeight(view);
             if (containerWidth <= 0 || containerHeight <= 0) return result;
-            if (videoWidth <= containerWidth && videoHeight <= containerHeight) return result;
-            Object copy = copyOf(
-                    result,
-                    fitWidth(videoWidth, videoHeight, containerWidth, containerHeight),
-                    fitHeight(videoWidth, videoHeight, containerWidth, containerHeight));
+            if (!wants(mode, videoWidth, videoHeight, containerWidth, containerHeight)) return result;
+            int width = widthFor(mode, videoWidth, videoHeight, containerWidth, containerHeight);
+            int height = heightFor(mode, videoWidth, videoHeight, containerWidth, containerHeight);
+            // Centred by the layout when the container can do it, and by the offsets otherwise.
+            float[] offsets = centre(view)
+                    ? new float[]{0f, 0f} : offsets(width, height, containerWidth, containerHeight);
+            Object copy = copyOf(result, width, height, offsets);
             if (copy == null) return result;
-            centre(view);
             return copy;
         } catch (Exception exception) {
             Logger.printException(() -> "Could not fit the video to the window", exception);
@@ -102,7 +120,7 @@ public final class VideoFit {
      * operator travels across unchanged. Null when the class has no {@code copy} of the shape a
      * data class generates, which is what says the result is not one this knows how to remake.
      */
-    private static Object copyOf(Object result, int width, int height) {
+    private static Object copyOf(Object result, int width, int height, float[] offsets) {
         // What the class declares, made accessible, rather than what it makes public: the copy is
         // the one a data class generates whatever access R8 leaves it or its class with.
         for (Method candidate : result.getClass().getDeclaredMethods()) {
@@ -114,7 +132,8 @@ public final class VideoFit {
             Object operator = Reflect.invoke(result, "getResultOperator");
             try {
                 candidate.setAccessible(true);
-                return candidate.invoke(result, width, height, Float.valueOf(0f), Float.valueOf(0f), operator);
+                return candidate.invoke(result, width, height,
+                        Float.valueOf(offsets[0]), Float.valueOf(offsets[1]), operator);
             } catch (Exception exception) {
                 Logger.printException(() -> "Could not copy the adaption result", exception);
                 return null;
@@ -125,17 +144,26 @@ public final class VideoFit {
 
     /**
      * A video large enough to fill was pinned wherever the container puts a child that does
-     * not fit. A smaller one has to say where it goes, or the bars all end up on one side. The
-     * host sets the size, not the gravity, so this stays here.
+     * not fit. A smaller one has to say where it goes, or the bars all end up on one side, and
+     * a larger one made here has to say it too, or the crop shows a corner. The host sets the
+     * size, not the gravity, so this stays here.
+     *
+     * @return whether the container centres its children, which a frame does once told to; a
+     *         container of another kind is centred through the offsets instead.
      */
-    private static void centre(View view) {
+    private static boolean centre(View view) {
         ViewGroup.LayoutParams params = view.getLayoutParams();
-        if (params instanceof FrameLayout.LayoutParams) {
-            FrameLayout.LayoutParams frame = (FrameLayout.LayoutParams) params;
-            if (frame.gravity == Gravity.CENTER) return;
-            frame.gravity = Gravity.CENTER;
-            view.setLayoutParams(frame);
-        }
+        if (!(params instanceof FrameLayout.LayoutParams)) return false;
+        FrameLayout.LayoutParams frame = (FrameLayout.LayoutParams) params;
+        if (frame.gravity == Gravity.CENTER) return true;
+        frame.gravity = Gravity.CENTER;
+        view.setLayoutParams(frame);
+        return true;
+    }
+
+    /** The offsets that centre a video of this size in the container: half the difference, each way. */
+    static float[] offsets(int width, int height, int containerWidth, int containerHeight) {
+        return new float[]{(containerWidth - width) / 2f, (containerHeight - height) / 2f};
     }
 
     /**
@@ -152,20 +180,23 @@ public final class VideoFit {
         LAST.remove();
         if (view == null || result == null) return LEAVE;
         try {
-            if (!Settings.FIT_VIDEO_TO_SCREEN.get()) return LEAVE;
+            Mode mode = mode();
+            if (mode == Mode.LEAVE_ALONE) return LEAVE;
             int videoWidth = size(result, "getWidth");
             int videoHeight = size(result, "getHeight");
             if (videoWidth <= 0 || videoHeight <= 0) return LEAVE;
             int containerWidth = containerWidth(view);
             int containerHeight = containerHeight(view);
             if (containerWidth <= 0 || containerHeight <= 0) return LEAVE;
-            // Already inside the window, so there is nothing hanging over an edge to bring back.
-            if (videoWidth <= containerWidth && videoHeight <= containerHeight) return LEAVE;
+            // Already inside the window, or already covering it: nothing to bring back or add.
+            if (!wants(mode, videoWidth, videoHeight, containerWidth, containerHeight)) return LEAVE;
 
-            LAST.set(new Fitted(
-                    result, fitHeight(videoWidth, videoHeight, containerWidth, containerHeight)));
-            centre(view);
-            return fitWidth(videoWidth, videoHeight, containerWidth, containerHeight);
+            int width = widthFor(mode, videoWidth, videoHeight, containerWidth, containerHeight);
+            int height = heightFor(mode, videoWidth, videoHeight, containerWidth, containerHeight);
+            float[] offsets = centre(view)
+                    ? new float[]{0f, 0f} : offsets(width, height, containerWidth, containerHeight);
+            LAST.set(new Fitted(result, height, offsets));
+            return width;
         } catch (Exception exception) {
             Logger.printException(() -> "Could not fit the video to the window", exception);
             LAST.remove();
@@ -195,16 +226,18 @@ public final class VideoFit {
     }
 
     /**
-     * Nothing, when the video was fitted, and whatever the host had otherwise.
+     * The offset that centres the video this code sized, and whatever the host had otherwise.
      *
-     * <p>The offsets are what centre a video that is larger than the window. One that fits has
-     * nothing hanging over an edge, so the same offsets would push it off the other side.
+     * <p>TikTok's offsets are what centre a video it cropped. One that fits has nothing hanging
+     * over an edge, so those would push it off the other side, and one cropped here needs its
+     * own. The host asks twice, across and then down, and the second answer ends the decision.
      */
     public static Float fittedTranslation(Object result, Float translation) {
         Fitted fitted = fittedFor(result);
         if (fitted == null) return translation;
+        float offset = fitted.offsets[2 - fitted.offsetsRemaining];
         if (--fitted.offsetsRemaining == 0) LAST.remove();
-        return Float.valueOf(0f);
+        return Float.valueOf(offset);
     }
 
     /** The decision made for exactly this result on this thread, if the last one was for it. */
@@ -217,6 +250,39 @@ public final class VideoFit {
         if (result == null) return 0;
         Object value = Reflect.invoke(result, getter);
         return value instanceof Integer ? (Integer) value : 0;
+    }
+
+    /** Whether the video at this size needs changing: it overflows for fit, or leaves a gap for fill. */
+    static boolean wants(Mode mode, int width, int height, int containerWidth, int containerHeight) {
+        if (mode == Mode.FIT) return width > containerWidth || height > containerHeight;
+        if (mode == Mode.FILL) return width < containerWidth || height < containerHeight;
+        return false;
+    }
+
+    static int widthFor(Mode mode, int width, int height, int containerWidth, int containerHeight) {
+        return mode == Mode.FILL
+                ? fillWidth(width, height, containerWidth, containerHeight)
+                : fitWidth(width, height, containerWidth, containerHeight);
+    }
+
+    static int heightFor(Mode mode, int width, int height, int containerWidth, int containerHeight) {
+        return mode == Mode.FILL
+                ? fillHeight(width, height, containerWidth, containerHeight)
+                : fitHeight(width, height, containerWidth, containerHeight);
+    }
+
+    /** The width the video needs to cover the container without changing shape: the larger scale. */
+    static int fillWidth(int width, int height, int containerWidth, int containerHeight) {
+        if (wider(width, height, containerWidth, containerHeight)) {
+            return atLeastOne(Math.round(containerHeight * (double) width / height));
+        }
+        return containerWidth;
+    }
+
+    /** The matching height. */
+    static int fillHeight(int width, int height, int containerWidth, int containerHeight) {
+        if (wider(width, height, containerWidth, containerHeight)) return containerHeight;
+        return atLeastOne(Math.round(containerWidth * (double) height / width));
     }
 
     /** The width the video needs to sit inside the container without changing shape. */

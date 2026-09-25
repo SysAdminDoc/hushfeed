@@ -361,6 +361,8 @@ Find a setting by name or description	Ada veya açıklamaya göre ayar bul
 First caller	İlk çağıran
 First rejection:	İlk ret:
 Fit the video to the screen	Videoyu ekrana sığdır
+Fill the screen with the video	Ekranı videoyla doldur
+Crop the video until it covers the whole window. On a tall phone the black strip TikTok leaves under a video goes and so does a little of each side.	Video tüm pencereyi kaplayana kadar kırpılır. Uzun bir telefonda TikTok'un videonun altında bıraktığı siyah şerit kaybolur ve her kenardan biraz da onunla gider.
 Focus	Odak
 Follow probe	Takip yoklaması
 Following	Takip Edilenler
