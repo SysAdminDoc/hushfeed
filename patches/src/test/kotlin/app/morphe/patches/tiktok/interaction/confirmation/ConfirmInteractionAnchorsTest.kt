@@ -8,7 +8,11 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.Opcodes
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import java.io.File
 import org.junit.Assert.assertEquals
@@ -22,8 +26,9 @@ import org.junit.Test
  * <p>None of the three has a click method of its own on a named class. The comment like is one
  * handler on three controls (the comment list's like view and a photo post's two), the story like
  * is a static method one of TikTok's generated listeners reaches by index, and the quick repost is
- * the repost call of the bar under a video with its quick flag set. Each fingerprint has to take
- * exactly one method on every build the patch runs on, or the patcher's pick falls to class order.
+ * the repost call of the bar under a video, which its repost button and its guide both make. Each
+ * fingerprint has to take exactly one method on every build the patch runs on, or the patcher's
+ * pick falls to class order.
  */
 class ConfirmInteractionAnchorsTest {
     private val fingerprints = listOf(
@@ -121,7 +126,56 @@ class ConfirmInteractionAnchorsTest {
             source.contains("invoke-static { p0, v\$comment }, \$TAP_CONFIRMATION->commentLike(Ljava/lang/Object;Ljava/lang/Object;)Z"))
         assertTrue("the story like is not hooked", source.contains("StoryLikeClickFingerprint.method.hookStoryLike()"))
         assertTrue("the quick repost is not hooked", source.contains("QuickRepostFingerprint.method.apply"))
-        assertTrue("a repost from the panel would ask too", source.contains("if-eqz p2, :original"))
+        assertTrue("the repost the bar's guide sends would go out on the first tap", !source.contains("if-eqz p2, :original"))
+    }
+
+    /**
+     * The bar under a video reaches its repost call from two places in one click dispatcher, the
+     * repost button with the quick flag set and its guide with it clear, and both publish at once.
+     * The flag only picks the log label, so the patch asks on every call; the panels that take a
+     * note publish on their own and never get here.
+     */
+    @Test
+    fun `the bar's repost call has its two callers in one dispatcher, one with the flag clear`() {
+        for (apk in Fixtures.apks()) {
+            val build = Build(apk)
+            val (_, repost) = build.single(QuickRepostFingerprint)
+            val calls = build.methods.flatMap { (classDef, method) ->
+                method.implementation?.instructions?.toList().orEmpty().withIndex()
+                    .filter { (_, instruction) ->
+                        instruction.call()?.let {
+                            it.definingClass == repost.definingClass && it.name == repost.name &&
+                                it.parameterTypes.map(CharSequence::toString) == repost.parameterTypes.map(CharSequence::toString)
+                        } == true
+                    }
+                    .map { (index, _) -> Triple(classDef.type, method, index) }
+                    .asSequence()
+            }.toList()
+            assertEquals("${apk.name}: ${calls.map { "${it.first}->${it.second.name}@${it.third}" }}", 2, calls.size)
+            assertEquals("${apk.name}: the callers sit in one dispatcher", 1, calls.map { it.first to it.second.name }.toSet().size)
+            // The guide's call writes its clear flag right before it. The button's set flag is a
+            // constant R8 hoisted to wherever it pleased (a 1, or a -1 it already held), so only
+            // the clear one is read here: it is the call the patch must not let through.
+            val flags = calls.map { (_, method, index) -> flagPassed(method, index) }
+            assertTrue("${apk.name}: no call passes the flag clear: $flags", 0 in flags)
+        }
+    }
+
+    /** The literal the call at [index] passes as the flag, its third register, or null when it isn't one. */
+    private fun flagPassed(method: Method, index: Int): Int? {
+        val instructions = method.implementation!!.instructions.toList()
+        val call = instructions[index]
+        val flag = when (call) {
+            is FiveRegisterInstruction -> call.registerE
+            is RegisterRangeInstruction -> call.startRegister + 2
+            else -> return null
+        }
+        for (i in index - 1 downTo 0) {
+            val instruction = instructions[i]
+            if ((instruction as? OneRegisterInstruction)?.registerA != flag || !instruction.opcode.setsRegister()) continue
+            return (instruction as? NarrowLiteralInstruction)?.narrowLiteral
+        }
+        return null
     }
 
     private fun com.android.tools.smali.dexlib2.iface.instruction.Instruction.call(): MethodReference? =

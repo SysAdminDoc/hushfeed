@@ -559,7 +559,7 @@
     },
     {
       "name": "Confirm feed interactions",
-      "description": "Asks for a second tap before the feed Follow button, the like heart, a comment or story like, or a quick repost goes through. A red ring marks the armed button. Switches: Hushfeed settings > Feed screen.",
+      "description": "Asks for a second tap before the feed Follow button, the like heart, a comment or story like, or a quick repost goes through. A short message asks for the second tap, and most armed buttons also get a white ring. Switches: Hushfeed settings > Feed screen.",
       "category": "Interaction",
       "use": false,
       "dependencies": [

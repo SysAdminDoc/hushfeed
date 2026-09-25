@@ -119,8 +119,10 @@ internal fun Method.isStoryLikeToggle(): Boolean {
 }
 
 /**
- * TikTok's one-tap repost from the bar under a feed video. The flag says quick: set, the repost
- * goes out at once as quick_repost, and clear, it comes from the repost panel with a note.
+ * TikTok's one-tap repost from the bar under a feed video. The bar's repost button calls it with the
+ * flag set and the repost guide on the same bar calls it with the flag clear. Either way the repost
+ * goes out at once: the flag only picks the log label, quick_repost or normal. A repost with a note
+ * is sent by its own panel and never comes here.
  */
 internal object QuickRepostFingerprint : Fingerprint(
     definingClass = "Lcom/ss/android/ugc/aweme/upvote/detail/whitebar/UpvoteVideoAssemNew;",
@@ -176,7 +178,7 @@ internal fun MutableMethod.hookStoryLike() {
 @Suppress("unused")
 val confirmInteractionsPatch = bytecodePatch(
     name = "Confirm feed interactions",
-    description = "Asks for a second tap before the feed Follow button, the like heart, a comment or story like, or a quick repost goes through. A red ring marks the armed button. Switches: Hushfeed settings > Feed screen.",
+    description = "Asks for a second tap before the feed Follow button, the like heart, a comment or story like, or a quick repost goes through. A short message asks for the second tap, and most armed buttons also get a white ring. Switches: Hushfeed settings > Feed screen.",
     default = false,
 ) {
     category("Interaction")
@@ -207,11 +209,10 @@ val confirmInteractionsPatch = bytecodePatch(
         PhotoCommentLikeClickFingerprint.method.hookAfterCommentRead()
         PhotoCommentLikeClickV2Fingerprint.method.hookAfterCommentRead()
         StoryLikeClickFingerprint.method.hookStoryLike()
-        // Only a quick repost asks; a repost sent from the panel already took a deliberate step.
+        // Every repost the bar sends asks, from its repost button and from its guide alike.
         QuickRepostFingerprint.method.apply {
             requireLocals("Confirm interactions", 1)
             addInstructionsWithLabels(0, """
-                if-eqz p2, :original
                 invoke-static/range { p0 .. p0 }, $TAP_CONFIRMATION->quickRepost(Ljava/lang/Object;)Z
                 move-result v0
                 if-nez v0, :original
