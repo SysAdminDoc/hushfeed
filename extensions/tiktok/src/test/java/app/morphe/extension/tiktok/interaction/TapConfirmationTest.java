@@ -43,6 +43,10 @@ public class TapConfirmationTest {
 
     @After public void tearDown() {
         SettingsStatus.confirmInteractionsEnabled = false;
+        // A Setting keeps the value it last loaded in memory, whichever test's store it came from.
+        Settings.CONFIRM_COMMENT_LIKE.resetToDefault();
+        Settings.CONFIRM_STORY_LIKE.resetToDefault();
+        Settings.CONFIRM_QUICK_REPOST.resetToDefault();
     }
     public static final class TestActivity extends PreferenceActivity {}
     public static final class Params {
