@@ -946,6 +946,31 @@ public final class Probe extends Instrumentation {
                         Log.i(TAG, "ok set " + key + " " + before + " -> " + valueOf(find(key)));
                         break;
                     }
+                    case "seam": {
+                        // A public static int or boolean test seam on one of Hushfeed's own
+                        // classes, for a device check that needs a state the phone will not
+                        // produce on demand. Nothing outside the extension is reachable.
+                        String className = required(intent, "class");
+                        if (!className.startsWith("app.morphe.extension.")) {
+                            throw new IllegalArgumentException("seam reaches app.morphe.extension classes only");
+                        }
+                        String fieldName = required(intent, "field");
+                        String value = required(intent, "value");
+                        Field field = loader.loadClass(className).getField(fieldName);
+                        if (!Modifier.isStatic(field.getModifiers())) {
+                            throw new IllegalArgumentException(fieldName + " is not static");
+                        }
+                        Object before = field.get(null);
+                        if (field.getType() == int.class) {
+                            field.setInt(null, Integer.parseInt(value));
+                        } else if (field.getType() == boolean.class) {
+                            field.setBoolean(null, Boolean.parseBoolean(value));
+                        } else {
+                            throw new IllegalArgumentException(fieldName + " is a " + field.getType().getName());
+                        }
+                        Log.i(TAG, "ok seam " + className + "." + fieldName + " " + before + " -> " + field.get(null));
+                        break;
+                    }
                     case "labrule": {
                         // A Feature Gate Lab override, written the way the Lab's own detail page
                         // writes it, with the Lab switched on. Lets a device check force a gate

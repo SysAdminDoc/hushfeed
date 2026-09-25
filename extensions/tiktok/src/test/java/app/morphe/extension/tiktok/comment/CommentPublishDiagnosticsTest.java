@@ -1,7 +1,14 @@
 package app.morphe.extension.tiktok.comment;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+
+import android.app.Activity;
+
+import androidx.fragment.app.Fragment;
 
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.BaseSettings;
@@ -17,6 +24,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
@@ -40,6 +48,7 @@ public class CommentPublishDiagnosticsTest {
     }
 
     @After public void tearDown() {
+        CommentPublishDiagnostics.topScreenTestMode = 0;
         BaseSettings.DEBUG_LOG_FILTERS.resetToDefault();
         LogBufferManager.clearLogBuffer();
     }
@@ -71,6 +80,67 @@ public class CommentPublishDiagnosticsTest {
         String report = LogBufferManager.buildExportText();
         assertTrue(report, report.contains("returned before the request at exit 37"));
         assertTrue(report, report.contains("handed to the request"));
+    }
+
+    /** A screen TikTok's top page did give is what the send check gets, and nothing is logged. */
+    @Test public void aScreenTikTokFoundGoesToTheCheckUntouched() {
+        Activity top = Robolectric.buildActivity(Activity.class).get();
+        CommentPublishDiagnostics.onPublishRequested(new PanelViewModel(Robolectric.buildActivity(Activity.class).get()), new Params());
+        assertSame(top, CommentPublishDiagnostics.screenForSendCheck(top));
+        assertFalse(LogBufferManager.buildExportText().contains("top page has no screen"));
+    }
+
+    /**
+     * The S25 case: TikTok's most recently opened page has lost its screen, so the check would
+     * stop the send in silence. The check gets the comment panel's screen instead, and the
+     * report names the page that had none.
+     */
+    @Test public void withNoTopScreenTheCheckGetsTheCommentPanelsOwn() {
+        Activity panel = Robolectric.buildActivity(Activity.class).get();
+        CommentPublishDiagnostics.onPublishRequested(new PanelViewModel(panel), new Params());
+        CommentPublishDiagnostics.onTopPage(new DetachedPage());
+        assertSame(panel, CommentPublishDiagnostics.screenForSendCheck(null));
+        String report = LogBufferManager.buildExportText();
+        assertTrue(report, report.contains("TikTok's top page has no screen (a detached page)"));
+        assertTrue(report, report.contains("checking the send against the comment panel's screen, Activity"));
+    }
+
+    /** With no panel screen either, the check still gets none, as it would have unpatched. */
+    @Test public void aPanelWithNoScreenLeavesTheCheckAsItWas() {
+        CommentPublishDiagnostics.onPublishRequested(new PanelViewModel(null), new Params());
+        assertNull(CommentPublishDiagnostics.screenForSendCheck(null));
+        assertNull("a view model with no fragment", CommentPublishDiagnostics.panelScreen(new ViewModel()));
+        String report = LogBufferManager.buildExportText();
+        assertTrue(report, report.contains("the comment panel has none either"));
+    }
+
+    /** The phone check's two modes: 1 forces the fallback, 2 forces TikTok's own silent stop. */
+    @Test public void theTestModesProduceBothSidesOnDemand() {
+        Activity top = Robolectric.buildActivity(Activity.class).get();
+        Activity panel = Robolectric.buildActivity(Activity.class).get();
+        CommentPublishDiagnostics.onPublishRequested(new PanelViewModel(panel), new Params());
+        CommentPublishDiagnostics.topScreenTestMode = 1;
+        assertSame(panel, CommentPublishDiagnostics.screenForSendCheck(top));
+        CommentPublishDiagnostics.topScreenTestMode = 2;
+        assertNull(CommentPublishDiagnostics.screenForSendCheck(top));
+        assertTrue(LogBufferManager.buildExportText().contains("test mode 2: TikTok's top page has no screen"));
+    }
+
+    /** A publish view model as the fix reads it: unrelated fields and the panel's fragment. */
+    public static final class PanelViewModel {
+        private final Object unrelated = new Object();
+        private final Fragment panel;
+
+        PanelViewModel(Activity screen) {
+            panel = new Fragment(screen);
+        }
+    }
+
+    /** TikTok's top page, as far as the report is concerned: its text. */
+    public static final class DetachedPage {
+        @Override public String toString() {
+            return "a detached page";
+        }
     }
 
     /** The publish parameters as TikTok lays them out: text, three lists, a sticker, a gift, a reply. */

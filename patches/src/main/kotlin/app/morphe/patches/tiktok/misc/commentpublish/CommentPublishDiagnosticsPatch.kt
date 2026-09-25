@@ -18,13 +18,13 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
-private const val PUBLISH_VIEW_MODEL_SUFFIX = "/commentlist/viewmodel/CommentPublishViewModel;"
+internal const val PUBLISH_VIEW_MODEL_SUFFIX = "/commentlist/viewmodel/CommentPublishViewModel;"
 private const val COMMENT = "Lcom/ss/android/ugc/aweme/comment/model/Comment;"
 private const val FUNCTION1 = "Lkotlin/jvm/functions/Function1;"
 private const val EXTENSION = "Lapp/morphe/extension/tiktok/comment/CommentPublishDiagnostics;"
 
 /** The event the entry logs on the way in, on every build. */
-private const val CLICK_EVENT = "click_comment_send"
+internal const val CLICK_EVENT = "click_comment_send"
 
 /** The event the checks log when they refuse, on every build. */
 private const val REFUSAL_EVENT = "invalid_post_comment"

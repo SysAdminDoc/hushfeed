@@ -6,6 +6,7 @@ package app.morphe.extension.tiktok.comment;
 
 import app.morphe.extension.shared.Logger;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -24,10 +25,30 @@ import java.util.List;
 public final class CommentPublishDiagnostics {
     private static final String TAG = "[Morphe TikTok CommentPublish] ";
 
+    /** Longest page description a line carries; a fragment's own text can run on. */
+    private static final int PAGE_TEXT_LIMIT = 160;
+
+    /**
+     * The publish in flight and the top page it read, for the send fix. The entry runs on the
+     * main thread from the send button to the check, so the last one recorded is the one checked.
+     */
+    private static WeakReference<Object> publishing = new WeakReference<>(null);
+    private static WeakReference<Object> topPage = new WeakReference<>(null);
+
+    /**
+     * Lets a phone check produce the state the send fix is for, which a phone will not produce
+     * on demand. 0 leaves the send alone. 1 treats TikTok's top page as having no screen, so the
+     * check runs against the comment panel's. 2 skips the panel as well, which is what TikTok
+     * does unpatched: the check stops the send and nothing is shown.
+     */
+    public static volatile int topScreenTestMode;
+
     private CommentPublishDiagnostics() {}
 
     /** Called first thing in the publish entry, with the view model and the publish parameters. */
     public static void onPublishRequested(Object viewModel, Object params) {
+        publishing = new WeakReference<>(viewModel);
+        topPage = new WeakReference<>(null);
         String state;
         try {
             state = describe(viewModel, params);
@@ -50,6 +71,64 @@ public final class CommentPublishDiagnostics {
     /** Called just before the entry hands the comment to the request builder. */
     public static void onPublishHandedOff() {
         Logger.printInfo(() -> TAG + "handed to the request");
+    }
+
+    /** Called with TikTok's top page as the entry reads it, before it asks the page for its screen. */
+    public static void onTopPage(Object page) {
+        topPage = new WeakReference<>(page);
+    }
+
+    /**
+     * The screen TikTok's send check answers on. TikTok takes it from the most recently opened
+     * page that is still open, and that can be a panel or a tab that has already lost its
+     * screen. The check then stops the send without a word and the comment stays in the box.
+     * When that happens this answers with the comment panel's own screen, the one the second
+     * half of the entry uses anyway. A screen TikTok did find is passed through untouched.
+     */
+    public static Object screenForSendCheck(Object topScreen) {
+        int mode = topScreenTestMode;
+        if (topScreen != null && mode == 0) return topScreen;
+        Object page = topPage.get();
+        Object panel = mode == 2 ? null : panelScreen(publishing.get());
+        String pageText = page == null ? "none" : String.valueOf(page);
+        String shown = pageText.length() > PAGE_TEXT_LIMIT ? pageText.substring(0, PAGE_TEXT_LIMIT) : pageText;
+        String prefix = mode == 0 ? "" : "test mode " + mode + ": ";
+        Logger.printInfo(() -> TAG + prefix + "TikTok's top page has no screen (" + shown + "); "
+                + (panel == null
+                        ? "the comment panel has none either, so TikTok's check will stop the send"
+                        : "checking the send against the comment panel's screen, " + panel.getClass().getSimpleName()));
+        return panel;
+    }
+
+    /**
+     * The comment panel's own screen: the activity of the fragment the publish view model
+     * holds. Found by the field's type, since every name on the view model is R8's.
+     */
+    static Object panelScreen(Object viewModel) {
+        if (viewModel == null) return null;
+        try {
+            for (Class<?> type = viewModel.getClass(); type != null && type != Object.class; type = type.getSuperclass()) {
+                for (Field field : type.getDeclaredFields()) {
+                    if (Modifier.isStatic(field.getModifiers()) || !isFragment(field.getType())) continue;
+                    field.setAccessible(true);
+                    Object fragment = field.get(viewModel);
+                    if (fragment == null) continue;
+                    Object screen = fragment.getClass().getMethod("getActivity").invoke(fragment);
+                    if (screen != null) return screen;
+                }
+            }
+        } catch (Throwable failure) {
+            Logger.printException(() -> TAG + "could not read the comment panel's screen", failure);
+        }
+        return null;
+    }
+
+    /** Whether a field of this type holds an AndroidX fragment, whose class keeps its name in TikTok. */
+    private static boolean isFragment(Class<?> type) {
+        for (Class<?> current = type; current != null; current = current.getSuperclass()) {
+            if (current.getName().equals("androidx.fragment.app.Fragment")) return true;
+        }
+        return false;
     }
 
     /**
