@@ -323,7 +323,16 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting NO_RESUME_ON_FOREGROUND = new BooleanSetting(
             "no_resume_on_foreground", FALSE, true);
     /** Leaves a video the reader paused paused when the app comes back. Off by default. */
-    public static final BooleanSetting KEEP_PAUSED_ON_RETURN = new BooleanSetting("keep_paused_on_return", FALSE);
+    /**
+     * Keep a paused video paused. It reads the player in the pre-pause callback, which arrived in
+     * Android 10, so older versions have nothing to read it by and the row is greyed there.
+     */
+    public static final BooleanSetting KEEP_PAUSED_ON_RETURN = new BooleanSetting("keep_paused_on_return", FALSE,
+            new Setting.Availability() {
+                @Override public boolean isAvailable() {
+                    return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q;
+                }
+            });
     /**
      * Sends TikTok to the background when TikTok's own daily screen-time reminder comes up,
      * instead of leaving the reminder there to be dismissed. Off by default, read at show

@@ -5,7 +5,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
+import android.app.Application;
+import android.os.Bundle;
 import android.os.Looper;
+import android.view.View;
 
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.diagnostics.HookStatus;
@@ -102,19 +105,124 @@ public class KeepPausedTest {
         assertFalse("turned off after the leaving", play("first"));
     }
 
-    /** Robolectric runs sdk 28 here, so this goes through the callbacks older Androids use. */
-    @Test public void theAppGoingAwayAndComingBackIsFollowedThroughTheActivityCallbacks() {
+    /** A screen of TikTok's own, a separate activity, as messages or a web page are. */
+    public static final class OtherScreen extends Activity { }
+
+    /**
+     * TikTok's own stop as the feed's activity pauses: its player stops in a lifecycle observer,
+     * which comes after the application's pre-pause callbacks. Registered after Hushfeed's.
+     */
+    private void stopThePlayerOnEveryPause() {
+        RuntimeEnvironment.getApplication().registerActivityLifecycleCallbacks(new EmptyCallbacks() {
+            @Override public void onActivityPaused(Activity paused) {
+                player.manager.playing = false;
+            }
+        });
+    }
+
+    /** From Android 10 the leaving is read before TikTok's stop, through the pre-pause callback. */
+    @Test @Config(sdk = 30) public void theFeedGoingAwayIsReadBeforeTikToksStop() {
         Settings.KEEP_PAUSED_ON_RETURN.save(true);
         ReflectionHelpers.callStaticMethod(PausePlayback.class, "resetForTests");
-        try (var controller = Robolectric.buildActivity(SessionPlaybackHoldTest.HostActivity.class).setup()) {
-            PausePlayback.install(controller.get());
+        try (var feed = Robolectric.buildActivity(SessionPlaybackHoldTest.HostActivity.class).setup()) {
+            PausePlayback.install(feed.get());
+            stopThePlayerOnEveryPause();
+            feed.pause();
+            feed.resume();
+            assertFalse("a video left playing starts again", play("first"));
+
             player.manager.playing = false;
-            controller.pause();
-            controller.resume();
-            assertTrue(play("first"));
+            feed.pause();
+            feed.resume();
+            assertTrue("one the reader paused is kept", play("first"));
         } finally {
             ReflectionHelpers.callStaticMethod(PausePlayback.class, "resetForTests");
         }
+    }
+
+    /** Messages, a web page or Hushfeed's settings cover the feed and pause on the way back. */
+    @Test @Config(sdk = 30) public void anotherTikTokScreenOnTheWayBackIsNotTheFeed() {
+        Settings.KEEP_PAUSED_ON_RETURN.save(true);
+        ReflectionHelpers.callStaticMethod(PausePlayback.class, "resetForTests");
+        try (var feed = Robolectric.buildActivity(SessionPlaybackHoldTest.HostActivity.class).setup();
+             var other = Robolectric.buildActivity(OtherScreen.class).create().start()) {
+            PausePlayback.install(feed.get());
+            stopThePlayerOnEveryPause();
+            feed.pause();
+            other.resume();
+            other.pause();
+            feed.resume();
+            assertFalse("the video left playing starts again", play("first"));
+        } finally {
+            ReflectionHelpers.callStaticMethod(PausePlayback.class, "resetForTests");
+        }
+    }
+
+    /**
+     * Android 9 and older have no pre-pause callback, and TikTok's stop comes before anything the
+     * application hears, so Keep paused stays out there and its row is greyed.
+     */
+    @Test public void onAndroid9KeepPausedStaysOut() {
+        Settings.KEEP_PAUSED_ON_RETURN.save(true);
+        assertFalse("the row is greyed", Settings.KEEP_PAUSED_ON_RETURN.isAvailable());
+        ReflectionHelpers.callStaticMethod(PausePlayback.class, "resetForTests");
+        try (var feed = Robolectric.buildActivity(SessionPlaybackHoldTest.HostActivity.class).setup()) {
+            PausePlayback.install(feed.get());
+            player.manager.playing = false;
+            feed.pause();
+            feed.resume();
+            assertFalse("nothing is turned down", play("first"));
+        } finally {
+            ReflectionHelpers.callStaticMethod(PausePlayback.class, "resetForTests");
+        }
+    }
+
+    @Test @Config(sdk = 29) public void fromAndroid10TheRowIsThere() {
+        assertTrue(Settings.KEEP_PAUSED_ON_RETURN.isAvailable());
+    }
+
+    /** TikTok's feed buttons and a screen reader's play action call the same play method. */
+    @Test public void aPlayTheReaderAsksForGoesThrough() {
+        Settings.KEEP_PAUSED_ON_RETURN.save(true);
+        player.manager.playing = false;
+        leave();
+        comeBack();
+        boolean[] refused = {true};
+        View button = new View(activity);
+        button.setOnClickListener(v -> refused[0] = play("first"));
+        button.performClick();
+        assertFalse("a click on a play button", refused[0]);
+        assertFalse("and the record is spent", play("first"));
+
+        leave();
+        comeBack();
+        int action = 0x7f0a005f;
+        refused[0] = true;
+        View video = new View(activity);
+        video.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            @Override public boolean performAccessibilityAction(View host, int id, Bundle arguments) {
+                if (id != action) return super.performAccessibilityAction(host, id, arguments);
+                refused[0] = play("first");
+                return true;
+            }
+        });
+        video.performAccessibilityAction(action, null);
+        assertFalse("a screen reader's play action", refused[0]);
+
+        leave();
+        comeBack();
+        assertTrue("TikTok's own play on the way back is still turned down", play("first"));
+    }
+
+    /** Only what the tests need of the callbacks, the rest left empty. */
+    private static class EmptyCallbacks implements Application.ActivityLifecycleCallbacks {
+        @Override public void onActivityCreated(Activity activity, Bundle state) { }
+        @Override public void onActivityStarted(Activity activity) { }
+        @Override public void onActivityResumed(Activity activity) { }
+        @Override public void onActivityPaused(Activity activity) { }
+        @Override public void onActivityStopped(Activity activity) { }
+        @Override public void onActivitySaveInstanceState(Activity activity, Bundle state) { }
+        @Override public void onActivityDestroyed(Activity activity) { }
     }
 
     @Test public void onceThePausedVideoPlaysAgainItsPlaysGoThrough() {
@@ -177,6 +285,11 @@ public class KeepPausedTest {
             play("first");
             HookStatus.report();
             assertEquals("and the video kept paused", 2, found[0]);
+            View button = new View(activity);
+            button.setOnClickListener(v -> play("first"));
+            button.performClick();
+            HookStatus.report();
+            assertEquals("and the reader's own play", 3, found[0]);
         } finally {
             HookStatus.setLineWriter(null);
         }

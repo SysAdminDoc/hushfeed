@@ -55,7 +55,8 @@ public final class ScreenTimePreferenceCategory extends ConditionalPreferenceCat
                 Settings.NO_RESUME_ON_FOREGROUND));
         addPreference(new TogglePreference(context, "Keep a paused video paused",
                 "A video you paused stays paused when you come back to the app instead of "
-                        + "starting again. One you left playing starts as usual.",
+                        + "starting again. One you left playing starts as usual. "
+                        + "It works on Android 10 and newer.",
                 Settings.KEEP_PAUSED_ON_RETURN));
         addPreference(new TogglePreference(context, "Leave when TikTok says time is up",
                 "TikTok's own daily screen-time reminder sends the app to the background "
