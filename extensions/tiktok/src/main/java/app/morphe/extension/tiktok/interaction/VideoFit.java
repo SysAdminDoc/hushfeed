@@ -15,6 +15,9 @@ import android.view.ViewParent;
 import android.widget.FrameLayout;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
@@ -92,25 +95,25 @@ public final class VideoFit {
             // The switches before the reads: this runs twice for every video the feed binds, off
             // is the default, and the reflection below is only worth paying for with one on.
             Mode mode = mode();
-            if (mode == Mode.LEAVE_ALONE) return result;
+            if (mode == Mode.LEAVE_ALONE) return untouched(view, result);
             int videoWidth = size(result, "getWidth");
             int videoHeight = size(result, "getHeight");
-            if (videoWidth <= 0 || videoHeight <= 0) return result;
+            if (videoWidth <= 0 || videoHeight <= 0) return untouched(view, result);
             int containerWidth = containerWidth(view);
             int containerHeight = containerHeight(view);
-            if (containerWidth <= 0 || containerHeight <= 0) return result;
-            if (!wants(mode, videoWidth, videoHeight, containerWidth, containerHeight)) return result;
+            if (containerWidth <= 0 || containerHeight <= 0) return untouched(view, result);
+            if (!wants(mode, videoWidth, videoHeight, containerWidth, containerHeight)) return untouched(view, result);
             int width = widthFor(mode, videoWidth, videoHeight, containerWidth, containerHeight);
             int height = heightFor(mode, videoWidth, videoHeight, containerWidth, containerHeight);
             // Centred by the layout when the container can do it, and by the offsets otherwise.
             float[] offsets = centre(view)
                     ? new float[]{0f, 0f} : offsets(width, height, containerWidth, containerHeight);
             Object copy = copyOf(result, width, height, offsets);
-            if (copy == null) return result;
+            if (copy == null) return untouched(view, result);
             return copy;
         } catch (Exception exception) {
             Logger.printException(() -> "Could not fit the video to the window", exception);
-            return result;
+            return untouched(view, result);
         }
     }
 
@@ -156,9 +159,44 @@ public final class VideoFit {
         if (!(params instanceof FrameLayout.LayoutParams)) return false;
         FrameLayout.LayoutParams frame = (FrameLayout.LayoutParams) params;
         if (frame.gravity == Gravity.CENTER) return true;
+        GRAVITY_BEFORE.put(view, frame.gravity);
         frame.gravity = Gravity.CENTER;
         view.setLayoutParams(frame);
         return true;
+    }
+
+    /**
+     * The gravity each view had before {@link #centre} replaced it. TikTok reuses a cell's video
+     * view, and its layout parameters, for the next video, and lays its own result out with
+     * offsets that assume its own gravity: a result left alone on a view centred here for an
+     * earlier video was centred twice, and a video TikTok had cropped showed an edge instead of
+     * the middle. Weak, because a view that is gone has nothing to give back.
+     */
+    private static final Map<View, Integer> GRAVITY_BEFORE =
+            Collections.synchronizedMap(new WeakHashMap<>());
+
+    /** Gives a view centred here its own gravity back, for a result left as TikTok made it. */
+    private static void uncentre(View view) {
+        if (GRAVITY_BEFORE.isEmpty()) return;
+        Integer before = GRAVITY_BEFORE.remove(view);
+        if (before == null) return;
+        ViewGroup.LayoutParams params = view.getLayoutParams();
+        if (!(params instanceof FrameLayout.LayoutParams)) return;
+        FrameLayout.LayoutParams frame = (FrameLayout.LayoutParams) params;
+        frame.gravity = before;
+        view.setLayoutParams(frame);
+    }
+
+    /** TikTok's own result for the feed cell, on a view with its own gravity. */
+    private static Object untouched(View view, Object result) {
+        uncentre(view);
+        return result;
+    }
+
+    /** {@link #LEAVE} for the story cell, on a view with its own gravity. */
+    private static int leave(View view) {
+        uncentre(view);
+        return LEAVE;
     }
 
     /** The offsets that centre a video of this size in the container: half the difference, each way. */
@@ -181,15 +219,15 @@ public final class VideoFit {
         if (view == null || result == null) return LEAVE;
         try {
             Mode mode = mode();
-            if (mode == Mode.LEAVE_ALONE) return LEAVE;
+            if (mode == Mode.LEAVE_ALONE) return leave(view);
             int videoWidth = size(result, "getWidth");
             int videoHeight = size(result, "getHeight");
-            if (videoWidth <= 0 || videoHeight <= 0) return LEAVE;
+            if (videoWidth <= 0 || videoHeight <= 0) return leave(view);
             int containerWidth = containerWidth(view);
             int containerHeight = containerHeight(view);
-            if (containerWidth <= 0 || containerHeight <= 0) return LEAVE;
+            if (containerWidth <= 0 || containerHeight <= 0) return leave(view);
             // Already inside the window, or already covering it: nothing to bring back or add.
-            if (!wants(mode, videoWidth, videoHeight, containerWidth, containerHeight)) return LEAVE;
+            if (!wants(mode, videoWidth, videoHeight, containerWidth, containerHeight)) return leave(view);
 
             int width = widthFor(mode, videoWidth, videoHeight, containerWidth, containerHeight);
             int height = heightFor(mode, videoWidth, videoHeight, containerWidth, containerHeight);
@@ -200,7 +238,7 @@ public final class VideoFit {
         } catch (Exception exception) {
             Logger.printException(() -> "Could not fit the video to the window", exception);
             LAST.remove();
-            return LEAVE;
+            return leave(view);
         }
     }
 

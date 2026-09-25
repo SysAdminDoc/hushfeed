@@ -214,6 +214,70 @@ public class VideoFitTest {
         }
     }
 
+    /**
+     * TikTok reuses a cell's video view, layout parameters and all, for the next video, and lays
+     * its own result out with offsets that assume its own gravity. A view this code centred for
+     * one video has to get that gravity back when the next result is left alone, or TikTok's
+     * offsets land on top of the centring and a video it cropped shows an edge, not the middle.
+     */
+    @Test public void aResultLeftAloneGetsTheViewsOwnGravityBack() {
+        try (var controller = Robolectric.buildActivity(android.app.Activity.class).setup().visible()) {
+            var activity = controller.get();
+            Utils.setContext(activity);
+            FrameLayout container = new FrameLayout(activity);
+            View video = new View(activity);
+            container.addView(video);
+            container.layout(0, 0, 1080, 2400);
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(1080, 1920);
+            params.gravity = android.view.Gravity.TOP | android.view.Gravity.START;
+            video.setLayoutParams(params);
+            int own = params.gravity;
+            try {
+                Settings.FILL_VIDEO_TO_SCREEN.save(true);
+                Result strip = new Result(1080, 1920, 0f, 0f, null);
+                assertNotSame("the strip was not filled, so this checks nothing", strip, VideoFit.fitted(video, strip));
+                assertEquals(android.view.Gravity.CENTER, gravityOf(video));
+
+                // The next video in the cell already covers the window, cropped by TikTok and
+                // placed by its own offsets.
+                Result covers = new Result(1350, 2400, -135f, 0f, null);
+                assertSame(covers, VideoFit.fitted(video, covers));
+                assertEquals("TikTok's offsets would land on top of the centring", own, gravityOf(video));
+
+                // Filled again, then the switch goes off: TikTok's result and its gravity both.
+                VideoFit.fitted(video, new Result(1080, 1920, 0f, 0f, null));
+                assertEquals(android.view.Gravity.CENTER, gravityOf(video));
+                Settings.FILL_VIDEO_TO_SCREEN.save(false);
+                Result untouched = new Result(1080, 1920, 0f, 0f, null);
+                assertSame(untouched, VideoFit.fitted(video, untouched));
+                assertEquals("turning the switch off left the centring behind", own, gravityOf(video));
+
+                // The story cell's path does the same.
+                Settings.FILL_VIDEO_TO_SCREEN.save(true);
+                assertEquals(1350, VideoFit.fitWidthFor(new Result(1080, 1920), video));
+                assertEquals(android.view.Gravity.CENTER, gravityOf(video));
+                assertEquals(VideoFit.LEAVE, VideoFit.fitWidthFor(new Result(1350, 2400), video));
+                assertEquals(own, gravityOf(video));
+
+                // A gravity TikTok set itself is TikTok's, and stays.
+                View centred = new View(activity);
+                container.addView(centred);
+                FrameLayout.LayoutParams itsOwn = new FrameLayout.LayoutParams(1080, 1920);
+                itsOwn.gravity = android.view.Gravity.CENTER;
+                centred.setLayoutParams(itsOwn);
+                VideoFit.fitted(centred, new Result(1080, 1920, 0f, 0f, null));
+                assertSame(covers, VideoFit.fitted(centred, covers));
+                assertEquals(android.view.Gravity.CENTER, gravityOf(centred));
+            } finally {
+                Settings.FILL_VIDEO_TO_SCREEN.save(false);
+            }
+        }
+    }
+
+    private static int gravityOf(View view) {
+        return ((FrameLayout.LayoutParams) view.getLayoutParams()).gravity;
+    }
+
     @Test public void thePageKeepsFitAndFillApart() {
         try (var controller = Robolectric.buildActivity(TestActivity.class).setup().visible()) {
             var activity = controller.get();
