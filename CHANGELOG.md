@@ -2,6 +2,10 @@
 
 Every Hushfeed release, newest first.
 
+## Unreleased
+
+* **TikTok:** Allow Duet and Stitch now answers the creator's account-wide choice as well as the video's own. TikTok checks both, and on the S22 a video that allowed anyone still had no Duet entry because its creator's account allowed only people they follow back. With the switch on, Duet and Stitch both show on those videos now. Whether TikTok's servers accept the upload is still up to them.
+
 ## 0.59.0 (2026-09-25)
 
 The biggest release so far, with everything built since 0.58.0 and this week's bug reports. The seek bar that TikTok's experiment took away is back (#16), Watch history works with the browser guard on (#16), the tab names above the feed can go (#32), a video can fill the screen (#29), the corner LIVE button survives a filtered bottom bar (#28), split comment view follows the fold (#26), and the Products block in search has a switch (#21).

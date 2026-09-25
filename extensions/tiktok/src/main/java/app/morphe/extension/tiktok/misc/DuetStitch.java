@@ -33,4 +33,17 @@ public final class DuetStitch {
         if (!Settings.ALLOW_DUET_AND_STITCH.get()) return original;
         return original == FRIENDS_ONLY ? ANYONE : original;
     }
+
+    /**
+     * The creator's account-wide choice, which TikTok checks as well as the video's own: 0 anyone,
+     * 1 only people they follow back, anything else nobody. On the S22 a video whose own setting
+     * said friends only still had no Duet with the switch on, because its creator's account said
+     * 3, and it is the video's creator choosing either way, with no commercial reason behind it,
+     * so the switch answers all of it. In every build this patch targets, the only readers of
+     * the account value are the duet and stitch checks for a video on screen; the owner's own
+     * settings screen keeps its setting elsewhere.
+     */
+    public static int authorSetting(int original) {
+        return Settings.ALLOW_DUET_AND_STITCH.get() ? ANYONE : original;
+    }
 }

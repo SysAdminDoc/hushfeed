@@ -53,6 +53,27 @@ public class DuetStitchTest {
         }
     }
 
+    /**
+     * The creator's account-wide choice is theirs whatever it says, so the switch answers every
+     * value of it. On the S22 a friends-only video kept its Duet entry hidden with the switch on,
+     * because its creator's account said 3.
+     */
+    @Test public void theCreatorsAccountWideChoiceIsAnsweredToo() {
+        try {
+            Settings.ALLOW_DUET_AND_STITCH.save(false);
+            for (int setting : new int[]{0, 1, 2, 3, -1}) {
+                assertEquals(setting, DuetStitch.authorSetting(setting));
+            }
+
+            Settings.ALLOW_DUET_AND_STITCH.save(true);
+            for (int setting : new int[]{0, 1, 2, 3, -1}) {
+                assertEquals("the account's " + setting + " was left standing", 0, DuetStitch.authorSetting(setting));
+            }
+        } finally {
+            Settings.ALLOW_DUET_AND_STITCH.save(false);
+        }
+    }
+
     @Test public void theSwitchIsReachable() {
         try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
             var activity = controller.get();

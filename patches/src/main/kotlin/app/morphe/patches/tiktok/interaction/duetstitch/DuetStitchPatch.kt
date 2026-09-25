@@ -20,12 +20,11 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 private const val EXTENSION = "Lapp/morphe/extension/tiktok/misc/DuetStitch;"
 private const val AWEME = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
+internal const val USER = "Lcom/ss/android/ugc/aweme/profile/model/User;"
 
 /**
  * The creator's own choice for the video, which the app reads straight off the model. Both
- * the model and these two getters kept their names. The account level pair on User is left
- * alone: that one is the owner's setting for their own posts and shows in their own
- * settings screen.
+ * the model and these two getters kept their names.
  */
 private object DuetSettingFingerprint : Fingerprint(
     definingClass = AWEME,
@@ -36,6 +35,28 @@ private object DuetSettingFingerprint : Fingerprint(
 
 private object StitchSettingFingerprint : Fingerprint(
     definingClass = AWEME,
+    name = "getStitchSetting",
+    returnType = "I",
+    parameters = emptyList(),
+)
+
+/**
+ * The creator's account-wide choice, which TikTok checks as well as the video's own: the duet
+ * one through DuetHelperKt.checkDuetSetting, the stitch one inline in the share sheet's Stitch
+ * entry, the stitch status and the Stitch button. A video that allowed friends could still
+ * lose Duet to an account that allowed nobody. On every fixture those checks are the only
+ * readers of these two getters, so the owner's own settings screen is not among them, and
+ * DuetStitchCallersTest holds each build to that.
+ */
+private object AuthorDuetSettingFingerprint : Fingerprint(
+    definingClass = USER,
+    name = "getDuetSetting",
+    returnType = "I",
+    parameters = emptyList(),
+)
+
+private object AuthorStitchSettingFingerprint : Fingerprint(
+    definingClass = USER,
     name = "getStitchSetting",
     returnType = "I",
     parameters = emptyList(),
@@ -56,7 +77,12 @@ val duetStitchPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4703())
 
     execute {
-        for (fingerprint in listOf(DuetSettingFingerprint, StitchSettingFingerprint)) {
+        for ((fingerprint, answer) in listOf(
+            DuetSettingFingerprint to "setting",
+            StitchSettingFingerprint to "setting",
+            AuthorDuetSettingFingerprint to "authorSetting",
+            AuthorStitchSettingFingerprint to "authorSetting",
+        )) {
             fingerprint.method.apply {
                 // The value is taken as the getter hands it back, rather than the getter being
                 // answered before it reads anything, because the number it returns says which
@@ -74,7 +100,7 @@ val duetStitchPatch = bytecodePatch(
                     addInstructionsAtControlFlowLabel(
                         index,
                         """
-                            invoke-static/range { v$setting .. v$setting }, $EXTENSION->setting(I)I
+                            invoke-static/range { v$setting .. v$setting }, $EXTENSION->$answer(I)I
                             move-result v$setting
                         """,
                     )
