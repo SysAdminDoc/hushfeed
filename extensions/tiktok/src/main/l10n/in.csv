@@ -62,6 +62,7 @@ A green dot in the top corner while TikTok has the camera open and an orange one
 "A host to put in place of tiktok.com when you share or copy a link, like vxtiktok.com. Leave it empty to share TikTok's own links. Only TikTok links are changed, and only the host: nothing is sent anywhere new.","Host pengganti tiktok.com saat kamu membagikan atau menyalin tautan, misalnya vxtiktok.com. Kosongkan untuk membagikan tautan TikTok sendiri. Hanya tautan TikTok yang diubah, dan hanya bagian host-nya, tidak ada yang dikirim ke mana pun."
 A newer clear replaced that undo. Tap the row again to undo.,Penghapusan yang lebih baru menggantikan pengurungan itu. Ketuk barisnya lagi untuk mengurungkan.
 "A small label on the feed shows the minutes or videos left of today's budget, whichever is closer to running out.",Label kecil di feed menunjukkan menit atau video yang tersisa dari anggaran hari ini.
+A tap on Home or on the For You tab while For You is showing no longer reloads it. The video you're on stays.,Mengetuk Beranda atau tab Untuk Kamu saat Untuk Kamu sedang tampil tidak lagi memuat ulang feed. Video yang sedang kamu tonton tetap.
 A tap on a person in the Send to row only selects them. A second tap on the same person within %1$d seconds sends the video.,Satu ketukan pada orang di baris Kirim ke hanya memilihnya. Ketukan kedua pada orang yang sama dalam %1$d detik mengirim videonya.
 A web address someone left in a comment can be tapped instead of copied out by hand. Tapping anywhere else in the comment still does what it did.,"Alamat web yang ditulis seseorang di komentar bisa diketuk, bukan disalin manual. Mengetuk bagian lain dari komentar tetap seperti sebelumnya."
 AI-generated posts,Kiriman buatan AI
@@ -271,6 +272,8 @@ Diagnostic report copied to the clipboard,Laporan diagnostik disalin ke papan kl
 Diagnostics,Diagnostik
 Disable,Matikan
 Stop analytics and tracking,Hentikan analitik dan pelacakan
+Keep For You on a Home tap,Pertahankan Untuk Kamu saat mengetuk Beranda
+Keep For You on a pull down,Pertahankan Untuk Kamu saat tarik ke bawah
 Keep long press from quick sharing,Jangan biarkan tekan lama membagikan cepat
 Keep long press from reposting,Jangan biarkan tekan lama me-repost
 Disabled,Nonaktif
@@ -693,6 +696,7 @@ Promotional music,Musik promosi
 Proof,Bukti
 Post age,Usia kiriman
 Add a search box that filters comments already loaded on this video by text or username. It doesn't search all of TikTok or remove TikTok's suggested-search banner.,Tambahkan kotak pencarian untuk memfilter komentar yang sudah dimuat pada video ini berdasarkan teks atau nama pengguna. Ini tidak mencari di seluruh TikTok atau menghapus banner saran pencarian TikTok.
+Pulling down at the top of For You no longer reloads it.,Menarik ke bawah di bagian atas Untuk Kamu tidak lagi memuat ulang feed.
 Putting the settings back to their defaults,Mengembalikan pengaturan ke bawaan
 Quality,Kualitas
 "Quality, files, subtitles and hand-off","Kualitas, berkas, subtitel, dan penerusan"

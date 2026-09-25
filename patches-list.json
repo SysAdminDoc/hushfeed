@@ -1250,7 +1250,7 @@
     },
     {
       "name": "Feed tab navigation",
-      "description": "Controls which loaded top and bottom navigation tabs remain visible, blocks newly added tabs when requested, and can hide the Tako AI bubble and the unread badges on the bottom tabs. Switch: Hushfeed settings > Feed tabs.",
+      "description": "Controls which loaded top and bottom navigation tabs remain visible, blocks newly added tabs when requested, can hide the Tako AI bubble and the unread badges on the bottom tabs, and can keep For You from reloading on a Home tap or a pull down. Switch: Hushfeed settings > Feed tabs.",
       "category": "Settings",
       "use": true,
       "dependencies": [

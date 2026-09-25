@@ -61,6 +61,7 @@ A green dot in the top corner while TikTok has the camera open and an orange one
 A host to put in place of tiktok.com when you share or copy a link, like vxtiktok.com. Leave it empty to share TikTok's own links. Only TikTok links are changed, and only the host: nothing is sent anywhere new.	Un host que sustituya a tiktok.com al compartir o copiar un enlace, como vxtiktok.com. Déjalo vacío para compartir los enlaces de TikTok. Solo cambian los enlaces de TikTok, y solo el host: no se envía nada a ningún sitio nuevo.
 A newer clear replaced that undo. Tap the row again to undo.	Un borrado más reciente sustituyó ese deshacer. Toca la fila otra vez para deshacerlo.
 A small label on the feed shows the minutes or videos left of today's budget, whichever is closer to running out.	Una pequeña etiqueta en el feed muestra los minutos o videos restantes del presupuesto de hoy.
+A tap on Home or on the For You tab while For You is showing no longer reloads it. The video you're on stays.	Tocar Inicio o la pestaña Para ti mientras se muestra Para ti ya no lo recarga. El vídeo que estás viendo se queda.
 A tap on a person in the Send to row only selects them. A second tap on the same person within %1$d seconds sends the video.	Al tocar a una persona en la fila Enviar a solo se la selecciona. Un segundo toque sobre la misma persona antes de %1$d segundos envía el vídeo.
 A web address someone left in a comment can be tapped instead of copied out by hand. Tapping anywhere else in the comment still does what it did.	Una dirección web escrita en un comentario se puede tocar en lugar de copiarla a mano. Tocar en cualquier otra parte del comentario sigue haciendo lo de siempre.
 AI-generated posts	Publicaciones generadas por IA
@@ -272,6 +273,8 @@ Diagnostic report copied to the clipboard	Informe de diagnóstico copiado al por
 Diagnostics	Diagnóstico
 Disable	Desactivar
 Stop analytics and tracking	Detener la analítica y el seguimiento
+Keep For You on a Home tap	Mantener Para ti al tocar Inicio
+Keep For You on a pull down	Mantener Para ti al deslizar hacia abajo
 Keep long press from quick sharing	Que la pulsación larga no comparta rápido
 Keep long press from reposting	Que la pulsación larga no haga repost
 Disabled	Desactivados
@@ -693,6 +696,7 @@ Promotional music	Música promocional
 Proof	Prueba
 Post age	Antigüedad de la publicación
 Add a search box that filters comments already loaded on this video by text or username. It doesn't search all of TikTok or remove TikTok's suggested-search banner.	Añade un cuadro de búsqueda para filtrar los comentarios ya cargados de este video por texto o nombre de usuario. No busca en todo TikTok ni elimina su banner de búsquedas sugeridas.
+Pulling down at the top of For You no longer reloads it.	Deslizar hacia abajo al principio de Para ti ya no lo recarga.
 Putting the settings back to their defaults	Devolviendo los ajustes a sus valores de fábrica
 Quality	Calidad
 Quality, files, subtitles and hand-off	Calidad, archivos, subtítulos y traspaso

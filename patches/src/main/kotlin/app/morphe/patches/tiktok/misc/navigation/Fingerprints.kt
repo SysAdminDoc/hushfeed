@@ -83,3 +83,93 @@ internal object BottomTabModelListFingerprint : Fingerprint(
     parameters = listOf(),
     custom = { method, classDef -> method.isOnlyTabModelList(classDef, BOTTOM_TAB_SCENE) },
 )
+
+internal const val FOR_YOU_FRAGMENT = "Lcom/ss/android/ugc/aweme/feed/ui/FeedRecommendFragment;"
+
+/**
+ * The For You feed's refresh. A tap on Home or on the For You tab while For You is showing, and a
+ * pull down at the top of the feed, all come here with TikTok's trigger enum (CLICK_BOTTOM,
+ * CLICK_TOP or PULL_DOWN_REFRESH), and the answer says whether a refresh started. Its name and the
+ * enum's change every build (Nj, Jt, BO, vq and qN from 46.2.3 to 47.0.3); its log lines don't.
+ */
+internal object ForYouRefreshFingerprint : Fingerprint(
+    definingClass = FOR_YOU_FRAGMENT,
+    returnType = "Z",
+    strings = listOf("[tryRefresh] view invalide", "[tryRefresh] presenter is null"),
+    custom = { method, _ -> method.parameterTypes.size == 1 },
+)
+
+internal const val REFRESH_ABILITY = "Lcom/ss/android/ugc/feed/platform/panel/refreshpanel/IRefreshAbility;"
+internal const val EVENT_BUS_EVENT = "Lcom/ss/android/ugc/governance/eventbus/IEvent;"
+
+/**
+ * How the For You refresh ends when it starts nothing: a refresh asked for while the feed is still
+ * loading stops the refresh panel's spinner and posts TikTok's refresh-end event, which turns the
+ * Home icon back from its refresh arrow. The getter, the event and the bus call are read off the
+ * method itself, since R8 renames all three every build.
+ */
+internal class RefreshEnding(val panelGetter: MethodReference, val eventInit: MethodReference, val post: MethodReference)
+
+internal fun Method.refreshEnding(): RefreshEnding? {
+    val instructions = implementation?.instructions?.toList() ?: return null
+    val stop = instructions.indexOfFirst {
+        it.getReference<MethodReference>()?.let { call -> call.definingClass == REFRESH_ABILITY && call.name == "setRefreshing" } == true
+    }
+    if (stop < 0) return null
+    val getter = instructions.subList(0, stop).lastOrNull {
+        it.opcode == Opcode.INVOKE_VIRTUAL && it.getReference<MethodReference>()?.let { call ->
+            call.returnType == REFRESH_ABILITY && call.parameterTypes.isEmpty()
+        } == true
+    }?.getReference<MethodReference>() ?: return null
+    val after = instructions.drop(stop + 1)
+    val init = after.firstOrNull {
+        it.opcode == Opcode.INVOKE_DIRECT && it.getReference<MethodReference>()?.let { call ->
+            call.name == "<init>" && call.parameterTypes.isEmpty()
+        } == true
+    }?.getReference<MethodReference>() ?: return null
+    val post = after.firstOrNull {
+        it.opcode == Opcode.INVOKE_STATIC && it.getReference<MethodReference>()?.let { call ->
+            call.returnType == EVENT_BUS_EVENT && call.parameterTypes.map(CharSequence::toString) == listOf(EVENT_BUS_EVENT)
+        } == true
+    }?.getReference<MethodReference>() ?: return null
+    return RefreshEnding(getter, init, post)
+}
+
+internal const val REFRESH_PANEL = "Lcom/ss/android/ugc/feed/platform/panel/refreshpanel/RefreshPanelComponent;"
+private const val FRAGMENT = "Landroidx/fragment/app/Fragment;"
+
+/**
+ * The refresh panel's pull listener. A pull down that lets go past the threshold lands here: it
+ * reads the panel's fragment and asks that to refresh, then tells the feed and the fragment's other
+ * refresh listeners. Stopping only the fragment's refresh left those listeners loading the feed
+ * anyway (seen on the S22), so a kept pull ends here, before any of it.
+ */
+internal object PullRefreshListenerFingerprint : Fingerprint(
+    returnType = "V",
+    parameters = listOf(),
+    strings = listOf("slide_down", "pull_refresh"),
+    custom = { method, _ -> method.pullPanelReads() != null },
+)
+
+/** How the pull listener reaches its fragment: its panel field, the panel's context getter, the context's fragment. */
+internal class PullPanelReads(val panel: FieldReference, val context: MethodReference, val fragment: FieldReference)
+
+internal fun Method.pullPanelReads(): PullPanelReads? {
+    val instructions = implementation?.instructions?.toList() ?: return null
+    val panel = instructions.firstOrNull {
+        it.opcode == Opcode.IGET_OBJECT && it.getReference<FieldReference>()?.let { field ->
+            field.type == REFRESH_PANEL && field.definingClass == definingClass
+        } == true
+    }?.getReference<FieldReference>() ?: return null
+    val context = instructions.firstOrNull {
+        it.opcode == Opcode.INVOKE_VIRTUAL && it.getReference<MethodReference>()?.let { call ->
+            call.name == "getPanelContext" && call.parameterTypes.isEmpty()
+        } == true
+    }?.getReference<MethodReference>() ?: return null
+    val fragment = instructions.firstOrNull {
+        it.opcode == Opcode.IGET_OBJECT && it.getReference<FieldReference>()?.let { field ->
+            field.type == FRAGMENT && field.definingClass == context.returnType
+        } == true
+    }?.getReference<FieldReference>() ?: return null
+    return PullPanelReads(panel, context, fragment)
+}

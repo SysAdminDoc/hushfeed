@@ -61,6 +61,7 @@ A green dot in the top corner while TikTok has the camera open and an orange one
 A host to put in place of tiktok.com when you share or copy a link, like vxtiktok.com. Leave it empty to share TikTok's own links. Only TikTok links are changed, and only the host: nothing is sent anywhere new.	Bir bağlantıyı paylaşırken veya kopyalarken tiktok.com yerine konacak alan adı, örneğin vxtiktok.com. TikTok'un kendi bağlantılarını paylaşmak için boş bırak. Yalnızca TikTok bağlantıları değişir, onların da yalnızca alan adı: hiçbir yere yeni bir şey gönderilmez.
 A newer clear replaced that undo. Tap the row again to undo.	Daha yeni bir temizleme o geri almanın yerini aldı. Geri almak için satıra tekrar dokun.
 A small label on the feed shows the minutes or videos left of today's budget, whichever is closer to running out.	Akıştaki küçük bir etiket, bugünkü bütçenden kalan dakikayı veya video sayısını gösterir, hangisi bitmeye daha yakınsa onu.
+A tap on Home or on the For You tab while For You is showing no longer reloads it. The video you're on stays.	Senin İçin açıkken Ana Sayfa'ya ya da Senin İçin sekmesine dokunmak artık akışı yenilemez. İzlediğin video yerinde kalır.
 A tap on a person in the Send to row only selects them. A second tap on the same person within %1$d seconds sends the video.	Şuraya gönder satırındaki bir kişiye dokunmak onu yalnızca seçer. Aynı kişiye %1$d saniye içinde ikinci kez dokunmak videoyu gönderir.
 A web address someone left in a comment can be tapped instead of copied out by hand. Tapping anywhere else in the comment still does what it did.	Birinin yoruma bıraktığı web adresine, elle kopyalamak yerine dokunulabilir. Yorumun başka bir yerine dokunmak yine eskiden ne yapıyorsa onu yapar.
 AI-generated posts	Yapay zeka ile üretilmiş gönderiler
@@ -283,6 +284,8 @@ Diagnostic report copied to the clipboard	Tanılama raporu panoya kopyalandı
 Diagnostics	Tanılama
 Disable	Devre dışı bırak
 Stop analytics and tracking	Analitiği ve izlemeyi durdur
+Keep For You on a Home tap	Ana Sayfa'ya dokununca Senin İçin'i koru
+Keep For You on a pull down	Aşağı çekince Senin İçin'i koru
 Keep long press from quick sharing	Uzun basma hızlı paylaşmasın
 Keep long press from reposting	Uzun basma yeniden yayınlamasın
 Disabled	Devre dışı
@@ -724,6 +727,7 @@ Profile share actions	Profil paylaşım eylemleri
 Promotional music	Tanıtım müziği
 Proof	Kanıt
 Post age	Gönderi yaşı
+Pulling down at the top of For You no longer reloads it.	Senin İçin'in en üstünde aşağı çekmek artık akışı yenilemez.
 Putting the settings back to their defaults	Ayarlar varsayılanlarına döndürülüyor
 Quality	Kalite
 Quality, files, subtitles and hand-off	Kalite, dosyalar, altyazılar ve başka uygulamaya aktarma

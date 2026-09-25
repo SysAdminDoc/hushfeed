@@ -64,6 +64,7 @@ A green dot in the top corner while TikTok has the camera open and an orange one
 A host to put in place of tiktok.com when you share or copy a link, like vxtiktok.com. Leave it empty to share TikTok's own links. Only TikTok links are changed, and only the host: nothing is sent anywhere new.	Ein Host, der beim Teilen oder Kopieren an die Stelle von tiktok.com tritt, zum Beispiel vxtiktok.com. Leer lassen, um TikToks eigene Links zu teilen. Geändert werden nur TikTok-Links und nur der Host, es wird nichts irgendwohin geschickt.
 A newer clear replaced that undo. Tap the row again to undo.	Ein neueres Löschen hat dieses Rückgängig ersetzt. Tippe erneut auf die Zeile, um es rückgängig zu machen.
 A small label on the feed shows the minutes or videos left of today's budget, whichever is closer to running out.	Ein kleines Label im Feed zeigt die verbleibenden Minuten oder Videos des heutigen Budgets.
+A tap on Home or on the For You tab while For You is showing no longer reloads it. The video you're on stays.	Ein Tippen auf Startseite oder auf den Tab „Für dich“, während „Für dich“ angezeigt wird, lädt den Feed nicht mehr neu. Das aktuelle Video bleibt.
 A tap on a person in the Send to row only selects them. A second tap on the same person within %1$d seconds sends the video.	Ein Tippen auf eine Person in der Zeile „Senden an“ wählt sie nur aus. Ein zweites Tippen auf dieselbe Person innerhalb von %1$d Sekunden sendet das Video.
 A web address someone left in a comment can be tapped instead of copied out by hand. Tapping anywhere else in the comment still does what it did.	Eine Webadresse in einem Kommentar lässt sich antippen, statt sie von Hand herauszukopieren. Ein Tippen an anderer Stelle im Kommentar tut weiterhin das, was es vorher tat.
 AI-generated posts	KI-generierte Beiträge
@@ -275,6 +276,8 @@ Diagnostic report copied to the clipboard	Diagnosebericht in die Zwischenablage 
 Diagnostics	Diagnose
 Disable	Ausschalten
 Stop analytics and tracking	Analyse und Tracking stoppen
+Keep For You on a Home tap	„Für dich“ beim Tippen auf Startseite behalten
+Keep For You on a pull down	„Für dich“ beim Herunterziehen behalten
 Keep long press from quick sharing	Langes Drücken nicht schnell teilen lassen
 Keep long press from reposting	Langes Drücken nicht reposten lassen
 Disabled	Ausgeschaltet
@@ -696,6 +699,7 @@ Promotional music	Werbemusik
 Proof	Beleg
 Post age	Beitragsalter
 Add a search box that filters comments already loaded on this video by text or username. It doesn't search all of TikTok or remove TikTok's suggested-search banner.	Füge ein Suchfeld hinzu, das bereits geladene Kommentare zu diesem Video nach Text oder Nutzername filtert. Es durchsucht nicht ganz TikTok und entfernt nicht TikToks Banner mit Suchvorschlägen.
+Pulling down at the top of For You no longer reloads it.	Herunterziehen ganz oben in „Für dich“ lädt den Feed nicht mehr neu.
 Putting the settings back to their defaults	Einstellungen werden auf die Standardwerte zurückgesetzt
 Quality	Qualität
 Quality, files, subtitles and hand-off	Qualität, Dateien, Untertitel und Weitergabe
