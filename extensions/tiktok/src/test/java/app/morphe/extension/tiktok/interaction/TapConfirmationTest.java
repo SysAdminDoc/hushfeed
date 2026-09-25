@@ -11,15 +11,21 @@ import android.os.Looper;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
 import android.view.Gravity;
+import android.content.Context;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.tiktok.SettingsContextRule;
+import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.SettingsUi;
 import app.morphe.extension.tiktok.settings.preference.categories.InterfacePreferenceCategory;
 import java.io.File;
 import java.io.FileOutputStream;
+import com.ss.android.ugc.aweme.comment.model.Comment;
 import java.time.Duration;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.After;
 import org.junit.runner.RunWith;
@@ -33,6 +39,8 @@ import org.robolectric.annotation.GraphicsMode;
 @Config(sdk = 28)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class TapConfirmationTest {
+    @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
+
     @After public void tearDown() {
         SettingsStatus.confirmInteractionsEnabled = false;
     }
@@ -47,6 +55,25 @@ public class TapConfirmationTest {
         Clip(String id) { aid = id; }
     }
     public static final class Author { public final String uid = "same_creator"; }
+
+    /** The comment list's like view: a view of its own that keeps the comment it shows. */
+    public static final class LikeView extends FrameLayout {
+        final Comment comment;
+        LikeView(Context context, Comment comment) { super(context); this.comment = comment; }
+    }
+    /** A photo post's comment like: no view in hand, the comment in a field. */
+    public static final class PhotoLike {
+        final Comment comment;
+        PhotoLike(Comment comment) { this.comment = comment; }
+    }
+    public static final class TwoComments { Comment first = new Comment("a", false), second = new Comment("b", false); }
+    public static final class Story {
+        final String aid;
+        final boolean liked;
+        Story(String aid, boolean liked) { this.aid = aid; this.liked = liked; }
+        public String getAid() { return aid; }
+        public boolean isLike() { return liked; }
+    }
 
     @Test public void leavingAndReturningToSameVideoRequiresFreshConfirmation() throws Exception {
         try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
@@ -112,7 +139,7 @@ public class TapConfirmationTest {
         }
     }
 
-    @Test public void standalonePatchExposesBothSettings() {
+    @Test public void standalonePatchExposesEverySetting() {
         try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
             PreferenceActivity activity = controller.get();
             Utils.setContext(activity);
@@ -121,6 +148,107 @@ public class TapConfirmationTest {
             new InterfacePreferenceCategory(activity, screen);
             assertNotNull(screen.findPreference("confirm_follow"));
             assertNotNull(screen.findPreference("confirm_like"));
+            assertNotNull(screen.findPreference("confirm_comment_like"));
+            assertNotNull(screen.findPreference("confirm_story_like"));
+            assertNotNull(screen.findPreference("confirm_quick_repost"));
+        }
+    }
+
+    @Test public void aCommentLikeAsksOnceUnlessTheCommentIsLikedAlready() {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            Utils.setContext(controller.get());
+            Settings.CONFIRM_COMMENT_LIKE.save(true);
+            LikeView view = new LikeView(controller.get(), new Comment("c1", false));
+            assertFalse(TapConfirmation.commentLike(view));
+            assertNotNull("the like view carries the ring", view.getForeground());
+            assertTrue(TapConfirmation.commentLike(view));
+            assertNull(view.getForeground());
+
+            assertTrue("removing a like stays immediate",
+                    TapConfirmation.commentLike(new LikeView(controller.get(), new Comment("c2", true))));
+            Settings.CONFIRM_COMMENT_LIKE.save(false);
+            assertTrue(TapConfirmation.commentLike(new LikeView(controller.get(), new Comment("c3", false))));
+        }
+    }
+
+    @Test public void aPhotoPostsCommentLikeArmsWithoutARingAndEachControlArmsItself() {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            Utils.setContext(controller.get());
+            Settings.CONFIRM_COMMENT_LIKE.save(true);
+            org.robolectric.shadows.ShadowToast.reset();
+            PhotoLike first = new PhotoLike(new Comment("c1", false));
+            assertFalse(TapConfirmation.commentLike(first));
+            assertEquals("Tap again to like", String.valueOf(org.robolectric.shadows.ShadowToast.getTextOfLatestToast()));
+            PhotoLike other = new PhotoLike(new Comment("c1", false));
+            assertFalse("another control's tap is a first tap", TapConfirmation.commentLike(other));
+            assertTrue(TapConfirmation.commentLike(other));
+        }
+    }
+
+    @Test public void aPhotoPostsLikeAsksAboutTheCommentItHandsOver() {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            Utils.setContext(controller.get());
+            Settings.CONFIRM_COMMENT_LIKE.save(true);
+            Object control = new Object();
+            assertFalse(TapConfirmation.commentLike(control, new Comment("c7", false)));
+            assertFalse("another comment on the same control is a first tap",
+                    TapConfirmation.commentLike(control, new Comment("c8", false)));
+            assertTrue(TapConfirmation.commentLike(control, new Comment("c8", false)));
+            assertTrue("removing a like stays immediate", TapConfirmation.commentLike(control, new Comment("c9", true)));
+            assertTrue("no comment to name", TapConfirmation.commentLike(control, null));
+        }
+    }
+
+    @Test public void aCommentLikeThatCantBePinnedToOneCommentGoesThrough() {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            Utils.setContext(controller.get());
+            Settings.CONFIRM_COMMENT_LIKE.save(true);
+            assertTrue("no comment field", TapConfirmation.commentLike(new Object()));
+            assertTrue("two comment fields", TapConfirmation.commentLike(new TwoComments()));
+            assertTrue("a comment with no id", TapConfirmation.commentLike(new PhotoLike(new Comment(null, false))));
+            assertTrue("no control", TapConfirmation.commentLike(null));
+        }
+    }
+
+    @Test public void aStoryLikeAsksAboutTheStoryItWasHanded() {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            Utils.setContext(controller.get());
+            Settings.CONFIRM_STORY_LIKE.save(true);
+            View button = new View(controller.get());
+            assertFalse(TapConfirmation.storyLike(button, new Story("s1", false)));
+            assertNotNull(button.getForeground());
+            assertFalse("another story is a first tap", TapConfirmation.storyLike(button, new Story("s2", false)));
+            assertTrue(TapConfirmation.storyLike(button, new Story("s2", false)));
+            assertTrue("removing a like stays immediate", TapConfirmation.storyLike(button, new Story("s3", true)));
+            Settings.CONFIRM_STORY_LIKE.save(false);
+            assertTrue(TapConfirmation.storyLike(button, new Story("s4", false)));
+        }
+    }
+
+    @Test public void aQuickRepostAsksAboutThePlayingVideo() throws Exception {
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            Utils.setContext(controller.get());
+            Settings.CONFIRM_QUICK_REPOST.save(true);
+            var tracker = app.morphe.extension.tiktok.blockauthor.CurrentVideoAuthor.class;
+            var reset = tracker.getDeclaredMethod("resetForTests");
+            reset.setAccessible(true);
+            reset.invoke(null);
+            Object bar = new Object();
+            assertTrue("with no video to name, the repost goes through", TapConfirmation.quickRepost(bar));
+
+            var update = tracker.getDeclaredMethod("update", Object.class);
+            update.setAccessible(true);
+            var playing = tracker.getDeclaredMethod("onPlaying", String.class);
+            playing.setAccessible(true);
+            update.invoke(null, new Params("v1"));
+            playing.invoke(null, "v1");
+            org.robolectric.shadows.ShadowToast.reset();
+            assertFalse(TapConfirmation.quickRepost(bar));
+            assertEquals("Tap again to repost", String.valueOf(org.robolectric.shadows.ShadowToast.getTextOfLatestToast()));
+            assertTrue(TapConfirmation.quickRepost(bar));
+            Settings.CONFIRM_QUICK_REPOST.save(false);
+            assertTrue(TapConfirmation.quickRepost(bar));
+            reset.invoke(null);
         }
     }
 
@@ -151,7 +279,7 @@ public class TapConfirmationTest {
         // phone read "Noch einmal tippen zum follow".
         try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
             Utils.setContext(controller.get());
-            for (String action : new String[]{"follow", "like"}) {
+            for (String action : new String[]{"follow", "like", "repost"}) {
                 org.robolectric.shadows.ShadowToast.reset();
                 View view = new View(controller.get());
                 assertFalse(TapConfirmation.allow(view, action, "video-" + action, true));

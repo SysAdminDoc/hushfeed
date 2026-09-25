@@ -21,7 +21,7 @@ Hushfeed is a [Morphe](https://github.com/MorpheApp/morphe-manager) patch bundle
 ## Pick what changes
 
 - **Feed:** Start with the reversible Calm feed preset, or hide ads, Shop, livestreams, stories, photo posts, unwanted creators and videos matching your own rules. Remove feed ads also catches paid partnerships and creator commission posts, including location-affiliate videos.
-- **Touch controls:** Add second-tap protection to Follow, Like and sending from the share sheet. Remap or disable long press and double tap.
+- **Touch controls:** Add second-tap protection to Follow, Like, comment and story likes, quick reposts and sending from the share sheet. Remap or disable long press and double tap.
 - **Playback:** Choose speed and quality, stop loops, resume a video after scrolling or move to the next one automatically.
 - **Downloads:** Save watermark-free video, original photos, separate audio and SRT subtitles with filenames and folders you control. The save button also works on videos whose creator turned downloading off. A save of several files shows a running count with a Cancel, and the result says what landed.
 - **Comments and inbox:** Filter comment text or accounts, translate comments and decide which Inbox rows appear. Compact comment header removes the count, sort and close row and the suggestion area above it. Close comments with Back or a downward swipe. It's optional and needs a restart.
@@ -159,7 +159,7 @@ The manager signs every patched build with its own key, and Android only install
 | `Comment publish diagnostics` | Says in the diagnostic report whether a comment send reached TikTok's publish code, what it had in hand, and whether it returned early or handed the comment to the request. A comment that never posts leaves no other trace. |
 | `Comment sort controls` | Shows TikTok's own comment sort sheet on every post, with its hot, newest, media and creator options, instead of the cut-down row an account outside the rollout is given. Switch: Hushfeed settings > Comments. |
 | `Comment tools` | Hides comments that contain chosen words or come from chosen accounts, turns the thumbs down on each comment into a block button that shows the block symbol, makes links tappable and can hide pictures, polls or TikTok's suggested-search banner above comments. Compact comment header removes the count, controls and suggestion space above the list. Easier comment likes extends the heart's touch area into nearby blank space without changing row spacing. A separate search box filters comments already loaded on the video. Each tool has its own switch in Hushfeed settings > Comments. |
-| `Confirm feed interactions` | Adds optional second-tap protection to the feed Follow button and like heart. A red ring marks the armed button. Switch: Hushfeed settings > Feed screen. |
+| `Confirm feed interactions` | Asks for a second tap before the feed Follow button, the like heart, a comment or story like, or a quick repost goes through. A red ring marks the armed button. Switches: Hushfeed settings > Feed screen. |
 | `Copy comments without username` | Copies only the comment text without including the creator's username. Switch: Hushfeed settings > Comments. |
 | `Custom offline videos limit` | Adds a custom entry to TikTok's offline videos menu with a configurable limit from 1 to 1000 videos. Switch: Hushfeed settings > Downloads. |
 | `Device privacy guard` | Blocks TikTok from reading your clipboard. Copying a link you asked for still works. Switch: Hushfeed settings > Privacy. |

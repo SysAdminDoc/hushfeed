@@ -148,6 +148,9 @@ public class Settings extends BaseSettings {
             new IntegerSetting("edge_seek_seconds", 5).withRange(0, 60);
     public static final BooleanSetting CONFIRM_FOLLOW = new BooleanSetting("confirm_follow", FALSE);
     public static final BooleanSetting CONFIRM_LIKE = new BooleanSetting("confirm_like", FALSE);
+    public static final BooleanSetting CONFIRM_COMMENT_LIKE = new BooleanSetting("confirm_comment_like", FALSE);
+    public static final BooleanSetting CONFIRM_STORY_LIKE = new BooleanSetting("confirm_story_like", FALSE);
+    public static final BooleanSetting CONFIRM_QUICK_REPOST = new BooleanSetting("confirm_quick_repost", FALSE);
     public static final StringSetting BLOCKED_CAPTION_WORDS =
             new FeedRuleStringSetting("blocked_caption_words", false);
     public static final StringSetting BLOCKED_CREATORS =

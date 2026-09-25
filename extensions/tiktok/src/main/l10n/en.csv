@@ -241,8 +241,11 @@ Compare gate reads with their previous values.,Compare gate reads with their pre
 Completed an interrupted settings change. Restart TikTok to apply this.,Completed an interrupted settings change. Restart TikTok to apply this.
 Config,Config
 Config (Settings Manager),Config (Settings Manager)
+Confirm before a quick repost,Confirm before a quick repost
 Confirm before following,Confirm before following
 Confirm before liking,Confirm before liking
+Confirm before liking a comment,Confirm before liking a comment
+Confirm before liking a story,Confirm before liking a story
 Confirm before sending to a friend,Confirm before sending to a friend
 Continue supported videos from where you stopped when you scroll back to them.,Continue supported videos from where you stopped when you scroll back to them.
 Controls,Controls
@@ -988,8 +991,12 @@ Swipe left,Swipe left
 System,System
 Takes TikTok's own Auto scroll action out of the video panel. Auto-advance keeps working.,Takes TikTok's own Auto scroll action out of the video panel. Auto-advance keeps working.
 Tap %1$s again to send,Tap %1$s again to send
+Tap Repost on the bar under a video twice within %1$d seconds. A repost with a note is left alone.,Tap Repost on the bar under a video twice within %1$d seconds. A repost with a note is left alone.
+Tap a comment's heart twice within %1$d seconds. A double tap on the comment needs a second one too. Removing a like stays immediate.,Tap a comment's heart twice within %1$d seconds. A double tap on the comment needs a second one too. Removing a like stays immediate.
+Tap a story's heart twice within %1$d seconds. Removing a like stays immediate.,Tap a story's heart twice within %1$d seconds. Removing a like stays immediate.
 Tap again to follow,Tap again to follow
 Tap again to like,Tap again to like
+Tap again to repost,Tap again to repost
 Tap again to send,Tap again to send
 Tap the feed Follow button twice within %1$d seconds.,Tap the feed Follow button twice within %1$d seconds.
 Tap the like heart twice within %1$d seconds. Removing a like stays immediate.,Tap the like heart twice within %1$d seconds. Removing a like stays immediate.

@@ -208,8 +208,11 @@ Compare gate reads with their previous values.	Gate-Zugriffe mit ihren vorherige
 Completed an interrupted settings change. Restart TikTok to apply this.	Eine unterbrochene Einstellungsänderung wurde abgeschlossen. TikTok neu starten, damit das gilt.
 Config	Konfiguration
 Config (Settings Manager)	Konfiguration (Settings Manager)
+Confirm before a quick repost	Vor einem schnellen Repost bestätigen
 Confirm before following	Vor dem Folgen bestätigen
 Confirm before liking	Vor dem Liken bestätigen
+Confirm before liking a comment	Vor dem Liken eines Kommentars bestätigen
+Confirm before liking a story	Vor dem Liken einer Story bestätigen
 Confirm before sending to a friend	Vor dem Senden an Freunde bestätigen
 Continue supported videos from where you stopped when you scroll back to them.	Unterstützte Videos dort fortsetzen, wo du aufgehört hast, wenn du zu ihnen zurückscrollst.
 Controls	Steuerung
@@ -902,8 +905,12 @@ System	System
 Feed tabs to keep	Feed-Tabs behalten
 Hide the streak button in a chat and the reminder message that goes with it.	Die Serien-Schaltfläche in einem Chat und die zugehörige Erinnerung ausblenden.
 Tap %1$s again to send	Zum Senden noch einmal auf %1$s tippen
+Tap a comment's heart twice within %1$d seconds. A double tap on the comment needs a second one too. Removing a like stays immediate.	Tippe das Herz eines Kommentars innerhalb von %1$d Sekunden zweimal an. Auch ein Doppeltippen auf den Kommentar braucht ein zweites. Das Entfernen eines Likes bleibt sofort.
+Tap a story's heart twice within %1$d seconds. Removing a like stays immediate.	Tippe das Herz einer Story innerhalb von %1$d Sekunden zweimal an. Das Entfernen eines Likes bleibt sofort.
+Tap Repost on the bar under a video twice within %1$d seconds. A repost with a note is left alone.	Tippe innerhalb von %1$d Sekunden zweimal auf Reposten in der Leiste unter einem Video. Ein Repost mit Notiz bleibt unberührt.
 Tap again to follow	Noch einmal tippen zum Folgen
 Tap again to like	Noch einmal tippen zum Liken
+Tap again to repost	Noch einmal tippen zum Reposten
 Tap again to send	Zum Senden noch einmal tippen
 Tap the feed Follow button twice within %1$d seconds.	Tippe die Folgen-Schaltfläche im Feed innerhalb von %1$d Sekunden zweimal an.
 Tap the like heart twice within %1$d seconds. Removing a like stays immediate.	Tippe das Like-Herz innerhalb von %1$d Sekunden zweimal an. Das Entfernen eines Likes bleibt sofort.

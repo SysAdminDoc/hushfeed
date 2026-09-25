@@ -420,6 +420,18 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
                     L10n.f(context, "Tap the like heart twice within %1$d seconds. Removing a like stays immediate.",
                             TapConfirmation.CONFIRM_WINDOW_SECONDS),
                     Settings.CONFIRM_LIKE));
+            addPreference(new TogglePreference(context, "Confirm before liking a comment",
+                    L10n.f(context, "Tap a comment's heart twice within %1$d seconds. A double tap on the comment needs a second one too. Removing a like stays immediate.",
+                            TapConfirmation.CONFIRM_WINDOW_SECONDS),
+                    Settings.CONFIRM_COMMENT_LIKE));
+            addPreference(new TogglePreference(context, "Confirm before liking a story",
+                    L10n.f(context, "Tap a story's heart twice within %1$d seconds. Removing a like stays immediate.",
+                            TapConfirmation.CONFIRM_WINDOW_SECONDS),
+                    Settings.CONFIRM_STORY_LIKE));
+            addPreference(new TogglePreference(context, "Confirm before a quick repost",
+                    L10n.f(context, "Tap Repost on the bar under a video twice within %1$d seconds. A repost with a note is left alone.",
+                            TapConfirmation.CONFIRM_WINDOW_SECONDS),
+                    Settings.CONFIRM_QUICK_REPOST));
         }
     }
 }

@@ -212,8 +212,11 @@ Compare gate reads with their previous values.	Özellik kapısı okumalarını �
 Completed an interrupted settings change. Restart TikTok to apply this.	Yarıda kalan bir ayar değişikliği tamamlandı. Bunu uygulamak için TikTok'u yeniden başlat.
 Config	Yapılandırma
 Config (Settings Manager)	Yapılandırma (Settings Manager)
+Confirm before a quick repost	Hızlı yeniden yayınlamadan önce onay iste
 Confirm before following	Takip etmeden önce onay iste
 Confirm before liking	Beğenmeden önce onay iste
+Confirm before liking a comment	Bir yorumu beğenmeden önce onay iste
+Confirm before liking a story	Bir hikayeyi beğenmeden önce onay iste
 Confirm before sending to a friend	Bir arkadaşa göndermeden önce onay iste
 Continue supported videos from where you stopped when you scroll back to them.	Desteklenen videolara geri kaydırdığında kaldığın yerden devam et.
 Controls	Kontroller
@@ -935,8 +938,12 @@ Subtitles	Altyazılar
 System	Sistem
 Hide the streak button in a chat and the reminder message that goes with it.	Sohbetteki seri düğmesini ve onunla birlikte gelen hatırlatma mesajını gizle.
 Tap %1$s again to send	Göndermek için yeniden dokun: %1$s
+Tap a comment's heart twice within %1$d seconds. A double tap on the comment needs a second one too. Removing a like stays immediate.	Bir yorumun kalbine %1$d saniye içinde iki kez dokun. Yoruma çift dokunmak da ikinci bir çift dokunma ister. Beğeniyi kaldırmak yine anında olur.
+Tap a story's heart twice within %1$d seconds. Removing a like stays immediate.	Bir hikayenin kalbine %1$d saniye içinde iki kez dokun. Beğeniyi kaldırmak yine anında olur.
+Tap Repost on the bar under a video twice within %1$d seconds. A repost with a note is left alone.	Bir videonun altındaki çubukta Yeniden yayınla düğmesine %1$d saniye içinde iki kez dokun. Not eklenmiş bir yeniden yayınlama olduğu gibi kalır.
 Tap again to follow	Takip etmek için yeniden dokun
 Tap again to like	Beğenmek için yeniden dokun
+Tap again to repost	Yeniden yayınlamak için yeniden dokun
 Tap again to send	Göndermek için yeniden dokun
 Tap the feed Follow button twice within %1$d seconds.	Akıştaki Takip et düğmesine %1$d saniye içinde iki kez dokun.
 Tap the like heart twice within %1$d seconds. Removing a like stays immediate.	Beğeni kalbine %1$d saniye içinde iki kez dokun. Beğeniyi kaldırmak yine anında olur.

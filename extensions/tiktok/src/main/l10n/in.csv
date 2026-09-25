@@ -204,8 +204,11 @@ Compare gate reads with their previous values.,Bandingkan pembacaan gate dengan 
 Completed an interrupted settings change. Restart TikTok to apply this.,Perubahan pengaturan yang terhenti telah diselesaikan. Mulai ulang TikTok agar berlaku.
 Config,Konfigurasi
 Config (Settings Manager),Konfigurasi (Settings Manager)
+Confirm before a quick repost,Konfirmasi sebelum repost cepat
 Confirm before following,Konfirmasi sebelum mengikuti
 Confirm before liking,Konfirmasi sebelum menyukai
+Confirm before liking a comment,Konfirmasi sebelum menyukai komentar
+Confirm before liking a story,Konfirmasi sebelum menyukai Story
 Confirm before sending to a friend,Konfirmasi sebelum mengirim ke teman
 Continue supported videos from where you stopped when you scroll back to them.,Lanjutkan video yang didukung dari titik terakhir saat kamu menggulir kembali ke video itu.
 Controls,Kontrol
@@ -899,8 +902,12 @@ System,Sistem
 Feed tabs to keep,Tab feed yang dipertahankan
 Hide the streak button in a chat and the reminder message that goes with it.,Sembunyikan tombol rentetan di obrolan beserta pesan pengingatnya.
 Tap %1$s again to send,Ketuk %1$s lagi untuk mengirim
+Tap a comment's heart twice within %1$d seconds. A double tap on the comment needs a second one too. Removing a like stays immediate.,Ketuk ikon hati komentar dua kali dalam %1$d detik. Ketuk dua kali pada komentar juga perlu diulang. Membatalkan suka tetap langsung berlaku.
+Tap a story's heart twice within %1$d seconds. Removing a like stays immediate.,Ketuk ikon hati Story dua kali dalam %1$d detik. Membatalkan suka tetap langsung berlaku.
+Tap Repost on the bar under a video twice within %1$d seconds. A repost with a note is left alone.,Ketuk Repost di bilah bawah video dua kali dalam %1$d detik. Repost dengan catatan dibiarkan.
 Tap again to follow,Ketuk lagi untuk mengikuti
 Tap again to like,Ketuk lagi untuk menyukai
+Tap again to repost,Ketuk lagi untuk me-repost
 Tap again to send,Ketuk lagi untuk mengirim
 Tap the feed Follow button twice within %1$d seconds.,Ketuk tombol Ikuti di feed dua kali dalam %1$d detik.
 Tap the like heart twice within %1$d seconds. Removing a like stays immediate.,Ketuk ikon hati dua kali dalam %1$d detik. Membatalkan suka tetap langsung berlaku.

@@ -205,8 +205,11 @@ Compare gate reads with their previous values.	Compara las lecturas de los inter
 Completed an interrupted settings change. Restart TikTok to apply this.	Se completó un cambio de ajustes interrumpido. Reinicia TikTok para que se aplique.
 Config	Configuración
 Config (Settings Manager)	Configuración (Settings Manager)
+Confirm before a quick repost	Confirmar antes de un repost rápido
 Confirm before following	Confirmar antes de seguir
 Confirm before liking	Confirmar antes de dar me gusta
+Confirm before liking a comment	Confirmar antes de dar me gusta a un comentario
+Confirm before liking a story	Confirmar antes de dar me gusta a una historia
 Confirm before sending to a friend	Confirmar antes de enviar a un amigo
 Continue supported videos from where you stopped when you scroll back to them.	Continuar los vídeos compatibles desde donde los dejaste cuando vuelvas a ellos.
 Controls	Controles
@@ -899,8 +902,12 @@ System	Sistema
 Feed tabs to keep	Pestañas del feed que mantener
 Hide the streak button in a chat and the reminder message that goes with it.	Ocultar el botón de racha de un chat y el mensaje recordatorio que lo acompaña.
 Tap %1$s again to send	Toca %1$s otra vez para enviar
+Tap a comment's heart twice within %1$d seconds. A double tap on the comment needs a second one too. Removing a like stays immediate.	Toca el corazón de un comentario dos veces en menos de %1$d segundos. Un doble toque en el comentario también necesita un segundo. Quitar un me gusta sigue siendo inmediato.
+Tap a story's heart twice within %1$d seconds. Removing a like stays immediate.	Toca el corazón de una historia dos veces en menos de %1$d segundos. Quitar un me gusta sigue siendo inmediato.
+Tap Repost on the bar under a video twice within %1$d seconds. A repost with a note is left alone.	Toca Repost en la barra bajo un vídeo dos veces en menos de %1$d segundos. Un repost con nota no se toca.
 Tap again to follow	Toca otra vez para seguir
 Tap again to like	Toca otra vez para dar me gusta
+Tap again to repost	Toca otra vez para hacer repost
 Tap again to send	Toca otra vez para enviar
 Tap the feed Follow button twice within %1$d seconds.	Toca el botón Seguir del feed dos veces en menos de %1$d segundos.
 Tap the like heart twice within %1$d seconds. Removing a like stays immediate.	Toca el corazón de me gusta dos veces en menos de %1$d segundos. Quitar un me gusta sigue siendo inmediato.

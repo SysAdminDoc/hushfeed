@@ -205,8 +205,11 @@ Compare gate reads with their previous values.	Compara as leituras dos gates com
 Completed an interrupted settings change. Restart TikTok to apply this.	Uma mudança de configuração interrompida foi concluída. Reinicie o TikTok para aplicar.
 Config	Configuração
 Config (Settings Manager)	Configuração (Settings Manager)
+Confirm before a quick repost	Confirmar antes de um repost rápido
 Confirm before following	Confirmar antes de seguir
 Confirm before liking	Confirmar antes de curtir
+Confirm before liking a comment	Confirmar antes de curtir um comentário
+Confirm before liking a story	Confirmar antes de curtir um story
 Confirm before sending to a friend	Confirmar antes de enviar para um amigo
 Continue supported videos from where you stopped when you scroll back to them.	Continuar os vídeos compatíveis de onde você parou quando voltar a eles.
 Controls	Controles
@@ -899,8 +902,12 @@ System	Sistema
 Feed tabs to keep	Abas do feed para manter
 Hide the streak button in a chat and the reminder message that goes with it.	Esconder o botão de sequência de um chat e a mensagem de lembrete que vem com ele.
 Tap %1$s again to send	Toque em %1$s de novo para enviar
+Tap a comment's heart twice within %1$d seconds. A double tap on the comment needs a second one too. Removing a like stays immediate.	Toque no coração de um comentário duas vezes dentro de %1$d segundos. Um toque duplo no comentário também precisa de um segundo. Tirar uma curtida continua sendo imediato.
+Tap a story's heart twice within %1$d seconds. Removing a like stays immediate.	Toque no coração de um story duas vezes dentro de %1$d segundos. Tirar uma curtida continua sendo imediato.
+Tap Repost on the bar under a video twice within %1$d seconds. A repost with a note is left alone.	Toque em Repostar na barra abaixo de um vídeo duas vezes dentro de %1$d segundos. Um repost com nota fica como está.
 Tap again to follow	Toque de novo para seguir
 Tap again to like	Toque de novo para curtir
+Tap again to repost	Toque de novo para repostar
 Tap again to send	Toque de novo para enviar
 Tap the feed Follow button twice within %1$d seconds.	Toque no botão Seguir do feed duas vezes dentro de %1$d segundos.
 Tap the like heart twice within %1$d seconds. Removing a like stays immediate.	Toque no coração de curtir duas vezes dentro de %1$d segundos. Tirar uma curtida continua sendo imediato.
