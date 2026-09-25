@@ -63,7 +63,9 @@ public final class StartPage {
     /**
      * How long after a start its top tab answers Home's pager. The pager is built and settles
      * within a second of the activity, so a pick that comes much later belongs to something else,
-     * such as the pager built again after TikTok restarts its main page.
+     * such as the pager built again after TikTok restarts its main page. It's measured on the
+     * clock that keeps running while the phone sleeps, so a start the reader put the phone down on
+     * doesn't stay open.
      */
     static final long TOP_TAB_WINDOW_MS = 15_000;
 
@@ -90,7 +92,7 @@ public final class StartPage {
             String top = topTagFor(choice);
             if (top != null) {
                 startTopTab = top;
-                startedAt = SystemClock.uptimeMillis();
+                startedAt = SystemClock.elapsedRealtime();
             }
             HookStatus.bound(FAMILY, "opened on " + choice);
             return target;
@@ -140,7 +142,7 @@ public final class StartPage {
     /** The top tab the last start asked for, while it is recent enough to still be the start's. */
     private static String startTopTab() {
         String top = startTopTab;
-        return top != null && SystemClock.uptimeMillis() - startedAt <= TOP_TAB_WINDOW_MS ? top : null;
+        return top != null && SystemClock.elapsedRealtime() - startedAt <= TOP_TAB_WINDOW_MS ? top : null;
     }
 
     /** Forgets the last start's top tab, for tests. */
@@ -148,6 +150,7 @@ public final class StartPage {
         startTopTab = null;
         startedAt = 0;
         signedInForTests = null;
+        classes = Class::forName;
     }
 
     /**
@@ -177,9 +180,9 @@ public final class StartPage {
     static boolean signedIn() {
         if (signedInForTests != null) return signedInForTests;
         try {
-            Class<?> managerClass = Class.forName(SERVICE_MANAGER_CLASS);
+            Class<?> managerClass = classes.named(SERVICE_MANAGER_CLASS);
             Object manager = managerClass.getMethod("get").invoke(null);
-            Class<?> accountClass = Class.forName(ACCOUNT_USER_SERVICE_CLASS);
+            Class<?> accountClass = classes.named(ACCOUNT_USER_SERVICE_CLASS);
             Object account = managerClass.getMethod("getService", Class.class).invoke(manager, accountClass);
             return account == null || !Boolean.FALSE.equals(accountClass.getMethod("isLogin").invoke(account));
         } catch (Throwable unreadable) {
@@ -189,6 +192,13 @@ public final class StartPage {
 
     /** So a test can stand in for TikTok's account service. */
     static Boolean signedInForTests;
+
+    /** Where {@link #signedIn} finds TikTok's classes by name, so a test can hand it stand-ins. */
+    interface Classes {
+        Class<?> named(String name) throws ClassNotFoundException;
+    }
+
+    static Classes classes = Class::forName;
 
     /**
      * TikTok's tag for a choice, or nothing when the choice leaves it to TikTok or asks for a tab

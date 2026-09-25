@@ -71,6 +71,26 @@ class StartPageAnchorsTest {
     }
 
     @Test
+    fun `the account service the start page reads by name is there on every fixture`() {
+        for (apk in Fixtures.apks()) {
+            val build = Build(apk)
+            val manager = build.byType["Lcom/ss/android/ugc/aweme/framework/services/ServiceManager;"]
+            assertTrue("${apk.name}: no ServiceManager", manager != null)
+            assertTrue("${apk.name}: ServiceManager has no static get()", manager!!.methods.any {
+                it.name == "get" && it.parameterTypes.isEmpty() && AccessFlags.STATIC.isSet(it.accessFlags)
+            })
+            assertTrue("${apk.name}: ServiceManager has no getService(Class)", manager.methods.any {
+                it.name == "getService" && it.parameterTypes.map(CharSequence::toString) == listOf("Ljava/lang/Class;")
+            })
+            val account = build.byType["Lcom/ss/android/ugc/aweme/IAccountUserService;"]
+            assertTrue("${apk.name}: no IAccountUserService", account != null)
+            assertTrue("${apk.name}: IAccountUserService has no isLogin()Z", account!!.methods.any {
+                it.name == "isLogin" && it.parameterTypes.isEmpty() && it.returnType == "Z"
+            })
+        }
+    }
+
+    @Test
     fun `TikTok's handlers for Friends, Inbox and Profile compare with the tags the start page answers with`() {
         val handlers = mapOf(
             "Lcom/ss/android/ugc/aweme/assem/FriendsChangeTabInterceptor;" to listOf("FRIENDS_FEED"),

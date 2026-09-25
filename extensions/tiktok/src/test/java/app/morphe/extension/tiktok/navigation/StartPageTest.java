@@ -280,6 +280,56 @@ public class StartPageTest {
         assertTrue(StartPage.signedIn());
     }
 
+    /** TikTok's service manager, as the sign-in check finds it by name. */
+    public static final class Services {
+        static Object account;
+
+        public static Services get() {
+            return new Services();
+        }
+
+        public Object getService(Class<?> type) {
+            return account;
+        }
+    }
+
+    /** TikTok's account service, signed in or not. */
+    public static final class Account {
+        private final boolean login;
+
+        Account(boolean login) {
+            this.login = login;
+        }
+
+        public boolean isLogin() {
+            return login;
+        }
+    }
+
+    @Test public void theAccountServiceSaysWhetherAnAccountIsSignedIn() {
+        StartPage.classes = name -> {
+            if ("com.ss.android.ugc.aweme.framework.services.ServiceManager".equals(name)) return Services.class;
+            if ("com.ss.android.ugc.aweme.IAccountUserService".equals(name)) return Account.class;
+            throw new ClassNotFoundException(name);
+        };
+        try {
+            Services.account = new Account(false);
+            assertFalse("signed out", StartPage.signedIn());
+            Services.account = new Account(true);
+            assertTrue("signed in", StartPage.signedIn());
+            Services.account = null;
+            assertTrue("no account service keeps the choice", StartPage.signedIn());
+
+            Settings.START_PAGE.save(StartPage.INBOX);
+            Services.account = new Account(false);
+            assertEquals("signed out, TikTok keeps its tab", "HOME", start(launcher(), "HOME"));
+            Services.account = new Account(true);
+            assertEquals("signed in, Inbox", "NOTIFICATION", start(launcher(), "HOME"));
+        } finally {
+            Services.account = null;
+        }
+    }
+
     @Test public void aStartMarkedAsTikToksPushKeepsItsTab() {
         Settings.START_PAGE.save(StartPage.INBOX);
         for (String extra : StartPage.PUSH_EXTRAS) {
