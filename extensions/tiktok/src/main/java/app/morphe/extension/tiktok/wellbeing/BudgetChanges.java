@@ -16,6 +16,7 @@ import java.util.Set;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.diagnostics.HookStatus;
+import app.morphe.extension.shared.settings.IntegerSetting;
 import app.morphe.extension.shared.settings.Setting;
 import app.morphe.extension.tiktok.settings.Settings;
 
@@ -80,7 +81,7 @@ public final class BudgetChanges {
     /** Whether changing {@code setting} to {@code to} waits for the next day. */
     public static boolean waits(Setting<?> setting, Object to) {
         return Settings.SESSION_BUDGET_WAIT_TO_LOOSEN.savedValue() && isWatched(setting)
-                && loosens(setting, setting.savedValue(), to);
+                && loosens(setting, setting.savedValue(), bounded(setting, to));
     }
 
     /**
@@ -91,7 +92,7 @@ public final class BudgetChanges {
         applyDue(now);
         synchronized (BudgetChanges.class) {
             Map<String, Object> values = waitingValues();
-            values.put(setting.key, to);
+            values.put(setting.key, bounded(setting, to));
             long at = SessionBudget.dayEndAfter(now);
             write(values, at);
             HookStatus.bound(FAMILY, "kept for the next day");
@@ -172,12 +173,12 @@ public final class BudgetChanges {
         if (SessionBudget.lockedToday()) {
             for (Setting<?> setting : heldByALockedDay()) apply.remove(setting);
             HookStatus.bound(FAMILY, "restore held by a locked day");
-            return new Split(apply, waiting, settled, 0);
+            return new Split(apply, waiting, settled, 0, apply.size() != incoming.size());
         }
         boolean waitToLoosen = Settings.SESSION_BUDGET_WAIT_TO_LOOSEN.savedValue();
         for (Setting<?> setting : watched()) {
             if (!apply.containsKey(setting)) continue;
-            Object to = apply.get(setting);
+            Object to = bounded(setting, apply.get(setting));
             if (waitToLoosen && loosens(setting, setting.savedValue(), to)) {
                 apply.remove(setting);
                 waiting.put(setting.key, to);
@@ -186,7 +187,7 @@ public final class BudgetChanges {
             }
         }
         return new Split(apply, waiting, settled,
-                waiting.isEmpty() ? 0 : SessionBudget.dayEndAfter(now));
+                waiting.isEmpty() ? 0 : SessionBudget.dayEndAfter(now), apply.size() != incoming.size());
     }
 
     /** What a restore writes now, and what it leaves for the next day. */
@@ -195,18 +196,27 @@ public final class BudgetChanges {
         final Map<String, Object> waiting;
         final Set<String> settled;
         final long at;
+        private final boolean heldBack;
 
-        Split(Map<Setting<?>, Object> apply, Map<String, Object> waiting, Set<String> settled, long at) {
+        Split(Map<Setting<?>, Object> apply, Map<String, Object> waiting, Set<String> settled, long at,
+                boolean heldBack) {
             this.apply = apply;
             this.waiting = waiting;
             this.settled = settled;
             this.at = at;
+            this.heldBack = heldBack;
+        }
+
+        /** Whether the restore writes less than its file carries, because the budget kept some of it. */
+        public boolean heldBack() {
+            return heldBack;
         }
 
         /**
-         * Records what waits and drops what the restore settled, once the restore's own writes
-         * have gone through. Not before: a restore that fails part way puts the old values back,
-         * and changes it had already set waiting would still have landed the next day.
+         * Records what waits and drops what the restore settled, once the restore has committed
+         * and its journal is gone. Not before: a restore that fails part way, or one the next
+         * start puts back from its journal, restores the old values, and changes it had already
+         * set waiting would still have landed the next day.
          */
         public void keepWaiting() {
             if (waiting.isEmpty() && settled.isEmpty()) return;
@@ -226,6 +236,19 @@ public final class BudgetChanges {
             if (watched == setting) return true;
         }
         return false;
+    }
+
+    /**
+     * What {@code setting} holds once {@code value} is saved. A number outside a setting's range
+     * is brought inside it by the save, so it is judged that way here too: a restored -1 videos is
+     * saved as 0, which is no budget at all, and judged as -1 it looked like a tighter budget than
+     * 50 and applied at once.
+     */
+    static Object bounded(Setting<?> setting, Object value) {
+        if (!(setting instanceof IntegerSetting) || !(value instanceof Number)) return value;
+        IntegerSetting number = (IntegerSetting) setting;
+        long raw = ((Number) value).longValue();
+        return (int) Math.max(number.minimum(), Math.min(number.maximum(), raw));
     }
 
     private static int number(Object value) {

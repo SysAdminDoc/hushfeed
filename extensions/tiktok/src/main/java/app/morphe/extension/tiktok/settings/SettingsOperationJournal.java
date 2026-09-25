@@ -53,6 +53,20 @@ public final class SettingsOperationJournal {
         void delete(AtomicFile file) throws IOException;
     }
 
+    /** What clears a committed journal. */
+    private static volatile JournalDelete committedDelete = SettingsOperationJournal::delete;
+
+    /**
+     * Makes the delete that clears a committed journal fail, the way a full or read-only disk
+     * does, or puts the real one back. The failure is swallowed there, and what the next start
+     * makes of the journal it leaves is the thing a test of it has to look at.
+     */
+    public static void failCommittedDeletesForTests(boolean fail) {
+        committedDelete = fail
+                ? file -> { throw new IOException("A test refused this delete"); }
+                : SettingsOperationJournal::delete;
+    }
+
     /** Reads and reconciles the journal. This is safe to call more than once during startup. */
     public static Recovery initialize(Context context) {
         return initialize(context, SettingsOperationJournal::delete);
@@ -137,6 +151,8 @@ public final class SettingsOperationJournal {
         private final Context context;
         private boolean recorded;
         private boolean finished;
+        private String recordedKind;
+        private String recordedBefore;
 
         private Operation(Context context) {
             this.context = context;
@@ -150,8 +166,26 @@ public final class SettingsOperationJournal {
             record("lab", before, after);
         }
 
+        /**
+         * Puts what the change actually wrote in place of the after snapshot it set out with. A
+         * restore the budget held back writes less than its file carries, and a journal whose
+         * after snapshot is the whole file reads as interrupted if its delete then fails.
+         */
+        public void recordWritten(String after) throws IOException {
+            if (finished) throw new IOException("Settings operation is already closed");
+            if (!recorded) throw new IOException("Settings operation has no intent to correct");
+            writeIntent(recordedKind, recordedBefore, after);
+        }
+
         private void record(String kind, String before, String after) throws IOException {
             ensureOpen();
+            writeIntent(kind, before, after);
+            recordedKind = kind;
+            recordedBefore = before;
+            recorded = true;
+        }
+
+        private void writeIntent(String kind, String before, String after) throws IOException {
             validateSnapshot(before);
             validateSnapshot(after);
             JSONObject root;
@@ -162,7 +196,6 @@ public final class SettingsOperationJournal {
                 throw new IOException("Could not create settings journal", error);
             }
             write(journalFile(context), root.toString());
-            recorded = true;
         }
 
         /** Clears a committed journal and releases the process lock. */
@@ -171,7 +204,7 @@ public final class SettingsOperationJournal {
             try {
                 if (recorded) {
                     try {
-                        delete(journalFile(context));
+                        committedDelete.delete(journalFile(context));
                     } catch (IOException ignored) {
                         // A committed operation is still recoverable from its after snapshot.
                     }
