@@ -772,6 +772,42 @@ public class VideoOverlayHiderTest {
     }
 
     @Test
+    public void theTabNamesSwitchHidesTheStripOnEveryPassAndBringsItBack() {
+        int tabStripId = 0x7f0a0012;
+        VideoOverlayHider.resolveForTests("uvy", tabStripId);
+        try (var controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            Utils.setContext(activity);
+            LinearLayout root = new LinearLayout(activity);
+            View tabStrip = new View(activity);
+            tabStrip.setId(tabStripId);
+            View search = new View(activity);
+            root.addView(tabStrip);
+            root.addView(search);
+            activity.setContentView(root);
+            Settings.CLEAR_DISPLAY.save(false);
+            app.morphe.extension.tiktok.cleardisplay.RememberClearDisplayPatch
+                    .rememberClearDisplayEvent(new ClearEvent(false, 1));
+
+            Settings.HIDE_FEED_TAB_STRIP.save(true);
+            VideoOverlayHider.applyTo(activity);
+            assertEquals(View.GONE, tabStrip.getVisibility());
+            assertEquals("the search button is a sibling, not part of the strip", View.VISIBLE, search.getVisibility());
+
+            // TikTok puts the strip back on a swipe; the next pass takes it away again.
+            tabStrip.setVisibility(View.VISIBLE);
+            VideoOverlayHider.applyTo(activity);
+            assertEquals(View.GONE, tabStrip.getVisibility());
+
+            Settings.HIDE_FEED_TAB_STRIP.save(false);
+            VideoOverlayHider.applyTo(activity);
+            assertEquals(View.VISIBLE, tabStrip.getVisibility());
+        } finally {
+            Settings.HIDE_FEED_TAB_STRIP.save(false);
+        }
+    }
+
+    @Test
     public void clearDisplayKeepsTheTabStripAwayUntilItEnds() {
         int tabStripId = 0x7f0a0011;
         VideoOverlayHider.resolveForTests("uvy", tabStripId);

@@ -276,7 +276,10 @@ public final class VideoOverlayHider {
             // the first swipe. Following the live state keeps it away until the tap that ends
             // the mode. The persisted setting cannot be used here: the automatic path never
             // writes it, so it would answer false for exactly the case this is meant to fix.
-            boolean tabStrip = RememberClearDisplayPatch.isClearDisplayNow();
+            // The names above the feed have a switch of their own as well (issue #32): the
+            // pager under them keeps swiping, and the search button is a sibling, not a child.
+            boolean tabStrip = RememberClearDisplayPatch.isClearDisplayNow()
+                    || Settings.HIDE_FEED_TAB_STRIP.get();
             boolean counts = Settings.HIDE_RAIL_COUNTS.get();
             boolean[] rail = TRAVERSAL.rail;
             updateRailButtonsWanted(rail);

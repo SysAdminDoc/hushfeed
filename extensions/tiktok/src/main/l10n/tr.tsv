@@ -493,6 +493,8 @@ Hide the save button on the feed	Akıştaki kaydet düğmesini gizle
 Hide the save button in the right column. Ticking Save in the list above hides it too.	Sağ sütundaki kaydet düğmesini gizle. Yukarıdaki listede Kaydet'i işaretlemek de onu gizler.
 Hide the search bar below videos	Videoların altındaki arama çubuğunu gizle
 Hide the search button on the feed	Akıştaki arama düğmesini gizle
+Hide the tab names above the feed	Akışın üstündeki sekme adlarını gizle
+The Following and For You names above the feed go away. Swiping between the feeds and the search button stay as they are.	Akışın üstündeki Takip ettiklerim ve Sana özel adları kaybolur. Akışlar arasında kaydırma ve arama düğmesi olduğu gibi kalır.
 Hide the share prompt after a like	Beğeniden sonra çıkan paylaşım istemini gizle
 Hide the spinning music cover and the track name beside the caption.	Dönen müzik kapağını ve açıklamanın yanındaki parça adını gizle.
 Hide the status bar	Durum çubuğunu gizle

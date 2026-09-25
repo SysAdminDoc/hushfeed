@@ -199,6 +199,14 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
         if (SettingsStatus.videoOverlaysEnabled) {
             addPreference(new TogglePreference(
                     context,
+                    "Hide the tab names above the feed",
+                    "The Following and For You names above the feed go away. Swiping between the feeds and the search button stay as they are.",
+                    Settings.HIDE_FEED_TAB_STRIP
+            ));
+        }
+        if (SettingsStatus.videoOverlaysEnabled) {
+            addPreference(new TogglePreference(
+                    context,
                     "Hide the Full screen button",
                     "Hide the Full screen button over videos. Playback and automatic rotation keep working as before.",
                     Settings.HIDE_FULLSCREEN_BUTTON
