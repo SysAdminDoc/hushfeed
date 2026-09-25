@@ -692,6 +692,9 @@ public final class SessionBudget {
      * the whole feature. So the day only ever moves forward.
      */
     private static void rollOver(long now) {
+        // Changes that loosened the budget wait for the day to start over, so they land here,
+        // before the new day's budget is read.
+        BudgetChanges.applyDue(now);
         long today = dayOf(now);
         if (today <= day) return;
         // The day only ever moving forward is not enough on its own for a locked day. Moving
@@ -836,6 +839,13 @@ public final class SessionBudget {
         synchronized (WRITE_FENCE) {
             if (generation != writeGeneration) return;
             Settings.SESSION_BUDGET_STATE.save(record);
+        }
+    }
+
+    /** Now, on the budget's own clock, which a test can replace. */
+    public static long now() {
+        synchronized (LOCK) {
+            return clock.now();
         }
     }
 

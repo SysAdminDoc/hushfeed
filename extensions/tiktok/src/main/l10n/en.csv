@@ -77,6 +77,7 @@ source,target
 1 result so far,1 result so far
 1 video left,1 video left
 A Lab change is already running,A Lab change is already running
+A change that loosens the budget waits until the day starts over and one that tightens it applies at once. A higher budget or no budget loosens it. So do a shorter hold and more times to open the feed anyway. Moving the hour the day starts and turning this off wait too. A restored backup follows the same rule and Start today over is off while this is on.,A change that loosens the budget waits until the day starts over and one that tightens it applies at once. A higher budget or no budget loosens it. So do a shorter hold and more times to open the feed anyway. Moving the hour the day starts and turning this off wait too. A restored backup follows the same rule and Start today over is off while this is on.
 A comment poll shows how many picked each answer before you vote. Tapping an answer still votes.,A comment poll shows how many picked each answer before you vote. Tapping an answer still votes.
 A creator pattern is taking too long and was turned off: %1$s,A creator pattern is taking too long and was turned off: %1$s
 A diagnostic report is already being saved,A diagnostic report is already being saved
@@ -202,6 +203,7 @@ Captions,Captions
 "Captions, gestures and on-screen controls","Captions, gestures and on-screen controls"
 Capture crash reports locally,Capture crash reports locally
 Changed,Changed
+Changes to %1$s at %2$s,Changes to %1$s at %2$s
 Choose %1$d to %2$d videos. Values outside this range use the nearest valid limit. Restart TikTok to apply this.,Choose %1$d to %2$d videos. Values outside this range use the nearest valid limit. Restart TikTok to apply this.
 Choose a backup file. Your current settings are kept for Undo.,Choose a backup file. Your current settings are kept for Undo.
 Choose a folder on internal storage. SD cards are not supported.,Choose a folder on internal storage. SD cards are not supported.
@@ -1038,6 +1040,7 @@ That is one minute today,That is one minute today
 That is one video today,That is one video today
 That list has too many entries. Keep it to %1$s or fewer.,That list has too many entries. Keep it to %1$s or fewer.
 That list is too large. Keep it to %1$s KB or less.,That list is too large. Keep it to %1$s KB or less.
+That loosens the budget. It applies at %1$s when the day starts over.,That loosens the budget. It applies at %1$s when the day starts over.
 That preset is not recognized. Choose another.,That preset is not recognized. Choose another.
 That settings backup contains a feed rule list larger than Hushfeed accepts. Nothing was altered.,That settings backup contains a feed rule list larger than Hushfeed accepts. Nothing was altered.
 That settings backup holds a value Hushfeed cannot read. Nothing was altered.,That settings backup holds a value Hushfeed cannot read. Nothing was altered.
@@ -1137,6 +1140,7 @@ TikTok's play and pause button and its previous and next buttons appear on the f
 TikTok's server can put an account into an experiment that empties the Favorites tab on your profile. Keep the tab and its saved videos.,TikTok's server can put an account into an experiment that empties the Favorites tab on your profile. Keep the tab and its saved videos.
 TikTok's size,TikTok's size
 Times you can open the feed anyway,Times you can open the feed anyway
+Today can't start over while Wait a day to loosen the budget is on. The day starts over at %1$s.,Today can't start over while Wait a day to loosen the budget is on. The day starts over at %1$s.
 "Today has moved on, so there is nothing to put back","Today has moved on, so there is nothing to put back"
 Today is back where it was,Today is back where it was
 Today started over. Tap again to put the counts back.,Today started over. Tap again to put the counts back.
@@ -1166,6 +1170,7 @@ Turned off %1$d gates of %2$d. The rest do not take a true or false value. Resta
 Turned off %1$d gates. Restart TikTok to apply this.,Turned off %1$d gates. Restart TikTok to apply this.
 Turned off 1 gate of %2$d. The rest do not take a true or false value. Restart TikTok to apply this.,Turned off 1 gate of %2$d. The rest do not take a true or false value. Restart TikTok to apply this.
 Turned off 1 gate. Restart TikTok to apply this.,Turned off 1 gate. Restart TikTok to apply this.
+Turns off at %1$s,Turns off at %1$s
 "Two letters, like us, gb or jp.","Two letters, like us, gb or jp."
 Type,Type
 Unavailable,Unavailable
@@ -1209,6 +1214,7 @@ Video saved,Video saved
 "Video saved in %1$s, but only %2$s of %3$s subtitles came with it","Video saved in %1$s, but only %2$s of %3$s subtitles came with it"
 Video saved with %1$s subtitles in %2$s,Video saved with %1$s subtitles in %2$s
 Views range,Views range
+Wait a day to loosen the budget,Wait a day to loosen the budget
 Wait before hiding the controls.,Wait before hiding the controls.
 Watching and sharing,Watching and sharing
 "WebP, exactly as TikTok sent it","WebP, exactly as TikTok sent it"

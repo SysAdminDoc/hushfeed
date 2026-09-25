@@ -393,6 +393,19 @@ public class Settings extends BaseSettings {
     public static final IntegerSetting SESSION_BUDGET_PASSES_PER_DAY = new IntegerSetting(
             "session_budget_passes_per_day", 0).withRange(0, 20);
     /**
+     * Makes a change that loosens the budget wait until the day starts over, while one that
+     * tightens it applies at once. Off by default. What counts as loosening, and how a restore is
+     * held to it, is in BudgetChanges.
+     */
+    public static final BooleanSetting SESSION_BUDGET_WAIT_TO_LOOSEN = new BooleanSetting(
+            "session_budget_wait_to_loosen", FALSE);
+    /**
+     * The loosening changes waiting for the next day and when they apply. Kept out of backups,
+     * since a backup that carried them would be a way to set tomorrow's budget today.
+     */
+    public static final StringSetting SESSION_BUDGET_PENDING =
+            new StringSetting("session_budget_pending", "", false, false);
+    /**
      * Brings the hold in gradually instead of dropping it on the feed. Off by default, and it
      * only has anything to follow when {@link #SESSION_BUDGET_MINUTES} is set: a budget counted
      * in videos has no "how long is left" to draw a ramp from.

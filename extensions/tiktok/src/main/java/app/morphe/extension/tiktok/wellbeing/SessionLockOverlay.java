@@ -288,13 +288,18 @@ public final class SessionLockOverlay {
     public static String resetTimeLabel() {
         long until = SessionBudget.lockedUntilMs();
         if (until <= 0) return "";
+        return timeLabel(until);
+    }
+
+    /** A moment on the reader's own clock, 4:00 AM or 04:00 as the phone is set. */
+    public static String timeLabel(long at) {
         Context context = Utils.getContext();
         if (context == null) {
             return java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT)
-                    .format(new java.util.Date(until));
+                    .format(new java.util.Date(at));
         }
         return android.text.format.DateFormat.getTimeFormat(context)
-                .format(new java.util.Date(until));
+                .format(new java.util.Date(at));
     }
 
     static String remainingLabel() {

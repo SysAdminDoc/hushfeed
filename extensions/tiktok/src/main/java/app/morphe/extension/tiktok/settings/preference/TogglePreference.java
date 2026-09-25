@@ -42,6 +42,9 @@ public class TogglePreference extends SwitchPreference {
     private static final Pattern SAYS_RESTART =
             Pattern.compile("\\brestart", Pattern.CASE_INSENSITIVE);
 
+    /** The summary without the line {@link #showExtraLine} adds, so the line can go again. */
+    private CharSequence plainSummary;
+
     public TogglePreference(Context context, String title, String summary, BooleanSetting setting) {
         super(context);
         setTitle(title);
@@ -49,6 +52,7 @@ public class TogglePreference extends SwitchPreference {
         // would look the translated text up as though it were a key of its own, which finds
         // nothing today and would find the wrong row the day a translation equals a key.
         super.setSummary(withRestartNote(context, summary, setting));
+        plainSummary = getSummary();
         setKey(setting.key);
         setChecked(setting.savedValue());
     }
@@ -108,5 +112,14 @@ public class TogglePreference extends SwitchPreference {
     @Override
     public void setSummary(CharSequence summary) {
         super.setSummary(L10n.t(getContext(), summary));
+        plainSummary = getSummary();
+    }
+
+    /**
+     * Shows {@code line}, already translated, under the summary, or takes the last one away
+     * when it is null. The budget's switches use it for a change that waits for the next day.
+     */
+    public void showExtraLine(CharSequence line) {
+        super.setSummary(line == null ? plainSummary : plainSummary + "\n" + line);
     }
 }

@@ -10,6 +10,8 @@ import android.content.Context;
 import android.util.AtomicFile;
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.shared.settings.Setting;
+import app.morphe.extension.tiktok.wellbeing.BudgetChanges;
+import app.morphe.extension.tiktok.wellbeing.SessionBudget;
 import app.morphe.extension.tiktok.feedfilter.FeedRuleLimits;
 import app.morphe.extension.shared.settings.SettingsJson;
 import app.morphe.extension.tiktok.featuregatelab.FeatureGateLabStore;
@@ -339,7 +341,12 @@ public final class SettingsBackup {
 
     static void applyForJournal(Snapshot snapshot, boolean[] touchedLab, boolean puttingBack)
             throws IOException {
-        Setting.saveAll(snapshot.values);
+        // A restore, a reset or an undo is held to the daily budget like the page is: a locked
+        // day keeps its budget, and with loosening set to wait, what loosens it waits. Putting
+        // back what an interrupted change found is none of those, so it writes everything.
+        BudgetChanges.Split budget = puttingBack
+                ? null : BudgetChanges.forRestore(snapshot.values, SessionBudget.now());
+        Setting.saveAll(budget == null ? snapshot.values : budget.apply);
         // A backup from another TikTok build carries no rules that mean anything here, so the
         // Lab is left as it was rather than emptied.
         if (snapshot.labIncluded) {
@@ -347,6 +354,7 @@ public final class SettingsBackup {
             FeatureGateLabStore.replaceSettings(
                     snapshot.rules, snapshot.master, snapshot.acknowledged, puttingBack);
         }
+        if (budget != null) budget.keepWaiting();
     }
 
     /** How many included settings that file did not carry, which were left as the device had them. */

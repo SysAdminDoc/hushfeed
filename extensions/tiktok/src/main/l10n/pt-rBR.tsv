@@ -1034,6 +1034,12 @@ TikTok's play and pause button and its previous and next buttons appear on the f
 TikTok's server can put an account into an experiment that empties the Favorites tab on your profile. Keep the tab and its saved videos.	O servidor do TikTok pode colocar uma conta em um experimento que esvazia a aba Favoritos do seu perfil. Mantém a aba e os vídeos salvos nela.
 TikTok's size	Tamanho do TikTok
 Times you can open the feed anyway	Vezes que você pode abrir o feed mesmo assim
+Wait a day to loosen the budget	Esperar um dia para afrouxar o limite
+A change that loosens the budget waits until the day starts over and one that tightens it applies at once. A higher budget or no budget loosens it. So do a shorter hold and more times to open the feed anyway. Moving the hour the day starts and turning this off wait too. A restored backup follows the same rule and Start today over is off while this is on.	Uma mudança que afrouxa o limite espera até o dia recomeçar, e uma que o aperta vale na hora. Um limite maior ou nenhum limite o afrouxa. Uma pausa mais curta e mais vezes para abrir o feed mesmo assim também. Mudar a hora em que o dia começa e desligar isto também esperam. Um backup restaurado segue a mesma regra, e Recomeçar o dia de hoje fica indisponível enquanto isto estiver ligado.
+Changes to %1$s at %2$s	Muda para %1$s às %2$s
+Turns off at %1$s	Desliga às %1$s
+That loosens the budget. It applies at %1$s when the day starts over.	Isso afrouxa o limite. Vale a partir das %1$s, quando o dia recomeça.
+Today can't start over while Wait a day to loosen the budget is on. The day starts over at %1$s.	O dia de hoje não pode recomeçar enquanto Esperar um dia para afrouxar o limite estiver ligado. O dia recomeça às %1$s.
 Today has moved on, so there is nothing to put back	O dia já andou, então não há nada para trazer de volta
 Today is back where it was	Hoje está como estava
 Today started over. Tap again to put the counts back.	Hoje recomeçou. Toque de novo para trazer as contagens de volta.

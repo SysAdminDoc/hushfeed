@@ -1070,6 +1070,12 @@ TikTok's play and pause button and its previous and next buttons appear on the f
 TikTok's server can put an account into an experiment that empties the Favorites tab on your profile. Keep the tab and its saved videos.	TikTok'un sunucusu, bir hesabı profilindeki Favoriler sekmesini boşaltan bir deneye sokabilir. Sekmeyi ve kayıtlı videolarını koru.
 TikTok's size	TikTok'un boyutu
 Times you can open the feed anyway	Akışı yine de açabileceğin sefer sayısı
+Wait a day to loosen the budget	Bütçeyi gevşetmek için bir gün bekle
+A change that loosens the budget waits until the day starts over and one that tightens it applies at once. A higher budget or no budget loosens it. So do a shorter hold and more times to open the feed anyway. Moving the hour the day starts and turning this off wait too. A restored backup follows the same rule and Start today over is off while this is on.	Bütçeyi gevşeten bir değişiklik gün yeniden başlayana kadar bekler, sıkılaştıran bir değişiklik ise hemen uygulanır. Daha yüksek bir bütçe ya da hiç bütçe olmaması onu gevşetir. Daha kısa bir bekletme ve akışı yine de açma hakkının artması da öyle. Günün başladığı saati değiştirmek ve bunu kapatmak da bekler. Geri yüklenen bir yedek aynı kurala uyar ve bu açıkken Bugünü baştan başlat kullanılamaz.
+Changes to %1$s at %2$s	%2$s saatinde %1$s olarak değişir
+Turns off at %1$s	%1$s saatinde kapanır
+That loosens the budget. It applies at %1$s when the day starts over.	Bu bütçeyi gevşetir. Gün yeniden başladığında %1$s saatinde uygulanır.
+Today can't start over while Wait a day to loosen the budget is on. The day starts over at %1$s.	Bütçeyi gevşetmek için bir gün bekle açıkken bugün baştan başlatılamaz. Gün %1$s saatinde yeniden başlar.
 Today has moved on, so there is nothing to put back	Bugün ilerledi, bu yüzden geri konacak bir şey yok
 Today is back where it was	Bugün eski haline döndü
 Today started over. Tap again to put the counts back.	Bugün baştan başladı. Sayıları geri koymak için yeniden dokun.

@@ -95,21 +95,34 @@ public class NumberInputPreference extends EditTextPreference {
 
     public void setValue(String value) {
         int clampedValue = parseAndClamp(value);
-        String text = String.valueOf(clampedValue);
-        setText(text);
-        boolean labeled = zeroLabel != null && clampedValue == 0;
-        // Either the zero label, or the number inside its unit phrase ("5 seconds").
-        String shown = labeled
-                ? L10n.t(getContext(), zeroLabel)
-                : withUnit(clampedValue, displayValue(clampedValue));
+        setText(String.valueOf(clampedValue));
+        showSummary(clampedValue);
+    }
+
+    /**
+     * Draws the summary again from the stored value without writing anything, for a row whose
+     * extra line changed while its value did not.
+     */
+    public void refreshSummary() {
+        showSummary(parseAndClamp(getText()));
+    }
+
+    private void showSummary(int clampedValue) {
         // The range is read off the setting, so every one of these rows states it without each
         // of them growing a sentence of its own. Twelve of the fourteen said nothing about it
         // and pulled an out of range number to the nearest end without a word.
         String extra = extraSummaryLine();
         setSummary(L10n.t(getContext(), baseSummary)
                 + "\n" + L10n.f(getContext(), "%1$s to %2$s", minValue, maxValue)
-                + "\n" + L10n.f(getContext(), "Current: %1$s", shown)
+                + "\n" + L10n.f(getContext(), "Current: %1$s", shown(clampedValue))
                 + (extra == null ? "" : "\n" + extra));
+    }
+
+    /** A value as the row shows it: the zero label, or the number inside its unit phrase ("5 seconds"). */
+    protected String shown(int value) {
+        return zeroLabel != null && value == 0
+                ? L10n.t(getContext(), zeroLabel)
+                : withUnit(value, displayValue(value));
     }
 
     /**
