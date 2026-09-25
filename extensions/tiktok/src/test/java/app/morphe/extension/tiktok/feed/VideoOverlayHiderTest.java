@@ -140,6 +140,44 @@ public class VideoOverlayHiderTest {
         }
     }
 
+    /**
+     * Caption above comments puts the whole caption at the top of the comments, so the caption
+     * over the video goes too, without Hide the caption on, and comes back when it goes off.
+     * Asked for from the S25 on 2026-09-25: with the caption in the comments it showed twice.
+     */
+    @Test
+    public void captionAboveCommentsTakesTheCaptionOffTheVideo() {
+        int cellId = 0x7f0a0a51;
+        int captionId = 0x7f0a0a52;
+        VideoOverlayHider.resolveForTests("desc", captionId);
+        VideoOverlayHider.resolveForTests("view_rootview", cellId);
+        try (var controller = Robolectric.buildActivity(Activity.class).setup()) {
+            Activity activity = controller.get();
+            Utils.setContext(activity);
+            LinearLayout root = new LinearLayout(activity);
+            FrameLayout cell = new FrameLayout(activity);
+            cell.setId(cellId);
+            View caption = new View(activity);
+            caption.setId(captionId);
+            cell.addView(caption);
+            root.addView(cell);
+            activity.setContentView(root);
+
+            Settings.HIDE_FEED_CAPTION.save(false);
+            Settings.CAPTION_ABOVE_COMMENTS.save(true);
+            VideoOverlayHider.applyTo(activity);
+            assertEquals("the caption stayed over the video", View.GONE, caption.getVisibility());
+
+            Settings.CAPTION_ABOVE_COMMENTS.save(false);
+            VideoOverlayHider.applyTo(activity);
+            assertEquals("the caption did not come back", View.VISIBLE, caption.getVisibility());
+        } finally {
+            Settings.CAPTION_ABOVE_COMMENTS.save(false);
+            Settings.HIDE_FEED_CAPTION.save(false);
+            VideoOverlayHider.resolveForTests("view_rootview", 0);
+        }
+    }
+
     @Test
     public void theChosenButtonSizeGrowsTheGlyphAndSurvivesTikToksOwnAnimation() {
         // The rail on the S22 is a column of 180 by 169 slots with a 126 px icon frame and the

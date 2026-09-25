@@ -272,7 +272,9 @@ public final class VideoOverlayHider {
             // feed keeps the neighbouring cells inflated too, so the first match is not
             // always the cell on screen: every cell is covered in one walk of the tree,
             // and the walk is skipped while nothing is on and nothing is left to restore.
-            boolean caption = Settings.HIDE_FEED_CAPTION.get();
+            // Caption above comments puts the whole caption at the top of the comments, so the
+            // one over the video goes with it rather than showing twice.
+            boolean caption = Settings.HIDE_FEED_CAPTION.get() || Settings.CAPTION_ABOVE_COMMENTS.get();
             boolean music = Settings.HIDE_FEED_MUSIC.get();
             boolean actionBar = Settings.HIDE_FEED_ACTION_BAR.get();
             boolean surveys = Settings.HIDE_FEED_SURVEYS.get();

@@ -101,7 +101,7 @@ public class CommentsPreferenceCategory extends ConditionalPreferenceCategory {
             addPreference(new TogglePreference(
                     context,
                     "Caption above comments",
-                    "The comment button also opens a video's comments with its caption at the top.",
+                    "The comment button also opens a video's comments with its caption at the top. The caption over the video goes away while this is on.",
                     Settings.CAPTION_ABOVE_COMMENTS
             ));
         }

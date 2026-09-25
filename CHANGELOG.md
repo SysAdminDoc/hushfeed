@@ -4,6 +4,7 @@ Every Hushfeed release, newest first.
 
 ## Unreleased
 
+* **TikTok:** With Caption above comments on, the caption over the video goes away, since the whole caption now sits at the top of the comments. It used to show in both places. Hide the caption still hides it on its own.
 * **TikTok:** Allow Duet and Stitch now answers the creator's account-wide choice as well as the video's own. TikTok checks both, and on the S22 a video that allowed anyone still had no Duet entry because its creator's account allowed only people they follow back. With the switch on, Duet and Stitch both show on those videos now. Whether TikTok's servers accept the upload is still up to them.
 
 ## 0.59.0 (2026-09-25)
