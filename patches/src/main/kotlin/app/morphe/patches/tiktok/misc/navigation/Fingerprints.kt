@@ -9,6 +9,10 @@ import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.SwitchPayload
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
@@ -172,4 +176,105 @@ internal fun Method.pullPanelReads(): PullPanelReads? {
         } == true
     }?.getReference<FieldReference>() ?: return null
     return PullPanelReads(panel, context, fragment)
+}
+
+internal const val MAIN_ACTIVITY_ASSEM = "Lcom/ss/android/ugc/aweme/main/assems/MainActivityBusinessAssem;"
+internal const val PUSH_TAB_EXTRA = "com.ss.android.ugc.aweme.intent.extra.EXTRA_AWEME_PUSH_TAB"
+private const val INTENT = "Landroid/content/Intent;"
+
+/**
+ * The main activity's onCreate, where a cold start works out the tab it opens on: the tab a
+ * notification names ([PUSH_TAB_EXTRA]), else a saved one, else one TikTok's landing rules pick,
+ * else "HOME". Every one of those paths meets at a comparison with "HOME", and the tag ends up in
+ * the cold-boot tab switch together with the activity's intent.
+ */
+internal object ColdStartTabFingerprint : Fingerprint(
+    definingClass = MAIN_ACTIVITY_ASSEM,
+    name = "onCreate",
+    returnType = "V",
+    parameters = listOf("Landroid/os/Bundle;"),
+    strings = listOf(PUSH_TAB_EXTRA),
+    custom = { method, _ -> method.coldStartTab() != null },
+)
+
+/**
+ * Where the start page asks in [ColdStartTabFingerprint]'s method: right after the
+ * `const-string "HOME"` every path meets at ([insertAt]), with the register holding the tag and
+ * the one holding the activity. Two things say that register holds the activity there: the
+ * cold-boot switch's intent comes from its getIntent(), and TikTok passes it to the splash theme
+ * restore right after the comparison.
+ */
+internal class ColdStartTab(val insertAt: Int, val tag: Int, val activity: Int)
+
+internal fun Method.coldStartTab(): ColdStartTab? {
+    val instructions = implementation?.instructions?.toList() ?: return null
+    val switchAt = instructions.indices.firstOrNull { i ->
+        i >= 3 && instructions[i].opcode == Opcode.INVOKE_VIRTUAL &&
+            instructions[i].getReference<MethodReference>()?.let { call ->
+                val parameters = call.parameterTypes.map(CharSequence::toString)
+                call.definingClass == definingClass && call.returnType == "V" && parameters.size == 3 &&
+                    parameters[0] == INTENT && parameters[2] == "Ljava/lang/String;"
+            } == true &&
+            instructions[i - 1].opcode == Opcode.SGET_OBJECT &&
+            instructions[i - 1].getReference<FieldReference>()?.name == "COLD_BOOT"
+    } ?: return null
+    val switch = instructions[switchAt] as FiveRegisterInstruction
+    if (switch.registerCount != 4) return null
+    val intentResult = instructions[switchAt - 2]
+    if (intentResult.opcode != Opcode.MOVE_RESULT_OBJECT) return null
+    if ((intentResult as OneRegisterInstruction).registerA != switch.registerD) return null
+    val getIntent = instructions[switchAt - 3]
+    val readsIntent = getIntent.opcode == Opcode.INVOKE_VIRTUAL && getIntent.getReference<MethodReference>()?.let {
+        it.name == "getIntent" && it.returnType == INTENT && it.parameterTypes.isEmpty()
+    } == true
+    if (!readsIntent) return null
+    val activity = (getIntent as FiveRegisterInstruction).registerC
+    val tag = switch.registerF
+    val join = instructions.indices.firstOrNull { i ->
+        i + 4 < switchAt && instructions[i].opcode == Opcode.CONST_STRING &&
+            instructions[i].getReference<StringReference>()?.string == "HOME" &&
+            instructions[i + 1].opcode == Opcode.INVOKE_STATIC &&
+            (instructions[i + 1] as FiveRegisterInstruction).let { compare ->
+                compare.registerCount == 2 && compare.registerD == tag &&
+                    compare.registerC == (instructions[i] as OneRegisterInstruction).registerA
+            }
+    } ?: return null
+    val restore = instructions[join + 4]
+    val restoresTheActivity = restore.opcode == Opcode.INVOKE_STATIC &&
+        (restore as FiveRegisterInstruction).registerCount == 2 && restore.registerC == activity &&
+        restore.getReference<MethodReference>()?.let {
+            it.returnType == "V" && it.parameterTypes.map(CharSequence::toString).getOrNull(1) == "Z"
+        } == true
+    if (!restoresTheActivity) return null
+    // A jump to the comparison itself would skip anything put in front of it.
+    if (join + 1 in branchTargets()) return null
+    return ColdStartTab(join + 1, tag, activity)
+}
+
+/** The indexes of every instruction a branch, a switch case or an exception handler can land on. */
+internal fun Method.branchTargets(): Set<Int> {
+    val implementation = implementation ?: return emptySet()
+    val instructions = implementation.instructions.toList()
+    val addresses = IntArray(instructions.size)
+    var address = 0
+    instructions.forEachIndexed { index, instruction ->
+        addresses[index] = address
+        address += instruction.codeUnits
+    }
+    val indexAt = addresses.withIndex().associate { it.value to it.index }
+    val targets = HashSet<Int>()
+    instructions.forEachIndexed { index, instruction ->
+        if (instruction !is OffsetInstruction) return@forEachIndexed
+        val target = addresses[index] + instruction.codeOffset
+        if (instruction.opcode == Opcode.PACKED_SWITCH || instruction.opcode == Opcode.SPARSE_SWITCH) {
+            val payload = instructions[indexAt.getValue(target)] as SwitchPayload
+            payload.switchElements.forEach { element -> indexAt[addresses[index] + element.offset]?.let(targets::add) }
+        } else {
+            indexAt[target]?.let(targets::add)
+        }
+    }
+    implementation.tryBlocks.forEach { block ->
+        block.exceptionHandlers.forEach { handler -> indexAt[handler.handlerCodeAddress]?.let(targets::add) }
+    }
+    return targets
 }

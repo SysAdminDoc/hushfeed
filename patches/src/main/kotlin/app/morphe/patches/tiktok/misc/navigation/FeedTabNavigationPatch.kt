@@ -26,6 +26,7 @@ private const val TOP_TAB_LAYOUT_ABILITY =
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/navigation/NavigationTabsFilter;"
 private const val TAB_BADGES_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/navigation/TabBadges;"
 private const val FEED_REFRESH_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/navigation/FeedRefresh;"
+private const val START_PAGE_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/navigation/StartPage;"
 
 /** A method reference the way smali writes it after the invoke's registers. */
 private fun com.android.tools.smali.dexlib2.iface.reference.MethodReference.smali(): String =
@@ -52,7 +53,7 @@ private object TopTabLayoutConstructorFingerprint : app.morphe.patcher.Fingerpri
 @Suppress("unused")
 val feedTabNavigationPatch = bytecodePatch(
     name = "Feed tab navigation",
-    description = "Controls which loaded top and bottom navigation tabs remain visible, blocks newly added tabs when requested, can hide the Tako AI bubble and the unread badges on the bottom tabs, and can keep For You from reloading on a Home tap or a pull down. Switch: Hushfeed settings > Feed tabs.",
+    description = "Controls which loaded top and bottom navigation tabs remain visible, blocks newly added tabs when requested, can hide the Tako AI bubble and the unread badges on the bottom tabs, can keep For You from reloading on a Home tap or a pull down, and can open TikTok on Friends, Inbox or Profile. Switch: Hushfeed settings > Feed tabs.",
     default = true,
 ) {
     category("Settings")
@@ -203,6 +204,26 @@ val feedTabNavigationPatch = bytecodePatch(
                     return-void
                 """,
                 ExternalLabel("pull", getInstruction(0)),
+            )
+        }
+
+        // The tab a cold start opens on. TikTok's main activity works it out as it is created and
+        // every path meets at one comparison with "HOME"; the start page answers there, so the
+        // steps TikTok takes for a start on that tab (the splash theme put back, the handlers it
+        // uses when a notification opens Friends, Inbox or Profile) run on the answer.
+        ColdStartTabFingerprint.method.apply {
+            val start = coldStartTab()
+                ?: throw PatchException("Feed tab navigation: the main activity no longer works out its first tab where it did.")
+            val savedState = implementation!!.registerCount - 1
+            if (maxOf(start.activity, start.tag, savedState) > 15) {
+                throw PatchException("Feed tab navigation: the first tab's registers are past v15.")
+            }
+            addInstructions(
+                start.insertAt,
+                """
+                    invoke-static {v${start.activity}, v${start.tag}, p1}, $START_PAGE_CLASS_DESCRIPTOR->coldStartTag(Landroid/app/Activity;Ljava/lang/String;Landroid/os/Bundle;)Ljava/lang/String;
+                    move-result-object v${start.tag}
+                """,
             )
         }
     }

@@ -7,8 +7,10 @@ package app.morphe.extension.tiktok.settings.preference.categories;
 import android.content.Context;
 import android.preference.PreferenceScreen;
 
+import app.morphe.extension.tiktok.navigation.StartPage;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
+import app.morphe.extension.tiktok.settings.preference.ChoicePreference;
 import app.morphe.extension.tiktok.settings.preference.TabSelectionPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 
@@ -64,6 +66,9 @@ public class FeedNavigationPreferenceCategory extends ConditionalPreferenceCateg
                 "Hide bottom tabs TikTok adds later unless you allow them.",
                 Settings.BOTTOM_NAVIGATION_BLOCK_NEW_TABS
         ));
+        addPreference(new ChoicePreference(context, "Open TikTok on", Settings.START_PAGE,
+                new String[]{"TikTok default", "For You", "Friends", "Inbox", "Profile"},
+                new String[]{StartPage.TIKTOK, StartPage.FOR_YOU, StartPage.FRIENDS, StartPage.INBOX, StartPage.PROFILE}));
         addPreference(new TogglePreference(
                 context,
                 "Keep For You on a Home tap",
