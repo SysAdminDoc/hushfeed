@@ -345,7 +345,6 @@ public class Settings extends BaseSettings {
      */
     public static final BooleanSetting NO_RESUME_ON_FOREGROUND = new BooleanSetting(
             "no_resume_on_foreground", FALSE, true);
-    /** Leaves a video the reader paused paused when the app comes back. Off by default. */
     /**
      * Keep a paused video paused. It reads the player in the pre-pause callback, which arrived in
      * Android 10, so older versions have nothing to read it by and the row is greyed there.

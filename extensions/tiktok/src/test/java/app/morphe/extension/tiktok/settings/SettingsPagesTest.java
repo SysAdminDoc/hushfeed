@@ -487,8 +487,11 @@ public class SettingsPagesTest {
         }
     }
 
-    @Test public void darkPagesNavigateAndRender() throws Exception { capturePages("dark"); }
-    @Test @Config(qualifiers = "w480dp-h960dp-notnight-mdpi")
+    // The published pages are captured on Android 10, the first version every row is available on,
+    // so none of them is shown greyed out. Keep a paused video paused needs it.
+    @Test @Config(sdk = 29)
+    public void darkPagesNavigateAndRender() throws Exception { capturePages("dark"); }
+    @Test @Config(sdk = 29, qualifiers = "w480dp-h960dp-notnight-mdpi")
     public void lightPagesNavigateAndRender() throws Exception { capturePages("light"); }
 
     private void capturePages(String theme) throws Exception {
