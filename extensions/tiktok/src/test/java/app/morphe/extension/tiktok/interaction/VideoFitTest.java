@@ -259,6 +259,15 @@ public class VideoFitTest {
                 assertEquals(VideoFit.LEAVE, VideoFit.fitWidthFor(new Result(1350, 2400), video));
                 assertEquals(own, gravityOf(video));
 
+                // Layout parameters TikTok replaced after the centring are TikTok's, and stay.
+                VideoFit.fitted(video, new Result(1080, 1920, 0f, 0f, null));
+                FrameLayout.LayoutParams replaced = new FrameLayout.LayoutParams(1350, 2400);
+                replaced.gravity = android.view.Gravity.BOTTOM;
+                video.setLayoutParams(replaced);
+                assertSame(covers, VideoFit.fitted(video, covers));
+                assertEquals("a gravity TikTok set after the centring was overwritten",
+                        android.view.Gravity.BOTTOM, gravityOf(video));
+
                 // A gravity TikTok set itself is TikTok's, and stays.
                 View centred = new View(activity);
                 container.addView(centred);

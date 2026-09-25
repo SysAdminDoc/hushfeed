@@ -175,7 +175,13 @@ public final class VideoFit {
     private static final Map<View, Integer> GRAVITY_BEFORE =
             Collections.synchronizedMap(new WeakHashMap<>());
 
-    /** Gives a view centred here its own gravity back, for a result left as TikTok made it. */
+    /**
+     * Gives a view centred here its own gravity back, for a result left as TikTok made it. Only
+     * while the view still carries the centring: a gravity TikTok has set since, or layout
+     * parameters it has replaced, are TikTok's own and stay as they are. On the S22, 45 videos with
+     * fill on never showed TikTok keeping the centring, so this is for a build or a screen that
+     * does.
+     */
     private static void uncentre(View view) {
         if (GRAVITY_BEFORE.isEmpty()) return;
         Integer before = GRAVITY_BEFORE.remove(view);
@@ -183,6 +189,7 @@ public final class VideoFit {
         ViewGroup.LayoutParams params = view.getLayoutParams();
         if (!(params instanceof FrameLayout.LayoutParams)) return;
         FrameLayout.LayoutParams frame = (FrameLayout.LayoutParams) params;
+        if (frame.gravity != Gravity.CENTER) return;
         frame.gravity = before;
         view.setLayoutParams(frame);
     }
