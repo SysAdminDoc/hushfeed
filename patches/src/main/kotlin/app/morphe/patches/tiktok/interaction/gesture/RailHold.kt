@@ -32,8 +32,11 @@ internal const val FAVORITES_ABILITY = "Lcom/ss/android/ugc/feed/platform/cell/a
 internal const val COMMENT_MENU_KEY = "video_comment_button_long_click"
 internal const val FAVORITES_MENU_KEY = "video_favorite_button_long_click"
 internal const val FAVORITES_MENU_EVENT = "long_press_favorite"
+internal const val EDGE_SPEEDUP_ABILITY = "Lcom/ss/android/ugc/aweme/feed/longvideo/edgespeedup/EdgeSpeedupAbility;"
 private const val VIEW = "Landroid/view/View;"
 private const val ON_LONG_CLICK = "Landroid/view/View\$OnLongClickListener;"
+private const val HANDLER = "Landroid/os/Handler;"
+private const val RUNNABLE = "Ljava/lang/Runnable;"
 
 /** Whether the instruction is TikTok's own View.setOnLongClickListener call. */
 internal fun Instruction.setsLongClick(): Boolean =
@@ -68,6 +71,38 @@ internal object FavoritesMenuFingerprint : Fingerprint(
     returnType = "Ljava/lang/Object;",
     parameters = listOf(),
     strings = listOf(FAVORITES_MENU_KEY, FAVORITES_MENU_EVENT),
+)
+
+/** Whether the instruction is a Handler.removeCallbacks(Runnable) call. */
+internal fun Instruction.dropsCallbacks(): Boolean =
+    opcode == Opcode.INVOKE_VIRTUAL && getReference<MethodReference>()?.let {
+        it.definingClass == HANDLER && it.name == "removeCallbacks" &&
+            it.parameterTypes.map(CharSequence::toString) == listOf(RUNNABLE)
+    } == true
+
+/** Whether the instruction asks the hold ability's (FF)Z check. */
+internal fun Instruction.asksHoldCheck(): Boolean =
+    opcode == Opcode.INVOKE_INTERFACE && getReference<MethodReference>()?.let {
+        it.definingClass == EDGE_SPEEDUP_ABILITY && it.returnType == "Z" &&
+            it.parameterTypes.map(CharSequence::toString) == listOf("F", "F")
+    } == true
+
+/**
+ * TikTok's hold gesture's touch listener. As a press lands it runs the hold check and, when the
+ * check lets the press through, posts the hold's start for 300 ms later. It drops that post with
+ * removeCallbacks when the finger moves off the spot, when a second finger lands and when the
+ * press ends. The class is obfuscated. It is the only touch listener that asks the hold ability's
+ * check.
+ */
+internal object HoldTouchFingerprint : Fingerprint(
+    name = "onTouch",
+    returnType = "Z",
+    parameters = listOf(VIEW, "Landroid/view/MotionEvent;"),
+    custom = { method, classDef ->
+        "Landroid/view/View\$OnTouchListener;" in classDef.interfaces &&
+            method.implementation?.instructions?.any { it.asksHoldCheck() } == true &&
+            method.implementation?.instructions?.any { it.dropsCallbacks() } == true
+    },
 )
 
 /** The Share button's view setup, which gives it and two of its children their long presses. */
@@ -149,6 +184,22 @@ internal fun MutableMethod.skipFavoritesMenuWhenHeld() {
         """,
         ExternalLabel("rail_hold_unit", getInstruction(unit)),
     )
+}
+
+/**
+ * Sends each of the hold listener's drops through the extension, which drops the post the same
+ * way and forgets every pass, so a press TikTok won't hold opens its button's menu as before.
+ */
+internal fun MutableMethod.routeHoldDrops() {
+    val sites = implementation!!.instructions.withIndex().filter { it.value.dropsCallbacks() }.map { it.index }
+    if (sites.isEmpty()) throw PatchException("Long-press controls: $definingClass->$name no longer drops its hold.")
+    sites.forEach { index ->
+        val call = implementation!!.instructions[index] as FiveRegisterInstruction
+        replaceInstruction(
+            index,
+            "invoke-static {v${call.registerC}, v${call.registerD}}, $RAIL_HOLD_EXTENSION->holdDropped($HANDLER$RUNNABLE)V",
+        )
+    }
 }
 
 /** Sends each of the method's long-click sets through [hook], which wraps TikTok's listener. */

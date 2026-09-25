@@ -201,6 +201,64 @@ class RailHoldHookTest {
     }
 
     @Test
+    fun `a Favorites offer with no register of its own to spare is refused`() {
+        val bare = method("LX/0BJ9;", "invoke", listOf(), "Ljava/lang/Object;", 1, """
+            sget-object p0, Lkotlin/Unit;->LIZ:Lkotlin/Unit;
+            return-object p0
+        """)
+        assertThrows(PatchException::class.java) { bare.skipFavoritesMenuWhenHeld() }
+    }
+
+    /** 47.0.3's hold listener, cut down: the check on a press, and the post dropped in two places. */
+    private fun holdTouch(drops: Boolean = true) = method("LX/0ANt;", "onTouch", listOf(view, "Landroid/view/MotionEvent;"), "Z", 11, """
+        const/4 v5, 0x0
+        iget-object v4, p0, LX/0ANt;->LLJL:$EDGE_SPEEDUP_ABILITY
+        invoke-virtual {p2}, Landroid/view/MotionEvent;->getActionMasked()I
+        move-result v2
+        if-nez v2, :later
+        const/4 v0, 0x0
+        invoke-interface {v4, v0, v0}, $EDGE_SPEEDUP_ABILITY->Z32(FF)Z
+        move-result v0
+        return v0
+        :later
+        iget-object v1, p0, LX/0ANt;->LL:Landroid/os/Handler;
+        iget-object v0, p0, LX/0ANt;->LLJLL:Ljava/lang/Runnable;
+        ${if (drops) "invoke-virtual {v1, v0}, Landroid/os/Handler;->removeCallbacks(Ljava/lang/Runnable;)V" else "invoke-virtual {v1, v0}, Landroid/os/Handler;->post(Ljava/lang/Runnable;)Z"}
+        iget-object v3, p0, LX/0ANt;->LL:Landroid/os/Handler;
+        ${if (drops) "invoke-virtual {v3, v0}, Landroid/os/Handler;->removeCallbacks(Ljava/lang/Runnable;)V" else "nop"}
+        return v5
+    """)
+
+    @Test
+    fun `each of the hold listener's drops goes through the extension with TikTok's handler and post`() {
+        val method = holdTouch()
+        val before = method.implementation!!.instructions.toList()
+        val kept = branches(before)
+
+        method.routeHoldDrops()
+
+        val after = method.implementation!!.instructions.toList()
+        assertEquals(before.size, after.size)
+        val drops = before.indices.filter { before[it].opcode == Opcode.INVOKE_VIRTUAL && before[it].getReference<MethodReference>()?.name == "removeCallbacks" }
+        assertEquals(2, drops.size)
+        for ((index, handler) in drops.zip(listOf(1, 3))) {
+            assertEquals(Opcode.INVOKE_STATIC, after[index].opcode)
+            assertExtensionCall(after[index], "holdDropped", listOf("Landroid/os/Handler;", "Ljava/lang/Runnable;"), "V")
+            val call = after[index] as FiveRegisterInstruction
+            assertEquals(2, call.registerCount)
+            assertEquals("TikTok's handler", handler, call.registerC)
+            assertEquals("TikTok's post", 0, call.registerD)
+        }
+        before.indices.filter { it !in drops }.forEach { assertSame(before[it], after[it]) }
+        assertBranchesKept(kept, after)
+    }
+
+    @Test
+    fun `a hold listener that no longer drops its post is refused`() {
+        assertThrows(PatchException::class.java) { holdTouch(drops = false).routeHoldDrops() }
+    }
+
+    @Test
     fun `each of Share's long presses goes through the extension with TikTok's view and listener`() {
         val method = method(VIDEO_SHARE_ASSEM, "onViewCreated", listOf(view), "V", 4, """
             new-instance v0, LX/09Yy;

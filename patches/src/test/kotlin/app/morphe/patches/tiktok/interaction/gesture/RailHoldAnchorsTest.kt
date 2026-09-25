@@ -100,6 +100,22 @@ class RailHoldAnchorsTest {
     }
 
     @Test
+    fun `the hold's touch listener is one method on every fixture, dropping its post in each way a press ends`() {
+        for (apk in Fixtures.apks()) {
+            val build = Build(apk)
+            val taken = build.methods.filter { (classDef, method) -> HoldTouchFingerprint.takes(method, classDef) }.toList()
+            assertEquals("${apk.name}: ${taken.map { "${it.first.type}->${it.second.name}" }}", 1, taken.size)
+            val instructions = taken.single().second.implementation!!.instructions.toList()
+            val drops = instructions.filter { it.dropsCallbacks() }
+            assertTrue("${apk.name}: the listener drops its post in ${drops.size} places", drops.size >= 3)
+            drops.forEach { drop ->
+                assertEquals("${apk.name}: a drop takes the handler and the post", 2, (drop as FiveRegisterInstruction).registerCount)
+            }
+            assertTrue("${apk.name}: the listener no longer runs the hold check", instructions.any { it.asksHoldCheck() })
+        }
+    }
+
+    @Test
     fun `Share's view setup sets its long presses, each on a view with a listener, on every fixture`() {
         for (apk in Fixtures.apks()) {
             val build = Build(apk)
@@ -121,6 +137,7 @@ class RailHoldAnchorsTest {
         assertTrue("the hold check's asks are not answered", source.contains("EdgeSpeedupEligibilityFingerprint.method.answerRailHitTests()"))
         assertTrue("Comment's emoji row is not skipped", source.contains("CommentMenuFingerprint.method.skipCommentMenuWhenHeld()"))
         assertTrue("Favorites' offer is not skipped", source.contains("FavoritesMenuFingerprint.method.skipFavoritesMenuWhenHeld()"))
+        assertTrue("a dropped hold doesn't forget its passes", source.contains("HoldTouchFingerprint.method.routeHoldDrops()"))
         assertTrue("Share's long presses are not wrapped", source.contains("ShareViewCreatedFingerprint.method.routeLongClicks(\"setShareLongClick\")"))
     }
 

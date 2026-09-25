@@ -4,6 +4,7 @@
  */
 package app.morphe.extension.tiktok.interaction;
 
+import android.os.Handler;
 import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -27,9 +28,13 @@ import app.morphe.extension.tiktok.settings.Settings;
  * count as a tap. Comment's and Favorites' are skipped in the method that opens the menu, and
  * Share's by wrapping the listeners TikTok sets.
  *
- * <p>Only a press the hold check let through skips the menu. The check turns a press down before
- * it asks the buttons when Hushfeed has the edge for a seek or the long press for an action of
- * its own, and when TikTok won't speed up at all, and then the menu opens as it always did.
+ * <p>Only a press the hold check let through skips the menu, and only while TikTok still means to
+ * hold it. The check turns a press down before it asks the buttons when Hushfeed has the edge for
+ * a seek or the long press for an action of its own, and when TikTok won't speed up at all. TikTok
+ * drops a hold it hasn't started yet when the finger moves off the spot or a second finger lands,
+ * and ends every press on release, and each of those forgets the pass. The menu then opens as it
+ * always did, as long as the button's own timer hasn't fired yet. Favorites' fires at 200 ms,
+ * before the hold starts at 300 ms, so a release between the two gets neither.
  */
 public final class RailHold {
     static final String FAMILY = "rail hold";
@@ -117,8 +122,23 @@ public final class RailHold {
         button.setOnLongClickListener(listener == null ? null : new ShareMenu(listener));
     }
 
-    static void resetForTests() {
+    /**
+     * TikTok's hold, dropping the hold it had set to start 300 ms after the press landed: the
+     * finger moved off the spot, a second finger landed, or the press ended. Every pass goes with
+     * it, since none of them belongs to a press TikTok will hold.
+     */
+    public static void holdDropped(Handler handler, Runnable pending) {
+        handler.removeCallbacks(pending);
+        HookStatus.bound(FAMILY, "hold dropped");
+        forgetPasses();
+    }
+
+    private static void forgetPasses() {
         for (Button button : Button.values()) button.heldAt = -1;
+    }
+
+    static void resetForTests() {
+        forgetPasses();
     }
 
     /**

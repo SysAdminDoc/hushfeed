@@ -213,8 +213,9 @@ val longPressPatch = bytecodePatch(
         // A long press on Comment, Share or Favorites can play at the hold speed (upstream #87).
         // TikTok's hold check asks each side button whether a press is on it, and the extension
         // answers no for a chosen one. That button's own long press, its menu, is skipped for a
-        // press the check let through.
+        // press the check let through, until TikTok drops the hold it meant to start.
         EdgeSpeedupEligibilityFingerprint.method.answerRailHitTests()
+        HoldTouchFingerprint.method.routeHoldDrops()
         CommentMenuFingerprint.method.skipCommentMenuWhenHeld()
         FavoritesMenuFingerprint.method.skipFavoritesMenuWhenHeld()
         ShareViewCreatedFingerprint.method.routeLongClicks("setShareLongClick")

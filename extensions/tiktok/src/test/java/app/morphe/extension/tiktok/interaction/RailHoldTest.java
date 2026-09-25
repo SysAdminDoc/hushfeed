@@ -4,12 +4,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.FrameLayout;
 import app.morphe.extension.shared.diagnostics.HookStatus;
 import app.morphe.extension.tiktok.SettingsContextRule;
 import app.morphe.extension.tiktok.settings.Settings;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
@@ -18,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowSystemClock;
 
@@ -142,15 +146,45 @@ public class RailHoldTest {
 
     @Test public void aPassBelongsOnlyToThePressItWasFor() {
         Settings.RAIL_HOLD_COMMENT.save(true);
+        assertEquals("the long-press timeout the window counts from", 500, ViewConfiguration.getLongPressTimeout());
         RailHold.commentStopsHold(true);
-        ShadowSystemClock.advanceBy(ViewConfiguration.getLongPressTimeout() + RailHold.GRACE_MS, TimeUnit.MILLISECONDS);
-        assertTrue("the latest a long press on the same press can come", RailHold.skipCommentMenu());
+        // Favorites' offer, Comment's row, Share's long press behind a slow frame, the window's end.
+        long elapsed = 0;
+        for (long at : new long[]{200, 300, 900, 1500}) {
+            ShadowSystemClock.advanceBy(at - elapsed, TimeUnit.MILLISECONDS);
+            elapsed = at;
+            assertTrue("still the same press " + at + " ms in", RailHold.skipCommentMenu());
+        }
         ShadowSystemClock.advanceBy(1, TimeUnit.MILLISECONDS);
         assertFalse("a pass older than that was another press's", RailHold.skipCommentMenu());
 
         RailHold.commentStopsHold(true);
         Settings.RAIL_HOLD_COMMENT.save(false);
         assertFalse("switched off since, so the row opens", RailHold.skipCommentMenu());
+    }
+
+    @Test public void aDroppedHoldForgetsEveryPassAndStillDropsTikToksPost() {
+        Settings.RAIL_HOLD_COMMENT.save(true);
+        Settings.RAIL_HOLD_SHARE.save(true);
+        Settings.RAIL_HOLD_FAVORITES.save(true);
+        Handler handler = new Handler(Looper.getMainLooper());
+        int[] started = {0};
+        Runnable start = () -> started[0]++;
+        handler.postDelayed(start, 300);
+        RailHold.commentStopsHold(true);
+        RailHold.shareStopsHold(true);
+        RailHold.favoritesStopsHold(true);
+
+        RailHold.holdDropped(handler, start);
+
+        Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(400));
+        assertEquals("TikTok's hold never starts", 0, started[0]);
+        assertFalse("Comment's row opens", RailHold.skipCommentMenu());
+        assertFalse("Favorites offers a collection", RailHold.skipFavoritesMenu());
+        View share = button();
+        RailHold.setShareLongClick(share, menu(true));
+        share.performLongClick();
+        assertEquals("Share's menu opens", 1, menus[0]);
     }
 
     @Test public void noListenerStaysNoListener() {
@@ -216,6 +250,10 @@ public class RailHoldTest {
             share.performLongClick();
             HookStatus.report();
             assertEquals("and Share's long press, its menu skipped", 13, found[0]);
+            Handler handler = new Handler(Looper.getMainLooper());
+            RailHold.holdDropped(handler, () -> { });
+            HookStatus.report();
+            assertEquals("and a dropped hold", 14, found[0]);
         } finally {
             HookStatus.setLineWriter(null);
         }
