@@ -1080,6 +1080,7 @@ Changes to %1$s at %2$s	%2$s saatinde %1$s olarak değişir
 Turns off at %1$s	%1$s saatinde kapanır
 That loosens the budget. It waits until %1$s.	Bu bütçeyi gevşetir. %1$s saatine kadar bekler.
 Today can't start over while Wait a day to loosen the budget is on. The day starts over at %1$s.	Bütçeyi gevşetmek için bir gün bekle açıkken bugün baştan başlatılamaz. Gün %1$s saatinde yeniden başlar.
+Hushfeed can't be paused while Wait a day to loosen the budget is on	Bütçeyi gevşetmek için bir gün bekle açıkken Hushfeed duraklatılamaz
 Today has moved on, so there is nothing to put back	Bugün ilerledi, bu yüzden geri konacak bir şey yok
 Today is back where it was	Bugün eski haline döndü
 Today started over. Tap again to put the counts back.	Bugün baştan başladı. Sayıları geri koymak için yeniden dokun.

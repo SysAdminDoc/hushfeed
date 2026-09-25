@@ -1045,6 +1045,7 @@ Changes to %1$s at %2$s,Berubah menjadi %1$s pukul %2$s
 Turns off at %1$s,Mati pukul %1$s
 That loosens the budget. It waits until %1$s.,Itu melonggarkan anggaran. Menunggu sampai pukul %1$s.
 Today can't start over while Wait a day to loosen the budget is on. The day starts over at %1$s.,Hari ini tidak bisa dimulai ulang selama Tunggu sehari untuk melonggarkan anggaran aktif. Hari dimulai ulang pukul %1$s.
+Hushfeed can't be paused while Wait a day to loosen the budget is on,Hushfeed tidak bisa dijeda selama Tunggu sehari untuk melonggarkan anggaran aktif
 "Today has moved on, so there is nothing to put back","Hari sudah berganti, jadi tidak ada yang bisa dikembalikan"
 Today is back where it was,Hari ini kembali seperti semula
 Today started over. Tap again to put the counts back.,Hari ini dimulai ulang. Ketuk lagi untuk mengembalikan hitungannya.

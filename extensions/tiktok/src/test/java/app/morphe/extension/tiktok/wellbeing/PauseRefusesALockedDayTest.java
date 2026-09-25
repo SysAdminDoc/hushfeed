@@ -4,6 +4,7 @@
  */
 package app.morphe.extension.tiktok.wellbeing;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -26,13 +27,15 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowToast;
 
 import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Pausing takes the screen-time budget off with everything else, so a day the reader locked
- * refuses the Pause switch the way it refuses every budget setting.
+ * refuses the Pause switch the way it refuses every budget setting, and so does Wait a day to
+ * loosen the budget.
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
@@ -53,6 +56,7 @@ public class PauseRefusesALockedDayTest {
     @After public void tearDown() throws Exception {
         Settings.SESSION_BUDGET_VIDEOS.resetToDefault();
         Settings.SESSION_BUDGET_LOCK.resetToDefault();
+        Settings.SESSION_BUDGET_WAIT_TO_LOOSEN.resetToDefault();
         BaseSettings.PAUSED.save(false);
         SessionBudget.setClockForTests(null);
         SessionBudget.awaitWritesForTests();
@@ -83,6 +87,31 @@ public class PauseRefusesALockedDayTest {
 
             assertFalse("a locked day let Pause turn the budget off", row.getOnPreferenceChangeListener().onPreferenceChange(row, Boolean.TRUE));
             assertTrue("turning Pause off is never refused", row.getOnPreferenceChangeListener().onPreferenceChange(row, Boolean.FALSE));
+        }
+    }
+
+    /**
+     * Paused from the next start, the budget would be gone at once, which is the one thing Wait
+     * a day to loosen the budget is there to stop. Start today over is refused the same way.
+     */
+    @Test public void waitingToLoosenRefusesPauseToo() {
+        try (var owner = Robolectric.buildActivity(SettingsPagesTest.PageActivity.class).setup().visible()) {
+            Preference row = pauseRow(owner.get());
+            Settings.SESSION_BUDGET_VIDEOS.save(10);
+            Settings.SESSION_BUDGET_WAIT_TO_LOOSEN.save(true);
+            ShadowToast.reset();
+
+            assertFalse("Pause took the budget off while loosening it has to wait",
+                    row.getOnPreferenceChangeListener().onPreferenceChange(row, Boolean.TRUE));
+            Shadows.shadowOf(Looper.getMainLooper()).idle();
+            assertEquals("Hushfeed can't be paused while Wait a day to loosen the budget is on",
+                    ShadowToast.getTextOfLatestToast());
+            assertTrue("turning Pause off is never refused",
+                    row.getOnPreferenceChangeListener().onPreferenceChange(row, Boolean.FALSE));
+
+            Settings.SESSION_BUDGET_WAIT_TO_LOOSEN.save(false);
+            assertTrue("Pause stayed refused with the switch off",
+                    row.getOnPreferenceChangeListener().onPreferenceChange(row, Boolean.TRUE));
         }
     }
 }

@@ -1134,17 +1134,27 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
 
     /**
      * Pause Hushfeed. It takes the screen-time budget off with everything else, so a locked
-     * day refuses it the same way it refuses every budget setting.
+     * day refuses it the same way it refuses every budget setting, and so does Wait a day to
+     * loosen the budget, the way it refuses Start today over: paused from the next start, the
+     * budget would be gone without waiting for anything.
      */
     private TogglePreference pauseRow(Context context) {
         TogglePreference pause = new TogglePreference(context, "Pause Hushfeed", PAUSE_SUMMARY,
                 BaseSettings.PAUSED);
         pause.setOnPreferenceChangeListener((preference, value) -> {
-            if (!Boolean.TRUE.equals(value) || !SessionBudget.lockedToday()) return true;
-            Utils.showToastShort(L10n.f(context,
-                    "Today's budget is locked. This can be changed again at %1$s.",
-                    SessionLockOverlay.resetTimeLabel()));
-            return false;
+            if (!Boolean.TRUE.equals(value)) return true;
+            if (SessionBudget.lockedToday()) {
+                Utils.showToastShort(L10n.f(context,
+                        "Today's budget is locked. This can be changed again at %1$s.",
+                        SessionLockOverlay.resetTimeLabel()));
+                return false;
+            }
+            if (Settings.SESSION_BUDGET_WAIT_TO_LOOSEN.savedValue()) {
+                Utils.showToastShort(L10n.t(context,
+                        "Hushfeed can't be paused while Wait a day to loosen the budget is on"));
+                return false;
+            }
+            return true;
         });
         return pause;
     }
