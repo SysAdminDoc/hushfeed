@@ -86,6 +86,16 @@ public class SeekbarPatchTest {
     }
 
     @Test
+    public void theDraggableFlagIsRaisedOnlyWhenEnabledAndOnlyFromNothing() {
+        assertEquals(0, SeekbarPatch.overrideDraftProgressBar(0));
+        assertEquals(2, SeekbarPatch.overrideDraftProgressBar(2));
+        Settings.SHOW_SEEKBAR.save(true);
+        assertEquals(1, SeekbarPatch.overrideDraftProgressBar(0));
+        // A server value the gate already accepts is handed on as it came.
+        assertEquals(2, SeekbarPatch.overrideDraftProgressBar(2));
+    }
+
+    @Test
     public void thumbnailGateIsOverriddenWhenEnabled() {
         Settings.SHOW_SEEKBAR_THUMBNAIL.save(true);
         assertEquals(1, SeekbarPatch.overrideThumbnailGate("seekbar_show_thumbnail_when_drag", 0));

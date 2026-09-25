@@ -41,6 +41,16 @@ public final class SeekbarPatch {
         return Integer.MIN_VALUE;
     }
 
+    /**
+     * TikTok's "draft progress bar" flag on a video, read by its can-drag gate once the gate's
+     * own experiment has said no. The server leaves it off on most videos, so with the
+     * experiment off the bar stayed hidden on all of them. Any non-zero value passes the gate.
+     */
+    public static int overrideDraftProgressBar(int value) {
+        if (!Settings.SHOW_SEEKBAR.get()) return value;
+        return value != 0 ? value : 1;
+    }
+
     public static int overrideThumbnailGate(String key, int value) {
         if (!"seekbar_show_thumbnail_when_drag".equals(key)) return value;
         return Settings.SHOW_SEEKBAR_THUMBNAIL.get() ? 1 : value;
