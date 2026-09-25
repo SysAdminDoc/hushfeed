@@ -15,9 +15,6 @@
   </a>
 </p>
 
-<p align="center">
-  <sub><em>If Hushfeed makes TikTok better for you, a coffee helps me keep testing patches and maintaining them as TikTok changes.</em></sub>
-</p>
 
 # Hushfeed
 
