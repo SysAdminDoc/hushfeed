@@ -354,7 +354,7 @@ public final class L10nTranslations {
                 "Eine Überschreibung ändert den Wert, den TikTok von diesem Gate liest. Sie schreibt TikToks zwischengespeicherten Wert nicht um und beweist nicht, dass sich die genannte Funktion geändert hat.");
         table.put("Animated sticker format",
                 "Format animierter Sticker");
-        table.put("Answer TikTok's location requests with nothing. The region settings change the locale and timezone; this stops the coordinates.",
+        table.put("Answer TikTok's location requests with nothing. The region settings change the locale and timezone. This switch stops the coordinates.",
                 "Beantwortet TikToks Standortanfragen mit nichts. Die Regionseinstellungen ändern Sprache und Zeitzone; das hier stoppt die Koordinaten.");
         table.put("Answer TikTok's reads of your contacts with an empty list. Find Friends and People you may know lose access to your contact list.",
                 "Beantwortet TikToks Zugriffe auf deine Kontakte mit einer leeren Liste. Freunde finden und Personen, die du kennen könntest, verlieren den Zugriff auf deine Kontaktliste.");
@@ -2449,7 +2449,7 @@ public final class L10nTranslations {
                 "Heute: %1$d Video");
         table.put("Today: %1$d videos",
                 "Heute: %1$d Videos");
-        table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Download original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",
+        table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Download original photos. Anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",
                 "Platzhalter: {creator}, {date}, {video_id}, {index}. {index} nummeriert die Fotos einer Bilderfolge, die du mit Originalfotos herunterladen speicherst; alles über TikToks eigenen Knopf nummeriert stattdessen der Ordner. Die Dateiendung bleibt automatisch erhalten.");
         table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
                 "Platzhalter: {creator}, {date}, {video_id}. Die Dateiendung bleibt automatisch erhalten.");
@@ -2951,7 +2951,7 @@ public final class L10nTranslations {
                 "Una sustitución cambia el valor que TikTok lee de este interruptor. No reescribe el valor que TikTok tiene en caché ni demuestra que la función nombrada haya cambiado.");
         table.put("Animated sticker format",
                 "Formato de los stickers animados");
-        table.put("Answer TikTok's location requests with nothing. The region settings change the locale and timezone; this stops the coordinates.",
+        table.put("Answer TikTok's location requests with nothing. The region settings change the locale and timezone. This switch stops the coordinates.",
                 "Responde a las solicitudes de ubicación de TikTok con nada. Los ajustes de región cambian la configuración regional y la zona horaria; esto detiene las coordenadas.");
         table.put("Answer TikTok's reads of your contacts with an empty list. Find Friends and People you may know lose access to your contact list.",
                 "Responde a las lecturas de tus contactos por parte de TikTok con una lista vacía. Buscar amigos y Personas que quizá conozcas pierden el acceso a tu lista de contactos.");
@@ -5046,7 +5046,7 @@ public final class L10nTranslations {
                 "Hoy: %1$d vídeo");
         table.put("Today: %1$d videos",
                 "Hoy: %1$d vídeos");
-        table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Download original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",
+        table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Download original photos. Anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",
                 "Comodines: {creator}, {date}, {video_id}, {index}. {index} numera las fotos de una presentación que guardes con Descargar las fotos originales; lo que se guarde con el botón propio de TikTok lo numera la carpeta. La extensión del archivo se mantiene automáticamente.");
         table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
                 "Comodines: {creator}, {date}, {video_id}. La extensión del archivo se mantiene automáticamente.");
@@ -5548,7 +5548,7 @@ public final class L10nTranslations {
                 "Penggantian mengubah nilai yang dibaca TikTok dari gate ini. Ini tidak menulis ulang nilai cache TikTok dan tidak membuktikan fitur yang disebut berubah.");
         table.put("Animated sticker format",
                 "Format stiker animasi");
-        table.put("Answer TikTok's location requests with nothing. The region settings change the locale and timezone; this stops the coordinates.",
+        table.put("Answer TikTok's location requests with nothing. The region settings change the locale and timezone. This switch stops the coordinates.",
                 "Menjawab permintaan lokasi TikTok dengan kosong. Pengaturan wilayah mengubah lokal dan zona waktu; ini menghentikan koordinatnya.");
         table.put("Answer TikTok's reads of your contacts with an empty list. Find Friends and People you may know lose access to your contact list.",
                 "Menjawab pembacaan kontak oleh TikTok dengan daftar kosong. Temukan Teman dan Orang yang mungkin kamu kenal kehilangan akses ke daftar kontak kamu.");
@@ -7643,7 +7643,7 @@ public final class L10nTranslations {
                 "Hari ini: %1$d video");
         table.put("Today: %1$d videos",
                 "Hari ini: %1$d video");
-        table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Download original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",
+        table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Download original photos. Anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",
                 "Token: {creator}, {date}, {video_id}, {index}. {index} menomori foto dari slideshow yang kamu simpan dengan Unduh foto asli; apa pun yang disimpan lewat tombol TikTok sendiri dinomori oleh foldernya. Ekstensi berkas dipertahankan otomatis.");
         table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
                 "Token: {creator}, {date}, {video_id}. Ekstensi berkas dipertahankan otomatis.");
@@ -8145,7 +8145,7 @@ public final class L10nTranslations {
                 "Uma substituição muda o valor que o TikTok lê deste gate. Ela não reescreve o valor que o TikTok tem em cache nem prova que o recurso citado mudou.");
         table.put("Animated sticker format",
                 "Formato dos stickers animados");
-        table.put("Answer TikTok's location requests with nothing. The region settings change the locale and timezone; this stops the coordinates.",
+        table.put("Answer TikTok's location requests with nothing. The region settings change the locale and timezone. This switch stops the coordinates.",
                 "Responde aos pedidos de localização do TikTok com nada. As configurações de região mudam o local e o fuso horário; isto barra as coordenadas.");
         table.put("Answer TikTok's reads of your contacts with an empty list. Find Friends and People you may know lose access to your contact list.",
                 "Responde às leituras dos seus contatos pelo TikTok com uma lista vazia. Encontrar amigos e Pessoas que você talvez conheça perdem o acesso à sua lista de contatos.");
@@ -10240,7 +10240,7 @@ public final class L10nTranslations {
                 "Hoje: %1$d vídeo");
         table.put("Today: %1$d videos",
                 "Hoje: %1$d vídeos");
-        table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Download original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",
+        table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Download original photos. Anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",
                 "Curingas: {creator}, {date}, {video_id}, {index}. {index} numera as fotos de uma apresentação salva com Baixar as fotos originais; o que for salvo pelo botão do próprio TikTok é numerado pela pasta. A extensão do arquivo é mantida automaticamente.");
         table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
                 "Curingas: {creator}, {date}, {video_id}. A extensão do arquivo é mantida automaticamente.");
@@ -10742,7 +10742,7 @@ public final class L10nTranslations {
                 "Geçersiz kılma, TikTok'un bu kapıdan okuduğu değeri değiştirir. TikTok'un önbelleğe aldığı değeri yeniden yazmaz ve adı geçen özelliğin değiştiğini kanıtlamaz.");
         table.put("Animated sticker format",
                 "Hareketli çıkartma biçimi");
-        table.put("Answer TikTok's location requests with nothing. The region settings change the locale and timezone; this stops the coordinates.",
+        table.put("Answer TikTok's location requests with nothing. The region settings change the locale and timezone. This switch stops the coordinates.",
                 "TikTok'un konum isteklerini boş yanıtla. Bölge ayarları yerel ayarı ve saat dilimini değiştirir; bu ise koordinatları durdurur.");
         table.put("Answer TikTok's reads of your contacts with an empty list. Find Friends and People you may know lose access to your contact list.",
                 "TikTok'un kişilerini okuma isteklerini boş bir listeyle yanıtla. Arkadaşlarını bul ve Tanıyor olabileceğin kişiler, kişi listene erişimi kaybeder.");
@@ -12837,7 +12837,7 @@ public final class L10nTranslations {
                 "Bugün: %1$d video");
         table.put("Today: %1$d videos",
                 "Bugün: %1$d video");
-        table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Download original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",
+        table.put("Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Download original photos. Anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.",
                 "Belirteçler: {creator}, {date}, {video_id}, {index}. {index}, Orijinal fotoğrafları indir ile kaydettiğin bir slayt gösterisinin fotoğraflarını numaralar, TikTok'un kendi düğmesiyle kaydedilenleri ise klasör numaralar. Dosya uzantısı otomatik olarak korunur.");
         table.put("Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.",
                 "Belirteçler: {creator}, {date}, {video_id}. Dosya uzantısı otomatik olarak korunur.");

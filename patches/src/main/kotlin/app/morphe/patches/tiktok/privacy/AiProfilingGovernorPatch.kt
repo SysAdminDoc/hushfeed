@@ -11,7 +11,7 @@ import app.morphe.util.returnEarly
 @Suppress("unused")
 val aiProfilingGovernorPatch = bytecodePatch(
     name = "Stop on-device AI profiling",
-    description = "Kills the Pitaya on-device ML inference engine at startup so it cannot build a behavioral profile. The AI asset strip in the core de-bloat patch removes the native libraries; this stops the initialization code that would download replacements.",
+    description = "Kills the Pitaya on-device ML inference engine at startup so it cannot build a behavioral profile. The AI asset strip in the core de-bloat patch removes the native libraries. This patch stops the initialization code that would download replacements.",
     default = false,
 ) {
     category("Privacy")

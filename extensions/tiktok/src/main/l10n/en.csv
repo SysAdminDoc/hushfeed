@@ -135,7 +135,7 @@ Always show the publish date in video author information. Restart TikTok to appl
 "An operator code is five or six digits, like 310260","An operator code is five or six digits, like 310260"
 An override changes the value TikTok reads from this gate. It does not rewrite TikTok's cached value or prove the named feature changed.,An override changes the value TikTok reads from this gate. It does not rewrite TikTok's cached value or prove the named feature changed.
 Animated sticker format,Animated sticker format
-Answer TikTok's location requests with nothing. The region settings change the locale and timezone; this stops the coordinates.,Answer TikTok's location requests with nothing. The region settings change the locale and timezone; this stops the coordinates.
+Answer TikTok's location requests with nothing. The region settings change the locale and timezone. This switch stops the coordinates.,Answer TikTok's location requests with nothing. The region settings change the locale and timezone. This switch stops the coordinates.
 Answer TikTok's reads of your contacts with an empty list. Find Friends and People you may know lose access to your contact list.,Answer TikTok's reads of your contacts with an empty list. Find Friends and People you may know lose access to your contact list.
 "Answer TikTok's scan of the apps on this phone with an empty list. A check for one named app, which TikTok also uses to open an app you tap, is left alone.","Answer TikTok's scan of the apps on this phone with an empty list. A check for one named app, which TikTok also uses to open an app you tap, is left alone."
 App,App
@@ -1157,7 +1157,7 @@ Today: %1$d minute,Today: %1$d minute
 Today: %1$d minutes,Today: %1$d minutes
 Today: %1$d video,Today: %1$d video
 Today: %1$d videos,Today: %1$d videos
-"Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Download original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.","Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Download original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically."
+"Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Download original photos. Anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.","Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Download original photos. Anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically."
 "Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.","Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically."
 "Tokens: {date}, {media_id}. Works for image and video stickers.","Tokens: {date}, {media_id}. Works for image and video stickers."
 Too many media saves are already running. Try again shortly.,Too many media saves are already running. Try again shortly.

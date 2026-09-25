@@ -107,7 +107,7 @@ Always show the publish date in video author information. Restart TikTok to appl
 "An operator code is five or six digits, like 310260","Kode operator itu lima atau enam angka, misalnya 310260"
 An override changes the value TikTok reads from this gate. It does not rewrite TikTok's cached value or prove the named feature changed.,Penggantian mengubah nilai yang dibaca TikTok dari gate ini. Ini tidak menulis ulang nilai cache TikTok dan tidak membuktikan fitur yang disebut berubah.
 Animated sticker format,Format stiker animasi
-Answer TikTok's location requests with nothing. The region settings change the locale and timezone; this stops the coordinates.,Menjawab permintaan lokasi TikTok dengan kosong. Pengaturan wilayah mengubah lokal dan zona waktu; ini menghentikan koordinatnya.
+Answer TikTok's location requests with nothing. The region settings change the locale and timezone. This switch stops the coordinates.,Menjawab permintaan lokasi TikTok dengan kosong. Pengaturan wilayah mengubah lokal dan zona waktu; ini menghentikan koordinatnya.
 Answer TikTok's reads of your contacts with an empty list. Find Friends and People you may know lose access to your contact list.,Menjawab pembacaan kontak oleh TikTok dengan daftar kosong. Temukan Teman dan Orang yang mungkin kamu kenal kehilangan akses ke daftar kontak kamu.
 "Answer TikTok's scan of the apps on this phone with an empty list. A check for one named app, which TikTok also uses to open an app you tap, is left alone.","Menjawab pemindaian aplikasi di ponsel ini oleh TikTok dengan daftar kosong. Pemeriksaan satu aplikasi tertentu, yang juga dipakai TikTok untuk membuka aplikasi yang kamu ketuk, dibiarkan."
 App,Aplikasi
@@ -1057,7 +1057,7 @@ Today: %1$d minute,Hari ini: %1$d menit
 Today: %1$d minutes,Hari ini: %1$d menit
 Today: %1$d video,Hari ini: %1$d video
 Today: %1$d videos,Hari ini: %1$d video
-"Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Download original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.","Token: {creator}, {date}, {video_id}, {index}. {index} menomori foto dari slideshow yang kamu simpan dengan Unduh foto asli; apa pun yang disimpan lewat tombol TikTok sendiri dinomori oleh foldernya. Ekstensi berkas dipertahankan otomatis."
+"Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Download original photos. Anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.","Token: {creator}, {date}, {video_id}, {index}. {index} menomori foto dari slideshow yang kamu simpan dengan Unduh foto asli; apa pun yang disimpan lewat tombol TikTok sendiri dinomori oleh foldernya. Ekstensi berkas dipertahankan otomatis."
 "Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.","Token: {creator}, {date}, {video_id}. Ekstensi berkas dipertahankan otomatis."
 "Tokens: {date}, {media_id}. Works for image and video stickers.","Token: {date}, {media_id}. Berlaku untuk stiker gambar dan video."
 Too many media saves are already running. Try again shortly.,Terlalu banyak penyimpanan media yang sedang berjalan. Coba lagi sebentar.

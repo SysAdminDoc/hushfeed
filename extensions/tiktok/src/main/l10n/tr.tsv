@@ -105,7 +105,7 @@ An interrupted settings change couldn't be recovered, so its record was set asid
 An operator code is five or six digits, like 310260	Operatör kodu beş veya altı hanelidir, örneğin 310260
 An override changes the value TikTok reads from this gate. It does not rewrite TikTok's cached value or prove the named feature changed.	Geçersiz kılma, TikTok'un bu kapıdan okuduğu değeri değiştirir. TikTok'un önbelleğe aldığı değeri yeniden yazmaz ve adı geçen özelliğin değiştiğini kanıtlamaz.
 Animated sticker format	Hareketli çıkartma biçimi
-Answer TikTok's location requests with nothing. The region settings change the locale and timezone; this stops the coordinates.	TikTok'un konum isteklerini boş yanıtla. Bölge ayarları yerel ayarı ve saat dilimini değiştirir; bu ise koordinatları durdurur.
+Answer TikTok's location requests with nothing. The region settings change the locale and timezone. This switch stops the coordinates.	TikTok'un konum isteklerini boş yanıtla. Bölge ayarları yerel ayarı ve saat dilimini değiştirir; bu ise koordinatları durdurur.
 Answer TikTok's reads of your contacts with an empty list. Find Friends and People you may know lose access to your contact list.	TikTok'un kişilerini okuma isteklerini boş bir listeyle yanıtla. Arkadaşlarını bul ve Tanıyor olabileceğin kişiler, kişi listene erişimi kaybeder.
 Answer TikTok's scan of the apps on this phone with an empty list. A check for one named app, which TikTok also uses to open an app you tap, is left alone.	TikTok'un bu telefondaki uygulamaları taramasını boş bir listeyle yanıtla. TikTok'un dokunduğun bir uygulamayı açmak için de kullandığı, adı belli tek bir uygulamaya yönelik kontrole dokunulmaz.
 App	Uygulama
@@ -1092,7 +1092,7 @@ Today: %1$d minute	Bugün: %1$d dakika
 Today: %1$d minutes	Bugün: %1$d dakika
 Today: %1$d video	Bugün: %1$d video
 Today: %1$d videos	Bugün: %1$d video
-Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Download original photos; anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.	Belirteçler: {creator}, {date}, {video_id}, {index}. {index}, Orijinal fotoğrafları indir ile kaydettiğin bir slayt gösterisinin fotoğraflarını numaralar, TikTok'un kendi düğmesiyle kaydedilenleri ise klasör numaralar. Dosya uzantısı otomatik olarak korunur.
+Tokens: {creator}, {date}, {video_id}, {index}. {index} numbers the photos of a slideshow you save with Download original photos. Anything saved through TikTok's own button is numbered by the folder instead. The file extension is kept automatically.	Belirteçler: {creator}, {date}, {video_id}, {index}. {index}, Orijinal fotoğrafları indir ile kaydettiğin bir slayt gösterisinin fotoğraflarını numaralar, TikTok'un kendi düğmesiyle kaydedilenleri ise klasör numaralar. Dosya uzantısı otomatik olarak korunur.
 Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.	Belirteçler: {creator}, {date}, {video_id}. Dosya uzantısı otomatik olarak korunur.
 Tokens: {date}, {media_id}. Works for image and video stickers.	Belirteçler: {date}, {media_id}. Görsel ve video çıkartmalarda çalışır.
 Too many media saves are already running. Try again shortly.	Zaten çok fazla medya kaydı sürüyor. Birazdan yeniden dene.

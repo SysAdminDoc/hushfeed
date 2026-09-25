@@ -107,7 +107,7 @@ public final class PrivacyPreferenceCategory extends ConditionalPreferenceCatego
                     context,
                     "Block location",
                     "Answer TikTok's location requests with nothing. The region settings change "
-                            + "the locale and timezone; this stops the coordinates.",
+                            + "the locale and timezone. This switch stops the coordinates.",
                     Settings.BLOCK_LOCATION
             ));
         }

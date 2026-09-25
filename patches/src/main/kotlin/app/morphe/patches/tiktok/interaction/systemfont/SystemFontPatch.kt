@@ -39,8 +39,8 @@ private const val ENGINE_MARKER = "font/TikTokSans-VF.otf"
 val systemFontPatch = bytecodePatch(
     name = "Use system font",
     description = "Draws TikTok's text in your device's font instead of TikTok Sans. The icons, " +
-        "the gift animations and the @ and # glyphs keep their own fonts. Off by default; " +
-        "restart after changing. Switch: Hushfeed settings > App.",
+        "the gift animations and the @ and # glyphs keep their own fonts. Off by default. " +
+        "Restart after changing. Switch: Hushfeed settings > App.",
     default = false,
 ) {
     category("Performance")

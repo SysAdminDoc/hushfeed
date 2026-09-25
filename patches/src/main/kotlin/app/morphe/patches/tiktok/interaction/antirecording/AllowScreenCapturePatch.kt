@@ -39,7 +39,7 @@ private object CircleSearchBlockFingerprint : Fingerprint(
 @Suppress("unused")
 val allowScreenCapturePatch = bytecodePatch(
     name = "Allow screenshots and Circle to Search",
-    description = "Removes secure window flags and disables the Circle to Search block. Off by default; restart after changing. Switch: Hushfeed settings > Feed screen.",
+    description = "Removes secure window flags and disables the Circle to Search block. Off by default. Restart after changing. Switch: Hushfeed settings > Feed screen.",
     default = false,
 ) {
     category("Downloads")

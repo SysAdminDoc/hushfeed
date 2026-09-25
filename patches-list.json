@@ -134,7 +134,7 @@
     },
     {
       "name": "Allow screenshots and Circle to Search",
-      "description": "Removes secure window flags and disables the Circle to Search block. Off by default; restart after changing. Switch: Hushfeed settings > Feed screen.",
+      "description": "Removes secure window flags and disables the Circle to Search block. Off by default. Restart after changing. Switch: Hushfeed settings > Feed screen.",
       "category": "Downloads",
       "use": false,
       "dependencies": [
@@ -2298,7 +2298,7 @@
     },
     {
       "name": "Location access governor",
-      "description": "Answers TikTok's location requests with nothing: the last known location comes back empty and update requests never fire. The SIM and region spoof change the locale and timezone, not the coordinates; this stops the coordinates. Switch: Hushfeed settings > Privacy.",
+      "description": "Answers TikTok's location requests with nothing: the last known location comes back empty and update requests never fire. The SIM and region spoof change the locale and timezone, not the coordinates. This patch stops the coordinates. Switch: Hushfeed settings > Privacy.",
       "category": "Privacy",
       "use": false,
       "dependencies": [
@@ -3344,7 +3344,7 @@
     },
     {
       "name": "Stop on-device AI profiling",
-      "description": "Kills the Pitaya on-device ML inference engine at startup so it cannot build a behavioral profile. The AI asset strip in the core de-bloat patch removes the native libraries; this stops the initialization code that would download replacements.",
+      "description": "Kills the Pitaya on-device ML inference engine at startup so it cannot build a behavioral profile. The AI asset strip in the core de-bloat patch removes the native libraries. This patch stops the initialization code that would download replacements.",
       "category": "Privacy",
       "use": false,
       "dependencies": [],
@@ -3579,7 +3579,7 @@
     },
     {
       "name": "Use system font",
-      "description": "Draws TikTok's text in your device's font instead of TikTok Sans. The icons, the gift animations and the @ and # glyphs keep their own fonts. Off by default; restart after changing. Switch: Hushfeed settings > App.",
+      "description": "Draws TikTok's text in your device's font instead of TikTok Sans. The icons, the gift animations and the @ and # glyphs keep their own fonts. Off by default. Restart after changing. Switch: Hushfeed settings > App.",
       "category": "Performance",
       "use": false,
       "dependencies": [
