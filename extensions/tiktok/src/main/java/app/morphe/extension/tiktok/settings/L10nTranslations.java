@@ -2374,8 +2374,8 @@ public final class L10nTranslations {
                 "TikToks eigene tägliche Bildschirmzeit-Erinnerung schickt die App in den Hintergrund, statt darauf zu warten, weggetippt zu werden. Kommst du direkt zurück, bleibt die Erinnerung auf dem Bildschirm, damit das Limit erreichbar bleibt. Braucht ein Tageslimit unter TikToks Einstellungen und Datenschutz, unter Zeit und Wohlbefinden.");
         table.put("TikTok's own value",
                 "TikToks eigener Wert");
-        table.put("TikTok's play and pause button and its previous and next buttons appear on the feed. TikTok otherwise shows them only to people who use a screen reader.",
-                "TikToks Taste für Wiedergabe und Pause sowie die Tasten für das vorherige und das nächste Video erscheinen im Feed. Sonst zeigt TikTok sie nur Menschen, die einen Screenreader nutzen.");
+        table.put("TikTok's play and pause button and its previous and next buttons appear on the feed. TikTok otherwise shows them only to people who use a screen reader. TikTok's analytics note the row and each press on it.",
+                "TikToks Taste für Wiedergabe und Pause sowie die Tasten für das vorherige und das nächste Video erscheinen im Feed. Sonst zeigt TikTok sie nur Menschen, die einen Screenreader nutzen. TikToks Analyse erfasst die Leiste und jeden Druck darauf.");
         table.put("TikTok's server can put an account into an experiment that empties the Favorites tab on your profile. Keep the tab and its saved videos.",
                 "TikToks Server kann ein Konto in ein Experiment stecken, das den Favoriten-Tab im Profil leert. Behält den Tab und seine gespeicherten Videos.");
         table.put("TikTok's size",
@@ -4925,8 +4925,8 @@ public final class L10nTranslations {
                 "El propio recordatorio diario de tiempo en pantalla de TikTok manda la app a segundo plano en vez de esperar a que lo cierres. Si vuelves enseguida, el recordatorio se queda en pantalla, para que el límite siga a tu alcance. Necesita un límite diario en Ajustes y privacidad de TikTok, en Tiempo y bienestar.");
         table.put("TikTok's own value",
                 "Valor propio de TikTok");
-        table.put("TikTok's play and pause button and its previous and next buttons appear on the feed. TikTok otherwise shows them only to people who use a screen reader.",
-                "El botón de reproducir y pausar de TikTok y sus botones de anterior y siguiente aparecen en el feed. Si no, TikTok solo los muestra a quienes usan un lector de pantalla.");
+        table.put("TikTok's play and pause button and its previous and next buttons appear on the feed. TikTok otherwise shows them only to people who use a screen reader. TikTok's analytics note the row and each press on it.",
+                "El botón de reproducir y pausar de TikTok y sus botones de anterior y siguiente aparecen en el feed. Si no, TikTok solo los muestra a quienes usan un lector de pantalla. Las analíticas de TikTok registran la fila y cada toque en ella.");
         table.put("TikTok's server can put an account into an experiment that empties the Favorites tab on your profile. Keep the tab and its saved videos.",
                 "El servidor de TikTok puede meter una cuenta en un experimento que vacía la pestaña Favoritos de tu perfil. Mantiene la pestaña y sus vídeos guardados.");
         table.put("TikTok's size",
@@ -7476,8 +7476,8 @@ public final class L10nTranslations {
                 "Pengingat waktu layar harian milik TikTok sendiri mengirim aplikasi ke latar belakang, bukan menunggu ditutup. Kalau kamu langsung kembali, pengingatnya tetap di layar, jadi batasnya tetap bisa dijangkau. Perlu batas harian di Pengaturan dan privasi TikTok, di bagian Waktu dan kesehatan.");
         table.put("TikTok's own value",
                 "Nilai milik TikTok");
-        table.put("TikTok's play and pause button and its previous and next buttons appear on the feed. TikTok otherwise shows them only to people who use a screen reader.",
-                "Tombol putar dan jeda TikTok serta tombol sebelumnya dan berikutnya muncul di feed. Selain itu TikTok hanya menampilkannya kepada pengguna pembaca layar.");
+        table.put("TikTok's play and pause button and its previous and next buttons appear on the feed. TikTok otherwise shows them only to people who use a screen reader. TikTok's analytics note the row and each press on it.",
+                "Tombol putar dan jeda TikTok serta tombol sebelumnya dan berikutnya muncul di feed. Selain itu TikTok hanya menampilkannya kepada pengguna pembaca layar. Analitik TikTok mencatat baris ini dan setiap ketukan di atasnya.");
         table.put("TikTok's server can put an account into an experiment that empties the Favorites tab on your profile. Keep the tab and its saved videos.",
                 "Server TikTok bisa memasukkan akun ke eksperimen yang mengosongkan tab Favorit di profil kamu. Pertahankan tab itu beserta video yang tersimpan.");
         table.put("TikTok's size",
@@ -10027,8 +10027,8 @@ public final class L10nTranslations {
                 "O próprio lembrete diário de tempo de tela do TikTok manda o app para o segundo plano em vez de esperar ser dispensado. Se você voltar logo em seguida, o lembrete fica na tela, para o limite continuar ao alcance. Precisa de um limite diário em Configurações e privacidade do TikTok, em Tempo e bem-estar.");
         table.put("TikTok's own value",
                 "Valor do próprio TikTok");
-        table.put("TikTok's play and pause button and its previous and next buttons appear on the feed. TikTok otherwise shows them only to people who use a screen reader.",
-                "O botão de reproduzir e pausar do TikTok e os botões de anterior e próximo aparecem no feed. Fora isso, o TikTok só os mostra para quem usa um leitor de tela.");
+        table.put("TikTok's play and pause button and its previous and next buttons appear on the feed. TikTok otherwise shows them only to people who use a screen reader. TikTok's analytics note the row and each press on it.",
+                "O botão de reproduzir e pausar do TikTok e os botões de anterior e próximo aparecem no feed. Fora isso, o TikTok só os mostra para quem usa um leitor de tela. As análises do TikTok registram a fileira e cada toque nela.");
         table.put("TikTok's server can put an account into an experiment that empties the Favorites tab on your profile. Keep the tab and its saved videos.",
                 "O servidor do TikTok pode colocar uma conta em um experimento que esvazia a aba Favoritos do seu perfil. Mantém a aba e os vídeos salvos nela.");
         table.put("TikTok's size",
@@ -12578,8 +12578,8 @@ public final class L10nTranslations {
                 "TikTok'un kendi günlük ekran süresi hatırlatması, kapatılmayı beklemek yerine uygulamayı arka plana gönderir. Hemen geri dönersen hatırlatma ekranda kalır, böylece limit ulaşılabilir kalır. TikTok'un Ayarlar ve gizlilik bölümünde, Süre ve esenlik altında günlük bir limit ister.");
         table.put("TikTok's own value",
                 "TikTok'un kendi değeri");
-        table.put("TikTok's play and pause button and its previous and next buttons appear on the feed. TikTok otherwise shows them only to people who use a screen reader.",
-                "TikTok'un oynat ve duraklat düğmesi ile önceki ve sonraki düğmeleri akışta görünür. Aksi halde TikTok bunları yalnızca ekran okuyucu kullananlara gösterir.");
+        table.put("TikTok's play and pause button and its previous and next buttons appear on the feed. TikTok otherwise shows them only to people who use a screen reader. TikTok's analytics note the row and each press on it.",
+                "TikTok'un oynat ve duraklat düğmesi ile önceki ve sonraki düğmeleri akışta görünür. Aksi halde TikTok bunları yalnızca ekran okuyucu kullananlara gösterir. TikTok'un analizleri satırı ve üzerindeki her dokunuşu kaydeder.");
         table.put("TikTok's server can put an account into an experiment that empties the Favorites tab on your profile. Keep the tab and its saved videos.",
                 "TikTok'un sunucusu, bir hesabı profilindeki Favoriler sekmesini boşaltan bir deneye sokabilir. Sekmeyi ve kayıtlı videolarını koru.");
         table.put("TikTok's size",

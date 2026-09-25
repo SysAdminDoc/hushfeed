@@ -73,7 +73,8 @@ public class FeedNavigationPreferenceCategory extends ConditionalPreferenceCateg
                 context,
                 "Show TikTok's feed buttons",
                 "TikTok's play and pause button and its previous and next buttons appear on the feed. "
-                        + "TikTok otherwise shows them only to people who use a screen reader.",
+                        + "TikTok otherwise shows them only to people who use a screen reader. "
+                        + "TikTok's analytics note the row and each press on it.",
                 Settings.SHOW_FEED_BUTTONS
         ));
         addPreference(new TogglePreference(
