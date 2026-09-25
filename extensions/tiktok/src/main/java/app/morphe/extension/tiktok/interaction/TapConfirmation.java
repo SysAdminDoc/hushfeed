@@ -153,7 +153,13 @@ public final class TapConfirmation {
     /** The one field of TikTok's comment model {@code owner} keeps, read, or null. */
     static Object commentOf(Object owner) {
         if (owner == null) return null;
-        Object field = COMMENT_FIELDS.computeIfAbsent(owner.getClass(), TapConfirmation::commentField);
+        // Not computeIfAbsent: Map's default methods arrived in API 24 and the floor is 23.
+        Class<?> type = owner.getClass();
+        Object field = COMMENT_FIELDS.get(type);
+        if (field == null) {
+            field = commentField(type);
+            COMMENT_FIELDS.put(type, field);
+        }
         if (field == NO_FIELD) return null;
         try {
             return ((Field) field).get(owner);
