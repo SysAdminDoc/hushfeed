@@ -10,8 +10,6 @@ import android.preference.DialogPreference;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
 
-import java.util.function.IntFunction;
-
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.IntegerSetting;
 import app.morphe.extension.shared.settings.Setting;
@@ -223,13 +221,20 @@ public final class ScreenTimePreferenceCategory extends ConditionalPreferenceCat
         addPreference(new StartTodayOverPreference(context));
     }
 
+    // Not IntFunction: java.util.function arrived at API 24, and a type D8 cannot backport fails
+    // to resolve on Android 6, which the payload's own floor of API 23 still allows.
+    /** How a number row writes one of its values, unit and all. */
+    private interface Shown {
+        String of(int value);
+    }
+
     /** "Changes to 45 minutes at 4:00 AM" under a number row whose change is waiting, or null. */
-    private static String waitingLine(Context context, Setting<?> setting, IntFunction<String> shown) {
+    private static String waitingLine(Context context, Setting<?> setting, Shown shown) {
         Object waiting = BudgetChanges.waiting(setting);
         long at = BudgetChanges.appliesAt();
         if (!(waiting instanceof Number) || at <= 0) return null;
         return L10n.f(context, "Changes to %1$s at %2$s",
-                shown.apply(((Number) waiting).intValue()), SessionLockOverlay.timeLabel(at));
+                shown.of(((Number) waiting).intValue()), SessionLockOverlay.timeLabel(at));
     }
 
     private static String joined(String first, String second) {
