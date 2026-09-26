@@ -139,22 +139,45 @@ public final class SearchLynxCards {
 
     private static final String[] DRAMA_TOKENS = {"short_drama", "shortdrama", "mini_drama", "minidrama"};
 
+    /*
+     * Each item class's DynamicPatch field, or NO_PATCH_FIELD, found once. This runs for every
+     * Lynx card bound, and every call used to copy out the declared fields of the class and
+     * each parent.
+     */
+    private static final Object NO_PATCH_FIELD = new Object();
+    private static final java.util.concurrent.ConcurrentHashMap<Class<?>, Object> PATCH_FIELDS =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
     /** The Lynx data an item carries: the one field whose type is TikTok's DynamicPatch. */
     static Object patchOf(Object item) {
         if (item == null) return null;
-        for (Class<?> type = item.getClass(); type != null && type != Object.class; type = type.getSuperclass()) {
+        Object found = PATCH_FIELDS.get(item.getClass());
+        if (found == null) {
+            found = patchField(item.getClass());
+            PATCH_FIELDS.put(item.getClass(), found);
+        }
+        if (found == NO_PATCH_FIELD) return null;
+        try {
+            return ((Field) found).get(item);
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    private static Object patchField(Class<?> itemClass) {
+        for (Class<?> type = itemClass; type != null && type != Object.class; type = type.getSuperclass()) {
             for (Field field : type.getDeclaredFields()) {
                 if (Modifier.isStatic(field.getModifiers())) continue;
                 if (!"DynamicPatch".equals(field.getType().getSimpleName())) continue;
                 try {
                     field.setAccessible(true);
-                    return field.get(item);
+                    return field;
                 } catch (Throwable ignored) {
-                    return null;
+                    return NO_PATCH_FIELD;
                 }
             }
         }
-        return null;
+        return NO_PATCH_FIELD;
     }
 
     /** What a Lynx card is, by shape alone: its source type and its template. Never what it says. */

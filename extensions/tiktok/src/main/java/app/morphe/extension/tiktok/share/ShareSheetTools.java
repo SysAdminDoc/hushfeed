@@ -555,21 +555,9 @@ public final class ShareSheetTools {
         View decor = activity == null || activity.getWindow() == null
                 ? null : activity.getWindow().getDecorView();
         if (decor != null && seen.add(decor)) roots.add(decor);
+        if (windowViewsUnavailable) return roots;
         try {
-            Class<?> globalClass = Class.forName("android.view.WindowManagerGlobal");
-            Method getInstance = globalClass.getDeclaredMethod("getInstance");
-            getInstance.setAccessible(true);
-            Object global = getInstance.invoke(null);
-            Object value;
-            try {
-                Method getWindowViews = globalClass.getDeclaredMethod("getWindowViews");
-                getWindowViews.setAccessible(true);
-                value = getWindowViews.invoke(global);
-            } catch (NoSuchMethodException missingMethod) {
-                Field views = globalClass.getDeclaredField("mViews");
-                views.setAccessible(true);
-                value = views.get(global);
-            }
+            Object value = windowViews();
             if (value instanceof List) {
                 for (Object candidate : (List<Object>) value) {
                     if (candidate instanceof View && seen.add((View) candidate)) {
@@ -579,11 +567,46 @@ public final class ShareSheetTools {
             }
         } catch (Throwable ex) {
             // The activity root still covers retained 46.x builds and every share action filtered
-            // at the model layer. A non-SDK lookup failure must not break the share sheet.
+            // at the model layer. A non-SDK lookup failure must not break the share sheet, and it
+            // is not retried: this runs on every layout pass, and a refusal stays a refusal.
+            windowViewsUnavailable = true;
             Logger.printDebug(() -> "Could not enumerate secondary share sheet windows: "
                     + ex.getClass().getSimpleName());
         }
         return roots;
+    }
+
+    /*
+     * WindowManagerGlobal and the read of its window list, looked up once. apply() runs on every
+     * layout pass of the main window, sheet open or not, and it used to repeat the class lookup,
+     * two method lookups and the access changes each time. Main thread only.
+     */
+    private static Object windowGlobal;
+    private static Object windowViewsReader;
+    private static boolean windowViewsUnavailable;
+
+    private static Object windowViews() throws ReflectiveOperationException {
+        if (windowViewsReader == null) {
+            Class<?> globalClass = Class.forName("android.view.WindowManagerGlobal");
+            Method getInstance = globalClass.getDeclaredMethod("getInstance");
+            getInstance.setAccessible(true);
+            Object global = getInstance.invoke(null);
+            Object reader;
+            try {
+                Method getWindowViews = globalClass.getDeclaredMethod("getWindowViews");
+                getWindowViews.setAccessible(true);
+                reader = getWindowViews;
+            } catch (NoSuchMethodException missingMethod) {
+                Field views = globalClass.getDeclaredField("mViews");
+                views.setAccessible(true);
+                reader = views;
+            }
+            windowGlobal = global;
+            windowViewsReader = reader;
+        }
+        return windowViewsReader instanceof Method
+                ? ((Method) windowViewsReader).invoke(windowGlobal)
+                : ((Field) windowViewsReader).get(windowGlobal);
     }
 
     private static List<String> entries(String stored) {

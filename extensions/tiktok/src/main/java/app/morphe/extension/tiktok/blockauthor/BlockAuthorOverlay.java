@@ -309,12 +309,16 @@ public final class BlockAuthorOverlay {
         }
         removeVisibilityListener();
 
+        // The listener sits in a static field, so it reads the root through the weak reference
+        // rather than capturing it: a captured root kept the finished activity's whole view tree
+        // alive until the next install, whatever the weak reference beside it said.
+        rootReference = new WeakReference<>(root);
         visibilityListener = () -> {
             syncVisibility();
-            clampCurrentPositions(root);
+            ViewGroup current = rootReference.get();
+            if (current != null) clampCurrentPositions(current);
         };
         root.getViewTreeObserver().addOnGlobalLayoutListener(visibilityListener);
-        rootReference = new WeakReference<>(root);
     }
 
     /** Re-applies only the safe-area bounds, without moving a control back during a drag. */

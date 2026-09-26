@@ -38,6 +38,31 @@ public class RegionSpoofTest {
         SettingsStatus.simSpoofEnabled = false;
         SettingsStatus.regionSpoofEnabled = false;
     }
+    @Test public void aKeptAnswerFollowsTheSettingAndEachZoneIsItsOwnCopy() {
+        // Answers are kept between calls, because every Locale and TimeZone default in the app
+        // comes through here. One must not outlive the setting it was worked out from, and a
+        // TimeZone handed out must not be one the next caller sees changed.
+        Locale original = Locale.US;
+        TimeZone zone = TimeZone.getTimeZone("UTC");
+        assertEquals("JP", RegionSpoof.locale(original).getCountry());
+        assertSame("the same question was worked out again",
+                RegionSpoof.locale(original), RegionSpoof.locale(original));
+        TimeZone first = RegionSpoof.timeZone(zone);
+        assertEquals("Asia/Tokyo", first.getID());
+        first.setRawOffset(0);
+        TimeZone second = RegionSpoof.timeZone(zone);
+        assertNotSame("a caller could change the zone the next caller gets", first, second);
+        assertEquals("a caller's change reached the next caller",
+                TimeZone.getTimeZone("Asia/Tokyo").getRawOffset(), second.getRawOffset());
+
+        Settings.SIM_SPOOF_ISO.save("de");
+        assertEquals("DE", RegionSpoof.locale(original).getCountry());
+        assertEquals("Europe/Berlin", RegionSpoof.timeZone(zone).getID());
+        Settings.REGION_SPOOF.save(false);
+        assertSame(original, RegionSpoof.locale(original));
+        assertSame(zone, RegionSpoof.timeZone(zone));
+    }
+
     @Test public void allPresetsSupplyRealCountryTimezonesWithoutChangingGlobalDefaults() {
         Locale systemLocale = Locale.getDefault();
         TimeZone systemZone = TimeZone.getDefault();

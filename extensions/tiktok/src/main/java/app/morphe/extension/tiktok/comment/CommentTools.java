@@ -1042,8 +1042,21 @@ public final class CommentTools {
 
     // ---- model access ------------------------------------------------------------------
 
+    /*
+     * The field each manager class keeps its comment in, once the scan below has found it. The
+     * scan runs on the main thread for every comment row bound, and it read every field of the
+     * class and its parents, and probed each value, each time.
+     */
+    private static final java.util.concurrent.ConcurrentHashMap<Class<?>, Field> COMMENT_FIELDS =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
     /** The bound comment is the manager field whose value answers to {@code getCid}. */
     private static Object findComment(Object manager) throws IllegalAccessException {
+        Field known = COMMENT_FIELDS.get(manager.getClass());
+        if (known != null) {
+            Object value = known.get(manager);
+            if (value != null && Reflect.string(value, "getCid", "cid") != null) return value;
+        }
         Class<?> type = manager.getClass();
         while (type != null && type != Object.class) {
             for (Field field : type.getDeclaredFields()) {
@@ -1054,6 +1067,7 @@ public final class CommentTools {
                 Object value = field.get(manager);
                 if (value != null && Reflect.string(value, "getCid", "cid") != null
                         && hasMethod(value.getClass(), "getUser")) {
+                    COMMENT_FIELDS.put(manager.getClass(), field);
                     return value;
                 }
             }

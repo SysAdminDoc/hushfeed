@@ -469,14 +469,33 @@ public final class FeatureGateLabRuntime {
         return value == null ? null : String.valueOf(value);
     }
 
+    /*
+     * DataCenter's two lookups, found once. The Lab sits on TikTok's LIVE settings getter, which
+     * is on by default and runs whenever LIVE reads a setting, and each read used to load the
+     * class by name and look the method up again, twice. A missing class or method is kept as
+     * missing, so it is not asked for again either.
+     */
+    private static final Object NO_METHOD = new Object();
+    private static final ConcurrentHashMap<String, Object> DATA_CENTER_METHODS = new ConcurrentHashMap<>();
+
     private static Object liveObjectForClass(String methodName, Class<?> requestedClass) {
+        Object method = DATA_CENTER_METHODS.get(methodName);
+        if (method == null) {
+            try {
+                Class<?> dataCenter = Class.forName(
+                        "com.bytedance.android.live_settings.DataCenter",
+                        false,
+                        FeatureGateLabRuntime.class.getClassLoader()
+                );
+                method = dataCenter.getMethod(methodName, Class.class);
+            } catch (Throwable missing) {
+                method = NO_METHOD;
+            }
+            DATA_CENTER_METHODS.put(methodName, method);
+        }
+        if (method == NO_METHOD) return null;
         try {
-            Class<?> dataCenter = Class.forName(
-                    "com.bytedance.android.live_settings.DataCenter",
-                    false,
-                    FeatureGateLabRuntime.class.getClassLoader()
-            );
-            return dataCenter.getMethod(methodName, Class.class).invoke(null, requestedClass);
+            return ((java.lang.reflect.Method) method).invoke(null, requestedClass);
         } catch (Throwable ignored) {
             return null;
         }

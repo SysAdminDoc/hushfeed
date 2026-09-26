@@ -124,25 +124,49 @@ public final class VideoFit {
      * data class generates, which is what says the result is not one this knows how to remake.
      */
     private static Object copyOf(Object result, int width, int height, float[] offsets) {
-        // What the class declares, made accessible, rather than what it makes public: the copy is
-        // the one a data class generates whatever access R8 leaves it or its class with.
-        for (Method candidate : result.getClass().getDeclaredMethods()) {
-            if (!candidate.getName().equals("copy")) continue;
-            Class<?>[] parameters = candidate.getParameterTypes();
-            if (parameters.length != 5) continue;
-            if (parameters[0] != int.class || parameters[1] != int.class) continue;
-            if (parameters[2] != Float.class || parameters[3] != Float.class) continue;
-            Object operator = Reflect.invoke(result, "getResultOperator");
-            try {
-                candidate.setAccessible(true);
-                return candidate.invoke(result, width, height,
-                        Float.valueOf(offsets[0]), Float.valueOf(offsets[1]), operator);
-            } catch (Exception exception) {
-                Logger.printException(() -> "Could not copy the adaption result", exception);
-                return null;
-            }
+        Method copy = copyMethodOf(result.getClass());
+        if (copy == null) return null;
+        Object operator = Reflect.invoke(result, "getResultOperator");
+        try {
+            return copy.invoke(result, width, height,
+                    Float.valueOf(offsets[0]), Float.valueOf(offsets[1]), operator);
+        } catch (Exception exception) {
+            Logger.printException(() -> "Could not copy the adaption result", exception);
+            return null;
         }
-        return null;
+    }
+
+    /*
+     * Each result class's copy method, or NO_COPY, found once: a bound video asks twice with Fit
+     * on, and every ask used to copy out all the class's declared methods.
+     */
+    private static final Object NO_COPY = new Object();
+    private static final java.util.concurrent.ConcurrentHashMap<Class<?>, Object> COPY_METHODS =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static Method copyMethodOf(Class<?> type) {
+        Object found = COPY_METHODS.get(type);
+        if (found == null) {
+            found = NO_COPY;
+            // What the class declares, made accessible, rather than what it makes public: the copy
+            // is the one a data class generates whatever access R8 leaves it or its class with.
+            for (Method candidate : type.getDeclaredMethods()) {
+                if (!candidate.getName().equals("copy")) continue;
+                Class<?>[] parameters = candidate.getParameterTypes();
+                if (parameters.length != 5) continue;
+                if (parameters[0] != int.class || parameters[1] != int.class) continue;
+                if (parameters[2] != Float.class || parameters[3] != Float.class) continue;
+                try {
+                    candidate.setAccessible(true);
+                    found = candidate;
+                } catch (RuntimeException refused) {
+                    Logger.printException(() -> "Could not open the adaption result's copy", refused);
+                }
+                break;
+            }
+            COPY_METHODS.put(type, found);
+        }
+        return found == NO_COPY ? null : (Method) found;
     }
 
     /**
