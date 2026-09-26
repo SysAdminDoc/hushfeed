@@ -88,6 +88,14 @@ public class SettingsActionFlowTest {
         input.setText("zzq_no_such_setting_zzq");
         idle();
         assertTrue(titles(fragment).contains("No matching settings"));
+        Preference none = null;
+        for (int i = 0; i < fragment.getPreferenceScreen().getPreferenceCount(); i++) {
+            Preference row = fragment.getPreferenceScreen().getPreference(i);
+            if ("No matching settings".equals(String.valueOf(row.getTitle()))) none = row;
+        }
+        assertNotNull(none);
+        assertTrue("an empty search does not say where a missing switch went",
+                String.valueOf(none.getSummary()).contains("Morphe Manager"));
         assertTrue(clear.performClick());
         idle();
         assertEquals("", input.getText().toString());

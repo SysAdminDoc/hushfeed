@@ -50,7 +50,7 @@ public final class L10nTranslations {
     }
 
     private static Map<String, String> buildDe() {
-        Map<String, String> table = new HashMap<>(2520);
+        Map<String, String> table = new HashMap<>(2522);
         fillDe0(table);
         fillDe1(table);
         fillDe2(table);
@@ -72,6 +72,7 @@ public final class L10nTranslations {
         fillDe18(table);
         fillDe19(table);
         fillDe20(table);
+        fillDe21(table);
         return table;
     }
 
@@ -2475,6 +2476,8 @@ public final class L10nTranslations {
                 "Transparent");
         table.put("Try a different word or clear the search.",
                 "Versuche ein anderes Wort oder lösche die Suche.");
+        table.put("Try a different word or clear the search. Switches from patches you didn't tick in Morphe Manager aren't listed.",
+                "Versuche ein anderes Wort oder lösche die Suche. Schalter aus Patches, die du in Morphe Manager nicht angehakt hast, stehen hier nicht.");
         table.put("Try again, or go back to TikTok.",
                 "Versuche es erneut oder kehre zu TikTok zurück.");
         table.put("Turn Hushfeed back on",
@@ -2531,11 +2534,11 @@ public final class L10nTranslations {
                 "TikToks eigene Geste „Halten, nach unten ziehen, loslassen“ verwenden, um bei der Geschwindigkeit zu bleiben, die beim Halten gilt. Das ist 2x, sofern unter Wiedergabe keine andere eingestellt ist.");
         table.put("Use a default playback speed",
                 "Standardgeschwindigkeit verwenden");
-        table.put("Use non-personalized search",
-                "Nicht personalisierte Suche verwenden");
     }
 
     private static void fillDe20(Map<String, String> table) {
+        table.put("Use non-personalized search",
+                "Nicht personalisierte Suche verwenden");
         table.put("Use system font",
                 "Systemschrift verwenden");
         table.put("Use the preset for the region TikTok reports for your account and its shop too. May affect search.",
@@ -2654,12 +2657,15 @@ public final class L10nTranslations {
                 "Eingeklappt");
         table.put("expanded",
                 "Ausgeklappt");
+    }
+
+    private static void fillDe21(Map<String, String> table) {
         table.put("this creator",
                 "dieser Creator");
     }
 
     private static Map<String, String> buildEs() {
-        Map<String, String> table = new HashMap<>(2520);
+        Map<String, String> table = new HashMap<>(2522);
         fillEs0(table);
         fillEs1(table);
         fillEs2(table);
@@ -2681,6 +2687,7 @@ public final class L10nTranslations {
         fillEs18(table);
         fillEs19(table);
         fillEs20(table);
+        fillEs21(table);
         return table;
     }
 
@@ -5084,6 +5091,8 @@ public final class L10nTranslations {
                 "Transparente");
         table.put("Try a different word or clear the search.",
                 "Prueba con otra palabra o borra la búsqueda.");
+        table.put("Try a different word or clear the search. Switches from patches you didn't tick in Morphe Manager aren't listed.",
+                "Prueba con otra palabra o borra la búsqueda. Los interruptores de parches que no marcaste en Morphe Manager no aparecen.");
         table.put("Try again, or go back to TikTok.",
                 "Inténtalo de nuevo o vuelve a TikTok.");
         table.put("Turn Hushfeed back on",
@@ -5140,11 +5149,11 @@ public final class L10nTranslations {
                 "Usar el gesto propio de TikTok de mantener, deslizar hacia abajo y soltar para seguir a la velocidad de mantener pulsado, que es 2x salvo que elijas otra en Reproducción.");
         table.put("Use a default playback speed",
                 "Usar una velocidad de reproducción predeterminada");
-        table.put("Use non-personalized search",
-                "Usar la búsqueda sin personalizar");
     }
 
     private static void fillEs20(Map<String, String> table) {
+        table.put("Use non-personalized search",
+                "Usar la búsqueda sin personalizar");
         table.put("Use system font",
                 "Usar la fuente del sistema");
         table.put("Use the preset for the region TikTok reports for your account and its shop too. May affect search.",
@@ -5263,12 +5272,15 @@ public final class L10nTranslations {
                 "Contraído");
         table.put("expanded",
                 "Expandido");
+    }
+
+    private static void fillEs21(Map<String, String> table) {
         table.put("this creator",
                 "este creador");
     }
 
     private static Map<String, String> buildIn() {
-        Map<String, String> table = new HashMap<>(2520);
+        Map<String, String> table = new HashMap<>(2522);
         fillIn0(table);
         fillIn1(table);
         fillIn2(table);
@@ -5290,6 +5302,7 @@ public final class L10nTranslations {
         fillIn18(table);
         fillIn19(table);
         fillIn20(table);
+        fillIn21(table);
         return table;
     }
 
@@ -7693,6 +7706,8 @@ public final class L10nTranslations {
                 "Transparan");
         table.put("Try a different word or clear the search.",
                 "Coba kata lain atau hapus pencarian.");
+        table.put("Try a different word or clear the search. Switches from patches you didn't tick in Morphe Manager aren't listed.",
+                "Coba kata lain atau hapus pencarian. Sakelar dari patch yang tidak kamu centang di Morphe Manager tidak muncul.");
         table.put("Try again, or go back to TikTok.",
                 "Coba lagi, atau kembali ke TikTok.");
         table.put("Turn Hushfeed back on",
@@ -7749,11 +7764,11 @@ public final class L10nTranslations {
                 "Pakai gestur bawaan TikTok, tahan lalu tarik ke bawah dan lepas, untuk tetap di kecepatan tahan, yaitu 2x kecuali kamu memilih yang lain di Pemutaran.");
         table.put("Use a default playback speed",
                 "Pakai kecepatan pemutaran bawaan");
-        table.put("Use non-personalized search",
-                "Pakai pencarian nonpersonal");
     }
 
     private static void fillIn20(Map<String, String> table) {
+        table.put("Use non-personalized search",
+                "Pakai pencarian nonpersonal");
         table.put("Use system font",
                 "Gunakan font sistem");
         table.put("Use the preset for the region TikTok reports for your account and its shop too. May affect search.",
@@ -7872,12 +7887,15 @@ public final class L10nTranslations {
                 "Diciutkan");
         table.put("expanded",
                 "Diperluas");
+    }
+
+    private static void fillIn21(Map<String, String> table) {
         table.put("this creator",
                 "kreator ini");
     }
 
     private static Map<String, String> buildPt_rBR() {
-        Map<String, String> table = new HashMap<>(2520);
+        Map<String, String> table = new HashMap<>(2522);
         fillPt_rBR0(table);
         fillPt_rBR1(table);
         fillPt_rBR2(table);
@@ -7899,6 +7917,7 @@ public final class L10nTranslations {
         fillPt_rBR18(table);
         fillPt_rBR19(table);
         fillPt_rBR20(table);
+        fillPt_rBR21(table);
         return table;
     }
 
@@ -10302,6 +10321,8 @@ public final class L10nTranslations {
                 "Transparente");
         table.put("Try a different word or clear the search.",
                 "Tente outra palavra ou limpe a busca.");
+        table.put("Try a different word or clear the search. Switches from patches you didn't tick in Morphe Manager aren't listed.",
+                "Tente outra palavra ou limpe a busca. As chaves de patches que você não marcou no Morphe Manager não aparecem.");
         table.put("Try again, or go back to TikTok.",
                 "Tente novamente ou volte ao TikTok.");
         table.put("Turn Hushfeed back on",
@@ -10358,11 +10379,11 @@ public final class L10nTranslations {
                 "Usar o gesto do próprio TikTok de segurar, puxar para baixo e soltar para continuar na velocidade de segurar, que é 2x a menos que você escolha outra em Reprodução.");
         table.put("Use a default playback speed",
                 "Usar uma velocidade de reprodução padrão");
-        table.put("Use non-personalized search",
-                "Usar a busca sem personalização");
     }
 
     private static void fillPt_rBR20(Map<String, String> table) {
+        table.put("Use non-personalized search",
+                "Usar a busca sem personalização");
         table.put("Use system font",
                 "Usar a fonte do sistema");
         table.put("Use the preset for the region TikTok reports for your account and its shop too. May affect search.",
@@ -10481,12 +10502,15 @@ public final class L10nTranslations {
                 "Recolhido");
         table.put("expanded",
                 "Expandido");
+    }
+
+    private static void fillPt_rBR21(Map<String, String> table) {
         table.put("this creator",
                 "este criador");
     }
 
     private static Map<String, String> buildTr() {
-        Map<String, String> table = new HashMap<>(2520);
+        Map<String, String> table = new HashMap<>(2522);
         fillTr0(table);
         fillTr1(table);
         fillTr2(table);
@@ -10508,6 +10532,7 @@ public final class L10nTranslations {
         fillTr18(table);
         fillTr19(table);
         fillTr20(table);
+        fillTr21(table);
         return table;
     }
 
@@ -12911,6 +12936,8 @@ public final class L10nTranslations {
                 "Saydam");
         table.put("Try a different word or clear the search.",
                 "Başka bir kelime dene ya da aramayı temizle.");
+        table.put("Try a different word or clear the search. Switches from patches you didn't tick in Morphe Manager aren't listed.",
+                "Başka bir kelime dene ya da aramayı temizle. Morphe Manager'da işaretlemediğin yamaların anahtarları burada görünmez.");
         table.put("Try again, or go back to TikTok.",
                 "Yeniden dene ya da TikTok'a geri dön.");
         table.put("Turn Hushfeed back on",
@@ -12967,11 +12994,11 @@ public final class L10nTranslations {
                 "Basılı tutma hızında kalmak için TikTok'un kendi basılı tut, aşağı çek ve bırak hareketini kullan. Oynatma altında başka bir hız seçilmedikçe 2x'tir.");
         table.put("Use a default playback speed",
                 "Varsayılan bir oynatma hızı kullan");
-        table.put("Use non-personalized search",
-                "Kişiselleştirilmemiş aramayı kullan");
     }
 
     private static void fillTr20(Map<String, String> table) {
+        table.put("Use non-personalized search",
+                "Kişiselleştirilmemiş aramayı kullan");
         table.put("Use system font",
                 "Sistem yazı tipini kullan");
         table.put("Use the preset for the region TikTok reports for your account and its shop too. May affect search.",
@@ -13090,6 +13117,9 @@ public final class L10nTranslations {
                 "daraltıldı");
         table.put("expanded",
                 "genişletildi");
+    }
+
+    private static void fillTr21(Map<String, String> table) {
         table.put("this creator",
                 "bu içerik üreticisi");
     }

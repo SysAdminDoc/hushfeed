@@ -4,6 +4,7 @@ Every Hushfeed release, newest first.
 
 ## Unreleased
 
+* **TikTok:** A settings search that finds nothing now says that switches from patches you didn't tick in Morphe Manager aren't listed. Fill the screen with the video is one of them, since it comes with Fit the video to the screen, which is off by default.
 * **TikTok:** Camera and microphone indicator draws a green square for the camera and an orange diamond for the microphone, so telling them apart doesn't depend on seeing green and orange. The text on Hushfeed's banners over a video is easier to read against a bright frame or TikTok's light comment sheet.
 * **TikTok:** In settings, the back arrow is announced as a button, and the search box's clear button, the Lab's switch rows and its Technical details heading show when they're pressed or focused. A chosen SIM preset no longer looks like the row that has focus. When a budget change or Pause is refused, the reason stays on screen in the settings banner instead of a toast that was gone before the time in it could be read.
 * **TikTok:** Settings text reads more naturally, with contractions throughout, one way of asking you to restart TikTok and one of saying to try again in a moment. Number rows show their range the way they show the value, as in "0 to 86,400 seconds". The Feature Gate Lab says On or off where its filter said Boolean, tells you what to fix in a bad value or bad JSON, uses a real ellipsis while it loads, and its menu has a title and a Cancel.

@@ -697,7 +697,10 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         }
         if (searchInput != null) searchInput.showResultCount(matches.size());
         if (matches.isEmpty()) {
-            addSearchState("No matching settings", "Try a different word or clear the search.");
+            // A switch from a patch left unticked in the Manager is on no page and in no index, and
+            // nothing else on the screen says so (#29 looked for Fill without its patch).
+            addSearchState("No matching settings", "Try a different word or clear the search. Switches "
+                    + "from patches you didn't tick in Morphe Manager aren't listed.");
             return;
         }
 
