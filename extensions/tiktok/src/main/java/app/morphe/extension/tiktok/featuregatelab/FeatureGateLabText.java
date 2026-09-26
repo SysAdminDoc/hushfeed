@@ -93,9 +93,9 @@ final class FeatureGateLabText {
             case SELECT_AT_LEAST_ONE_FIELD:
                 return L10n.t(context, "Select at least one field.");
             case UNSUPPORTED_TYPE:
-                return L10n.t(context, "This gate type is not supported.");
+                return L10n.t(context, "This gate type isn't supported.");
             case INVALID_JSON:
-                return L10n.t(context, "Enter valid JSON.");
+                return L10n.t(context, "That isn't valid JSON. Check the brackets and quotes.");
             case EXPECTED_JSON_OBJECT_OR_ARRAY:
                 return L10n.t(context, "Enter a JSON object or array.");
             case INVALID_STRUCTURED_VALUE:
@@ -109,7 +109,7 @@ final class FeatureGateLabText {
             String fieldName,
             FeatureGateLabStore.ValidationFailure failure
     ) {
-        return L10n.f(context, "%1$s has an invalid value. %2$s",
+        return L10n.f(context, "%1$s needs fixing. %2$s",
                 fieldName, validation(context, failure));
     }
 
@@ -119,17 +119,17 @@ final class FeatureGateLabText {
     ) {
         switch (rejection.code) {
             case INVALID_OBJECT:
-                return L10n.f(context, "Entry %1$d is not an object.",
+                return L10n.f(context, "Entry %1$d isn't an object.",
                         rejection.entryNumber);
             case INVALID_FIELD_TYPE:
                 return L10n.f(context,
                         "Entry %1$d has a field with the wrong data type.",
                         rejection.entryNumber);
             case UNKNOWN_KEY:
-                return L10n.f(context, "%1$s is not in this Lab catalog.", rejection.key);
+                return L10n.f(context, "%1$s isn't in this Lab catalog.", rejection.key);
             case UNSUPPORTED_BOUNDARY:
                 return L10n.f(context,
-                        "%1$s is a kind of value the Lab cannot override.",
+                        "%1$s is a kind of value the Lab can't override.",
                         rejection.key);
             case TYPE_MISMATCH:
                 return L10n.f(context,

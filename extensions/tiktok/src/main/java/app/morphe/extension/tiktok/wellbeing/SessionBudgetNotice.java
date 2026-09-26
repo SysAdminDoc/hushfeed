@@ -56,7 +56,7 @@ public final class SessionBudgetNotice {
         switch (wording) {
             case 0: return L10n.t("Still here. Nothing is waiting.");
             case 1: return L10n.t("A good place to stop, if you want one.");
-            default: return L10n.t("The feed does not end. This is a fine time to leave it.");
+            default: return L10n.t("The feed doesn't end. This is a fine time to leave it.");
         }
     }
 

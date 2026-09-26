@@ -74,6 +74,6 @@ public final class StartTodayOverPreference extends Preference implements Immedi
         setSummary(L10n.t(context, CLEAR_SUMMARY));
         SettingsActionBanner.showNotice(context, L10n.t(context, back
                 ? "Today is back where it was"
-                : "Today has moved on, so there is nothing to put back"));
+                : "Today has moved on, so there's nothing to put back"));
     }
 }

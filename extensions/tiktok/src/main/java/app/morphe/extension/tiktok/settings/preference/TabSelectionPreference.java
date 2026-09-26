@@ -158,8 +158,8 @@ public class TabSelectionPreference extends Preference {
                 // One literal each, and written out where the call is. The table is keyed
                 // on the whole sentence, and the gate that pairs a key with its translation
                 // reads what is inside the call rather than what the compiler joins together.
-                ? L10n.t(getContext(), "Only bottom tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear.")
-                : L10n.t(getContext(), "Only tabs TikTok has loaded on this device are shown here. This does not force unavailable tabs to appear."));
+                ? L10n.t(getContext(), "Only bottom tabs TikTok has loaded on this device are shown here. This doesn't force unavailable tabs to appear.")
+                : L10n.t(getContext(), "Only tabs TikTok has loaded on this device are shown here. This doesn't force unavailable tabs to appear."));
         helper.setTextColor(getSummaryTextColor());
         LinearLayout.LayoutParams helperParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,

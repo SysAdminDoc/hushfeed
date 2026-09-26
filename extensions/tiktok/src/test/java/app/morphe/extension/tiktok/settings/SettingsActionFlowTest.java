@@ -128,7 +128,7 @@ public class SettingsActionFlowTest {
         clickRow(fragment, HookStatusPreference.class);
         AlertDialog report = ShadowAlertDialog.getLatestAlertDialog();
         assertNotNull(report);
-        assertEquals("Nothing has been checked yet, so there is nothing to report.",
+        assertEquals("Nothing has been checked yet, so there's nothing to report.",
                 Shadows.shadowOf(report).getMessage());
         report.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
         idle();

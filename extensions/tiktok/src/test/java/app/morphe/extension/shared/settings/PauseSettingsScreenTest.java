@@ -45,7 +45,7 @@ import java.io.File;
 public class PauseSettingsScreenTest {
     private static final String BACK_ON_AT_RESTART = "Hushfeed turns back on when TikTok restarts.";
     private static final String SWITCH_SUMMARY =
-            "TikTok runs as if it were not patched. Your settings stay as they are.";
+            "TikTok runs as if it weren't patched. Your settings stay as they are.";
 
     @Rule public final SettingsContextRule settingsContext = new SettingsContextRule();
 

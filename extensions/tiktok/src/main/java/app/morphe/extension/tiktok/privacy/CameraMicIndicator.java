@@ -24,11 +24,12 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.tiktok.settings.L10n;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.settings.preference.SettingsUi;
 
 /**
  * A dot in the top corner while TikTok holds the camera or records sound.
  *
- * <p>Green for the camera, orange for the microphone, both when both. The counts come from the
+ * <p>A green square for the camera, an orange diamond for the microphone, both when both. The counts come from the
  * patched call sites: a camera counts from the moment it opens until it is released or closed,
  * a recorder from start until stop or release. The dot sits on the decor view of whichever
  * activity is on top, follows the top activity while an access is live, and takes no touches.
@@ -168,11 +169,14 @@ public final class CameraMicIndicator {
         return Math.round(value * context.getResources().getDisplayMetrics().density);
     }
 
-    /** One or two filled circles with a hairline dark ring, so they read on any video. */
+    /**
+     * One or two filled marks with a hairline dark ring, so they read on any video. The camera
+     * is a rounded square and the microphone a diamond: they were two dots told apart by colour
+     * alone, which a reader who can't separate green from orange couldn't do.
+     */
     static final class DotView extends View {
-        private static final int CAMERA_GREEN = 0xFF34C759;
-        private static final int MICROPHONE_ORANGE = 0xFFFF9500;
         private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final android.graphics.Path diamond = new android.graphics.Path();
         private final Paint ring = new Paint(Paint.ANTI_ALIAS_FLAG);
         private boolean camera;
         private boolean microphone;
@@ -181,7 +185,7 @@ public final class CameraMicIndicator {
             super(context);
             ring.setStyle(Paint.Style.STROKE);
             ring.setStrokeWidth(Math.max(1f, dp(context, 1)));
-            ring.setColor(0x99000000);
+            ring.setColor(SettingsUi.INDICATOR_RING);
             setClickable(false);
             setFocusable(false);
             setElevation(dp(context, 24));
@@ -219,18 +223,27 @@ public final class CameraMicIndicator {
         @Override protected void onDraw(Canvas canvas) {
             int size = dp(getContext(), 12);
             int gap = dp(getContext(), 6);
-            float radius = size / 2f;
-            float x = radius;
+            float half = size / 2f;
+            float x = half;
             if (camera) {
-                fill.setColor(CAMERA_GREEN);
-                canvas.drawCircle(x, radius, radius - 1, fill);
-                canvas.drawCircle(x, radius, radius - 1, ring);
+                fill.setColor(SettingsUi.INDICATOR_CAMERA);
+                // Square cornered: the scale's 0, and the plainest contrast with the diamond.
+                android.graphics.RectF box = new android.graphics.RectF(
+                        x - half + 1, 1, x + half - 1, size - 1);
+                canvas.drawRect(box, fill);
+                canvas.drawRect(box, ring);
                 x += size + gap;
             }
             if (microphone) {
-                fill.setColor(MICROPHONE_ORANGE);
-                canvas.drawCircle(x, radius, radius - 1, fill);
-                canvas.drawCircle(x, radius, radius - 1, ring);
+                fill.setColor(SettingsUi.INDICATOR_MICROPHONE);
+                diamond.reset();
+                diamond.moveTo(x, 0.5f);
+                diamond.lineTo(x + half - 0.5f, half);
+                diamond.lineTo(x, size - 0.5f);
+                diamond.lineTo(x - half + 0.5f, half);
+                diamond.close();
+                canvas.drawPath(diamond, fill);
+                canvas.drawPath(diamond, ring);
             }
         }
     }

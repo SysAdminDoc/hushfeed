@@ -98,7 +98,7 @@ public final class SettingsStatusPreference extends Preference {
             case MARKER_FILE:
                 return L10n.t(context, "A file named hushfeed-safe-mode in TikTok's folder under Android/data paused Hushfeed. Your settings stay as they are.");
             default:
-                return L10n.t(context, "TikTok runs as if it were not patched. Your settings stay as they are.");
+                return L10n.t(context, "TikTok runs as if it weren't patched. Your settings stay as they are.");
         }
     }
 
@@ -140,7 +140,14 @@ public final class SettingsStatusPreference extends Preference {
         LinearLayout labels = new LinearLayout(context);
         labels.setOrientation(LinearLayout.VERTICAL);
         labels.setGravity(Gravity.CENTER_VERTICAL);
-        labels.setFocusable(true);
+        // Grouped so a screen reader says the title and status together. Keyboard focus is
+        // another matter: the group does nothing when chosen and drew nothing when focused, so
+        // from API 28 it is a screen reader stop only.
+        if (android.os.Build.VERSION.SDK_INT >= 28) {
+            labels.setScreenReaderFocusable(true);
+        } else {
+            labels.setFocusable(true);
+        }
 
         TextView title = SettingsUi.text(
                 context, String.valueOf(getTitle()), 18, SettingsUi.textPrimary(),

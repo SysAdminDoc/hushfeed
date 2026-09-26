@@ -135,7 +135,7 @@ public final class SettingsBackupPreference extends Preference
         catch (RuntimeException error) {
             Logger.printException(() -> "Could not open settings file picker", error);
             Utils.showToastLong(L10n.t(
-                    "This phone has no file picker, so there is no way to choose a file here"));
+                    "This phone has no file picker, so there's no way to choose a file here"));
         }
     }
 
@@ -196,10 +196,10 @@ public final class SettingsBackupPreference extends Preference
                 // default, download folders included, without a word.
                 if (keptAsTheyWere == 1) {
                     Utils.showToastLong(L10n.f(
-                            "%1$d setting was not in that file and was left as it is", keptAsTheyWere));
+                            "%1$d setting wasn't in that file and was left as it is", keptAsTheyWere));
                 } else if (keptAsTheyWere > 1) {
                     Utils.showToastLong(L10n.f(
-                            "%1$d settings were not in that file and were left as they are", keptAsTheyWere));
+                            "%1$d settings weren't in that file and were left as they are", keptAsTheyWere));
                 }
                 // Each of these is one literal, because the translation gate reads the literal
                 // handed to L10n and a string built from two of them is two entries it cannot find.
@@ -238,7 +238,7 @@ public final class SettingsBackupPreference extends Preference
             BUSY.set(false);
             setRowsBusy(0, null);
             Utils.showToastLong(L10n.t(
-                    "Couldn't start the settings change. Try again shortly."));
+                    "Couldn't start the settings change. Try again in a moment."));
             TikTokPreferenceFragment current = owner.get();
             if (current != null && current.isAdded()) current.refreshBackupSettings();
         }
@@ -260,10 +260,10 @@ public final class SettingsBackupPreference extends Preference
                             return "That settings backup is damaged or only partly downloaded. "
                                     + "Nothing was altered.";
                         case ENCODING:
-                            return "That file is not readable text, so it may have been damaged in "
+                            return "That file isn't readable text, so it may have been damaged in "
                                     + "transit. Nothing was altered.";
                         case FORMAT:
-                            return "That is not a Hushfeed settings backup. Nothing was altered.";
+                            return "That isn't a Hushfeed settings backup. Nothing was altered.";
                         case SCHEMA:
                             return "That backup was written by a newer Hushfeed than this one. "
                                     + "Nothing was altered.";
@@ -271,7 +271,7 @@ public final class SettingsBackupPreference extends Preference
                             return "That settings backup is incomplete, so it may have been cut "
                                     + "short. Nothing was altered.";
                         case VALUE:
-                            return "That settings backup holds a value Hushfeed cannot read. "
+                            return "That settings backup holds a value Hushfeed can't read. "
                                     + "Nothing was altered.";
                         case RULE_LIST:
                             return "That settings backup contains a feed rule list larger than "
@@ -283,7 +283,7 @@ public final class SettingsBackupPreference extends Preference
                             return "The settings backup was rejected. Nothing was altered.";
                     }
                 case ROLLED_BACK:
-                    return "That settings change did not go through. Nothing was altered.";
+                    return "That settings change didn't go through. Nothing was altered.";
                 case RECOVERY_REQUIRED:
                     return restore.isRecoveryAvailable()
                             ? "Restore failed. Some settings may still be changed. Use Undo to put them back."

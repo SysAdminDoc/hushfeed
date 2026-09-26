@@ -77,7 +77,7 @@ public final class NotInterested {
         // nothing on screen at all.
         if (!accepted) {
             IN_FLIGHT.set(false);
-            Utils.showToastShort(L10n.t("Couldn't send the feedback. Try again shortly."));
+            Utils.showToastShort(L10n.t("Couldn't send the feedback. Try again in a moment."));
         }
     }
 

@@ -49,7 +49,7 @@ public final class LicensesPreference extends Preference {
     }
 
     public static String summary(Context context) {
-        return L10n.t(context, "Notices from this project and the ones it is built on");
+        return L10n.t(context, "Notices from this project and the ones it's built on");
     }
 
     /** Opens the notice, and is public so the settings search can open it from a result. */

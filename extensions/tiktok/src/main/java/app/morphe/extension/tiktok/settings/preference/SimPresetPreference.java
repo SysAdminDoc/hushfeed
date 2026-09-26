@@ -237,7 +237,7 @@ public class SimPresetPreference extends Preference {
                     + preset.country + " / " + preset.operatorName + " / "
                     + preset.mccMnc + " / " + preset.iso);
             app.morphe.extension.shared.Utils.showToastLong(
-                app.morphe.extension.tiktok.settings.L10n.t("That preset is not recognized. Choose another."));
+                app.morphe.extension.tiktok.settings.L10n.t("That preset isn't recognized. Choose another."));
             return false;
         }
 
@@ -360,7 +360,16 @@ public class SimPresetPreference extends Preference {
             // The chosen row wears the radio the standard dialogs draw, and says so to TalkBack.
             boolean chosen = selected != null && preset == selected;
             Context context = parent.getContext();
-            view.setSelected(chosen);
+            // Selected is also how the list marks the row a d-pad is on, and the row's press and
+            // focus drawable washes a selected row, so the chosen preset looked focused. The
+            // radio shows the choice; the accessibility node says it.
+            view.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+                @Override public void onInitializeAccessibilityNodeInfo(
+                        View host, android.view.accessibility.AccessibilityNodeInfo info) {
+                    super.onInitializeAccessibilityNodeInfo(host, info);
+                    info.setSelected(chosen);
+                }
+            });
             title.setCompoundDrawablePadding(SettingsUi.dp(context, 8));
             title.setCompoundDrawablesRelativeWithIntrinsicBounds(
                     chosen ? SettingsUi.radioMark(context) : null, null, null, null);

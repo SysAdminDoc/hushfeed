@@ -398,7 +398,11 @@ public class SimPresetRowTest {
             org.junit.Assert.assertEquals("the chosen preset was not brought into view",
                     index, list.getFirstVisiblePosition());
             android.view.View chosen = list.getAdapter().getView(index, null, list);
-            assertTrue("TalkBack is not told the row is selected", chosen.isSelected());
+            // Told through the accessibility node, not the view's selected state: the list uses that
+            // for the row a d-pad is on, and the row's drawable washes it like focus.
+            assertTrue("TalkBack is not told the row is selected",
+                    chosen.createAccessibilityNodeInfo().isSelected());
+            org.junit.Assert.assertFalse("the chosen preset wears the focus wash", chosen.isSelected());
             android.widget.TextView title = chosen.findViewById(android.R.id.text1);
             org.junit.Assert.assertNotNull("the row carries no mark",
                     title.getCompoundDrawablesRelative()[0]);

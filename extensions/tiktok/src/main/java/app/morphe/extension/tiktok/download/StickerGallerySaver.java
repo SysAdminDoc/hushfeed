@@ -230,7 +230,7 @@ public final class StickerGallerySaver {
         Context context = button.getContext().getApplicationContext();
         SettingsUi.setBusy(button, true,
                 L10n.t(button.getContext(), "Saving"));
-        Utils.showToastShort(L10n.t("Saving sticker"));
+        Utils.showToastShort(L10n.t("Saving the sticker"));
 
         // A submitted job can wait behind eight others, then run up to the two minute deadline.
         // Capturing the button would hold the sheet's Activity for that whole window after the
@@ -422,7 +422,7 @@ public final class StickerGallerySaver {
 
             Bitmap bitmap = decodeStaticSticker(source);
             if (bitmap == null) return SaveResult.failure(
-                    L10n.t("That sticker is in a format Hushfeed cannot read"));
+                    L10n.t("That sticker is in a format Hushfeed can't read"));
 
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

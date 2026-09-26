@@ -93,7 +93,7 @@ public final class ExternalDownloader {
         if (value == null) return null;
         String name = value.trim();
         if (name.isEmpty() || name.matches(PACKAGE_NAME)) return null;
-        return L10n.t("That is not an app name. Try something like com.example.downloader, "
+        return L10n.t("That isn't an app name. Try something like com.example.downloader, "
                 + "or leave the box empty to keep saving in TikTok.");
     }
 

@@ -116,9 +116,18 @@ public final class SettingsUi {
     /**
      * The scrim raised to carry a sentence. A chip holds one glyph and reads through the video
      * at 55 percent; a banner holds a line of 14sp text and an action, which need the video
-     * mostly gone behind them.
+     * mostly gone behind them. 232 rather than 220: over a white frame or TikTok's light comment
+     * sheet, the red action text on 220 was 4.3:1, under the 4.5:1 that 14sp text needs. On 232
+     * it is 4.9:1 there and 5.7:1 over black.
      */
-    public static final @ColorInt int OVERLAY_BANNER_SCRIM = Color.argb(220, 0, 0, 0);
+    public static final @ColorInt int OVERLAY_BANNER_SCRIM = Color.argb(232, 0, 0, 0);
+    /**
+     * The camera and microphone marks. Fixed like the other overlay colours, since they sit on
+     * video. They differ in shape as well as colour, so neither depends on telling the two apart.
+     */
+    public static final @ColorInt int INDICATOR_CAMERA = 0xFF34C759;
+    public static final @ColorInt int INDICATOR_MICROPHONE = 0xFFFF9500;
+    public static final @ColorInt int INDICATOR_RING = Color.argb(153, 0, 0, 0);
     /** Text and glyphs on {@link #OVERLAY_SCRIM}: white on it is 12.6:1. */
     public static final @ColorInt int OVERLAY_TEXT = Color.WHITE;
     public static final @ColorInt int OVERLAY_TEXT_MUTED = Color.argb(200, 255, 255, 255);
@@ -1044,8 +1053,6 @@ public final class SettingsUi {
             list.setDivider(new ColorDrawable(divider()));
             list.setDividerHeight(Math.max(1, dp(dialog.getContext(), 1)));
             list.post(() -> {
-                int inset = dialogRowInset(dialog, list);
-                if (inset >= 0) list.setTag(TAG_DIALOG_ROW_INSET, inset);
                 styleDialogText(list, radio);
                 list.postDelayed(() -> styleDialogText(list, radio), 50);
             });
@@ -1113,17 +1120,17 @@ public final class SettingsUi {
             CheckedTextView checkedTextView = (CheckedTextView) view;
             checkedTextView.setTextColor(textPrimary());
             // The platform row starts nearer the edge than the dialog's title, so the marks sat
-            // out to the left of every heading above them. The list carries the inset that puts
-            // a mark under the title's first letter, measured once the dialog is laid out, and
-            // falls back to the theme's dialog inset before that. setPaddingRelative only relays
-            // out on a change, so the scroll callback that runs this per frame costs nothing.
-            Object measured = checkedTextView.getParent() instanceof View
-                    ? ((View) checkedTextView.getParent()).getTag(TAG_DIALOG_ROW_INSET) : null;
-            int inset = measured instanceof Integer ? (Integer) measured
-                    : dialogInset(checkedTextView.getContext()) - dp(checkedTextView.getContext(),
+            // out to the left of every heading above them. The title is inset by the theme's
+            // dialog padding, and the mark is centred in its own box, so the row starts that
+            // much before the padding to put the mark's edge under the title's first letter.
+            // setPaddingRelative only relays out on a change, so the scroll callback that runs
+            // this per frame costs nothing.
+            Context rowContext = checkedTextView.getContext();
+            int titleInset = dialogInset(rowContext);
+            int markMargin = dp(rowContext,
                     (DialogCheckMarkDrawable.intrinsicSizeDp - DialogCheckMarkDrawable.boxSizeDp) / 2);
-            checkedTextView.setPaddingRelative(inset, checkedTextView.getPaddingTop(),
-                    dialogInset(checkedTextView.getContext()), checkedTextView.getPaddingBottom());
+            checkedTextView.setPaddingRelative(Math.max(0, titleInset - markMargin),
+                    checkedTextView.getPaddingTop(), titleInset, checkedTextView.getPaddingBottom());
             Drawable[] drawables = checkedTextView.getCompoundDrawablesRelative();
             // Runs on every scroll callback now, so it does its work once per row rather than
             // building a drawable per frame. A rebound row brings the platform check mark back,
@@ -1153,30 +1160,6 @@ public final class SettingsUi {
                 styleDialogText(group.getChildAt(i), radio);
             }
         }
-    }
-
-    /** Where a dialog list's measured row inset is kept, in the app's id space. */
-    private static final int TAG_DIALOG_ROW_INSET = 0x7f7f4003;
-
-    /**
-     * The row start padding that puts a choice mark's edge under the first letter of the
-     * dialog's title, or -1 when there is no laid-out title to measure against. The mark is
-     * centred in its drawable, so the drawable's own margin comes off the title's inset.
-     */
-    static int dialogRowInset(AlertDialog dialog, ListView list) {
-        Context context = dialog.getContext();
-        int id = context.getResources().getIdentifier("alertTitle", "id", "android");
-        View title = id == 0 ? null : dialog.findViewById(id);
-        if (title == null || title.getWidth() == 0 || list.getWidth() == 0) return -1;
-        int[] titleAt = new int[2];
-        int[] listAt = new int[2];
-        title.getLocationInWindow(titleAt);
-        list.getLocationInWindow(listAt);
-        int textInset = list.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL
-                ? (listAt[0] + list.getWidth()) - (titleAt[0] + title.getWidth() - title.getPaddingRight())
-                : titleAt[0] + title.getPaddingLeft() - listAt[0];
-        int markMargin = (DialogCheckMarkDrawable.intrinsicSizeDp - DialogCheckMarkDrawable.boxSizeDp) / 2;
-        return Math.max(0, textInset - dp(context, markMargin));
     }
 
     /** The theme's dialog content inset, which an AlertDialog's title uses. 24dp when unset. */

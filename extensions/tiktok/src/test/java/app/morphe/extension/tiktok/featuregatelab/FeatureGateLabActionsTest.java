@@ -550,7 +550,7 @@ public class FeatureGateLabActionsTest {
                 reset.invoke(fragment, false);
                 Shadows.shadowOf(Looper.getMainLooper()).idle();
 
-                assertEquals("Couldn't start the Lab change. Try again shortly.",
+                assertEquals("Couldn't start the Lab change. Try again in a moment.",
                         ShadowToast.getTextOfLatestToast());
                 assertFalse("the Lab remained busy after rejected scheduling", changing.get());
                 assertNotNull("the rejected reset changed Lab storage",
@@ -585,7 +585,7 @@ public class FeatureGateLabActionsTest {
                 master.performClick();
                 Shadows.shadowOf(Looper.getMainLooper()).idle();
 
-                assertEquals("Couldn't start the Lab change. Try again shortly.",
+                assertEquals("Couldn't start the Lab change. Try again in a moment.",
                         ShadowToast.getTextOfLatestToast());
                 assertFalse("the rejected change altered storage",
                         FeatureGateLabStore.masterEnabled());

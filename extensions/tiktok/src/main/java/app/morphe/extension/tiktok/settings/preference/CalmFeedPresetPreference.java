@@ -204,7 +204,7 @@ public final class CalmFeedPresetPreference extends Preference implements Immedi
             busy = false;
             notifyChanged();
             Utils.showToastLong(L10n.t(getContext(),
-                    "Calm feed couldn't start. Try again shortly."));
+                    "Calm feed couldn't start. Try again in a moment."));
         }
     }
 
@@ -217,11 +217,11 @@ public final class CalmFeedPresetPreference extends Preference implements Immedi
             if (restoring) {
                 message = result.restartChangedCount == 0
                         ? "Your previous feed setup is back."
-                        : "Your previous feed setup is back. Restart TikTok to apply every change.";
+                        : "Your previous feed setup is back. Restart TikTok to apply all changes.";
             } else {
                 message = result.restartChangedCount == 0
                         ? "Calm feed is on."
-                        : "Calm feed is on. Restart TikTok to apply every change.";
+                        : "Calm feed is on. Restart TikTok to apply all changes.";
             }
             Utils.showToastLong(L10n.t(getContext(), message));
         } else {

@@ -10,7 +10,6 @@ import android.preference.DialogPreference;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
 
-import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.IntegerSetting;
 import app.morphe.extension.shared.settings.Setting;
 import app.morphe.extension.tiktok.settings.L10n;
@@ -19,6 +18,7 @@ import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.ClockHourPreference;
 import app.morphe.extension.tiktok.settings.preference.NumberInputPreference;
 import app.morphe.extension.tiktok.settings.preference.SectionHeadingPreference;
+import app.morphe.extension.tiktok.settings.preference.SettingsActionBanner;
 import app.morphe.extension.tiktok.settings.preference.StartTodayOverPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 import app.morphe.extension.tiktok.wellbeing.BudgetChanges;
@@ -56,7 +56,7 @@ public final class ScreenTimePreferenceCategory extends ConditionalPreferenceCat
         // never shows yesterday's budget with today's change still listed as waiting.
         BudgetChanges.applyDue(SessionBudget.now());
         addPreference(new SectionHeadingPreference(context, "Focus"));
-        addPreference(new TogglePreference(context, "Do not start the feed on returning",
+        addPreference(new TogglePreference(context, "Don't start the feed on returning",
                 "The feed waits for one tap before it starts playing again when you "
                         + "come back to the app. Messages, profiles and search are still "
                         + "one tap away.",
@@ -89,7 +89,7 @@ public final class ScreenTimePreferenceCategory extends ConditionalPreferenceCat
         }.zeroMeansOff());
         addPreference(new NumberInputPreference(context, "Daily time budget",
                 "Zero switches this off. Count the minutes the player spends running in the feed. "
-                        + "Time on messages, a profile or search does not count.",
+                        + "Time on messages, a profile or search doesn't count.",
                 Settings.SESSION_BUDGET_MINUTES, "%1$s minute", "%1$s minutes") {
             @Override protected String extraSummaryLine() {
                 String waiting = waitingLine(getContext(), Settings.SESSION_BUDGET_MINUTES, this::shown);
@@ -104,7 +104,7 @@ public final class ScreenTimePreferenceCategory extends ConditionalPreferenceCat
         addPreference(new NumberInputPreference(context, "Remind me every",
                 "Zero switches this off. A short reminder after that many minutes of watching, "
                         + "and again after the same again. Time on messages, a profile or search "
-                        + "does not count, and nothing is shown while the feed is on hold.",
+                        + "doesn't count, and nothing is shown while the feed is on hold.",
                 Settings.SESSION_BUDGET_NOTICE_MINUTES, "%1$s minute", "%1$s minutes").zeroMeansOff());
         addPreference(new NumberInputPreference(context, "Hold the feed after the budget",
                 "Zero shows the notice and leaves the feed alone. Anything else covers the feed "
@@ -133,7 +133,7 @@ public final class ScreenTimePreferenceCategory extends ConditionalPreferenceCat
             }
         });
         addPreference(new TogglePreference(context, "Lock today's budget",
-                "Once today's budget runs out, the hold stays and cannot be dismissed. "
+                "Once today's budget runs out, the hold stays and can't be dismissed. "
                         + "The budget settings are locked until the day starts over. "
                         + "Turn this off any time before the budget runs out.",
                 Settings.SESSION_BUDGET_LOCK));
@@ -159,7 +159,9 @@ public final class ScreenTimePreferenceCategory extends ConditionalPreferenceCat
         // anyone can edit their way out of in two taps is a suggestion.
         Preference.OnPreferenceChangeListener refuseWhileLocked = (preference, value) -> {
             if (!SessionBudget.lockedToday()) return true;
-            Utils.showToastShort(L10n.f(context,
+            // The settings banner, which stays inside the window for the reader to finish, as
+            // every other refusal on these pages does. A toast was gone before the time was read.
+            SettingsActionBanner.showNotice(context, L10n.f(context,
                     "Today's budget is locked. This can be changed again at %1$s.",
                     SessionLockOverlay.resetTimeLabel()));
             return false;
@@ -187,7 +189,7 @@ public final class ScreenTimePreferenceCategory extends ConditionalPreferenceCat
                 Dialog dialog = ((DialogPreference) preference).getDialog();
                 if (dialog != null) dialog.dismiss();
             }
-            Utils.showToastShort(L10n.f(context,
+            SettingsActionBanner.showNotice(context, L10n.f(context,
                     "That loosens the budget. It waits until %1$s.",
                     SessionLockOverlay.timeLabel(at)));
             return false;

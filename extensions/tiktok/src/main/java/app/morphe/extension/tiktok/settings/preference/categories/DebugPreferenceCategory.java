@@ -48,7 +48,7 @@ public class DebugPreferenceCategory extends ConditionalPreferenceCategory {
             addPreference(new TogglePreference(
                     context,
                     "Log diagnostics",
-                    "Turn this on while you record logs for a bug report, then turn it off again. While it is on, TikTok can feel slower and may crash.",
+                    "Turn this on while you record logs for a bug report, then turn it off again. While it's on, TikTok can feel slower and may crash.",
                     BaseSettings.DEBUG
             ));
 

@@ -168,7 +168,10 @@ final class FeatureGateLabUi {
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setPadding(dp(context, 16), dp(context, 14), dp(context, 16), dp(context, 14));
-        row.setBackground(SettingsUi.borderedSurface(context, SettingsUi.RADIUS_CARD, false));
+        // The row answers the tap and takes focus, so it wears the settings press and focus over
+        // its card. A plain card showed nothing for either.
+        row.setBackground(SettingsUi.pressAndFocusOver(context, SettingsUi.RADIUS_CARD,
+                SettingsUi.borderedSurface(context, SettingsUi.RADIUS_CARD, false)));
         LinearLayout labels = new LinearLayout(context);
         labels.setOrientation(LinearLayout.VERTICAL);
         labels.addView(body(context, title), matchWrap());

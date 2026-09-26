@@ -45,7 +45,7 @@ public final class PlaybackPreferenceCategory extends ConditionalPreferenceCateg
             addPreference(new SectionHeadingPreference(context, "Auto-advance"));
             addPreference(new TogglePreference(context, "Auto-advance videos",
                     "Move to the next video when the current one ends. Pauses, open dialogs and "
-                            + "screen-time holds stop it. Restart TikTok after changing this.",
+                            + "screen-time holds stop it. Restart TikTok to apply this.",
                     Settings.AUTO_ADVANCE));
             addPreference(new NumberInputPreference(context, "Auto-advance session limit",
                     "Zero means no limit. Counts the videos Hushfeed advanced past for you, "

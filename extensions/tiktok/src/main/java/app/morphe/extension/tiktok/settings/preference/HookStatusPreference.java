@@ -86,10 +86,10 @@ public class HookStatusPreference extends Preference {
         StringBuilder message = new StringBuilder();
         if (report.isEmpty()) {
             message.append(L10n.t(context,
-                    "Nothing has been checked yet, so there is nothing to report."));
+                    "Nothing has been checked yet, so there's nothing to report."));
         } else {
             message.append(L10n.t(context,
-                    "Each area, how many of the things it looks for are in this build and how many are not."));
+                    "Each area, how many of the things it looks for are in this build and how many aren't."));
             for (String line : report) message.append("\n\n").append(line);
         }
 

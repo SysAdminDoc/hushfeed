@@ -82,7 +82,7 @@ public class FeatureGateLocalizationTest {
                 "9 (Recherchiert)",
                 "10 (Historisch)",
                 "11 (Ausgewählt)",
-                "payload hat einen ungültigen Wert. Gib ein JSON-Objekt oder -Array ein.",
+                "payload muss korrigiert werden. Gib ein JSON-Objekt oder -Array ein.",
                 "Das Feld raw_missing_field lässt sich in diesem Build nicht ändern. Nimm es"
                         + " aus der Überschreibung heraus oder setze die Überschreibung zurück.",
                 "Nichts Neues wurde importiert. Bereits identisch: 0. Nicht verfügbar: 0. "
@@ -105,7 +105,7 @@ public class FeatureGateLocalizationTest {
                 "9 (Hasil riset)",
                 "10 (Historis)",
                 "11 (Dipilih)",
-                "Nilai payload tidak valid. Masukkan objek atau larik JSON.",
+                "Nilai payload perlu diperbaiki. Masukkan objek atau larik JSON.",
                 "Field raw_missing_field tidak bisa diubah di build ini. Keluarkan dari"
                         + " penimpaan, atau setel ulang penimpaan.",
                 "Tidak ada hal baru yang diimpor. 0 sudah cocok, 0 tidak tersedia, 2 ditolak. "

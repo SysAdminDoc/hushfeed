@@ -113,7 +113,10 @@ public class NumberInputPreference extends EditTextPreference {
         // and pulled an out of range number to the nearest end without a word.
         String extra = extraSummaryLine();
         setSummary(L10n.t(getContext(), baseSummary)
-                + "\n" + L10n.f(getContext(), "%1$s to %2$s", minValue, maxValue)
+                // Formatted like the value under it and carrying the unit, so a limit reads
+                // "0 to 86,400 seconds" where it used to be the bare "0 to 86400".
+                + "\n" + L10n.f(getContext(), "%1$s to %2$s",
+                        displayValue(minValue), withUnit(maxValue, displayValue(maxValue)))
                 + "\n" + L10n.f(getContext(), "Current: %1$s", shown(clampedValue))
                 + (extra == null ? "" : "\n" + extra));
     }
@@ -141,7 +144,12 @@ public class NumberInputPreference extends EditTextPreference {
      * of the day is not "13 o'clock".
      */
     protected String displayValue(int value) {
-        return String.valueOf(value);
+        // Grouped the reader's way: 86,400 rather than 86400. Display only; the box the value
+        // is typed into takes plain digits.
+        android.content.res.Configuration configuration = getContext().getResources().getConfiguration();
+        java.util.Locale locale = android.os.Build.VERSION.SDK_INT >= 24
+                ? configuration.getLocales().get(0) : configuration.locale;
+        return java.text.NumberFormat.getIntegerInstance(locale).format(value);
     }
 
     /**

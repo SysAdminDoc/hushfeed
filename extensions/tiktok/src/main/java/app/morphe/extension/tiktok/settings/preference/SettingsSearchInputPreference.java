@@ -132,7 +132,8 @@ public final class SettingsSearchInputPreference extends Preference {
         clear.setTag("settings_search_clear");
         clear.setImageDrawable(new ClearDrawable(context));
         clear.setScaleType(ImageView.ScaleType.CENTER);
-        clear.setBackground(SettingsUi.roundedSurface(context, SettingsUi.RADIUS_CONTROL, false));
+        clear.setBackground(SettingsUi.pressAndFocusOver(context, SettingsUi.RADIUS_CONTROL,
+                SettingsUi.roundedSurface(context, SettingsUi.RADIUS_CONTROL, false)));
         clear.setContentDescription(L10n.t(context, "Clear search"));
         SettingsUi.markAsButton(clear);
         clear.setFocusable(true);

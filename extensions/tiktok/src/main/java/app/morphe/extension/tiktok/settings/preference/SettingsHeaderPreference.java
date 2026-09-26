@@ -116,6 +116,8 @@ public final class SettingsHeaderPreference extends Preference {
         toolbar.setGravity(Gravity.CENTER_VERTICAL);
         ImageView back = new ImageView(context);
         back.setContentDescription(L10n.t(context, "Back"));
+        // An ImageView with a click listener is read as an image; this says it is a button.
+        SettingsUi.markAsButton(back);
         back.setImageDrawable(new BackDrawable(context));
         back.setOnClickListener(view -> { if (onBack != null) onBack.run(); });
         back.setFocusable(true);

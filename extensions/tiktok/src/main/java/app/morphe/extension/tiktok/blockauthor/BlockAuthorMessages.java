@@ -22,7 +22,7 @@ public final class BlockAuthorMessages {
     ) {
         if (result == BlockAuthorService.Result.REJECTED) {
             return L10n.f(context,
-                    "TikTok did not block %1$s. Try again in a moment.", author);
+                    "TikTok didn't block %1$s. Try again in a moment.", author);
         }
         return L10n.f(context, "Couldn't confirm the block for %1$s. Open their profile to check.", author);
     }
@@ -37,7 +37,7 @@ public final class BlockAuthorMessages {
         }
         if (result == BlockAuthorService.Result.REJECTED) {
             return L10n.f(context,
-                    "TikTok did not unblock %1$s. Try again in a moment.", author);
+                    "TikTok didn't unblock %1$s. Try again in a moment.", author);
         }
         return L10n.f(context, "Couldn't confirm the unblock for %1$s. Open their profile to check.", author);
     }

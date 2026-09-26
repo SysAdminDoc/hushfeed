@@ -65,7 +65,7 @@ public final class RegionFilter implements IFilter {
             String code = canonical(entry);
             if (code.isEmpty() || RegionSpoof.validCountry(code)) continue;
             return L10n.f(
-                    "%1$s is not a country code, so no video would ever match it. Use two letters, like GB, IE or US.",
+                    "%1$s isn't a country code, so no video would ever match it. Use two letters, like GB, IE or US.",
                     entry.trim());
         }
         return null;

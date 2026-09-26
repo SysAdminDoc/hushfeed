@@ -67,7 +67,7 @@ import app.morphe.extension.tiktok.wellbeing.SessionLockOverlay;
 @SuppressWarnings("deprecation")
 public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
     private static final String FEATURE_GATE_LAB_KEY = "action_feature_gate_lab";
-    private static final String PAUSE_SUMMARY = "From the next start TikTok runs as if it were not patched, so you can tell whether a problem comes from Hushfeed. Your settings stay as they are.";
+    private static final String PAUSE_SUMMARY = "From the next start TikTok runs as if it weren't patched, so you can tell whether a problem comes from Hushfeed. Your settings stay as they are.";
     private static final int REQUEST_DOWNLOAD_PATH_FOLDER = 8841;
     private static final String ARG_SECTION = "morphe_settings_section";
     private static final String ARG_SEARCH = "morphe_settings_search";
@@ -381,7 +381,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         app.morphe.extension.shared.settings.preference.LogBufferManager.savedToMessage =
                 L10n.t(context, "Full report saved to %1$s");
         app.morphe.extension.shared.settings.preference.LogBufferManager.couldNotStartMessage =
-                L10n.t(context, "Couldn't start the report export. Try again shortly.");
+                L10n.t(context, "Couldn't start the report export. Try again in a moment.");
         // Four whole sentences rather than five fragments, so each one is a row a translator
         // can move the numbers around inside. The context is asked for when a line is written
         // rather than captured here: this writer is a static and outlives the screen.
@@ -1156,13 +1156,13 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         pause.setOnPreferenceChangeListener((preference, value) -> {
             if (!Boolean.TRUE.equals(value)) return true;
             if (SessionBudget.lockedToday()) {
-                Utils.showToastShort(L10n.f(context,
+                SettingsActionBanner.showNotice(context, L10n.f(context,
                         "Today's budget is locked. This can be changed again at %1$s.",
                         SessionLockOverlay.resetTimeLabel()));
                 return false;
             }
             if (Settings.SESSION_BUDGET_WAIT_TO_LOOSEN.savedValue()) {
-                Utils.showToastShort(L10n.t(context,
+                SettingsActionBanner.showNotice(context, L10n.t(context,
                         "Wait a day to loosen the budget is on, so Hushfeed stays on"));
                 return false;
             }

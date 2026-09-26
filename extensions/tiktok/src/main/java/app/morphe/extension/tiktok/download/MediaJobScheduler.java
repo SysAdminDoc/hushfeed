@@ -43,7 +43,7 @@ final class MediaJobScheduler {
             return true;
         } catch (RejectedExecutionException error) {
             Logger.printException(() -> "Media job queue is full for " + label, error);
-            Utils.showToastLong(L10n.t("Too many media saves are already running. Try again shortly."));
+            Utils.showToastLong(L10n.t("Too many media saves are already running. Try again in a moment."));
             return false;
         }
     }

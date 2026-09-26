@@ -217,7 +217,7 @@ public final class FeatureGateDetailFragment extends Fragment {
         effectiveValue = addInfo(currentState, L10n.t(context, "What TikTok gets"), effectiveValueText());
         TextView cacheNote = FeatureGateLabUi.label(
                 context,
-                L10n.t(context, "An override changes the value TikTok reads from this gate. It does not rewrite TikTok's cached value or prove the named feature changed.")
+                L10n.t(context, "An override changes the value TikTok reads from this gate. It doesn't rewrite TikTok's cached value or prove the named feature changed.")
         );
         LinearLayout.LayoutParams cacheNoteParams = FeatureGateLabUi.matchWrap();
         cacheNoteParams.setMargins(0, FeatureGateLabUi.dp(context, 8), 0, 0);
@@ -597,7 +597,7 @@ public final class FeatureGateDetailFragment extends Fragment {
     private void leaveDetail() {
         // Not a confirmation dialog: the house rule is one line of feedback and the action goes
         // through. What was typed is not saved, and now that is said rather than silent.
-        if (fieldsDirty) Utils.showToastShort(L10n.t(getContext(), "Field edits were not saved"));
+        if (fieldsDirty) Utils.showToastShort(L10n.t(getContext(), "Field edits weren't saved"));
         if (getFragmentManager() != null) getFragmentManager().popBackStack();
     }
 
@@ -1200,6 +1200,9 @@ public final class FeatureGateDetailFragment extends Fragment {
         ));
         SettingsUi.markAsButton(heading);
         heading.setFocusable(true);
+        // A button with no background showed nothing when pressed or focused.
+        heading.setBackground(SettingsUi.pressAndFocusOver(context, SettingsUi.RADIUS_CONTROL,
+                new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             heading.setContentDescription(L10n.t(context, "Technical details"));
             heading.setStateDescription(L10n.t(context, "collapsed"));
@@ -1312,7 +1315,7 @@ public final class FeatureGateDetailFragment extends Fragment {
                     false
             ));
         }
-        result.add(new ValueOption(null, L10n.t(getContext(), "Custom value..."), true));
+        result.add(new ValueOption(null, L10n.t(getContext(), "Custom value…"), true));
         return result;
     }
 

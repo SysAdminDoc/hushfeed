@@ -155,7 +155,7 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
 
     private void addLimits(Context context) {
         addPreference(new SectionHeadingPreference(context, "Limits"));
-        addPreference(new NumberInputPreference(context, "Maximum video length", "Seconds. Zero keeps every length. If everything the feed just sent would be filtered out, the video closest to your limit is kept so the feed is not empty.", Settings.MAX_VIDEO_SECONDS, "%1$s second", "%1$s seconds").zeroMeansOff());
+        addPreference(new NumberInputPreference(context, "Maximum video length", "Seconds. Zero keeps every length. If everything the feed just sent would be filtered out, the video closest to your limit is kept so the feed isn't empty.", Settings.MAX_VIDEO_SECONDS, "%1$s second", "%1$s seconds").zeroMeansOff());
         addPreference(new NumberInputPreference(context, "Maximum post age",
                 "Days. Zero keeps every age. Posts without a usable timestamp, including future posts, stay visible.",
                 Settings.MAX_PUBLICATION_AGE_DAYS, "%1$s day", "%1$s days").zeroMeansOff());
@@ -247,7 +247,7 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
             addPreference(new InputTextPreference(
                     context,
                     "Blocked sound names",
-                    "Comma separated words to match against a sound's name, like saxophone. Case does not matter.",
+                    "Comma separated words to match against a sound's name, like saxophone. Case doesn't matter.",
                     Settings.BLOCKED_SOUND_NAMES
             ));
             addPreference(new InputTextPreference(
@@ -262,7 +262,7 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
     private void addWordsAndCountries(Context context) {
         addPreference(new SectionHeadingPreference(context, "Words and countries"));
         addPreference(new InputTextPreference(context, "Blocked caption words",
-                "Comma separated words or phrases. Videos whose caption matches are hidden. Case does not matter. Two phrases in quotes can be joined: \"a\" & \"b\" needs both, \"a\" !& \"b\" needs the first without the second.",
+                "Comma separated words or phrases. Videos whose caption matches are hidden. Case doesn't matter. Two phrases in quotes can be joined: \"a\" & \"b\" needs both, \"a\" !& \"b\" needs the first without the second.",
                 Settings.BLOCKED_CAPTION_WORDS)
                 .withCheck(app.morphe.extension.tiktok.feedfilter.KeywordRules::problem));
         addPreference(new InputTextPreference(context, "Only from these countries",
@@ -299,7 +299,7 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
         addPreference(new TogglePreference(
                 context,
                 "Filter TikTok's offline videos",
-                "Also apply these filters to downloaded videos TikTok uses when the feed cannot load enough new items.",
+                "Also apply these filters to downloaded videos TikTok uses when the feed can't load enough new items.",
                 Settings.FILTER_OFFLINE_FALLBACK_VIDEOS
         ));
     }

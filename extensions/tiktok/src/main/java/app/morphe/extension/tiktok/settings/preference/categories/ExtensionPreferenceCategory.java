@@ -88,7 +88,7 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
             addPreference(new TogglePreference(
                     context,
                     "Show the progress bar",
-                    "Show TikTok's own progress bar on videos where it is normally hidden.",
+                    "Show TikTok's own progress bar on videos where it's normally hidden.",
                     Settings.SHOW_SEEKBAR
             ));
         }
@@ -187,7 +187,7 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
             addPreference(new TogglePreference(
                     context,
                     "Keep the screen's refresh rate",
-                    "Stop TikTok asking the screen to run at the frame rate of the video it is "
+                    "Stop TikTok asking the screen to run at the frame rate of the video it's "
                             + "playing. On a 90 or 120 Hz phone that ask slows the whole app down "
                             + "to the video's rate, scrolling included.",
                     Settings.UNCAP_REFRESH_RATE

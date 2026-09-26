@@ -1415,7 +1415,7 @@ public class FeatureGatePagesTest {
             leave.setAccessible(true);
             leave.invoke(detail);
             Shadows.shadowOf(Looper.getMainLooper()).idle();
-            assertEquals("Field edits were not saved", ShadowToast.getTextOfLatestToast());
+            assertEquals("Field edits weren't saved", ShadowToast.getTextOfLatestToast());
 
             // Discard puts the field back and stands the actions down.
             discard.performClick();

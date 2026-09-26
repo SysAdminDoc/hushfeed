@@ -33,7 +33,7 @@ final class GateReportExport {
         }
         try {
             Utils.setClipboard(context, "Feature gate recording", report);
-            Utils.showToastShort(L10n.t("Copied feature gate report"));
+            Utils.showToastShort(L10n.t("Feature gate report copied"));
             return true;
         } catch (RuntimeException error) {
             Logger.printException(() -> "Could not copy gate report", error);
@@ -54,7 +54,7 @@ final class GateReportExport {
         });
         // A full pool refuses the task, and nothing else would have said so: the reader tapped
         // Save JSON and got neither the saved path nor the failure sentence.
-        if (!started) Utils.showToastShort(L10n.t("Couldn't start the report export. Try again shortly."));
+        if (!started) Utils.showToastShort(L10n.t("Couldn't start the report export. Try again in a moment."));
     }
 
     /** The folder under Download the report lands in, spelt the way a file manager shows it. */

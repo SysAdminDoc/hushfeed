@@ -211,7 +211,7 @@ public final class KeywordRules {
         // One literal, because the translation gate reads the literal handed to L10n and a
         // string built from two of them is two entries it cannot find.
         return app.morphe.extension.tiktok.settings.L10n.f(
-                "This line opens a rule and does not finish it: %1$s. Write two phrases as \"a\" & \"b\" for both, or \"a\" !& \"b\" for the first without the second.",
+                "This line opens a rule and doesn't finish it: %1$s. Write two phrases as \"a\" & \"b\" for both, or \"a\" !& \"b\" for the first without the second.",
                 broken.get(0));
     }
 

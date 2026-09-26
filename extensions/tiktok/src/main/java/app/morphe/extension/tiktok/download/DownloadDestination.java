@@ -30,7 +30,7 @@ public final class DownloadDestination {
         for (String segment : segments) {
             if (segment.isEmpty() || ".".equals(segment) || "..".equals(segment)) {
                 throw new IllegalArgumentException(
-                        L10n.t("That folder name has a character Android does not allow. Use letters, numbers, spaces or dashes."));
+                        L10n.t("That folder name has a character Android doesn't allow. Use letters, numbers, spaces or dashes."));
             }
         }
 

@@ -25,7 +25,7 @@ public class GateReportExportTest {
         String small = "{\"gates\":[]}";
         ShadowToast.reset();
         assertTrue(GateReportExport.copy(context, small));
-        assertEquals("Copied feature gate report", String.valueOf(ShadowToast.getTextOfLatestToast()));
+        assertEquals("Feature gate report copied", String.valueOf(ShadowToast.getTextOfLatestToast()));
         String large = "{\"value\":\"" + "Caption \uD83C\uDF0D ".repeat(200000) + "\"}";
         ShadowToast.reset();
         assertFalse(GateReportExport.copy(context, large));
@@ -63,7 +63,7 @@ public class GateReportExportTest {
             assertTrue(clip.getDescription().getExtras()
                     .getBoolean("android.content.extra.IS_SENSITIVE"));
         }
-        assertEquals("Copied feature gate report",
+        assertEquals("Feature gate report copied",
                 String.valueOf(ShadowToast.getTextOfLatestToast()));
     }
 
@@ -76,7 +76,7 @@ public class GateReportExportTest {
         try (var saturation = app.morphe.extension.shared.BackgroundPoolSaturation.fill()) {
             GateReportExport.save(context, "{}");
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
-            assertEquals("Couldn't start the report export. Try again shortly.",
+            assertEquals("Couldn't start the report export. Try again in a moment.",
                     String.valueOf(ShadowToast.getTextOfLatestToast()));
         }
     }

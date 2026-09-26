@@ -154,7 +154,7 @@ public class FeatureGateRecorderTest {
             dialog.getButton(android.app.AlertDialog.BUTTON_NEUTRAL).performClick();
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
             assertTrue("Copy closed the report", dialog.isShowing());
-            assertEquals("Copied feature gate report",
+            assertEquals("Feature gate report copied",
                     String.valueOf(org.robolectric.shadows.ShadowToast.getTextOfLatestToast()));
             dialog.dismiss();
 

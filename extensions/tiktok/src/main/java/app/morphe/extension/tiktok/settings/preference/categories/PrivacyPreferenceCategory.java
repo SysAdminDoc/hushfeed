@@ -73,8 +73,8 @@ public final class PrivacyPreferenceCategory extends ConditionalPreferenceCatego
             addPreference(new TogglePreference(
                     context,
                     "Ghost mode",
-                    "Stop TikTok reporting that you viewed a story or a profile, or that you are "
-                            + "typing. Online status is unchanged. It cannot undo what the server has "
+                    "Stop TikTok reporting that you viewed a story or a profile, or that you're "
+                            + "typing. Online status is unchanged. It can't undo what the server has "
                             + "already recorded.",
                     Settings.GHOST_MODE
             ));
@@ -133,8 +133,8 @@ public final class PrivacyPreferenceCategory extends ConditionalPreferenceCatego
             addPreference(new TogglePreference(
                     context,
                     "Show when the camera or microphone is in use",
-                    "A green dot in the top corner while TikTok has the camera open and an "
-                            + "orange one while it records sound. They go when the access ends.",
+                    "A green square in the top corner while TikTok has the camera open, and an "
+                            + "orange diamond while it records sound. They go when the access ends.",
                     Settings.CAMERA_MIC_INDICATOR
             ));
         }
