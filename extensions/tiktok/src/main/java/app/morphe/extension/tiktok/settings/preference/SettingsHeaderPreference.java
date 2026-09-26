@@ -124,7 +124,7 @@ public final class SettingsHeaderPreference extends Preference {
         // moving by keyboard or d-pad sees: the ripple's own focus tint is fainter still.
         back.setBackground(new android.graphics.drawable.RippleDrawable(
                 android.content.res.ColorStateList.valueOf(SettingsUi.rippleTint()),
-                SettingsUi.focusRing(context, 6),
+                SettingsUi.focusRing(context, SettingsUi.RADIUS_CONTROL),
                 SettingsUi.roundedSurface(context, SettingsUi.RADIUS_CONTROL, false)));
         toolbar.addView(back, new LinearLayout.LayoutParams(SettingsUi.dp(context, 48), SettingsUi.dp(context, 48)));
         TextView brand = SettingsUi.text(context, BRAND_MARK, 12, SettingsUi.accent(), 1);

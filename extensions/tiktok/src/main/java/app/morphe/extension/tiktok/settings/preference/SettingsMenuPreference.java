@@ -322,8 +322,12 @@ public final class SettingsMenuPreference extends Preference {
         private final Paint line = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Path path = new Path();
 
+        /** Tiles take their corner from the radius scale, by size, rather than a fifth of their width. */
+        private final float density;
+
         MenuIconDrawable(Context context, Icon icon) {
             this.icon = icon;
+            density = context.getResources().getDisplayMetrics().density;
             fill.setColor(SettingsUi.liftedSurface());
             border.setColor(SettingsUi.border());
             border.setStyle(Paint.Style.STROKE);
@@ -338,7 +342,11 @@ public final class SettingsMenuPreference extends Preference {
         @Override
         public void draw(Canvas canvas) {
             RectF bounds = new RectF(getBounds());
-            float radius = bounds.width() * 0.20f;
+            // A fifth of the width made 10.4dp on a row's 52dp tile and 6.4dp on a quick route's
+            // 32dp one, neither on the scale. Row tiles take the card radius, small ones the
+            // control radius.
+            float radius = (bounds.width() >= 40 * density
+                    ? SettingsUi.RADIUS_CARD : SettingsUi.RADIUS_CONTROL) * density;
             canvas.drawRoundRect(bounds, radius, radius, fill);
             canvas.drawRoundRect(bounds, radius, radius, border);
 

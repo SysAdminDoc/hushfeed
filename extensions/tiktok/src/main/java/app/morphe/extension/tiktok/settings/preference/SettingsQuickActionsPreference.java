@@ -84,7 +84,9 @@ public final class SettingsQuickActionsPreference extends Preference {
 
         FrameLayout holder = new FrameLayout(context);
         holder.setBackgroundColor(SettingsUi.background());
-        holder.setPadding(0, 0, 0, SettingsUi.dp(context, 8));
+        // 8dp above as well as below: the routes sat on the search card's edge while every other
+        // card on the page is 8dp from the next.
+        holder.setPadding(0, SettingsUi.dp(context, 8), 0, SettingsUi.dp(context, 8));
         holder.addView(row, new FrameLayout.LayoutParams(-1, -2));
         return holder;
     }

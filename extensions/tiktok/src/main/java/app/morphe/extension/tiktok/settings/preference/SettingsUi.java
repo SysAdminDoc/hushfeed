@@ -177,12 +177,24 @@ public final class SettingsUi {
         return isDarkMode() ? DARK_ERROR : LIGHT_ERROR;
     }
 
+    /** Amber on a dark surface, 9.6:1, and burnt orange on a light one, 5.0:1. */
+    public static final @ColorInt int DARK_ATTENTION = 0xFFFFA45B;
+    public static final @ColorInt int LIGHT_ATTENTION = 0xFFB45309;
+    public static final @ColorInt int DARK_OK = 0xFF6BCB77;
+    public static final @ColorInt int LIGHT_OK = 0xFF1D7A37;
+    /**
+     * The home status card while Hushfeed is running, in the dark theme: the surface warmed
+     * toward the accent, with a border between the two. The light theme keeps the plain card.
+     */
+    public static final @ColorInt int DARK_STATUS_SURFACE = 0xFF1D1119;
+    public static final @ColorInt int DARK_STATUS_BORDER = 0xFF573244;
+
     public static @ColorInt int attentionColor() {
-        return isDarkMode() ? 0xFFFFA45B : 0xFFB45309;
+        return isDarkMode() ? DARK_ATTENTION : LIGHT_ATTENTION;
     }
 
     public static @ColorInt int okColor() {
-        return isDarkMode() ? 0xFF6BCB77 : 0xFF1D7A37;
+        return isDarkMode() ? DARK_OK : LIGHT_OK;
     }
 
     /** The glyph every toned notice and status row leads with, so it is written once. */
@@ -361,14 +373,17 @@ public final class SettingsUi {
         // greyed switch looks the same on as off: a reader cannot see what state it will come
         // back in when the parent is turned on again.
         track.addState(new int[]{-android.R.attr.state_enabled, android.R.attr.state_checked},
-                switchShape(context, (accent() & 0x00ffffff) | 0x66000000, 44, 26, 6));
-        track.addState(new int[]{-android.R.attr.state_enabled}, switchShape(context, border(), 44, 26, 6));
-        track.addState(new int[]{android.R.attr.state_checked}, switchShape(context, accent(), 44, 26, 6));
-        track.addState(new int[]{}, switchShape(context, isDarkMode() ? DARK_SWITCH_TRACK_OFF : LIGHT_SWITCH_TRACK_OFF, 44, 26, 6));
+                switchShape(context, (accent() & 0x00ffffff) | 0x66000000, 44, 26, RADIUS_CONTROL));
+        track.addState(new int[]{-android.R.attr.state_enabled},
+                switchShape(context, border(), 44, 26, RADIUS_CONTROL));
+        track.addState(new int[]{android.R.attr.state_checked},
+                switchShape(context, accent(), 44, 26, RADIUS_CONTROL));
+        track.addState(new int[]{}, switchShape(context,
+                isDarkMode() ? DARK_SWITCH_TRACK_OFF : LIGHT_SWITCH_TRACK_OFF, 44, 26, RADIUS_CONTROL));
         control.setTrackTintList(null);
         control.setThumbTintList(null);
         control.setTrackDrawable(track);
-        GradientDrawable thumb = switchShape(context, SWITCH_THUMB, 20, 22, 4);
+        GradientDrawable thumb = switchShape(context, SWITCH_THUMB, 20, 22, RADIUS_BADGE);
         thumb.setStroke(dp(context, 1), isDarkMode() ? DARK_SWITCH_THUMB_STROKE : LIGHT_SWITCH_THUMB_STROKE);
         control.setThumbDrawable(thumb);
         control.setSwitchMinWidth(dp(context, 44));
@@ -519,7 +534,7 @@ public final class SettingsUi {
             this.context = context;
             this.first = first;
             this.last = last;
-            radius = dp(context, 10);
+            radius = dp(context, RADIUS_CARD);
             inset = dp(context, 18);
         }
         @Override public void draw(Canvas canvas) {
@@ -1705,7 +1720,7 @@ public final class SettingsUi {
         DialogCheckMarkDrawable(Context context, boolean radio, boolean pinnedChecked) {
             intrinsicSize = dp(context, intrinsicSizeDp);
             boxSize = dp(context, boxSizeDp);
-            radius = dp(context, 2);
+            radius = dp(context, RADIUS_BADGE);
             this.radio = radio;
             this.pinned = pinnedChecked;
             this.checked = pinnedChecked;

@@ -4,6 +4,7 @@ Every Hushfeed release, newest first.
 
 ## Unreleased
 
+* **TikTok:** The settings home's status mark is a rounded square now, on the same corner scale as the cards and icon tiles, and the three quick routes no longer sit on the search card's edge. The Feature Gate Lab's icon buttons show where keyboard or d-pad focus is, which the round ripple they had never did.
 * **TikTok:** The page that opens when settings can't load now has a proper title, and Retry is drawn as the way forward instead of a second plain row next to Back. Choice dialogs line their marks up under the title and show Cancel in the dialog's own language. What's new offers Got it and Later and has an icon of its own. When Undo or Restart now fails, the message says which one failed, where it used to talk about undoing a clear either way.
 * **TikTok:** A What's new row sits at the top of Hushfeed's settings after an update. It opens the changelog for the version you're on, and for any releases you skipped since you last dismissed it. Close keeps the row for later, and Dismiss update takes it away until the next release.
 * **TikTok:** Hide Play Store update offer is a new optional patch. On the S22, Play changed from Update to Open while Morphe Manager kept showing TikTok 47.0.3. Android won't install a lower-code APK over this one, so leave the patch off if you expect to switch back without removing the app.

@@ -11,7 +11,6 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -115,12 +114,11 @@ final class FeatureGateLabUi {
             icon = fallback;
         }
         icon.setPadding(dp(context, 12), dp(context, 12), dp(context, 12), dp(context, 12));
-        TypedValue ripple = new TypedValue();
-        if (context.getTheme().resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, ripple, true)) {
-            icon.setBackgroundResource(ripple.resourceId);
-        } else {
-            icon.setBackgroundColor(0x00000000);
-        }
+        // The settings pages' press and focus, on the control radius. The platform's borderless
+        // ripple drew a circle and had no focus state, so a d-pad or keyboard could land on an
+        // icon button and leave nothing on screen to say so.
+        icon.setBackground(SettingsUi.pressAndFocusOver(context, SettingsUi.RADIUS_CONTROL,
+                new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)));
         icon.setContentDescription(description);
         icon.setFocusable(true);
         SettingsUi.markAsButton(icon);
@@ -233,13 +231,8 @@ final class FeatureGateLabUi {
      * painted for the other.
      */
     static int warningColor(Context context) {
-        return SettingsUi.isDarkMode() ? WARNING_DARK : WARNING_LIGHT;
+        return SettingsUi.attentionColor();
     }
-
-    /** Amber on a dark surface, 9.6:1. */
-    private static final int WARNING_DARK = 0xFFFFA45B;
-    /** Burnt orange on a light one, 5.0:1. */
-    private static final int WARNING_LIGHT = 0xFFB45309;
 
     static void styleDialog(AlertDialog dialog) {
         SettingsUi.styleFramedDialog(dialog);

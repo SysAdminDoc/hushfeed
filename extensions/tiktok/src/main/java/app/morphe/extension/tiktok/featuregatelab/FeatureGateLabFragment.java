@@ -270,7 +270,7 @@ public final class FeatureGateLabFragment extends Fragment {
         searchRow.setGravity(Gravity.CENTER_VERTICAL);
         searchRow.setPaddingRelative(FeatureGateLabUi.dp(context, 8), 0, 0, 0);
         searchRow.setTag("feature_gate_search_row");
-        searchRow.setBackground(SettingsUi.focusableSurface(context, 6, false));
+        searchRow.setBackground(SettingsUi.focusableSurface(context, SettingsUi.RADIUS_CONTROL, false));
         // The focus lands on the field inside, never on the row, and a group only carries its
         // children's states when told to. Without this the accent border above never showed.
         searchRow.setAddStatesFromChildren(true);
@@ -427,7 +427,7 @@ public final class FeatureGateLabFragment extends Fragment {
                 FeatureGateLabUi.dp(context, 12),
                 0
         );
-        filterButton.setBackground(SettingsUi.focusableSurface(context, 6, false));
+        filterButton.setBackground(SettingsUi.focusableSurface(context, SettingsUi.RADIUS_CONTROL, false));
         filterButton.setFocusable(true);
         filterButton.setOnClickListener(view -> showFilterPicker());
         resultRow.addView(filterButton, new LinearLayout.LayoutParams(

@@ -11,6 +11,7 @@ import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.preference.Preference;
@@ -121,8 +122,8 @@ public final class SettingsStatusPreference extends Preference {
         GradientDrawable cardBackground = SettingsUi.borderedSurface(
                 context, SettingsUi.RADIUS_CARD, true);
         if (!HushfeedPause.isPaused() && SettingsUi.isDarkMode()) {
-            cardBackground.setColor(0xFF1D1119);
-            cardBackground.setStroke(SettingsUi.dp(context, 1), 0xFF573244);
+            cardBackground.setColor(SettingsUi.DARK_STATUS_SURFACE);
+            cardBackground.setStroke(SettingsUi.dp(context, 1), SettingsUi.DARK_STATUS_BORDER);
         }
         card.setBackground(cardBackground);
 
@@ -180,7 +181,7 @@ public final class SettingsStatusPreference extends Preference {
             GradientDrawable actionBackground = SettingsUi.borderedSurface(
                     context, SettingsUi.RADIUS_CONTROL, false);
             if (!HushfeedPause.isPaused() && SettingsUi.isDarkMode()) {
-                actionBackground.setColor(0xFF1D1119);
+                actionBackground.setColor(SettingsUi.DARK_STATUS_SURFACE);
                 actionBackground.setStroke(SettingsUi.dp(context, 1), SettingsUi.accent());
             }
             action.setBackground(SettingsUi.pressAndFocusOver(
@@ -234,7 +235,11 @@ public final class SettingsStatusPreference extends Preference {
         private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint bar = new Paint(Paint.ANTI_ALIAS_FLAG);
 
+        /** The mark's corner, the card radius: the owner's scale has no circles for a backdrop. */
+        private final float corner;
+
         PausedDrawable(Context context) {
+            corner = SettingsUi.dp(context, SettingsUi.RADIUS_CARD);
             fill.setColor(SettingsUi.badgeFill());
             fill.setStyle(Paint.Style.FILL);
             bar.setColor(SettingsUi.badgeText());
@@ -247,7 +252,8 @@ public final class SettingsStatusPreference extends Preference {
             float cx = getBounds().exactCenterX();
             float cy = getBounds().exactCenterY();
             float radius = Math.min(getBounds().width(), getBounds().height()) * 0.38f;
-            canvas.drawCircle(cx, cy, radius, fill);
+            canvas.drawRoundRect(new RectF(cx - radius, cy - radius, cx + radius, cy + radius),
+                    corner, corner, fill);
             float half = radius * 0.4f;
             canvas.drawLine(cx - radius * 0.22f, cy - half, cx - radius * 0.22f, cy + half, bar);
             canvas.drawLine(cx + radius * 0.22f, cy - half, cx + radius * 0.22f, cy + half, bar);
@@ -271,7 +277,10 @@ public final class SettingsStatusPreference extends Preference {
         private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint check = new Paint(Paint.ANTI_ALIAS_FLAG);
 
+        private final float corner;
+
         ActiveDrawable(Context context) {
+            corner = SettingsUi.dp(context, SettingsUi.RADIUS_CARD);
             fill.setColor(SettingsUi.badgeFill());
             fill.setStyle(Paint.Style.FILL);
             check.setColor(SettingsUi.badgeText());
@@ -285,7 +294,8 @@ public final class SettingsStatusPreference extends Preference {
             float cx = getBounds().exactCenterX();
             float cy = getBounds().exactCenterY();
             float radius = Math.min(getBounds().width(), getBounds().height()) * 0.38f;
-            canvas.drawCircle(cx, cy, radius, fill);
+            canvas.drawRoundRect(new RectF(cx - radius, cy - radius, cx + radius, cy + radius),
+                    corner, corner, fill);
             canvas.drawLine(cx - radius * 0.48f, cy,
                     cx - radius * 0.12f, cy + radius * 0.34f, check);
             canvas.drawLine(cx - radius * 0.12f, cy + radius * 0.34f,
