@@ -18,6 +18,7 @@ import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.argumentRegister
 import app.morphe.util.getFreeRegisterProvider
 import app.morphe.util.getReference
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
@@ -36,6 +37,24 @@ private val clipboardTextHelperFingerprint = Fingerprint(
         "Landroid/content/Context;",
         "Lcom/bytedance/bpea/basics/Cert;",
     ),
+    custom = { method, _ ->
+        method.implementation?.instructions?.any { instruction ->
+            instruction.getReference<MethodReference>()?.isClipDataNewPlainText() == true
+        } == true
+    },
+)
+
+/**
+ * The static helper the comment menu's Copy goes through since 46.9.3: the name prefix, the
+ * comment text and the text's emoji spans in, a ClipData out, either the plain text under
+ * "copy_label" or, with emoji encoding on, one built from the spans. The menu never calls the
+ * helper above any more, so on 47.0.3 that route only reached Favorites > Comments (issue #28).
+ */
+private val commentClipDataBuilderFingerprint = Fingerprint(
+    accessFlags = listOf(AccessFlags.STATIC),
+    returnType = CLIP_DATA_CLASS_DESCRIPTOR,
+    parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;", "Ljava/util/List;"),
+    strings = listOf("copy_label"),
     custom = { method, _ ->
         method.implementation?.instructions?.any { instruction ->
             instruction.getReference<MethodReference>()?.isClipDataNewPlainText() == true
@@ -101,7 +120,23 @@ val copyCommentsWithoutUsernamePatch = bytecodePatch(
             }
         }
 
-        if (patchedCalls == 0) {
+        // The prefix is the first parameter, blanked before the helper joins it to the text. A
+        // range invoke, so the parameter register's number never has to fit a 4-bit operand.
+        val builders = commentClipDataBuilderFingerprint.matchAll()
+        if (builders.size > 1) {
+            throw PatchException(
+                "Copy comments without username: ${builders.size} comment ClipData builders: ${builders.map { it.originalClassDef.type }}",
+            )
+        }
+        builders.singleOrNull()?.method?.addInstructions(
+            0,
+            """
+                invoke-static/range { p0 .. p0 }, $EXTENSION_CLASS_DESCRIPTOR->copiedPrefix(Ljava/lang/String;)Ljava/lang/String;
+                move-result-object p0
+            """,
+        )
+
+        if (patchedCalls == 0 && builders.isEmpty()) {
             throw PatchException("Copy comments without username: no comment copy clipboard calls were patched.")
         }
     }
