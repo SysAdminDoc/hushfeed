@@ -357,19 +357,14 @@ public class SimPresetPreference extends Preference {
             summary.setText(preset.getSummary());
             view.setEnabled(true);
 
-            // The chosen row wears the radio the standard dialogs draw, and says so to TalkBack.
+            // The chosen row wears the radio the standard dialogs draw. TalkBack hears it from the
+            // list, which reports its checked row (markSelected) through the item delegate it
+            // gives every row that has none. A delegate of the row's own replaced that one, and
+            // with it the click action Switch Access and Voice Access pick a preset with. Nor is
+            // the row marked selected: the list uses that for the row a d-pad is on, and the
+            // row's drawable washes a selected row, so the chosen preset looked focused.
             boolean chosen = selected != null && preset == selected;
             Context context = parent.getContext();
-            // Selected is also how the list marks the row a d-pad is on, and the row's press and
-            // focus drawable washes a selected row, so the chosen preset looked focused. The
-            // radio shows the choice; the accessibility node says it.
-            view.setAccessibilityDelegate(new View.AccessibilityDelegate() {
-                @Override public void onInitializeAccessibilityNodeInfo(
-                        View host, android.view.accessibility.AccessibilityNodeInfo info) {
-                    super.onInitializeAccessibilityNodeInfo(host, info);
-                    info.setSelected(chosen);
-                }
-            });
             title.setCompoundDrawablePadding(SettingsUi.dp(context, 8));
             title.setCompoundDrawablesRelativeWithIntrinsicBounds(
                     chosen ? SettingsUi.radioMark(context) : null, null, null, null);

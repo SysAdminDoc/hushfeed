@@ -398,10 +398,11 @@ public class SimPresetRowTest {
             org.junit.Assert.assertEquals("the chosen preset was not brought into view",
                     index, list.getFirstVisiblePosition());
             android.view.View chosen = list.getAdapter().getView(index, null, list);
-            // Told through the accessibility node, not the view's selected state: the list uses that
-            // for the row a d-pad is on, and the row's drawable washes it like focus.
-            assertTrue("TalkBack is not told the row is selected",
-                    chosen.createAccessibilityNodeInfo().isSelected());
+            // TalkBack hears the choice from the list's checked row (asserted above) through the
+            // item delegate the list gives rows that have none. A delegate of the row's own
+            // replaced it, and took the click action Switch Access picks a preset with.
+            org.junit.Assert.assertNull("a row delegate would replace the list's item delegate",
+                    chosen.getAccessibilityDelegate());
             org.junit.Assert.assertFalse("the chosen preset wears the focus wash", chosen.isSelected());
             android.widget.TextView title = chosen.findViewById(android.R.id.text1);
             org.junit.Assert.assertNotNull("the row carries no mark",
