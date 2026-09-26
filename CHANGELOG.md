@@ -4,6 +4,7 @@ Every Hushfeed release, newest first.
 
 ## Unreleased
 
+* **TikTok:** A day locked by the daily budget stays locked when TikTok restarts after the phone's timezone moved forward. Before, swiping TikTok away after the change handed the rest of the day back.
 * **TikTok:** A settings search that finds nothing now says that switches from patches you didn't tick in Morphe Manager aren't listed. Fill the screen with the video is one of them, since it comes with Fit the video to the screen, which is off by default.
 * **TikTok:** Camera and microphone indicator draws a green square for the camera and an orange diamond for the microphone, so telling them apart doesn't depend on seeing green and orange. The text on Hushfeed's banners over a video is easier to read against a bright frame or TikTok's light comment sheet.
 * **TikTok:** In settings, the back arrow is announced as a button, and the search box's clear button, the Lab's switch rows and its Technical details heading show when they're pressed or focused. A chosen SIM preset no longer looks like the row that has focus. When a budget change or Pause is refused, the reason stays on screen in the settings banner instead of a toast that was gone before the time in it could be read.

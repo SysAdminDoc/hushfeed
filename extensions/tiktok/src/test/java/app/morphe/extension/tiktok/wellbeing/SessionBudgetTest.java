@@ -986,6 +986,37 @@ public class SessionBudgetTest {
         }
     }
 
+    @Test public void aLockedDaySurvivesARestartAfterTheZoneMovedForward() throws Exception {
+        // The same move as above, then TikTok swiped away. The load at the next start threw a
+        // record from an earlier day number away, lock and all, while the running process kept it.
+        java.util.TimeZone original = java.util.TimeZone.getDefault();
+        try {
+            java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("America/Los_Angeles"));
+            SessionBudget.resetForTests();
+            now.set(at(2026, Calendar.SEPTEMBER, 7, 12, 0));
+            Settings.SESSION_BUDGET_LOCK.save(true);
+            spendTheBudget();
+            assertTrue("the day did not lock", SessionBudget.lockedToday());
+            long until = SessionBudget.lockedUntilMs();
+            SessionBudget.awaitWritesForTests();
+
+            java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Pacific/Kiritimati"));
+            SessionBudget.resetForTests();
+            SessionBudget.setClockForTests(now::get);
+            assertTrue("a restart in the new zone ended the locked day", SessionBudget.lockedToday());
+            assertTrue("a restart in the new zone lifted the hold", SessionBudget.isLocked());
+            assertEquals("a restart in the new zone cleared the counts", 1, SessionBudget.videosSeen());
+            assertEquals(until, SessionBudget.lockedUntilMs());
+
+            // Once the committed instant passes, the day the zone moved to begins as usual.
+            now.set(until + 60_000L);
+            assertFalse("the lock outlived the instant it committed to", SessionBudget.isLocked());
+        } finally {
+            java.util.TimeZone.setDefault(original);
+            SessionBudget.resetForTests();
+        }
+    }
+
     @Test public void theSwitchTurnedOnAfterTheBudgetRanOutLocksTheRestOfTheDay() {
         // It read as on and did nothing at all until tomorrow, and the day it was turned on for
         // stayed open, which is not what a switch called "lock today's budget" says.

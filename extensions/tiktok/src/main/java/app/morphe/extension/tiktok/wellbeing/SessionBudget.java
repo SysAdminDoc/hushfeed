@@ -772,8 +772,12 @@ public final class SessionBudget {
                         || cleanNoticesShown != storedNoticesShown;
 
                 // A record from a day that has not arrived yet belongs to a clock that has since
-                // gone backwards, and it is still the reader's own day.
-                if (storedDay >= currentDay) {
+                // gone backwards, and it is still the reader's own day. A locked day whose hold
+                // has not run out is kept as well, the way rollOver keeps it: a timezone moved
+                // forward makes the day number jump without the committed instant arriving, and
+                // a restart after the move handed the rest of the day back.
+                if (storedDay >= currentDay
+                        || (storedLockedToday && cleanLockUntilMs > clock.now())) {
                     nextDay = storedDay;
                     nextVideos = cleanVideos;
                     nextWatchedMs = cleanWatchedMs;
