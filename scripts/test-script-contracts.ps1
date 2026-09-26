@@ -1458,8 +1458,12 @@ try {
         $env:PATH = $hookRoot
         $env:GITHUB_ACTOR = $null
         $env:GITHUB_TOKEN = $null
+        # The files the tests read from outside the source folders reach the build too: a push
+        # that changed only one of them ran the release facts check at most.
         foreach ($pin in @('gradle/libs.versions.toml', 'gradle/verification-metadata.xml',
-                'settings.gradle.kts', 'build.gradle.kts', 'patches/build.gradle.kts')) {
+                'settings.gradle.kts', 'build.gradle.kts', 'patches/build.gradle.kts',
+                'README.md', 'NOTICE', 'patches-list.json', 'patches-bundle.png', 'assets/readme-hero.png',
+                'concepts/marketing/2026-09-12/selected/hero-final.png')) {
             Assert-Throws { & $prePushScript -Root $hookRoot -ChangedPaths @($pin) 6> $null } `
                 '*GITHUB_ACTOR*' "A push that changed $pin did not reach the build gates."
         }
@@ -1724,6 +1728,34 @@ try {
             $contractsBroken = Save-GateContracts 'broken'
             Assert-Throws { & $prePushScript -Root $gateRepo -PushedRefs "refs/heads/main $contractsBroken refs/heads/main $contractsGood" 6> $null } `
                 '*script contract tests did not pass*' 'A push whose own script contract tests fail was let through.'
+            & git -C $gateRepo checkout --quiet -- .
+
+            # A source file moved out of the source folders. With rename detection the diff
+            # named only the new path, so the push read as a docs change and built nothing.
+            function Get-GateHead { return (& git -C $gateRepo rev-parse HEAD).Trim() }
+            Set-Content -LiteralPath (Join-Path $gateRepo 'extensions/Moved.java') -Value 'class Moved {}' -Encoding ASCII
+            & git -C $gateRepo add extensions/Moved.java
+            & git -C $gateRepo commit --quiet -m 'a source file'
+            $beforeMove = Get-GateHead
+            New-Item -ItemType Directory -Path (Join-Path $gateRepo 'docs') -Force | Out-Null
+            & git -C $gateRepo mv extensions/Moved.java docs/Moved.java
+            & git -C $gateRepo commit --quiet -m 'moved out'
+            $afterMove = Get-GateHead
+            Remove-Item -LiteralPath $gateMarker -Force -ErrorAction SilentlyContinue
+            & $prePushScript -Root $gateRepo -PushedRefs "refs/heads/main $afterMove refs/heads/main $beforeMove" 6> $null
+            Assert-True ($LASTEXITCODE -eq 0 -and (Test-Path -LiteralPath $gateMarker)) `
+                'A push that moved a source file out of extensions/ ran no build.'
+
+            # A name with a letter outside ASCII. git quoted it, and a quoted path matched no route.
+            $wideName = 'extensions/' + [char]0x00DC + 'berall.java'
+            Set-Content -LiteralPath (Join-Path $gateRepo $wideName) -Value 'class Wide {}' -Encoding ASCII
+            & git -C $gateRepo add -- $wideName
+            & git -C $gateRepo commit --quiet -m 'a wide name'
+            $afterWide = Get-GateHead
+            Remove-Item -LiteralPath $gateMarker -Force -ErrorAction SilentlyContinue
+            & $prePushScript -Root $gateRepo -PushedRefs "refs/heads/main $afterWide refs/heads/main $afterMove" 6> $null
+            Assert-True ($LASTEXITCODE -eq 0 -and (Test-Path -LiteralPath $gateMarker)) `
+                'A push that added a source file with a non-ASCII name ran no build.'
         } finally {
             foreach ($line in @(& git -C $gateRepo worktree list --porcelain)) {
                 if ($line -like 'worktree *') {

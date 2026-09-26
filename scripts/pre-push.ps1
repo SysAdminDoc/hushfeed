@@ -96,15 +96,19 @@ function Get-PushedPaths {
             # when the branch changed only documentation. A first push is rare, and a complete
             # tree cannot be made incomplete by a deleted or force-updated remote-tracking ref.
             $range = "$localSha complete branch tree"
-            $names = Invoke-GitQuietly @('ls-tree', '-r', '--name-only', $localSha)
+            $names = Invoke-GitQuietly @('ls-tree', '-r', '--name-only', '-z', $localSha)
         } else {
             $range = "$remoteSha..$localSha"
-            $names = Invoke-GitQuietly @('diff', '--name-only', $remoteSha, $localSha)
+            # --no-renames: a rename is its old path and its new one. With rename detection
+            # only the new path came back, so a file moved out of extensions/ read as a docs
+            # change and built nothing. -z: paths come back as they are, where git otherwise
+            # wraps a name with a non-ASCII letter in quotes that no pattern below matches.
+            $names = Invoke-GitQuietly @('diff', '--name-only', '--no-renames', '-z', $remoteSha, $localSha)
         }
         if ($LASTEXITCODE -ne 0) {
             throw "Could not read what $range changes. Fetch the remote and try again."
         }
-        foreach ($name in @($names)) {
+        foreach ($name in @((@($names) -join "`n") -split "`0")) {
             if (-not [string]::IsNullOrWhiteSpace($name)) { [void]$paths.Add($name.Trim()) }
         }
         $commit = Invoke-GitQuietly @('rev-parse', '--verify', "$localSha^{commit}")
@@ -269,7 +273,12 @@ try {
         # the reviewed release, and they only run on the way to a test task; a push that moved
         # the pin alone ran the release facts check, which knows nothing about them.
         $_ -eq 'gradle/libs.versions.toml' -or $_ -eq 'gradle/verification-metadata.xml' -or
-        $_ -eq 'settings.gradle.kts' -or $_ -eq 'build.gradle.kts'
+        $_ -eq 'settings.gradle.kts' -or $_ -eq 'build.gradle.kts' -or
+        # What the tests read from outside the source folders: the README's patch table and
+        # hero, the catalog, NOTICE and the artwork. A push that changed only one of them ran
+        # the release facts check at most, and never the test that reads it.
+        $_ -eq 'README.md' -or $_ -eq 'NOTICE' -or $_ -eq 'patches-list.json' -or
+        $_ -eq 'patches-bundle.png' -or $_ -like 'assets/readme-*' -or $_ -like 'concepts/marketing/*'
     }).Count -gt 0
     $touchesScripts = @($paths | Where-Object { $_ -like 'scripts/*' }).Count -gt 0
     $injectedRegisterVerifierPaths = @(
