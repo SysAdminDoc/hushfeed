@@ -12,6 +12,7 @@ import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.preference.Preference;
 import android.view.Gravity;
 import android.view.View;
@@ -117,7 +118,13 @@ public final class SettingsStatusPreference extends Preference {
                 SettingsUi.dp(context, 14),
                 SettingsUi.dp(context, 12),
                 SettingsUi.dp(context, 14));
-        card.setBackground(SettingsUi.borderedSurface(context, SettingsUi.RADIUS_CARD, true));
+        GradientDrawable cardBackground = SettingsUi.borderedSurface(
+                context, SettingsUi.RADIUS_CARD, true);
+        if (!HushfeedPause.isPaused() && SettingsUi.isDarkMode()) {
+            cardBackground.setColor(0xFF1D1119);
+            cardBackground.setStroke(SettingsUi.dp(context, 1), 0xFF573244);
+        }
+        card.setBackground(cardBackground);
 
         LinearLayout information = new LinearLayout(context);
         information.setOrientation(LinearLayout.HORIZONTAL);
@@ -135,7 +142,7 @@ public final class SettingsStatusPreference extends Preference {
         labels.setFocusable(true);
 
         TextView title = SettingsUi.text(
-                context, String.valueOf(getTitle()), 17, SettingsUi.textPrimary(),
+                context, String.valueOf(getTitle()), 18, SettingsUi.textPrimary(),
                 android.graphics.Typeface.BOLD);
         title.setTag(TITLE_TAG);
         title.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
@@ -170,10 +177,14 @@ public final class SettingsStatusPreference extends Preference {
             action.setContentDescription(label);
             action.setPadding(SettingsUi.dp(context, 10), 0, SettingsUi.dp(context, 10), 0);
             SettingsUi.styleTextAction(action, true);
+            GradientDrawable actionBackground = SettingsUi.borderedSurface(
+                    context, SettingsUi.RADIUS_CONTROL, false);
+            if (!HushfeedPause.isPaused() && SettingsUi.isDarkMode()) {
+                actionBackground.setColor(0xFF1D1119);
+                actionBackground.setStroke(SettingsUi.dp(context, 1), SettingsUi.accent());
+            }
             action.setBackground(SettingsUi.pressAndFocusOver(
-                    context,
-                    SettingsUi.RADIUS_CONTROL,
-                    SettingsUi.borderedSurface(context, SettingsUi.RADIUS_CONTROL, false)));
+                    context, SettingsUi.RADIUS_CONTROL, actionBackground));
             action.setOnClickListener(view -> cardAction.run());
             LinearLayout.LayoutParams actionParams = new LinearLayout.LayoutParams(
                     stack ? -1 : -2,

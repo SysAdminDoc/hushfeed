@@ -1199,7 +1199,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
 
     /** A group heading on the master menu, which the list adapter treats as a card boundary. */
     private void addHeading(PreferenceScreen screen, String title) {
-        screen.addPreference(new SectionHeadingPreference(getActivity(), title));
+        screen.addPreference(new SectionHeadingPreference(getActivity(), title, true));
     }
 
     /** The master menu's rows and the section each one opens, for the badge refresh. */

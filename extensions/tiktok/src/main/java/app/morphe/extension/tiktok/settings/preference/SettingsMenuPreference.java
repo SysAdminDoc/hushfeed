@@ -327,7 +327,7 @@ public final class SettingsMenuPreference extends Preference {
             border.setColor(SettingsUi.border());
             border.setStyle(Paint.Style.STROKE);
             border.setStrokeWidth(SettingsUi.strokePx(context, 1f));
-            line.setColor(SettingsUi.textSecondary());
+            line.setColor(icon == Icon.SEARCH ? SettingsUi.textSecondary() : SettingsUi.accent());
             line.setStyle(Paint.Style.STROKE);
             line.setStrokeWidth(SettingsUi.strokePx(context, 1.8f));
             line.setStrokeCap(Paint.Cap.ROUND);

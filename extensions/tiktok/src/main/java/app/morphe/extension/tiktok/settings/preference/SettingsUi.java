@@ -244,7 +244,7 @@ public final class SettingsUi {
             if (title.getParent() instanceof View && title.getParent() != view) {
                 ((View) title.getParent()).setPadding(0, 0, 0, 0);
             }
-            title.setTextSize(16);
+            title.setTextSize(17);
             title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
             title.setTextColor(title.isEnabled() ? textPrimary() : textDisabled());
             title.setSingleLine(false);

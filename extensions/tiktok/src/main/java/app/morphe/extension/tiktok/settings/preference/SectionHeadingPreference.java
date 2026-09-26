@@ -15,8 +15,15 @@ import android.widget.TextView;
 
 @SuppressWarnings("deprecation")
 public final class SectionHeadingPreference extends Preference {
+    private final boolean homeGroup;
+
     public SectionHeadingPreference(Context context, String title) {
+        this(context, title, false);
+    }
+
+    public SectionHeadingPreference(Context context, String title, boolean homeGroup) {
         super(context);
+        this.homeGroup = homeGroup;
         setTitle(L10n.t(context, title));
         setSelectable(false);
     }
@@ -31,9 +38,11 @@ public final class SectionHeadingPreference extends Preference {
 
         TextView title = new TextView(context);
         title.setId(android.R.id.title);
-        title.setTextColor(SettingsUi.accent());
-        title.setTextSize(13);
+        title.setTextColor(homeGroup ? SettingsUi.textSecondary() : SettingsUi.accent());
+        title.setTextSize(homeGroup ? 12 : 13);
         title.setTypeface(title.getTypeface(), android.graphics.Typeface.BOLD);
+        title.setAllCaps(homeGroup);
+        title.setLetterSpacing(homeGroup ? 0.08f : 0f);
         title.setText(getTitle());
         if (Build.VERSION.SDK_INT >= 28) {
             title.setAccessibilityHeading(true);
@@ -49,7 +58,7 @@ public final class SectionHeadingPreference extends Preference {
         TextView title = view.findViewById(android.R.id.title);
         if (title != null) {
             title.setText(getTitle());
-            title.setTextColor(SettingsUi.accent());
+            title.setTextColor(homeGroup ? SettingsUi.textSecondary() : SettingsUi.accent());
         }
     }
 }

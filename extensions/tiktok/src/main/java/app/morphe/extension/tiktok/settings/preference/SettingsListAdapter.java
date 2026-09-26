@@ -52,6 +52,7 @@ final class SettingsListAdapter extends BaseAdapter implements WrapperListAdapte
                 || item instanceof SectionHeadingPreference
                 || item instanceof SettingsStatusPreference
                 || item instanceof SettingsQuickActionsPreference
+                || item instanceof SettingsSearchInputPreference
                 || item instanceof CalmFeedPresetPreference;
     }
 

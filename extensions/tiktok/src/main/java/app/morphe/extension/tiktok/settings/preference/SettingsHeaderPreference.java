@@ -83,7 +83,7 @@ public final class SettingsHeaderPreference extends Preference {
     private View createMasterHeader() {
         LinearLayout header = createHeader(getContext(), heading, backAction);
         TextView subtitle = SettingsUi.text(getContext(), L10n.t(getContext(), "Make TikTok yours."),
-                14, SettingsUi.textSecondary(), 0);
+                15, SettingsUi.textSecondary(), 0);
         LinearLayout.LayoutParams subtitleParams = new LinearLayout.LayoutParams(-1, -2);
         subtitleParams.topMargin = SettingsUi.dp(getContext(), 12);
         subtitleParams.setMarginStart(SettingsUi.dp(getContext(), 8));
@@ -147,7 +147,7 @@ public final class SettingsHeaderPreference extends Preference {
 
     private View createCaption() {
         Context context = getContext();
-        TextView caption = SettingsUi.text(context, detail, 14, SettingsUi.textSecondary(), 0);
+        TextView caption = SettingsUi.text(context, detail, 15, SettingsUi.textSecondary(), 0);
         caption.setLineSpacing(SettingsUi.dp(context, 3), 1f);
         caption.setPadding(SettingsUi.dp(context, 8), SettingsUi.dp(context, 12),
                 SettingsUi.dp(context, 8), SettingsUi.dp(context, 32));
