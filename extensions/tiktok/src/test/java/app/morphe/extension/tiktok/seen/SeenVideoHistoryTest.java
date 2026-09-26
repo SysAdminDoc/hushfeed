@@ -123,6 +123,35 @@ public class SeenVideoHistoryTest {
         assertTrue(SeenVideoHistory.shouldHide("42"));
     }
 
+    /** The feed activity built again for a new window width, issue #26's second report. */
+    @Test public void theVideoOnScreenIsKeptThroughARebuildUntilPlaybackMovesOn() throws Exception {
+        SeenVideoHistory.onPlayProgressChange("41", 5000, 10000);
+        SeenVideoHistory.onPlayProgressChange("42", 5000, 10000);
+        drain();
+        assertTrue(SeenVideoHistory.shouldHide("42"));
+
+        SeenVideoHistory.keepThroughRebuild();
+        assertFalse("the video that was playing", SeenVideoHistory.shouldHide("42"));
+        assertTrue("an earlier video", SeenVideoHistory.shouldHide("41"));
+        // TikTok restores the kept video and plays it on: still kept.
+        SeenVideoHistory.onPlayProgressChange("42", 6000, 10000);
+        assertFalse(SeenVideoHistory.shouldHide("42"));
+
+        SeenVideoHistory.onPlayProgressChange("43", 0, 10000);
+        assertTrue("once the user swiped on, a refreshed page drops it again", SeenVideoHistory.shouldHide("42"));
+    }
+
+    @Test public void aRebuildWithNothingPlayingKeepsNothing() throws Exception {
+        SeenVideoHistory.onPlayProgressChange("42", 5000, 10000);
+        drain();
+        SeenVideoHistory.clear();
+        drain();
+        SeenVideoHistory.keepThroughRebuild();
+        SeenVideoHistory.onPlayProgressChange("42", 5000, 10000);
+        drain();
+        assertTrue(SeenVideoHistory.shouldHide("42"));
+    }
+
     @Test public void disabledFilterPreservesWatchedVideos() throws Exception {
         SeenVideoHistory.onPlayProgressChange("42", 5000, 10000);
         drain();

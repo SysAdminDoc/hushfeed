@@ -11,6 +11,7 @@ import android.content.res.Configuration;
 import android.os.Build;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.tiktok.seen.SeenVideoHistory;
 import app.morphe.extension.tiktok.settings.Settings;
 
 import java.util.Map;
@@ -126,6 +127,9 @@ public final class FoldableSplitView {
         }
         Logger.printInfo(() -> "Split view: the window crossed the width threshold, so the feed is built again");
         try {
+            // TikTok puts the video that was playing back after the rebuild, unless Hide seen
+            // videos has taken it out of the lists it reads again by then (issue #26).
+            SeenVideoHistory.keepThroughRebuild();
             recreator.recreate(activity);
         } catch (RuntimeException error) {
             Logger.printException(() -> "Could not build the feed again for the new window width", error);

@@ -23,6 +23,7 @@ Every Hushfeed release, newest first.
 * **TikTok:** The settings home has pink section icons, quieter group labels and a warmer active card in dark mode. Search now has its own framed field and a separate results card. Section pages keep pink headings and larger row titles.
 * **TikTok:** Repost diagnostics writes the request, TikTok's response status and the next repost-list result into a diagnostic report when logging is on. It keeps the video's ID and any repost note out of the report.
 * **TikTok:** Taking LIVE off the top feed tabs now keeps the corner LIVE button available, just as taking LIVE off the bottom bar does. Hide the LIVE button still works on its own.
+* **TikTok:** On a foldable with the split comment view, folding or unfolding no longer moves you to another video when Hide seen videos is on. The rebuild for the new width let the filter drop the video you were watching before TikTok could put it back.
 
 ## 0.60.0 (2026-09-25)
 

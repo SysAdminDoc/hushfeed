@@ -3,6 +3,7 @@ package app.morphe.extension.tiktok.foldable;
 import static org.junit.Assert.*;
 import android.content.res.Configuration;
 import app.morphe.extension.shared.Utils;
+import app.morphe.extension.tiktok.seen.SeenVideoHistory;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.categories.ExtensionPreferenceCategory;
@@ -77,6 +78,31 @@ public class FoldableSplitViewTest {
             FoldableSplitView.onConfigurationChanged(activity, width(activity, 900));
             FoldableSplitView.onConfigurationChanged(activity, width(activity, 950));
             assertEquals("one crossing built the feed twice", 1, rebuilt.size());
+        }
+    }
+
+    /**
+     * The rebuild let Hide seen videos take the video on screen out of the lists TikTok reads
+     * again, so the feed came back on another video (issue #26, second report).
+     */
+    @Test public void theRebuildKeepsTheVideoThatWasPlaying() {
+        Settings.FOLDABLE_SPLIT_VIEW.save(true);
+        Settings.FOLDABLE_SPLIT_VIEW_MIN_WIDTH_DP.save(800);
+        Settings.HIDE_SEEN_VIDEOS.save(true);
+        java.util.List<android.app.Activity> rebuilt = new java.util.ArrayList<>();
+        FoldableSplitView.recreator = rebuilt::add;
+        try (var owner = Robolectric.buildActivity(TestActivity.class).setup()) {
+            TestActivity activity = owner.get();
+            Utils.setActivity(activity);
+            assertFalse(FoldableSplitView.shouldForceContainer());
+            SeenVideoHistory.onPlayProgressChange("42", 5000, 10000);
+            assertTrue("watched long enough to be seen", SeenVideoHistory.shouldHide("42"));
+
+            FoldableSplitView.onConfigurationChanged(activity, width(activity, 900));
+            assertEquals(1, rebuilt.size());
+            assertFalse("the video on screen was filtered out of the rebuilt feed", SeenVideoHistory.shouldHide("42"));
+        } finally {
+            SeenVideoHistory.clear();
         }
     }
 

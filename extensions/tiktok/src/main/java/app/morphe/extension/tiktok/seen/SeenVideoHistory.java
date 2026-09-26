@@ -97,6 +97,13 @@ public final class SeenVideoHistory {
     private static volatile boolean undoOffered;
     private static volatile String callbackAid;
     private static volatile boolean callbackAidMarked;
+    /**
+     * The video on screen when the feed activity was built again for a new window width, kept
+     * out of the filter until playback moves to another video. TikTok puts that video back after
+     * the rebuild, but only if the lists it reads again still hold it; by then it has usually
+     * been playing long enough to be marked seen (issue #26).
+     */
+    private static volatile String keptAid;
 
     private static void mergeSeen(String aid, long timestamp) {
         for (;;) {
@@ -122,6 +129,8 @@ public final class SeenVideoHistory {
         if (!normalizedAid.equals(callbackAid)) {
             callbackAid = normalizedAid;
             callbackAidMarked = false;
+            // Playback moved on, so the video kept through a rebuild is an ordinary seen one.
+            if (!normalizedAid.equals(keptAid)) keptAid = null;
         }
 
         if (!Settings.HIDE_SEEN_VIDEOS.get() || callbackAidMarked) {
@@ -144,6 +153,9 @@ public final class SeenVideoHistory {
         if (normalizedAid == null) {
             return false;
         }
+        if (normalizedAid.equals(keptAid)) {
+            return false;
+        }
         ensureLoaded();
         Long lastSeen = SEEN.get(normalizedAid);
         if (lastSeen == null) {
@@ -161,12 +173,22 @@ public final class SeenVideoHistory {
         return false;
     }
 
+    /**
+     * Keeps the video playing now in the feed through a rebuild of the feed activity. The
+     * filter lets it through until playback reaches another video; a refreshed page still
+     * drops it, as {@link #shouldHide} always has, once the user has moved on.
+     */
+    public static void keepThroughRebuild() {
+        keptAid = callbackAid;
+    }
+
     public static void clear() {
         synchronized (HISTORY_LOCK) {
             final int clearGeneration = ++generation;
             SEEN.clear();
             callbackAid = null;
             callbackAidMarked = false;
+            keptAid = null;
             undo = null;
             undoOffered = true;
             IO.execute(() -> {
