@@ -34,10 +34,6 @@ public final class FeatureControls {
         }
     }
 
-    public static int hideProfileRewardsShortcutVisibility(int originalVisibility) {
-        return Settings.HIDE_PROFILE_REWARDS_SHORTCUT.get() ? View.GONE : originalVisibility;
-    }
-
     /** Runs after TikTok has attached and configured its profile rewards icon. */
     public static void hideProfileRewardsShortcut(View shortcut) {
         if (shortcut != null && Settings.HIDE_PROFILE_REWARDS_SHORTCUT.get()) {
@@ -75,13 +71,15 @@ public final class FeatureControls {
     }
 
     /**
-     * Shares {@code HIDE_LIVE_ENTRANCE} with the video overlay hider, so the switch keeps
-     * its stored value and both mechanisms answer to it.
+     * Answers TikTok's own question of whether the feed's LIVE button is enabled, so false
+     * is what hides it. Shares {@code HIDE_LIVE_ENTRANCE} with the video overlay hider, so the
+     * switch keeps its stored value and both mechanisms answer to it.
      */
     public static boolean hideFeedLiveButtonEnabled(boolean originalEnabled) {
         return !Settings.HIDE_LIVE_ENTRANCE.get() && originalEnabled;
     }
 
+    /** The same question for the search button: false hides it. */
     public static boolean hideFeedSearchButtonEnabled(boolean originalEnabled) {
         return !Settings.HIDE_FEED_SEARCH_BUTTON.get() && originalEnabled;
     }

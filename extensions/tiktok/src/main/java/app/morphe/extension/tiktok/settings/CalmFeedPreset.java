@@ -78,14 +78,6 @@ public final class CalmFeedPreset {
         return true;
     }
 
-    public static int changesNeeded() {
-        int count = 0;
-        for (BooleanSetting setting : SETTINGS) {
-            if (!setting.savedValue()) count++;
-        }
-        return count;
-    }
-
     /** Saves the current six values before changing them in one preference transaction. */
     public static synchronized Result apply(Context context) throws IOException {
         if (hasSnapshot(context)) {

@@ -109,15 +109,22 @@ public class FeatureSwitchesTest {
     }
 
     @Test public void profileRewardsShortcutUsesItsOwnDeclutterSwitch() {
+        // The hook the patch calls, with the icon TikTok has just set up. This used to test an
+        // int visibility hook that no patch had called since 55be3bd9.
+        View shortcut = new View(org.robolectric.RuntimeEnvironment.getApplication());
         Settings.HIDE_PROFILE_REWARDS_SHORTCUT.save(false);
-        assertEquals(View.VISIBLE,
-                FeatureControls.hideProfileRewardsShortcutVisibility(View.VISIBLE));
-        assertEquals(View.INVISIBLE,
-                FeatureControls.hideProfileRewardsShortcutVisibility(View.INVISIBLE));
+        FeatureControls.hideProfileRewardsShortcut(shortcut);
+        assertEquals(View.VISIBLE, shortcut.getVisibility());
+        shortcut.setVisibility(View.INVISIBLE);
+        FeatureControls.hideProfileRewardsShortcut(shortcut);
+        assertEquals("TikTok's own state was changed with the switch off",
+                View.INVISIBLE, shortcut.getVisibility());
 
         Settings.HIDE_PROFILE_REWARDS_SHORTCUT.save(true);
-        assertEquals(View.GONE,
-                FeatureControls.hideProfileRewardsShortcutVisibility(View.VISIBLE));
+        shortcut.setVisibility(View.VISIBLE);
+        FeatureControls.hideProfileRewardsShortcut(shortcut);
+        assertEquals(View.GONE, shortcut.getVisibility());
+        FeatureControls.hideProfileRewardsShortcut(null);
     }
 
     @Test public void quickCommentReactionsKeepNativeVisibilityUntilHidden() {

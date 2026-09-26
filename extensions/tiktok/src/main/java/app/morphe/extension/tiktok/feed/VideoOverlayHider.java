@@ -493,13 +493,6 @@ public final class VideoOverlayHider {
         }
     }
 
-    /** One flag per button in {@link #RAIL_BUTTON_IDS}, in the same order. */
-    static boolean[] railButtonsWanted() {
-        boolean[] rail = new boolean[RAIL_BUTTON_IDS.length];
-        updateRailButtonsWanted(rail);
-        return rail;
-    }
-
     private static void updateRailButtonsWanted(boolean[] rail) {
         rail[0] = Settings.HIDE_RAIL_FOLLOW.get();
         rail[1] = Settings.HIDE_RAIL_LIKE.get();

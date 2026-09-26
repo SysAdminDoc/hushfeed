@@ -404,10 +404,6 @@ public final class FeatureGateLabRuntime {
         return SettingsManagerObservationRecorder.exportJson();
     }
 
-    public static int settingsManagerObservationCount() {
-        return SettingsManagerObservationRecorder.size();
-    }
-
     private static Object overrideSettingsObject(
             String key,
             Class<?> requestedClass,

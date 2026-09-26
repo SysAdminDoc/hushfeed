@@ -52,11 +52,6 @@ final class CreatorIdentity {
                 Reflect.string(author, "getNickname", "nickname"));
     }
 
-    /** Whether the item says who posted it at all. A LIVE preview or an end card does not. */
-    boolean isKnown() {
-        return !normalizedUid.isEmpty() || !normalizedSecUid.isEmpty() || !normalizedHandle.isEmpty();
-    }
-
     /** Whether one of the ids is on the list, exactly. The display name never counts. */
     boolean namedIn(Set<String> normalizedNames) {
         return (!normalizedUid.isEmpty() && normalizedNames.contains(normalizedUid))

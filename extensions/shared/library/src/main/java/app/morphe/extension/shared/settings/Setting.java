@@ -155,15 +155,6 @@ public abstract class Setting<T> {
     }
 
     /**
-     * @return All settings that have been created, sorted by keys.
-     */
-    private static List<Setting<?>> allLoadedSettingsSorted() {
-        //noinspection ComparatorCombinators
-        Collections.sort(SETTINGS, (Setting<?> o1, Setting<?> o2) -> o1.key.compareTo(o2.key));
-        return allLoadedSettings();
-    }
-
-    /**
      * The key used to store the value in the shared preferences.
      */
     public final String key;

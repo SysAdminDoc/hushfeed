@@ -56,23 +56,20 @@ public class FollowDiagnosticCorrelationTest {
 
     @Test public void unadmittedDirectResultsDoNotWriteCompletionEvents() {
         for (int index = 0; index < 160; index++) {
-            request(0);
-            complete(0);
+            request(2);
+            complete(2);
         }
         List<String> admitted = completions();
         assertEquals(160, admitted.size());
         assertTrue(admitted.get(159), admitted.get(159).contains("result id=160 "));
 
-        for (int route = 0; route < 3; route++) {
-            request(route);
-            complete(route);
-            assertEquals("route " + route + " logged a result for a skipped request",
-                    admitted, completions());
-        }
+        request(2);
+        complete(2);
+        assertEquals("a skipped request logged a result", admitted, completions());
     }
 
     @Test public void debugChangesDoNotReuseAnEarlierRequestId() {
-        for (int route = 0; route < 4; route++) {
+        for (int route : new int[]{2, 3}) {
             FollowDiagnostics.resetForTests();
             ShadowLog.clear();
             BaseSettings.DEBUG.save(true);
@@ -112,13 +109,6 @@ public class FollowDiagnosticCorrelationTest {
 
     private static void request(int route) {
         switch (route) {
-            case 0:
-                FollowDiagnostics.logSimpleFollowRequest(1, "user", "sec");
-                break;
-            case 1:
-                FollowDiagnostics.logDetailedFollowRequest(
-                        1, 2, 3, 0, "user", "sec", "profile", "profile", "feed", null);
-                break;
             case 2:
                 FollowDiagnostics.logCommonFollowRequest(
                         1, 2, 3, 4, "user", "sec", "item", "city", "profile", null);

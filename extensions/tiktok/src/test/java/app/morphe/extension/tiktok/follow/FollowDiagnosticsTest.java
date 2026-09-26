@@ -179,7 +179,8 @@ public class FollowDiagnosticsTest {
     public void diagnosticsStopAtTheirSessionLimit() {
         BaseSettings.DEBUG.save(true);
         for (int index = 0; index < 240; index++) {
-            FollowDiagnostics.logSimpleFollowRequest(1, "user-" + index, "sec-" + index);
+            FollowDiagnostics.logCommonFollowRequest(
+                    1, 2, 3, 4, "user-" + index, "sec-" + index, "item", "city", "profile", null);
         }
         assertEquals(160, FollowDiagnostics.eventCountForTests());
     }
@@ -194,8 +195,8 @@ public class FollowDiagnosticsTest {
                 final int offset = worker * 80;
                 tasks.add(executor.submit(() -> {
                     for (int index = 0; index < 80; index++) {
-                        FollowDiagnostics.logSimpleFollowRequest(
-                                1, "user-" + (offset + index), "sec-" + (offset + index));
+                        FollowDiagnostics.logCommonFollowRequest(1, 2, 3, 4, "user-" + (offset + index),
+                                "sec-" + (offset + index), "item", "city", "profile", null);
                     }
                 }));
             }

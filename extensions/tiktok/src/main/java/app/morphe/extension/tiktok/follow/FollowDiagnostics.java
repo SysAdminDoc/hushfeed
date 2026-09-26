@@ -133,66 +133,6 @@ public final class FollowDiagnostics {
     private static volatile FollowRequestContext recentDirectContext;
     private static final AtomicBoolean warnedAboutRefusedFollow = new AtomicBoolean();
 
-    public static void logSimpleFollowRequest(int action, String uid, String secUid) {
-        activeCallId.remove();
-        if (!shouldLog()) return;
-
-        try {
-            int id = nextCallId();
-            if (id < 0) return;
-            activeCallId.set(id);
-            rememberDirectContext(id, "LJ", action, "unknown", uid, secUid, null, null);
-            logSettingsSnapshotOnce();
-            Logger.printDebug(() -> "[Morphe TikTok FollowProbe] request"
-                    + " id=" + id
-                    + " api=LJ"
-                    + " action=" + action
-                    + " uidHash=" + hash(uid)
-                    + " secUidHash=" + hash(secUid));
-        } catch (Exception ex) {
-            Logger.printDebug(() -> "[Morphe TikTok FollowProbe] request log failed", ex);
-        }
-    }
-
-    public static void logDetailedFollowRequest(
-            int action,
-            int followFrom,
-            int fromPre,
-            int followerStatus,
-            String uid,
-            String secUid,
-            String source,
-            String enterFrom,
-            String previousPage,
-            Map<?, ?> extra
-    ) {
-        activeCallId.remove();
-        if (!shouldLog()) return;
-
-        try {
-            int id = nextCallId();
-            if (id < 0) return;
-            activeCallId.set(id);
-            rememberDirectContext(id, "LJFF", action, String.valueOf(followFrom), uid, secUid, source, enterFrom);
-            logSettingsSnapshotOnce();
-            Logger.printDebug(() -> "[Morphe TikTok FollowProbe] request"
-                    + " id=" + id
-                    + " api=LJFF"
-                    + " action=" + action
-                    + " followFrom=" + followFrom
-                    + " fromPre=" + fromPre
-                    + " followerStatus=" + followerStatus
-                    + " uidHash=" + hash(uid)
-                    + " secUidHash=" + hash(secUid)
-                    + " source=" + safeShort(source)
-                    + " enterFrom=" + safeShort(enterFrom)
-                    + " previousPage=" + safeShort(previousPage)
-                    + " extraKeys=" + describeMapKeys(extra));
-        } catch (Exception ex) {
-            Logger.printDebug(() -> "[Morphe TikTok FollowProbe] detailed request log failed", ex);
-        }
-    }
-
     public static void logCommonFollowRequest(
             int action,
             int followFrom,
