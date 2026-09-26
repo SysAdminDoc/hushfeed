@@ -203,6 +203,7 @@ Captions,Captions
 "Captions, gestures and on-screen controls","Captions, gestures and on-screen controls"
 Capture crash reports locally,Capture crash reports locally
 Changed,Changed
+Changes in Hushfeed %1$s,Changes in Hushfeed %1$s
 Changes to %1$s at %2$s,Changes to %1$s at %2$s
 Choose %1$d to %2$d videos. Values outside this range use the nearest valid limit. Restart TikTok to apply this.,Choose %1$d to %2$d videos. Values outside this range use the nearest valid limit. Restart TikTok to apply this.
 Choose a backup file. Your current settings are kept for Undo.,Choose a backup file. Your current settings are kept for Undo.
@@ -324,6 +325,7 @@ Diagnostics,Diagnostics
 Disable,Disable
 Disabled,Disabled
 Discard edits,Discard edits
+Dismiss update,Dismiss update
 Dismissed %1$s suggested accounts,Dismissed %1$s suggested accounts
 Dismissed one suggested account,Dismissed one suggested account
 Do not start the feed on returning,Do not start the feed on returning
@@ -1224,6 +1226,7 @@ Wait before hiding the controls.,Wait before hiding the controls.
 Watching and sharing,Watching and sharing
 "WebP, exactly as TikTok sent it","WebP, exactly as TikTok sent it"
 What TikTok gets,What TikTok gets
+What's new,What's new
 "When TikTok requests this key, return the selected value below","When TikTok requests this key, return the selected value below"
 "While diagnostic logging is on, a message names the part of Hushfeed that failed. Off keeps failures in the report only.","While diagnostic logging is on, a message names the part of Hushfeed that failed. Off keeps failures in the report only."
 Window width needed to enable the layout. Restart TikTok to apply this.,Window width needed to enable the layout. Restart TikTok to apply this.

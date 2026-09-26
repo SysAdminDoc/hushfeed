@@ -12,6 +12,7 @@ import app.morphe.extension.shared.settings.Setting;
 import app.morphe.extension.tiktok.SettingsContextRule;
 import app.morphe.extension.tiktok.diagnostics.JavaCrashCapture;
 import app.morphe.extension.tiktok.featuregatelab.FeatureGateLabStore;
+import app.morphe.extension.tiktok.settings.preference.ReleaseNotes;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -62,7 +63,8 @@ public class LaunchCrashCleanupTest {
         String[] kept = LaunchCrashCleanup.keepHushfeedFiles(TIKTOK_KEEPS.clone());
         assertArrayEquals("TikTok's own names moved or went", TIKTOK_KEEPS,
                 Arrays.copyOf(kept, TIKTOK_KEEPS.length));
-        assertEquals(Arrays.asList("morphe_prefs", "morphe_feature_gate_lab", "hushfeed-calm-feed-preset"),
+        assertEquals(Arrays.asList("morphe_prefs", "morphe_feature_gate_lab", "hushfeed-calm-feed-preset",
+                        "hushfeed_release_notes"),
                 Arrays.asList(kept).subList(TIKTOK_KEEPS.length, kept.length));
         assertArrayEquals(LaunchCrashCleanup.HUSHFEED_FILES, LaunchCrashCleanup.keepHushfeedFiles(null));
     }
@@ -73,6 +75,8 @@ public class LaunchCrashCleanupTest {
         Map<String, List<String>> expected = new TreeMap<>();
         expected.put("diagnostics/JavaCrashCapture.java", Arrays.asList("PREFS_NAME"));
         expected.put("featuregatelab/FeatureGateLabStore.java", Arrays.asList("PREFS_NAME"));
+        expected.put("settings/preference/ReleaseNotes.java", Arrays.asList(
+                "PREFS_NAME", "PREFS_NAME", "PREFS_NAME"));
         expected.put("settings/CalmFeedPreset.java", Arrays.asList("PREFERENCES"));
         expected.put("shared/settings/Setting.java", Arrays.asList("PREFERENCES_NAME"));
         expected.put("shared/settings/preference/AbstractPreferenceFragment.java", Arrays.asList("Setting.preferences.name"));
@@ -86,6 +90,7 @@ public class LaunchCrashCleanupTest {
         assertTrue(kept.contains(constant(JavaCrashCapture.class, "PREFS_NAME")));
         assertTrue(kept.contains(FeatureGateLabStore.PREFS_NAME));
         assertTrue(kept.contains(CalmFeedPreset.PREFERENCES));
+        assertTrue(kept.contains(ReleaseNotes.PREFS_NAME));
     }
 
     private static String constant(Class<?> owner, String name) throws ReflectiveOperationException {

@@ -4,6 +4,7 @@ Every Hushfeed release, newest first.
 
 ## Unreleased
 
+* **TikTok:** A What's new row sits at the top of Hushfeed's settings after an update. It opens the changelog for the version you're on, and for any releases you skipped since you last dismissed it. Close keeps the row for later, and Dismiss update takes it away until the next release.
 * **TikTok:** Hide Play Store update offer is a new optional patch. On the S22, Play changed from Update to Open while Morphe Manager kept showing TikTok 47.0.3. Android won't install a lower-code APK over this one, so leave the patch off if you expect to switch back without removing the app.
 * **TikTok:** The settings home has pink section icons, quieter group labels and a warmer active card in dark mode. Search now has its own framed field and a separate results card. Section pages keep pink headings and larger row titles.
 * **TikTok:** Repost diagnostics writes the request, TikTok's response status and the next repost-list result into a diagnostic report when logging is on. It keeps the video's ID and any repost note out of the report.

@@ -6,6 +6,7 @@ package app.morphe.extension.tiktok.settings;
 
 import app.morphe.extension.shared.settings.Setting;
 import app.morphe.extension.tiktok.featuregatelab.FeatureGateLabStore;
+import app.morphe.extension.tiktok.settings.preference.ReleaseNotes;
 
 import java.util.Arrays;
 
@@ -25,6 +26,7 @@ public final class LaunchCrashCleanup {
             Setting.PREFERENCES_NAME,
             FeatureGateLabStore.PREFS_NAME,
             CalmFeedPreset.PREFERENCES,
+            ReleaseNotes.PREFS_NAME,
     };
 
     private LaunchCrashCleanup() {

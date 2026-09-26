@@ -1020,6 +1020,24 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         search.setOrder(-900);
         screen.addPreference(search);
 
+        String releaseVersion = Utils.getPatchesReleaseVersion();
+        if (ReleaseNotes.pending(context, releaseVersion)) {
+            SettingsMenuPreference notes = new SettingsMenuPreference(
+                    context,
+                    L10n.t(context, "What's new"),
+                    L10n.f(context, "Changes in Hushfeed %1$s", releaseVersion),
+                    SettingsMenuPreference.Icon.LAB,
+                    0,
+                    preference -> {
+                        ReleaseNotes.show(context, releaseVersion,
+                                () -> screen.removePreference(preference));
+                        return true;
+                    });
+            notes.setKey(ReleaseNotes.KEY);
+            notes.setOrder(-850);
+            screen.addPreference(notes);
+        }
+
         List<SettingsQuickActionsPreference.Action> quickRoutes = new ArrayList<>();
         if (FeedFilterPreferenceCategory.isAvailable()) {
             quickRoutes.add(new SettingsQuickActionsPreference.Action(
