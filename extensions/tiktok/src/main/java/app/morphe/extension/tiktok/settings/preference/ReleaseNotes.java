@@ -22,15 +22,24 @@ import java.util.regex.Pattern;
 public final class ReleaseNotes {
     static final String KEY = "action_release_notes";
     public static final String PREFS_NAME = "hushfeed_release_notes";
-    static final String DISMISSED = "dismissed_version";
+    private static final String DISMISSED = "dismissed_version";
     private static final Pattern VERSION = Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)(\\S*)");
     private static final Pattern HEADING = Pattern.compile("(?m)^## (\\d+\\.\\d+\\.\\d+) ");
 
     private ReleaseNotes() {}
 
     static boolean pending(Context context, String current) {
-        return !text(current, context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                .getString(DISMISSED, null)).isEmpty();
+        return !text(current, dismissed(context)).isEmpty();
+    }
+
+    /** The version the row names: the newest the notes show, or the installed one. */
+    static String rowVersion(Context context, String current) {
+        String newest = newestShown(text(current, dismissed(context)));
+        return newest == null ? current : newest;
+    }
+
+    private static String dismissed(Context context) {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getString(DISMISSED, null);
     }
 
     static String text(String current, String dismissed) {
