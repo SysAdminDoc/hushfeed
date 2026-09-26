@@ -445,6 +445,23 @@ foreach ($name in $consumerScripts) {
 
 . (Join-Path $PSScriptRoot 'release-receipt.ps1')
 
+# A failed fixture run quotes the CLI: an early error wherever it fell, and the last lines.
+$cliRun = @('INFO: Loading patches...', 'SEVERE: early fingerprint failure') +
+    @(1..30 | ForEach-Object { "INFO: Applied: patch $_" }) +
+    @('', 'java.lang.OutOfMemoryError: Java heap space')
+$cliTail = Get-CliOutputTail -Output $cliRun
+Assert-True ($cliTail -match 'early fingerprint failure' -and $cliTail -match 'OutOfMemoryError' -and
+    $cliTail -match 'patch 30' -and $cliTail -notmatch 'Loading patches') `
+    "The CLI tail lost an error line or kept the whole run: $cliTail"
+Assert-True (@($cliTail -split "`n").Count -eq 21) `
+    "The CLI tail repeated a line it already had: $(@($cliTail -split "`n").Count) lines"
+Assert-True ((Get-CliOutputTail -Output @()) -eq '(the CLI printed nothing)') `
+    'A silent CLI run left the failure message with nothing after the colon.'
+$receiptScript = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'build-release-receipt.ps1') -Raw
+Assert-True ($receiptScript -notmatch 'DesktopJar @arguments 2>&1 \| Out-Null' -and
+    $receiptScript -match 'Get-CliOutputTail') `
+    'build-release-receipt.ps1 throws the desktop CLI output away again.'
+
 $manifestLines = @(
     'N: android=http://schemas.android.com/apk/res/android (line=1)',
     '  E: manifest (line=1)',

@@ -216,11 +216,14 @@ foreach ($apk in $Fixture) {
             '-o', $out, '-t', $temp, '-r', $resultPath)
         if ($forced) { $arguments += '-f' }
         $arguments = $arguments + $enable + @($apk)
-        & $Java '-jar' $DesktopJar @arguments 2>&1 | Out-Null
+        # Kept, not dropped: the 0.60.0 run stopped on 46.2.3 with no result report and no word
+        # on why, and the same step applied all 94 patches the next morning.
+        $cliOutput = @(& $Java '-jar' $DesktopJar @arguments 2>&1)
         $cliExitCode = $LASTEXITCODE
 
         if (-not (Test-Path -LiteralPath $resultPath -PathType Leaf)) {
-            throw "The desktop CLI wrote no result report for $label (exit $cliExitCode)."
+            throw ("The desktop CLI wrote no result report for $label (exit $cliExitCode). " +
+                "What it printed last:`n$(Get-CliOutputTail -Output $cliOutput)")
         }
         $report = Get-Content -LiteralPath $resultPath -Raw | ConvertFrom-Json
         $validation = Test-PatchingReport -Report $report -ExpectedNames $patchNames `
@@ -228,7 +231,10 @@ foreach ($apk in $Fixture) {
             -ExpectedPackageName $expectedTarget.PackageName `
             -ExpectedPackageVersion $stock.versionName
         if (-not $validation.Valid) { throw "$label did not patch cleanly: $($validation.Reason)" }
-        if ($cliExitCode -ne 0) { throw "The desktop CLI exited with $cliExitCode on $label." }
+        if ($cliExitCode -ne 0) {
+            throw ("The desktop CLI exited with $cliExitCode on $label. " +
+                "What it printed last:`n$(Get-CliOutputTail -Output $cliOutput)")
+        }
 
         $patched = Get-ApkManifestFacts -Apk $out -Aapt2 $Aapt2
         $delta = Get-ManifestDelta -Stock $stock -Patched $patched

@@ -33,6 +33,26 @@ function Get-ReleaseReceiptSchemaVersion {
     return 1
 }
 
+function Get-CliOutputTail {
+    <#
+    .SYNOPSIS
+        What the desktop CLI printed last, for the message of a fixture run that failed.
+    .DESCRIPTION
+        Its first few error lines wherever they fell, then its last lines. A run that dies before
+        its result report exists leaves nothing else behind.
+    #>
+    param([object[]]$Output, [int]$Last = 20, [int]$Errors = 8)
+
+    $lines = @(@($Output) | ForEach-Object { [string]$_ } | Where-Object { $_.Trim() })
+    $kept = New-Object System.Collections.Generic.List[string]
+    foreach ($line in @($lines | Where-Object { $_ -match 'SEVERE|ERROR|Exception|OutOfMemory' } |
+            Select-Object -First $Errors) + @($lines | Select-Object -Last $Last)) {
+        if (-not $kept.Contains($line)) { $kept.Add($line) }
+    }
+    if ($kept.Count -eq 0) { return '(the CLI printed nothing)' }
+    return ($kept -join "`n")
+}
+
 function Get-Sha256Hex {
     <#
     .SYNOPSIS
