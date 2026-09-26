@@ -257,6 +257,28 @@ public class PrivacySwitchesTest {
         }
     }
 
+    /**
+     * TikTok's camera is a scene inside an activity that has already resumed when the camera
+     * opens. With the tracking installed from the main activity, the mark goes onto that screen,
+     * not onto the main activity underneath, where the S25 showed nothing (2026-09-26).
+     */
+    @Test public void theDotGoesOnTheScreenInFrontWhenTheCameraOpensAfterItResumed() {
+        try (var main = Robolectric.buildActivity(Activity.class).create()) {
+            CameraMicIndicator.install(main.get());
+            main.start().resume().visible();
+            Utils.setActivity(main.get());
+            try (var camera = Robolectric.buildActivity(Activity.class).setup().visible()) {
+                Settings.CAMERA_MIC_INDICATOR.save(true);
+                CameraMicIndicator.onCameraStart();
+                Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+                CameraMicIndicator.DotView dot = CameraMicIndicator.shownDot();
+                assertNotNull("an open camera shows the mark", dot);
+                assertSame("the mark is on the camera's screen, not the main one behind it",
+                        camera.get().getWindow().getDecorView(), dot.getParent());
+            }
+        }
+    }
+
     @Test public void thePrivacyPageCarriesTheSwitchesAndAppBehaviorNoLongerDoes() {
         SettingsStatus.contactListBlockerEnabled = true;
         SettingsStatus.installedAppsBlockerEnabled = true;

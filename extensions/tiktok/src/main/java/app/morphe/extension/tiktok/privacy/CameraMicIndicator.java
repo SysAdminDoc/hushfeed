@@ -43,7 +43,17 @@ public final class CameraMicIndicator {
     private static WeakReference<Activity> top = new WeakReference<>(null);
     private static WeakReference<Activity> shownOn = new WeakReference<>(null);
     private static DotView dot;
-    private static boolean following;
+    private static WeakReference<Application> followed = new WeakReference<>(null);
+
+    /**
+     * From the main activity's onCreate, so the screen in front is known before any camera opens.
+     * TikTok's story and record cameras are scenes inside one activity that has already resumed
+     * when the camera opens; tracking that only began with the first access never saw it resume,
+     * and the mark went onto the main activity underneath it (the S25, 2026-09-26).
+     */
+    public static void install(Activity activity) {
+        if (activity != null) follow(activity.getApplication());
+    }
 
     /** The camera opened and came back non-null; a failed open shows nothing. */
     public static void onCameraOpened(Camera camera) {
@@ -95,7 +105,7 @@ public final class CameraMicIndicator {
                 shownOn = new WeakReference<>(null);
                 return;
             }
-            follow(activity);
+            follow(activity.getApplication());
             DotView view = attach(activity);
             view.show(camera, microphone);
             shownOn = new WeakReference<>(activity);
@@ -110,12 +120,10 @@ public final class CameraMicIndicator {
         return Utils.getActivity();
     }
 
-    /** Follows the top activity for as long as the process lives, registered once. */
-    private static void follow(Activity activity) {
-        if (following) return;
-        Application application = activity.getApplication();
-        if (application == null) return;
-        following = true;
+    /** Follows the top activity for as long as the process lives, registered once per application. */
+    private static void follow(Application application) {
+        if (application == null || followed.get() == application) return;
+        followed = new WeakReference<>(application);
         application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
             @Override public void onActivityResumed(Activity resumed) {
                 top = new WeakReference<>(resumed);
@@ -266,6 +274,7 @@ public final class CameraMicIndicator {
         remove(shownOn.get());
         shownOn = new WeakReference<>(null);
         top = new WeakReference<>(null);
+        followed = new WeakReference<>(null);
     }
 
     private CameraMicIndicator() {}

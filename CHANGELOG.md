@@ -24,6 +24,7 @@ Every Hushfeed release, newest first.
 * **TikTok:** Repost diagnostics writes the request, TikTok's response status and the next repost-list result into a diagnostic report when logging is on. It keeps the video's ID and any repost note out of the report.
 * **TikTok:** Taking LIVE off the top feed tabs now keeps the corner LIVE button available, just as taking LIVE off the bottom bar does. Hide the LIVE button still works on its own.
 * **TikTok:** On a foldable with the split comment view, folding or unfolding no longer moves you to another video when Hide seen videos is on. The rebuild for the new width let the filter drop the video you were watching before TikTok could put it back.
+* **TikTok:** Camera and microphone indicator shows its mark on TikTok's camera screen. Before, the first time the camera opened the mark was drawn on the main screen hidden behind it, so on a phone it rarely showed at all.
 * **TikTok:** Copy comments without username works from the comment sheet's own menu again. Since TikTok 46.9.3 that menu builds the clipboard text a different way, and the option was only reaching Copy in Favorites. Stickers and emoji in the copied text come through as before.
 
 ## 0.60.0 (2026-09-25)
