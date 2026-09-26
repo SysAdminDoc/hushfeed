@@ -211,6 +211,22 @@ public class BudgetLockSettingsTest {
         assertTrue("the dialog closed on a change the locked day refused", dialog.isShowing());
         assertEquals("what was typed was thrown away", "45", box.getText().toString());
         assertTrue("a locked row saved anyway", Settings.SESSION_BUDGET_MINUTES.get() != 45);
+        // The reason, where the reader is looking. The settings banner sits behind the dialog,
+        // so a refusal told only there left Save looking dead.
+        assertTrue("the dialog doesn't say why Save did nothing",
+                textIn(dialog.getWindow().getDecorView()).contains("Today's budget is locked"));
+    }
+
+    private static String textIn(android.view.View view) {
+        StringBuilder text = new StringBuilder();
+        if (view instanceof android.widget.TextView && view.getVisibility() == android.view.View.VISIBLE) {
+            text.append(((android.widget.TextView) view).getText()).append('\n');
+        }
+        if (view instanceof android.view.ViewGroup) {
+            android.view.ViewGroup group = (android.view.ViewGroup) view;
+            for (int index = 0; index < group.getChildCount(); index++) text.append(textIn(group.getChildAt(index)));
+        }
+        return text.toString();
     }
 
     /** Spends a one video budget with the lock on, which commits the day. */

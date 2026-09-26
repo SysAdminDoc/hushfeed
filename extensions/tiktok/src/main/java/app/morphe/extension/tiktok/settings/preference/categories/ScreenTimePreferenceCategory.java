@@ -7,6 +7,7 @@ package app.morphe.extension.tiktok.settings.preference.categories;
 import android.app.Dialog;
 import android.content.Context;
 import android.preference.DialogPreference;
+import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
 
@@ -19,6 +20,7 @@ import app.morphe.extension.tiktok.settings.preference.ClockHourPreference;
 import app.morphe.extension.tiktok.settings.preference.NumberInputPreference;
 import app.morphe.extension.tiktok.settings.preference.SectionHeadingPreference;
 import app.morphe.extension.tiktok.settings.preference.SettingsActionBanner;
+import app.morphe.extension.tiktok.settings.preference.SettingsUi;
 import app.morphe.extension.tiktok.settings.preference.StartTodayOverPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 import app.morphe.extension.tiktok.wellbeing.BudgetChanges;
@@ -159,11 +161,17 @@ public final class ScreenTimePreferenceCategory extends ConditionalPreferenceCat
         // anyone can edit their way out of in two taps is a suggestion.
         Preference.OnPreferenceChangeListener refuseWhileLocked = (preference, value) -> {
             if (!SessionBudget.lockedToday()) return true;
-            // The settings banner, which stays inside the window for the reader to finish, as
-            // every other refusal on these pages does. A toast was gone before the time was read.
-            SettingsActionBanner.showNotice(context, L10n.f(context,
+            String reason = L10n.f(context,
                     "Today's budget is locked. This can be changed again at %1$s.",
-                    SessionLockOverlay.resetTimeLabel()));
+                    SessionLockOverlay.resetTimeLabel());
+            // A number row keeps its dialog open on a refused Save, so what was typed isn't
+            // lost, and the settings banner sits behind that dialog: Save looked dead. The
+            // reason goes under the field there. Everywhere else it is the banner, which stays
+            // inside the window for the reader to finish, as every other refusal on these pages
+            // does. A toast was gone before the time was read.
+            android.widget.EditText field = openField(preference);
+            if (field != null) SettingsUi.reportFieldError(field, reason);
+            else SettingsActionBanner.showNotice(context, reason);
             return false;
         };
         // Past the lock, with Wait a day to loosen on, a change that loosens the budget is kept
@@ -248,6 +256,14 @@ public final class ScreenTimePreferenceCategory extends ConditionalPreferenceCat
      * Draws a budget row's waiting line again. A switch can only loosen by going off, so what
      * waits for one is always that.
      */
+    /** The field of a text row whose dialog is open, or null when the row has no dialog up. */
+    private static android.widget.EditText openField(Preference preference) {
+        if (!(preference instanceof EditTextPreference)) return null;
+        Dialog dialog = ((DialogPreference) preference).getDialog();
+        if (dialog == null || !dialog.isShowing()) return null;
+        return ((EditTextPreference) preference).getEditText();
+    }
+
     private static void showWhatWaits(Preference row) {
         if (row instanceof NumberInputPreference) {
             ((NumberInputPreference) row).refreshSummary();
