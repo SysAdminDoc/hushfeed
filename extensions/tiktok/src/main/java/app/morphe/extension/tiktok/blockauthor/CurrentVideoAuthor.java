@@ -50,6 +50,18 @@ public final class CurrentVideoAuthor {
     private static volatile Item current;
     private static volatile String playingAwemeId;
 
+    /**
+     * Held while one of the two signals decides what is current and applies it. They arrive on
+     * different threads: a bind on the main thread, the player's id on its own. The player
+     * could find nothing bound, the bind could then land and select the video, and the
+     * player's "nothing" was written last, leaving no current video until the next one,
+     * because every later tick of the same id returns early.
+     */
+    private static final Object SELECTING = new Object();
+
+    /** Runs between the player's lookup and its select, so a test can land a bind there. */
+    private static volatile Runnable betweenLookupAndSelectForTests;
+
     private CurrentVideoAuthor() {
     }
 
@@ -73,18 +85,20 @@ public final class CurrentVideoAuthor {
      */
     static void update(Object videoItemParams) {
         Item item = parse(videoItemParams);
-        if (item != null && item.awemeId != null) {
-            RECENT.put(item.awemeId, item);
-        }
+        synchronized (SELECTING) {
+            if (item != null && item.awemeId != null) {
+                RECENT.put(item.awemeId, item);
+            }
 
-        // A bind may fill an empty selection but never replace one. That covers the first
-        // video of a fresh process, where nothing has played yet, and the moment after the
-        // player names a video the feed had not bound. Replacing a live selection is the
-        // player's job alone, which is what keeps a prefetched neighbour from arming the
-        // button.
-        if (current == null || (item != null && item.awemeId != null
-                && item.awemeId.equals(playingAwemeId))) {
-            select(item);
+            // A bind may fill an empty selection but never replace one. That covers the first
+            // video of a fresh process, where nothing has played yet, and the moment after the
+            // player names a video the feed had not bound. Replacing a live selection is the
+            // player's job alone, which is what keeps a prefetched neighbour from arming the
+            // button.
+            if (current == null || (item != null && item.awemeId != null
+                    && item.awemeId.equals(playingAwemeId))) {
+                select(item);
+            }
         }
     }
 
@@ -115,12 +129,18 @@ public final class CurrentVideoAuthor {
         if (awemeId.equals(playingAwemeId)) {
             return;
         }
-        playingAwemeId = awemeId;
+        synchronized (SELECTING) {
+            if (awemeId.equals(playingAwemeId)) return;
+            playingAwemeId = awemeId;
 
-        // A miss means the player is ahead of the bind. Selecting null hides the button
-        // for that moment, which is the right answer: better no button than one wired to
-        // the previous creator.
-        select(RECENT.get(awemeId));
+            // A miss means the player is ahead of the bind. Selecting null hides the button
+            // for that moment, which is the right answer: better no button than one wired to
+            // the previous creator. The bind that follows finds the id playing and selects it.
+            Item found = RECENT.get(awemeId);
+            Runnable hook = betweenLookupAndSelectForTests;
+            if (hook != null) hook.run();
+            select(found);
+        }
     }
 
     /** Applies a new current item and tells everything that tracks the current video. */
@@ -181,7 +201,12 @@ public final class CurrentVideoAuthor {
         return item == null ? null : item.aweme;
     }
 
+    static void setBetweenLookupAndSelectForTests(Runnable hook) {
+        betweenLookupAndSelectForTests = hook;
+    }
+
     static void resetForTests() {
+        betweenLookupAndSelectForTests = null;
         RECENT.clear();
         current = null;
         playingAwemeId = null;

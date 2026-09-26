@@ -4,6 +4,7 @@ Every Hushfeed release, newest first.
 
 ## Unreleased
 
+* **TikTok:** Rarely, the block, Not interested and sound buttons stayed off for a whole video when it started playing at the moment the feed loaded it. That no longer happens.
 * **TikTok:** A restored backup that had a number out of range, like an edge seek of 90 seconds where 60 is the most, is no longer undone at the next start as if the restore had been interrupted.
 * **TikTok:** A day locked by the daily budget stays locked when TikTok restarts after the phone's timezone moved forward. Before, swiping TikTok away after the change handed the rest of the day back.
 * **TikTok:** A settings search that finds nothing now says that switches from patches you didn't tick in Morphe Manager aren't listed. Fill the screen with the video is one of them, since it comes with Fit the video to the screen, which is off by default.

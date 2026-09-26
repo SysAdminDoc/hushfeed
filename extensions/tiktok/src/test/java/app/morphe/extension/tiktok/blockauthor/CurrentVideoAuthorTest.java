@@ -88,6 +88,38 @@ public class CurrentVideoAuthorTest {
     }
 
     @Test
+    public void aBindThatLandsWhileThePlayerIsChoosingIsKept() throws Exception {
+        // The player names the next video on its own thread and finds it not bound yet. The bind
+        // landing on another thread right then selected it, and the player's "nothing" was
+        // written after, so the video played out with no creator to block and no sound to save.
+        try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
+            Utils.setContext(controller.get());
+            CurrentVideoAuthor.update(new Params("aweme_one", "creator_one"));
+            CurrentVideoAuthor.onPlaying("aweme_one");
+
+            Thread[] binder = new Thread[1];
+            CurrentVideoAuthor.setBetweenLookupAndSelectForTests(() -> {
+                binder[0] = new Thread(() -> CurrentVideoAuthor.update(new Params("aweme_two", "creator_two")));
+                binder[0].start();
+                try {
+                    // Long enough for an unguarded bind to finish; a guarded one waits its turn.
+                    binder[0].join(300);
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                }
+            });
+            try {
+                CurrentVideoAuthor.onPlaying("aweme_two");
+            } finally {
+                CurrentVideoAuthor.setBetweenLookupAndSelectForTests(null);
+            }
+            binder[0].join(5_000);
+            assertEquals("a bind that landed mid-choice was overwritten",
+                    "creator_two", CurrentVideoAuthor.get() == null ? null : CurrentVideoAuthor.get().uid);
+        }
+    }
+
+    @Test
     public void aVideoThePlayerNamesBeforeItIsBoundTargetsNobody() {
         try (var controller = Robolectric.buildActivity(TestActivity.class).setup()) {
             Utils.setContext(controller.get());
