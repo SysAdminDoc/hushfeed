@@ -150,6 +150,8 @@ The manager signs every patched build with its own key, and Android only install
 
 ## Patches
 
+Playback quality chooses among the video streams TikTok offers. It doesn't cap the video's frame rate. Keep the screen's refresh rate changes the display request, not the video frames.
+
 | Patch | Description |
 |---|---|
 | `Advanced downloads` | Adds download quality choices, saves Photo Mode images directly from their source URLs, keeps a video's sound as its own audio file, and saves a profile picture or a story from a long press. Switch: Hushfeed settings > Downloads. |
