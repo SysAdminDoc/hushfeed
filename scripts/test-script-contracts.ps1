@@ -1029,6 +1029,13 @@ try {
         $synced = $indexText
         if ($indexVersion -ne $fixtureVersion) { $synced = $synced -replace [regex]::Escape($indexVersion), $fixtureVersion }
         $synced = $synced -replace '\b\d+ patches\b', "$count patches"
+        # The 0.60.0 index went out on the owner's word with the gate skipped, and its description
+        # quotes the runtime count alone. The cases below move one count at a time against the two
+        # a gated release quotes, so the copy gains the missing one rather than every scripts change
+        # failing here until the next release.
+        if ($synced -notmatch '\b\d+ patch tests passed\b') {
+            $synced = $synced -replace '\b(\d+ runtime tests passed)\b', '$1 and 421 patch tests passed'
+        }
         if ($synced -ceq $indexText) { return }
         Set-FactsFile 'patches-bundle.json' { param($text) $synced }
     }
