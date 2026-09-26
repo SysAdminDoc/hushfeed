@@ -2,6 +2,10 @@
 
 Every Hushfeed release, newest first.
 
+## Unreleased
+
+* **TikTok:** Taking LIVE off the top feed tabs now keeps the corner LIVE button available, just as taking LIVE off the bottom bar does. Hide the LIVE button still works on its own.
+
 ## 0.60.0 (2026-09-25)
 
 A small release with three fixes. Comments that TikTok dropped without a word now go out, the caption no longer shows over the video when Caption above comments is on, and Allow Duet and Stitch covers creators who limit duets on their whole account.

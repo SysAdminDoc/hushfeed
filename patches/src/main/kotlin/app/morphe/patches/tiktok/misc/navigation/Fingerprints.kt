@@ -98,6 +98,14 @@ internal fun Method.isLiveBottomTabCheck(): Boolean =
             it.opcode == Opcode.SGET_OBJECT && it.getReference<FieldReference>()?.type == COPY_ON_WRITE
         } == true
 
+/** The corner button compares TikTok's LIVE placement with both top-tab modes here. */
+internal object LiveTopTabModeFingerprint : Fingerprint(
+    definingClass = LIVE_ICON_GENERATOR,
+    name = "onLiveIconEntranceEnable",
+    returnType = "V",
+    strings = listOf("live_tab_single", "live_tab_double"),
+)
+
 internal object TopTabModelListFingerprint : Fingerprint(
     definingClass = TAB_ABILITY,
     returnType = "Ljava/util/List;",

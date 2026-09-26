@@ -48,6 +48,7 @@ public final class NavigationTabsFilter {
      * the feed (issue #28).
      */
     private static volatile boolean liveBottomTabHidden;
+    private static volatile boolean liveTopTabHidden;
 
     /**
      * TikTok's "LIVE has a bottom tab" check, answered false when the tab it has in mind is one
@@ -55,6 +56,15 @@ public final class NavigationTabsFilter {
      */
     public static boolean liveHasBottomTab(boolean original) {
         return original && !liveBottomTabHidden;
+    }
+
+    /** TikTok's LIVE top-tab modes only hide the corner button while that tab is still visible. */
+    public static String liveTopTabMode(String mode) {
+        if (liveTopTabHidden && Settings.FEED_NAVIGATION.get()
+                && ("live_tab_single".equals(mode) || "live_tab_double".equals(mode))) {
+            return "";
+        }
+        return mode;
     }
 
     /** The selected label adds no navigation information when the filtered model is only For You. */
@@ -136,7 +146,11 @@ public final class NavigationTabsFilter {
     @SuppressWarnings({"unused", "rawtypes", "unchecked"})
     public static List<?> filterTopTabs(List<?> tabs, boolean includeChildren) {
         try {
-            if (tabs == null || includeChildren) {
+            if (tabs == null) {
+                liveTopTabHidden = false;
+                return tabs;
+            }
+            if (includeChildren) {
                 return tabs;
             }
 
@@ -146,6 +160,7 @@ public final class NavigationTabsFilter {
             observeTabs(tabs, previousObservedKeys);
 
             if (!Settings.FEED_NAVIGATION.get()) {
+                liveTopTabHidden = false;
                 debugTabs("observed", tabs, tabs);
                 return tabs;
             }
@@ -157,15 +172,23 @@ public final class NavigationTabsFilter {
             boolean blockNewTabs = Settings.FEED_NAVIGATION_BLOCK_NEW_TABS.get();
             CopyOnWriteArrayList filtered = new CopyOnWriteArrayList();
             Object hotTab = null;
+            boolean sawLiveTopTab = false;
+            boolean keptLiveTopTab = false;
 
             for (Object tab : tabs) {
                 String key = NavigationTabOptions.normalizeRuntimeTag(getTag(tab));
                 if (NavigationTabOptions.HOT.equals(key)) {
                     hotTab = tab;
                 }
+                if (NavigationTabOptions.LIVE.equals(key)) {
+                    sawLiveTopTab = true;
+                }
 
                 if (shouldKeepTab(key, enabledKeys, previousObservedKeys, observedKeys, blockNewTabs)) {
                     filtered.add(tab);
+                    if (NavigationTabOptions.LIVE.equals(key)) {
+                        keptLiveTopTab = true;
+                    }
                 }
             }
 
@@ -173,14 +196,17 @@ public final class NavigationTabsFilter {
                 if (hotTab != null) {
                     filtered.add(hotTab);
                 } else {
+                    liveTopTabHidden = false;
                     debugTabs("fallback-original", tabs, tabs);
                     return tabs;
                 }
             }
 
+            liveTopTabHidden = sawLiveTopTab && !keptLiveTopTab;
             debugTabs("filtered", tabs, filtered);
             return filtered;
         } catch (Throwable throwable) {
+            liveTopTabHidden = false;
             Logger.printException(() -> "Feed tab navigation failed; returning original tabs", throwable);
             return tabs;
         }

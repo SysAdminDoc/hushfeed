@@ -26,6 +26,7 @@ import org.robolectric.annotation.Config;
 @Config(sdk = 28)
 public class NavigationTabsFilterTest {
     @Before public void setUp() {
+        NavigationTabsFilter.filterTopTabs(null);
         Utils.setContext(RuntimeEnvironment.getApplication());
         Settings.FEED_NAVIGATION.save(true);
         Settings.FEED_NAVIGATION_TABS.save("HOT");
@@ -38,6 +39,7 @@ public class NavigationTabsFilterTest {
     }
 
     @After public void tearDown() {
+        NavigationTabsFilter.filterTopTabs(null);
         Settings.FEED_NAVIGATION.save(false);
         Settings.FEED_NAVIGATION_TABS.save(NavigationTabOptions.defaultEnabledKeys());
         Settings.FEED_NAVIGATION_OBSERVED_TABS.save(NavigationTabOptions.HOT);
@@ -121,6 +123,36 @@ public class NavigationTabsFilterTest {
         } finally {
             NavigationTabsFilter.resetLiveBottomTabForTests();
         }
+    }
+
+    @Test public void theCornerLiveButtonComesBackOnlyWhenTheTopFilterTookLive() {
+        GetterTab hot = new GetterTab("For You");
+        GetterTab live = new GetterTab("LIVE");
+        Settings.FEED_NAVIGATION_OBSERVED_TABS.save("HOT,LIVE");
+        NavigationTabsFilter.filterTopTabs(Arrays.asList(hot, live));
+        assertEquals("", NavigationTabsFilter.liveTopTabMode("live_tab_single"));
+        assertEquals("", NavigationTabsFilter.liveTopTabMode("live_tab_double"));
+        assertEquals("another mode must stay intact", "other", NavigationTabsFilter.liveTopTabMode("other"));
+        assertEquals(null, NavigationTabsFilter.liveTopTabMode(null));
+
+        // A child pass doesn't replace the recorded top-level model.
+        NavigationTabsFilter.filterTopTabs(Arrays.asList(hot, live), true);
+        assertEquals("", NavigationTabsFilter.liveTopTabMode("live_tab_single"));
+
+        Settings.FEED_NAVIGATION_TABS.save("HOT,LIVE");
+        NavigationTabsFilter.filterTopTabs(Arrays.asList(hot, live));
+        assertEquals("live_tab_single", NavigationTabsFilter.liveTopTabMode("live_tab_single"));
+
+        Settings.FEED_NAVIGATION_TABS.save("HOT");
+        NavigationTabsFilter.filterTopTabs(Arrays.asList(hot));
+        assertEquals("live_tab_double", NavigationTabsFilter.liveTopTabMode("live_tab_double"));
+
+        NavigationTabsFilter.filterTopTabs(Arrays.asList(hot, live));
+        Settings.FEED_NAVIGATION.save(false);
+        assertEquals("live_tab_single", NavigationTabsFilter.liveTopTabMode("live_tab_single"));
+        NavigationTabsFilter.filterTopTabs(Arrays.asList(hot, live));
+        Settings.FEED_NAVIGATION.save(true);
+        assertEquals("live_tab_double", NavigationTabsFilter.liveTopTabMode("live_tab_double"));
     }
 
     @Test public void disabledNavigationReturnsTheOriginalListIdentity() {
