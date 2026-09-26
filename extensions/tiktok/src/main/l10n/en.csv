@@ -279,6 +279,7 @@ Couldn't open the file picker to import. Try again.,Couldn't open the file picke
 Couldn't put back the diagnostic data. Try again.,Couldn't put back the diagnostic data. Try again.
 Couldn't read who posted this comment. Open their profile and block them there.,Couldn't read who posted this comment. Open their profile and block them there.
 Couldn't reset this override. Try again.,Couldn't reset this override. Try again.
+Couldn't restart TikTok. Close it and open it again.,Couldn't restart TikTok. Close it and open it again.
 Couldn't restore the settings. Try again.,Couldn't restore the settings. Try again.
 Couldn't save the settings backup. Try again.,Couldn't save the settings backup. Try again.
 Couldn't save this override. Try again.,Couldn't save this override. Try again.
@@ -287,6 +288,7 @@ Couldn't start the Lab change. Try again shortly.,Couldn't start the Lab change.
 Couldn't start the report export. Try again shortly.,Couldn't start the report export. Try again shortly.
 Couldn't start the settings change. Try again shortly.,Couldn't start the settings change. Try again shortly.
 Couldn't tell which folder to update. Choose it again.,Couldn't tell which folder to update. Choose it again.
+Couldn't undo that. Try again.,Couldn't undo that. Try again.
 Couldn't undo the clear. Try again.,Couldn't undo the clear. Try again.
 Country and network preferences,Country and network preferences
 Country code,Country code
@@ -325,7 +327,6 @@ Diagnostics,Diagnostics
 Disable,Disable
 Disabled,Disabled
 Discard edits,Discard edits
-Dismiss update,Dismiss update
 Dismissed %1$s suggested accounts,Dismissed %1$s suggested accounts
 Dismissed one suggested account,Dismissed one suggested account
 Do not start the feed on returning,Do not start the feed on returning
@@ -420,6 +421,7 @@ Gate details,Gate details
 Generated defaults,Generated defaults
 Gestures,Gestures
 Ghost mode,Ghost mode
+Got it,Got it
 Hand-off,Hand-off
 Handle or id,Handle or id
 Hidden %1$s on this phone,Hidden %1$s on this phone
@@ -611,6 +613,7 @@ Last change put back. The Feature Gate Lab rules were for another TikTok version
 Last original value,Last original value
 Last recording: %1$d gates.,Last recording: %1$d gates.
 Last recording: 1 gate.,Last recording: 1 gate.
+Later,Later
 Layout,Layout
 "Layout, player, search and system","Layout, player, search and system"
 Leave maximum empty to keep it unlimited.,Leave maximum empty to keep it unlimited.

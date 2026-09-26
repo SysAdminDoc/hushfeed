@@ -25,10 +25,12 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.shadows.ShadowAlertDialog;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE, sdk = 28, qualifiers = "en")
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 public class ReleaseNotesTest {
     public static class HostActivity extends Activity {}
 
@@ -65,6 +67,35 @@ public class ReleaseNotesTest {
         assertFalse(ReleaseNotes.text(releases, "0.1000.1000001", null).contains("Middle."));
     }
 
+    /** What's new draws a sparkle of its own; it used to borrow the Feature Gate Lab's flask. */
+    @Test
+    public void theWhatsNewRowHasAnIconOfItsOwn() throws Exception {
+        try (var owner = Robolectric.buildActivity(HostActivity.class).setup()) {
+            Activity activity = owner.get();
+            int size = SettingsUi.dp(activity, 96);
+            int[] news = pixels(SettingsMenuPreference.iconDrawable(activity, SettingsMenuPreference.Icon.NEWS), size);
+            int[] lab = pixels(SettingsMenuPreference.iconDrawable(activity, SettingsMenuPreference.Icon.LAB), size);
+            assertFalse("the What's new icon draws the Lab's flask", java.util.Arrays.equals(news, lab));
+            assertTrue("the What's new icon draws nothing",
+                    java.util.Arrays.stream(news).anyMatch(pixel -> android.graphics.Color.alpha(pixel) != 0));
+
+            android.widget.ImageView icon = new android.widget.ImageView(activity);
+            icon.setImageDrawable(SettingsMenuPreference.iconDrawable(activity, SettingsMenuPreference.Icon.NEWS));
+            icon.setBackgroundColor(SettingsUi.background());
+            app.morphe.extension.tiktok.UiCapture.save(icon, "whats-new-icon.png", size, size);
+        }
+    }
+
+    private static int[] pixels(android.graphics.drawable.Drawable drawable, int size) {
+        android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(
+                size, size, android.graphics.Bitmap.Config.ARGB_8888);
+        drawable.setBounds(0, 0, size, size);
+        drawable.draw(new android.graphics.Canvas(bitmap));
+        int[] out = new int[size * size];
+        bitmap.getPixels(out, 0, size, 0, 0, size, size);
+        return out;
+    }
+
     /** The changelog's scope label is for Morphe Manager; the dialog shows a plain bullet. */
     @Test
     public void bulletsDropTheChangelogScopeLabel() {
@@ -73,7 +104,7 @@ public class ReleaseNotesTest {
     }
 
     @Test
-    public void closeKeepsTheRowPendingAndDismissRemembersTheVersion() {
+    public void laterKeepsTheRowPendingAndGotItRemembersTheVersion() {
         try (var owner = Robolectric.buildActivity(HostActivity.class).setup()) {
             Activity activity = owner.get();
             Utils.setContext(activity);
@@ -82,14 +113,16 @@ public class ReleaseNotesTest {
 
             ReleaseNotes.show(activity, "0.60.0", () -> {});
             AlertDialog first = ShadowAlertDialog.getLatestAlertDialog();
-            first.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+            assertEquals("Later", first.getButton(AlertDialog.BUTTON_NEGATIVE).getText().toString());
+            first.getButton(AlertDialog.BUTTON_NEGATIVE).performClick();
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
             assertTrue(ReleaseNotes.pending(activity, "0.60.0"));
 
             AtomicBoolean rowRemoved = new AtomicBoolean();
             ReleaseNotes.show(activity, "0.60.0", () -> rowRemoved.set(true));
             AlertDialog second = ShadowAlertDialog.getLatestAlertDialog();
-            second.getButton(AlertDialog.BUTTON_NEUTRAL).performClick();
+            assertEquals("Got it", second.getButton(AlertDialog.BUTTON_POSITIVE).getText().toString());
+            second.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
             assertTrue(rowRemoved.get());
             assertFalse(ReleaseNotes.pending(activity, "0.60.0"));

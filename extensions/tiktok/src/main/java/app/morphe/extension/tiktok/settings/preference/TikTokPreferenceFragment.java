@@ -324,14 +324,8 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
      * will not load offered two identical looking choices and no sense of which one to take.
      */
     @Override protected ErrorActionStyler errorActionStyler() {
-        return (row, primary) -> {
-            android.widget.TextView title = row.findViewById(android.R.id.title);
-            if (title == null) return;
-            title.setTextColor(SettingsUi.enabledTextColors(
-                    primary ? SettingsUi.accent() : SettingsUi.textPrimary()));
-            title.setTypeface(title.getTypeface(),
-                    primary ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
-        };
+        // SettingsListAdapter styles the rows again after this, so it applies the same helper.
+        return SettingsUi::styleErrorAction;
     }
 
     @Override protected CharSequence preferenceChangeRecoveredMessage(Context context) {
@@ -1026,7 +1020,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
                     context,
                     L10n.t(context, "What's new"),
                     L10n.f(context, "Changes in Hushfeed %1$s", releaseVersion),
-                    SettingsMenuPreference.Icon.LAB,
+                    SettingsMenuPreference.Icon.NEWS,
                     0,
                     preference -> {
                         ReleaseNotes.show(context, releaseVersion,

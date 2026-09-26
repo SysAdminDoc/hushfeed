@@ -42,7 +42,8 @@ public final class SettingsMenuPreference extends Preference {
         BEHAVIOR,
         LAB,
         DIAGNOSTICS,
-        BACKUP
+        BACKUP,
+        NEWS
     }
 
     private static final int ACCESSORY_TAG = 0x4D4D454E;
@@ -504,6 +505,17 @@ public final class SettingsMenuPreference extends Preference {
                     canvas.drawPath(path, line);
                     canvas.drawLine(left + bounds.width() * 0.08f, cy + bounds.height() * 0.09f,
                             right - bounds.width() * 0.08f, cy + bounds.height() * 0.09f, line);
+                    break;
+                case NEWS:
+                    // A four-point sparkle: each arm bows in toward the centre.
+                    path.reset();
+                    path.moveTo(cx, top);
+                    path.quadTo(cx, cy, right, cy);
+                    path.quadTo(cx, cy, cx, bottom);
+                    path.quadTo(cx, cy, left, cy);
+                    path.quadTo(cx, cy, cx, top);
+                    path.close();
+                    canvas.drawPath(path, line);
                     break;
                 case DIAGNOSTICS:
                     canvas.drawCircle(cx, cy, bounds.width() * 0.16f, line);

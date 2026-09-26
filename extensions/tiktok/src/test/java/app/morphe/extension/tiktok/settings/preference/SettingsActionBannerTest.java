@@ -24,6 +24,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowToast;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28, qualifiers = "w360dp-h800dp-night-mdpi")
@@ -69,6 +70,26 @@ public class SettingsActionBannerTest {
         action.performClick();
         assertEquals("one press ran Undo more than once", 1, calls.get());
         assertNull(content.findViewWithTag(SettingsActionBanner.BANNER_TAG));
+    }
+
+    /** A failed action names the action: a Restart now that threw used to say a clear couldn't be undone. */
+    @Test public void aFailedActionSaysWhichActionFailed() {
+        SettingsActionBanner.showUndo(activity, "Today starts again", () -> {
+            throw new IllegalStateException("undo failed on purpose");
+        });
+        TextView undo = content.findViewWithTag(SettingsActionBanner.ACTION_TAG);
+        assertTrue(undo.performClick());
+        assertEquals("Couldn't undo that. Try again.", ShadowToast.getTextOfLatestToast());
+
+        RestartPendingPreference.setRestarterForTests(context -> {
+            throw new IllegalStateException("restart failed on purpose");
+        });
+        SettingsActionBanner.showRestart(activity, "Restart TikTok to apply this.");
+        TextView restart = content.findViewWithTag(SettingsActionBanner.ACTION_TAG);
+        assertEquals("Restart now", restart.getText().toString());
+        assertTrue(restart.performClick());
+        assertEquals("Couldn't restart TikTok. Close it and open it again.",
+                ShadowToast.getTextOfLatestToast());
     }
 
     @Test public void aNewBannerGetsItsOwnFullLifetime() {

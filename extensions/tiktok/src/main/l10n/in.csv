@@ -69,6 +69,10 @@ A web address someone left in a comment can be tapped instead of copied out by h
 AI-generated posts,Kiriman buatan AI
 About,Tentang
 A forced value applies to this copy of TikTok whichever account is signed in. It cannot get past a check the server makes.,"Nilai yang dipaksa berlaku untuk salinan TikTok ini, akun mana pun yang masuk. Nilai itu tidak bisa melewati pemeriksaan yang dilakukan server."
+Couldn't restart TikTok. Close it and open it again.,Tidak bisa memulai ulang TikTok. Tutup lalu buka lagi.
+Couldn't undo that. Try again.,Tidak bisa dibatalkan. Coba lagi.
+Got it,Mengerti
+Later,Nanti
 "This key touches account safety. Forcing it can change login, region, payment or security checks.","Kunci ini menyangkut keselamatan akun. Memaksanya bisa mengubah pemeriksaan login, wilayah, pembayaran, atau keamanan."
 Activity,Aktivitas
 Activity center (PIA),Pusat aktivitas (PIA)
@@ -1258,4 +1262,3 @@ Allow storage for TikTok in Android settings to save the live photo's clip,Izink
 "Not a handle or id, so ignored: %1$s","Bukan nama akun atau id, jadi diabaikan: %1$s"
 What's new,Yang baru
 Changes in Hushfeed %1$s,Perubahan di Hushfeed %1$s
-Dismiss update,Sembunyikan pembaruan

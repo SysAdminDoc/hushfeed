@@ -45,19 +45,27 @@ public final class SettingsActionBanner {
     private static WeakReference<View> current = new WeakReference<>(null);
 
     public static void showUndo(Context context, String message, Runnable undo) {
-        show(context, message, L10n.t(context, "Undo"), undo);
+        show(context, message, L10n.t(context, "Undo"), undo,
+                L10n.t(context, "Couldn't undo that. Try again."));
     }
 
     public static void showNotice(Context context, String message) {
-        show(context, message, null, null);
+        show(context, message, null, null, null);
     }
 
     public static void showRestart(Context context, String message) {
         show(context, message, L10n.t(context, "Restart now"),
-                () -> RestartPendingPreference.restart(context));
+                () -> RestartPendingPreference.restart(context),
+                L10n.t(context, "Couldn't restart TikTok. Close it and open it again."));
     }
 
-    private static void show(Context context, String message, String actionLabel, Runnable action) {
+    /**
+     * @param failure what to say when the action throws. It used to be one sentence about
+     *                undoing a clear for every action, so a Restart now that failed said the
+     *                clear could not be undone.
+     */
+    private static void show(Context context, String message, String actionLabel, Runnable action,
+            String failure) {
         Utils.runOnMainThreadNowOrLater(() -> {
             try {
                 Activity activity = activityFrom(context);
@@ -87,7 +95,7 @@ public final class SettingsActionBanner {
                 banner.addView(label, new LinearLayout.LayoutParams(
                         0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
-                if (action != null) addAction(activity, banner, actionLabel, action);
+                if (action != null) addAction(activity, banner, actionLabel, action, failure);
 
                 FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
@@ -111,7 +119,7 @@ public final class SettingsActionBanner {
     }
 
     private static void addAction(Activity activity, LinearLayout banner, String actionLabel,
-            Runnable action) {
+            Runnable action, String failure) {
         TextView button = SettingsUi.text(activity, actionLabel, 14,
                 SettingsUi.accent(), Typeface.BOLD);
         button.setTag(ACTION_TAG);
@@ -130,7 +138,7 @@ public final class SettingsActionBanner {
                 action.run();
             } catch (Throwable throwable) {
                 Logger.printException(() -> "Could not run the settings banner action", throwable);
-                Utils.showToastShort(L10n.t(activity, "Couldn't undo the clear. Try again."));
+                Utils.showToastShort(failure);
             }
         });
         banner.addView(button, new LinearLayout.LayoutParams(

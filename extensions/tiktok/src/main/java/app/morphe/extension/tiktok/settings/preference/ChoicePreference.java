@@ -23,6 +23,9 @@ public final class ChoicePreference extends ListPreference {
         setEntryValues(values);
         setValue(setting.savedValue());
         setSummary("%s");
+        // Left unset, the platform's own Cancel shows, in the phone's language rather than the
+        // one the rest of the dialog is translated into.
+        setNegativeButtonText(L10n.t(context, "Cancel"));
     }
 
     @Override protected void showDialog(android.os.Bundle state) {

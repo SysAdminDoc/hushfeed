@@ -70,7 +70,7 @@ public final class ReleaseNotes {
         body.setTextColor(SettingsUi.textPrimary());
         body.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 15);
         body.setTextIsSelectable(true);
-        int padding = SettingsUi.dp(context, 20);
+        int padding = SettingsUi.dp(context, 22);
         body.setPadding(padding, padding, padding, padding);
 
         ScrollView scroller = new ScrollView(context);
@@ -82,12 +82,15 @@ public final class ReleaseNotes {
         AlertDialog dialog = new AlertDialog.Builder(context)
                 .setTitle(L10n.t(context, "What's new"))
                 .setView(scroller)
-                .setPositiveButton(L10n.t(context, "Close"), (target, which) -> target.dismiss())
-                .setNeutralButton(L10n.t(context, "Dismiss update"), (target, which) -> {
+                // Got it is the answer most readers want, so it takes the primary slot. Later
+                // keeps the row for another look. The pair used to be Close and Dismiss update,
+                // and the neutral slot made the choice that changes state look like the minor one.
+                .setPositiveButton(L10n.t(context, "Got it"), (target, which) -> {
                     context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
                             .putString(DISMISSED, current).apply();
                     onDismiss.run();
                 })
+                .setNegativeButton(L10n.t(context, "Later"), (target, which) -> target.dismiss())
                 .create();
         dialog.show();
         SettingsUi.styleStandardAlertDialog(dialog);

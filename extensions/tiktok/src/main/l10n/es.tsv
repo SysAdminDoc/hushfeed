@@ -68,6 +68,10 @@ A web address someone left in a comment can be tapped instead of copied out by h
 AI-generated posts	Publicaciones generadas por IA
 About	Acerca de
 A forced value applies to this copy of TikTok whichever account is signed in. It cannot get past a check the server makes.	Un valor forzado se aplica a esta copia de TikTok, sea cual sea la cuenta con sesión iniciada. No puede saltarse una comprobación que haga el servidor.
+Couldn't restart TikTok. Close it and open it again.	No se pudo reiniciar TikTok. Ciérralo y vuelve a abrirlo.
+Couldn't undo that. Try again.	No se pudo deshacer. Inténtalo de nuevo.
+Got it	Entendido
+Later	Más tarde
 Leave when TikTok says time is up	Salir cuando TikTok diga que se acabó el tiempo
 No app on this phone opens that file	Ninguna app de este teléfono abre ese archivo
 Open	Abrir
@@ -1257,4 +1261,3 @@ This is the video's own sound, so YouTube Music won't have it	Este es el sonido 
 Not a handle or id, so ignored: %1$s	No es un nombre de cuenta ni un id, así que se ignora: %1$s
 What's new	Novedades
 Changes in Hushfeed %1$s	Cambios en Hushfeed %1$s
-Dismiss update	Ocultar actualización

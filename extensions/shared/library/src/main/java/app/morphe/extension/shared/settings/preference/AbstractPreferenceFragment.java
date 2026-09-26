@@ -53,9 +53,13 @@ import app.morphe.extension.shared.ui.CustomDialog;
 @SuppressWarnings("deprecation")
 public abstract class AbstractPreferenceFragment extends PreferenceFragment {
 
-    private static final String INITIALIZATION_ERROR_KEY = "morphe_settings_error_message";
-    private static final String INITIALIZATION_BACK_KEY = "morphe_settings_error_back";
-    private static final String INITIALIZATION_RETRY_KEY = "morphe_settings_error_retry";
+    /**
+     * The recovery page's rows, public so an app that draws its own rows over the platform's can
+     * tell the message and the two actions apart from an ordinary setting after it restyles them.
+     */
+    public static final String INITIALIZATION_ERROR_KEY = "morphe_settings_error_message";
+    public static final String INITIALIZATION_BACK_KEY = "morphe_settings_error_back";
+    public static final String INITIALIZATION_RETRY_KEY = "morphe_settings_error_retry";
 
     /** A tap acts immediately, and assistive technology should hear the same Button role. */
     private static final class ErrorActionPreference extends Preference implements ImmediateAction {

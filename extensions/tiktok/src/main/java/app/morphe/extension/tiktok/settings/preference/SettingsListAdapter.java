@@ -20,6 +20,8 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 import android.widget.WrapperListAdapter;
 
+import app.morphe.extension.shared.settings.preference.AbstractPreferenceFragment;
+
 /** Adds presentation to the platform adapter without changing preference binding or persistence. */
 @SuppressWarnings("deprecation")
 final class SettingsListAdapter extends BaseAdapter implements WrapperListAdapter {
@@ -48,7 +50,8 @@ final class SettingsListAdapter extends BaseAdapter implements WrapperListAdapte
     private boolean isBoundary(int position) {
         if (position < 0 || position >= getCount()) return true;
         Object item = getItem(position);
-        return item instanceof SettingsHeaderPreference || item instanceof PreferenceCategory
+        return isErrorMessage(item)
+                || item instanceof SettingsHeaderPreference || item instanceof PreferenceCategory
                 || item instanceof SectionHeadingPreference
                 || item instanceof SettingsStatusPreference
                 || item instanceof SettingsQuickActionsPreference
@@ -56,12 +59,30 @@ final class SettingsListAdapter extends BaseAdapter implements WrapperListAdapte
                 || item instanceof CalmFeedPresetPreference;
     }
 
+    /** The recovery page's message, which is drawn as the page's title rather than as a row. */
+    private static boolean isErrorMessage(Object item) {
+        return item instanceof Preference && AbstractPreferenceFragment.INITIALIZATION_ERROR_KEY
+                .equals(((Preference) item).getKey());
+    }
+
     @Override public View getView(int position, View convertView, ViewGroup parent) {
         View row = delegate.getView(position, convertView, parent);
+        if (isErrorMessage(getItem(position))) {
+            SettingsUi.styleErrorHeading(row);
+            return row;
+        }
         if (isBoundary(position)) return row;
         Preference preference = (Preference) getItem(position);
         SettingsUi.stylePreferenceRow(row);
         SettingsUi.applyGroupedRow(row, isBoundary(position - 1), isBoundary(position + 1));
+        // The recovery page's two actions were styled while the rows were bound, and the row
+        // styling above painted over it, so Retry and Back came out as two identical rows.
+        String key = preference.getKey();
+        if (AbstractPreferenceFragment.INITIALIZATION_RETRY_KEY.equals(key)
+                || AbstractPreferenceFragment.INITIALIZATION_BACK_KEY.equals(key)) {
+            SettingsUi.styleErrorAction(row,
+                    AbstractPreferenceFragment.INITIALIZATION_RETRY_KEY.equals(key));
+        }
         if (preference instanceof SettingsMenuPreference) {
             row.setPaddingRelative(SettingsUi.dp(row.getContext(), 18), SettingsUi.dp(row.getContext(), 14),
                     SettingsUi.dp(row.getContext(), 18), SettingsUi.dp(row.getContext(), 14));

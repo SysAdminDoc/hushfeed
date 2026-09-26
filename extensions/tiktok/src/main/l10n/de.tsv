@@ -71,6 +71,10 @@ A web address someone left in a comment can be tapped instead of copied out by h
 AI-generated posts	KI-generierte Beiträge
 About	Info
 A forced value applies to this copy of TikTok whichever account is signed in. It cannot get past a check the server makes.	Ein erzwungener Wert gilt für diese TikTok-Installation, egal welches Konto angemeldet ist. An einer Prüfung des Servers kommt er nicht vorbei.
+Couldn't restart TikTok. Close it and open it again.	TikTok konnte nicht neu starten. Schließ die App und öffne sie wieder.
+Couldn't undo that. Try again.	Rückgängig machen hat nicht geklappt. Versuch es noch einmal.
+Got it	Verstanden
+Later	Später
 Leave when TikTok says time is up	Die App verlassen, wenn TikTok sagt, die Zeit ist um
 No app on this phone opens that file	Keine App auf diesem Handy öffnet diese Datei
 Open	Öffnen
@@ -1260,4 +1264,3 @@ This is the video's own sound, so YouTube Music won't have it	Das ist der eigene
 Not a handle or id, so ignored: %1$s	Kein Konto-Name und keine ID, daher ignoriert: %1$s
 What's new	Neu in Hushfeed
 Changes in Hushfeed %1$s	Änderungen in Hushfeed %1$s
-Dismiss update	Update ausblenden
