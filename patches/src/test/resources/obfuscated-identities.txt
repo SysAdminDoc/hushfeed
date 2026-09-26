@@ -51,8 +51,6 @@ extensions/tiktok/src/main/java/app/morphe/extension/tiktok/feed/VideoOverlayHid
 extensions/tiktok/src/main/java/app/morphe/extension/tiktok/follow/FollowDiagnostics.java|LIZ
 extensions/tiktok/src/main/java/app/morphe/extension/tiktok/follow/FollowDiagnostics.java|LIZIZ
 extensions/tiktok/src/main/java/app/morphe/extension/tiktok/follow/FollowDiagnostics.java|LIZJ
-extensions/tiktok/src/main/java/app/morphe/extension/tiktok/follow/FollowDiagnostics.java|LJ
-extensions/tiktok/src/main/java/app/morphe/extension/tiktok/follow/FollowDiagnostics.java|LJFF
 extensions/tiktok/src/main/java/app/morphe/extension/tiktok/inbox/InboxFilter.java|brb
 extensions/tiktok/src/main/java/app/morphe/extension/tiktok/inbox/InboxFilter.java|fg5
 extensions/tiktok/src/main/java/app/morphe/extension/tiktok/inbox/InboxFilter.java|fwz
