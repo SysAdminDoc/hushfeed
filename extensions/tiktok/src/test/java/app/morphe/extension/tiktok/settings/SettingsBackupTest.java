@@ -314,6 +314,29 @@ public class SettingsBackupTest {
                 "from the backup", Settings.BLOCKED_CREATORS.get());
     }
 
+    @Test public void aFinishedRestoreThatClampedAValueIsNotUndoneAtNextLaunch() throws Exception {
+        // The journal keeps the file as the after snapshot, and the save keeps each number in its
+        // setting's range. A backup edited, or written by an older build, to hold 90 for a
+        // setting that stops at 60 saved 60, matched neither snapshot at the next start, and the
+        // restore that had finished was put back with a note saying it was interrupted.
+        var app = Utils.getContext();
+        Settings.EDGE_SEEK_SECONDS.save(5);
+        JSONObject edited = new JSONObject(SettingsBackup.create(false));
+        edited.getJSONObject("settings").put(Settings.EDGE_SEEK_SECONDS.key, 90);
+        String backup = edited.toString();
+
+        Settings.EDGE_SEEK_SECONDS.save(10);
+        String before = SettingsBackup.create(false);
+        SettingsBackup.restore(app, backup, true);
+        assertEquals("the save did not keep the value in range", 60, (int) Settings.EDGE_SEEK_SECONDS.get());
+
+        writeJournal("settings", before, backup);
+        assertEquals("a finished restore was read as interrupted",
+                SettingsOperationJournal.Recovery.ALREADY_COMMITTED,
+                SettingsOperationJournal.initialize(app));
+        assertEquals("the restored value was put back at startup", 60, (int) Settings.EDGE_SEEK_SECONDS.get());
+    }
+
     @Test public void aBackupThatStopsHalfwayThroughSaysSoRatherThanRefusingWithoutAReason()
             throws Exception {
         // Valid UTF-8, valid nothing else: exactly what a download that was cut off looks like.

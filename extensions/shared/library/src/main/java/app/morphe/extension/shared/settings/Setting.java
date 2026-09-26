@@ -383,6 +383,22 @@ public abstract class Setting<T> {
     }
 
     /**
+     * The value as saving it would store it, for a caller that compares what it recorded with
+     * what was saved: a restore writes what {@link #coerce} returns, not the file's own number.
+     * A value this setting would refuse comes back as it was.
+     */
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public final Object savedFormOf(@Nullable Object value) {
+        if (value == null) return null;
+        try {
+            return coerce((T) value);
+        } catch (RuntimeException refused) {
+            return value;
+        }
+    }
+
+    /**
      * Load and set the value of {@link #value}.
      */
     protected abstract void load();

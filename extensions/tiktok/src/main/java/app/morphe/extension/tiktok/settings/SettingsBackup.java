@@ -399,8 +399,13 @@ public final class SettingsBackup {
         try {
             for (Map.Entry<Setting<?>, Object> entry : expected.values.entrySet()) {
                 // The snapshots were written from saved values, so they are compared with saved
-                // values: paused, get() answers TikTok's own path and matches neither.
-                if (!Objects.equals(entry.getKey().savedValue(), entry.getValue())) return false;
+                // values: paused, get() answers TikTok's own path and matches neither. An after
+                // snapshot is the restored file, though, and the save keeps each number in its
+                // setting's range, so a file holding 90 for a setting that stops at 60 saved 60.
+                Object saved = entry.getKey().savedValue();
+                Object recorded = entry.getValue();
+                if (!Objects.equals(saved, recorded)
+                        && !Objects.equals(saved, entry.getKey().savedFormOf(recorded))) return false;
             }
             return labSettingsMatch(expected);
         } catch (RuntimeException error) {
