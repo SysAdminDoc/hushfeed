@@ -15,12 +15,17 @@ public class Utils {
 
     private static final long[] DEFAULT_MIN_MAX_VALUES = {0L, Long.MAX_VALUE};
 
+    /**
+     * The range a count filter keeps, as the settings row reads it: spaces around either number
+     * are allowed there, so a restored "10 - 500" showed as a range on the row while this
+     * read it as unreadable and put "any" back in its place. An unreadable value still does.
+     */
     public static long[] parseMinMax(StringSetting setting) {
         final String[] minMax = setting.get().split("-");
         if (minMax.length == 2) {
             try {
-                final long min = Long.parseLong(minMax[0]);
-                final long max = Long.parseLong(minMax[1]);
+                final long min = Long.parseLong(minMax[0].trim());
+                final long max = Long.parseLong(minMax[1].trim());
 
                 if (min <= max && min >= 0) return new long[]{min, max};
 

@@ -144,4 +144,22 @@ public class CountRangeFilterTest {
         assertEquals(1L, shares.min);
         assertEquals(5L, shares.max);
     }
+
+    @Test
+    public void aRangeWithSpacesIsReadNotResetToAny() {
+        // The settings row trims each number when it shows a stored range, so a restored
+        // "10 - 500" read there as ten to five hundred while the filter read it as unreadable and
+        // saved "any" over it.
+        Settings.MIN_MAX_COMMENTS.save(" 10 - 500 ");
+        long[] range = app.morphe.extension.tiktok.Utils.parseMinMax(Settings.MIN_MAX_COMMENTS);
+        assertEquals(10L, range[0]);
+        assertEquals(500L, range[1]);
+        assertEquals("the filter wrote over a range it could read",
+                " 10 - 500 ", Settings.MIN_MAX_COMMENTS.get());
+
+        // One it can't read still becomes "any", as before.
+        Settings.MIN_MAX_COMMENTS.save("ten-500");
+        assertEquals(Long.MAX_VALUE, app.morphe.extension.tiktok.Utils.parseMinMax(Settings.MIN_MAX_COMMENTS)[1]);
+        assertEquals(UNSET, Settings.MIN_MAX_COMMENTS.get());
+    }
 }
