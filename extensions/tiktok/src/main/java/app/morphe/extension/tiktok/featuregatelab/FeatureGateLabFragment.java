@@ -46,10 +46,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -1252,7 +1250,8 @@ public final class FeatureGateLabFragment extends Fragment {
                         "Loaded values are still being read. Try again in a moment."));
                 return;
             }
-            String timestamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(new Date());
+            // The stamp every other export takes, UTC, so the Lab's file sorts beside them.
+            String timestamp = app.morphe.extension.shared.settings.preference.LogBufferManager.fileTimestamp();
             Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
                     .addCategory(Intent.CATEGORY_OPENABLE)
                     .setType("application/gzip")

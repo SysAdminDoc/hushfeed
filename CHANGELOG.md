@@ -4,6 +4,7 @@ Every Hushfeed release, newest first.
 
 ## Unreleased
 
+* **TikTok:** The Feature Gate Lab names its export file in UTC like every other Hushfeed export, so they sort together.
 * **TikTok:** A like, comment or share count range restored with spaces around its numbers is read as that range instead of being reset to any.
 * **TikTok:** A CAPTCHA check whose type TikTok sends as a number is named by its scene now, not by the word scene.
 * **TikTok:** Region spoof no longer works out the country, locale and timezone again on every call, and TikTok asks for them constantly. Share sheet tools, the comment tools, search card filtering, Fit the video to the screen and the Feature Gate Lab look up what they need once instead of on every screen update, and the block button's overlay no longer keeps a closed screen in memory.

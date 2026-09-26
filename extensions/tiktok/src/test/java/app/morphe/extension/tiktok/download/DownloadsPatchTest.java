@@ -29,13 +29,13 @@ public class DownloadsPatchTest {
         Utils.setContext(RuntimeEnvironment.getApplication());
         Settings.DOWNLOAD_VIDEO_PATH.save(DownloadDestination.DEFAULT_PATH);
         Settings.DOWNLOAD_PHOTO_PATH.save(DownloadDestination.DEFAULT_PATH);
-        Settings.DOWNLOAD_WATERMARK.save(false);
+        Settings.REMOVE_DOWNLOAD_WATERMARK.save(false);
     }
 
     @After public void tearDown() {
         Settings.DOWNLOAD_VIDEO_PATH.save(DownloadDestination.DEFAULT_PATH);
         Settings.DOWNLOAD_PHOTO_PATH.save(DownloadDestination.DEFAULT_PATH);
-        Settings.DOWNLOAD_WATERMARK.save(false);
+        Settings.REMOVE_DOWNLOAD_WATERMARK.save(false);
     }
 
     @Test public void missingNoWatermarkAddressFallsBackToTheFirstUsableVideoModel() {
@@ -86,7 +86,7 @@ public class DownloadsPatchTest {
     @Test public void pathsAndWatermarkSettingUseTheValidatedDownloadBoundary() {
         Settings.DOWNLOAD_VIDEO_PATH.save("/storage/emulated/0/movies/clips/");
         Settings.DOWNLOAD_PHOTO_PATH.save("Pictures/photos");
-        Settings.DOWNLOAD_WATERMARK.save(true);
+        Settings.REMOVE_DOWNLOAD_WATERMARK.save(true);
 
         assertEquals("Movies/clips", DownloadsPatch.getVideoDownloadPath());
         assertEquals("Pictures/photos", DownloadsPatch.getPhotoDownloadPath());

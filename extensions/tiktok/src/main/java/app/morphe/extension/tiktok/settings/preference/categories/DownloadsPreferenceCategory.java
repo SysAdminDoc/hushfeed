@@ -99,7 +99,7 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
                         context,
                         "Remove watermark",
                         "Applies to both video and photo downloads.",
-                        Settings.DOWNLOAD_WATERMARK
+                        Settings.REMOVE_DOWNLOAD_WATERMARK
                 ));
             }
         }

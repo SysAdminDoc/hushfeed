@@ -55,7 +55,7 @@ public class DownloadsPatch {
     }
 
     public static boolean shouldRemoveWatermark() {
-        boolean removeWatermark = Settings.DOWNLOAD_WATERMARK.get();
+        boolean removeWatermark = Settings.REMOVE_DOWNLOAD_WATERMARK.get();
         if (BaseSettings.DEBUG.get() && (lastLoggedRemoveWatermark == null || lastLoggedRemoveWatermark != removeWatermark)) {
             lastLoggedRemoveWatermark = removeWatermark;
             Logger.printInfo(() -> "[Morphe Downloads] remove_watermark=" + removeWatermark);
