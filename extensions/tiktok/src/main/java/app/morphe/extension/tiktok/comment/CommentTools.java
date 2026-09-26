@@ -1047,15 +1047,17 @@ public final class CommentTools {
      * scan runs on the main thread for every comment row bound, and it read every field of the
      * class and its parents, and probed each value, each time.
      */
-    private static final java.util.concurrent.ConcurrentHashMap<Class<?>, Field> COMMENT_FIELDS =
+    private static final java.util.concurrent.ConcurrentHashMap<Class<?>, Object[]> COMMENT_FIELDS =
             new java.util.concurrent.ConcurrentHashMap<>();
 
     /** The bound comment is the manager field whose value answers to {@code getCid}. */
     private static Object findComment(Object manager) throws IllegalAccessException {
-        Field known = COMMENT_FIELDS.get(manager.getClass());
+        // The field and the class of the comment the scan found in it: a value of that class has
+        // already answered both checks, and any other value goes through the scan again.
+        Object[] known = COMMENT_FIELDS.get(manager.getClass());
         if (known != null) {
-            Object value = known.get(manager);
-            if (value != null && Reflect.string(value, "getCid", "cid") != null) return value;
+            Object value = ((Field) known[0]).get(manager);
+            if (value != null && value.getClass() == known[1]) return value;
         }
         Class<?> type = manager.getClass();
         while (type != null && type != Object.class) {
@@ -1067,7 +1069,7 @@ public final class CommentTools {
                 Object value = field.get(manager);
                 if (value != null && Reflect.string(value, "getCid", "cid") != null
                         && hasMethod(value.getClass(), "getUser")) {
-                    COMMENT_FIELDS.put(manager.getClass(), field);
+                    COMMENT_FIELDS.put(manager.getClass(), new Object[]{field, value.getClass()});
                     return value;
                 }
             }

@@ -53,6 +53,26 @@ public class ReleaseNotesTest {
     }
 
     @Test
+    public void aBuildAheadOfAReleaseSortsBelowIt() {
+        // Read as the release, Got it on 0.61.0-dev.2 dismissed 0.61.0's own notes before
+        // they were published.
+        String releases = "## 0.61.0 (date)\nNewer.\n\n## 0.60.0 (date)\nOld.\n";
+        assertTrue(ReleaseNotes.text(releases, "0.61.0", "0.61.0-dev.2").contains("Newer."));
+        assertEquals("", ReleaseNotes.text(releases, "0.61.0-dev.2", "0.61.0"));
+    }
+
+    @Test
+    public void theRowNamesTheNewestVersionItShows() {
+        // A build with no section of its own shows the releases before it, and the row said
+        // "Changes in Hushfeed" with a version the notes never mention.
+        String releases = "## 0.60.0 (date)\nOld.\n\n## 0.59.0 (date)\nOlder.\n";
+        String shown = ReleaseNotes.text(releases, "0.60.1", "0.59.0");
+        assertTrue(shown, shown.contains("Old."));
+        assertEquals("0.60.0", ReleaseNotes.newestShown(shown));
+        assertEquals(null, ReleaseNotes.newestShown(""));
+    }
+
+    @Test
     public void skippedVersionsAppearAndDismissedVersionsStayGone() {
         String releases = "## 0.1000.1000001 (date)\nNewest.\n\n"
                 + "## 0.1000.1000000 (date)\nMiddle.\n\n"

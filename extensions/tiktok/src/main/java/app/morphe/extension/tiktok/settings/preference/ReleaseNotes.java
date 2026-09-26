@@ -22,8 +22,8 @@ import java.util.regex.Pattern;
 public final class ReleaseNotes {
     static final String KEY = "action_release_notes";
     public static final String PREFS_NAME = "hushfeed_release_notes";
-    private static final String DISMISSED = "dismissed_version";
-    private static final Pattern VERSION = Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)");
+    static final String DISMISSED = "dismissed_version";
+    private static final Pattern VERSION = Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)(\\S*)");
     private static final Pattern HEADING = Pattern.compile("(?m)^## (\\d+\\.\\d+\\.\\d+) ");
 
     private ReleaseNotes() {}
@@ -96,16 +96,34 @@ public final class ReleaseNotes {
         SettingsUi.styleStandardAlertDialog(dialog);
     }
 
+    /**
+     * Major, minor and patch, then 1 for a release and 0 for anything after the number, as in
+     * 0.61.0-dev.2: a build ahead of a release sorts below it. Read as the release, Got it on
+     * a dev build also dismissed the release's own notes when it came.
+     */
     private static BigInteger[] version(String value) {
         if (value == null) return null;
-        Matcher match = VERSION.matcher(value);
+        Matcher match = VERSION.matcher(value.trim());
         if (!match.find()) return null;
         return new BigInteger[]{
                 new BigInteger(match.group(1)),
                 new BigInteger(match.group(2)),
-                new BigInteger(match.group(3))
+                new BigInteger(match.group(3)),
+                match.group(4).isEmpty() ? BigInteger.ONE : BigInteger.ZERO
         };
     }
+
+    /**
+     * The newest version the notes would show, for the row to name. The installed version
+     * isn't always one of them: a build with no published section of its own shows the ones
+     * before it.
+     */
+    static String newestShown(String text) {
+        Matcher heading = SHOWN_HEADING.matcher(text == null ? "" : text);
+        return heading.find() ? heading.group(1) : null;
+    }
+
+    private static final Pattern SHOWN_HEADING = Pattern.compile("(?m)^Hushfeed (\\d+\\.\\d+\\.\\d+) ");
 
     private static int compare(BigInteger[] left, BigInteger[] right) {
         for (int index = 0; index < left.length; index++) {

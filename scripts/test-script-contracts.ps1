@@ -455,6 +455,13 @@ Assert-True ($cliTail -match 'early fingerprint failure' -and $cliTail -match 'O
     "The CLI tail lost an error line or kept the whole run: $cliTail"
 Assert-True (@($cliTail -split "`n").Count -eq 21) `
     "The CLI tail repeated a line it already had: $(@($cliTail -split "`n").Count) lines"
+# Many failed patches first, then the line that ended the run and a long trace under it.
+$manyFailures = @(1..12 | ForEach-Object { "SEVERE: patch $_ failed" }) +
+    @('Exception in thread "main" java.lang.IllegalStateException: the run ended here') +
+    @(1..25 | ForEach-Object { "    at frame$_(Source.java:$_)" })
+$manyTail = Get-CliOutputTail -Output $manyFailures
+Assert-True ($manyTail -match 'the run ended here' -and $manyTail -match 'patch 1 failed') `
+    "The CLI tail dropped the line that ended the run behind earlier failures: $manyTail"
 Assert-True ((Get-CliOutputTail -Output @()) -eq '(the CLI printed nothing)') `
     'A silent CLI run left the failure message with nothing after the colon.'
 $receiptScript = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'build-release-receipt.ps1') -Raw

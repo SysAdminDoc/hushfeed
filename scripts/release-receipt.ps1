@@ -38,15 +38,21 @@ function Get-CliOutputTail {
     .SYNOPSIS
         What the desktop CLI printed last, for the message of a fixture run that failed.
     .DESCRIPTION
-        Its first few error lines wherever they fell, then its last lines. A run that dies before
-        its result report exists leaves nothing else behind.
+        Its first and last few error lines wherever they fell, then its last lines. A run that
+        dies before its result report exists leaves nothing else behind. The last error lines
+        count as much as the first: with --continue-on-error a run can log many failed patches
+        before the one that ends it, and a long stack trace pushes that one out of the tail.
     #>
     param([object[]]$Output, [int]$Last = 20, [int]$Errors = 8)
 
     $lines = @(@($Output) | ForEach-Object { [string]$_ } | Where-Object { $_.Trim() })
+    $errorLines = @($lines | Where-Object { $_ -match 'SEVERE|ERROR|Exception|OutOfMemory' })
+    $half = [Math]::Max(1, [int][Math]::Floor($Errors / 2))
+    $picked = if ($errorLines.Count -le $Errors) { $errorLines } else {
+        @($errorLines | Select-Object -First $half) + @($errorLines | Select-Object -Last $half)
+    }
     $kept = New-Object System.Collections.Generic.List[string]
-    foreach ($line in @($lines | Where-Object { $_ -match 'SEVERE|ERROR|Exception|OutOfMemory' } |
-            Select-Object -First $Errors) + @($lines | Select-Object -Last $Last)) {
+    foreach ($line in @($picked) + @($lines | Select-Object -Last $Last)) {
         if (-not $kept.Contains($line)) { $kept.Add($line) }
     }
     if ($kept.Count -eq 0) { return '(the CLI printed nothing)' }

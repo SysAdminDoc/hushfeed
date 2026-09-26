@@ -1019,10 +1019,13 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
 
         String releaseVersion = Utils.getPatchesReleaseVersion();
         if (ReleaseNotes.pending(context, releaseVersion)) {
+            String newest = ReleaseNotes.newestShown(ReleaseNotes.text(releaseVersion,
+                    context.getSharedPreferences(ReleaseNotes.PREFS_NAME, Context.MODE_PRIVATE)
+                            .getString(ReleaseNotes.DISMISSED, null)));
             SettingsMenuPreference notes = new SettingsMenuPreference(
                     context,
                     L10n.t(context, "What's new"),
-                    L10n.f(context, "Changes in Hushfeed %1$s", releaseVersion),
+                    L10n.f(context, "Changes in Hushfeed %1$s", newest == null ? releaseVersion : newest),
                     SettingsMenuPreference.Icon.NEWS,
                     0,
                     preference -> {

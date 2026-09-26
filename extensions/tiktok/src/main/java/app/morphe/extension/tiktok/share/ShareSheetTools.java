@@ -568,8 +568,10 @@ public final class ShareSheetTools {
         } catch (Throwable ex) {
             // The activity root still covers retained 46.x builds and every share action filtered
             // at the model layer. A non-SDK lookup failure must not break the share sheet, and it
-            // is not retried: this runs on every layout pass, and a refusal stays a refusal.
-            windowViewsUnavailable = true;
+            // is not retried: this runs on every layout pass, and a refusal stays a refusal. Once
+            // the lookup has worked, a failure is the read itself, a window list changing under
+            // the walk say, and the next pass reads it again.
+            if (windowViewsReader == null) windowViewsUnavailable = true;
             Logger.printDebug(() -> "Could not enumerate secondary share sheet windows: "
                     + ex.getClass().getSimpleName());
         }

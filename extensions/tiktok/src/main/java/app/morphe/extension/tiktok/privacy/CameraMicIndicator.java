@@ -225,11 +225,16 @@ public final class CameraMicIndicator {
             int gap = dp(getContext(), 6);
             float half = size / 2f;
             float x = half;
+            // The ring is stroked on the outline, so half of it lies outside each shape. The shapes
+            // sit that far inside the view, and the diamond's right-angled points further, since a
+            // mitred point reaches about 1.4 times as far: at 0.5px the outline was cut off there.
+            float edge = ring.getStrokeWidth() / 2f;
+            float point = ring.getStrokeWidth() * 0.75f;
             if (camera) {
                 fill.setColor(SettingsUi.INDICATOR_CAMERA);
                 // Square cornered: the scale's 0, and the plainest contrast with the diamond.
                 android.graphics.RectF box = new android.graphics.RectF(
-                        x - half + 1, 1, x + half - 1, size - 1);
+                        x - half + edge, edge, x + half - edge, size - edge);
                 canvas.drawRect(box, fill);
                 canvas.drawRect(box, ring);
                 x += size + gap;
@@ -237,10 +242,10 @@ public final class CameraMicIndicator {
             if (microphone) {
                 fill.setColor(SettingsUi.INDICATOR_MICROPHONE);
                 diamond.reset();
-                diamond.moveTo(x, 0.5f);
-                diamond.lineTo(x + half - 0.5f, half);
-                diamond.lineTo(x, size - 0.5f);
-                diamond.lineTo(x - half + 0.5f, half);
+                diamond.moveTo(x, point);
+                diamond.lineTo(x + half - point, half);
+                diamond.lineTo(x, size - point);
+                diamond.lineTo(x - half + point, half);
                 diamond.close();
                 canvas.drawPath(diamond, fill);
                 canvas.drawPath(diamond, ring);
