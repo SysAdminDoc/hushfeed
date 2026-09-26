@@ -272,6 +272,15 @@ public class CaptchaGateTest {
     }
 
     @Test
+    public void aNumberIsNotReadAsTheNextKeysName() {
+        // The first quote after the colon belonged to the next key, so the check was named
+        // after a field rather than by what it is.
+        assertEquals("risk login", CaptchaGate.checkId("risk", "{\"subtype\":3,\"scene\":\"login\"}"));
+        assertEquals("risk slide", CaptchaGate.checkId("risk", "{\"subtype\": \"slide\"}"));
+        assertEquals("risk {\"subtype\":3}", CaptchaGate.checkId("risk", "{\"subtype\":3}"));
+    }
+
+    @Test
     public void anIdFallsBackToTheChecksOwnDescription() {
         assertEquals("service common_verify", CaptchaGate.checkId("service", "common_verify"));
         assertEquals("scene unknown", CaptchaGate.checkId("scene", null));

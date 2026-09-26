@@ -315,14 +315,19 @@ public final class CaptchaGate {
         return kind + " " + (single.length() > 80 ? single.substring(0, 80) : single);
     }
 
-    /** The string value of {@code key} in a JSON-ish blob, without parsing the whole thing. */
+    /**
+     * The string value of {@code key} in a JSON-ish blob, without parsing the whole thing. A
+     * value that is not a string, a number say, is no answer: the first quote after the colon
+     * was the next key's, so {"subtype":3,"scene":"login"} named the check "scene".
+     */
     private static String jsonValue(String json, String key) {
         int at = json.indexOf('"' + key + '"');
         if (at < 0) return null;
         int colon = json.indexOf(':', at + key.length() + 2);
         if (colon < 0) return null;
-        int open = json.indexOf('"', colon + 1);
-        if (open < 0) return null;
+        int open = colon + 1;
+        while (open < json.length() && Character.isWhitespace(json.charAt(open))) open++;
+        if (open >= json.length() || json.charAt(open) != '"') return null;
         int close = json.indexOf('"', open + 1);
         if (close <= open + 1) return null;
         return json.substring(open + 1, close);

@@ -4,6 +4,7 @@ Every Hushfeed release, newest first.
 
 ## Unreleased
 
+* **TikTok:** A CAPTCHA check whose type TikTok sends as a number is named by its scene now, not by the word scene.
 * **TikTok:** Region spoof no longer works out the country, locale and timezone again on every call, and TikTok asks for them constantly. Share sheet tools, the comment tools, search card filtering, Fit the video to the screen and the Feature Gate Lab look up what they need once instead of on every screen update, and the block button's overlay no longer keeps a closed screen in memory.
 * **TikTok:** A blocked-creator pattern that could stall the feed is refused when you type it and skipped, with one note, when it comes in with a backup or from an older list. That covers back-references, a repeat inside a repeated group, and patterns stacked with open-ended repeats. The time limit that was meant to catch these never actually ran on a phone.
 * **TikTok:** Rarely, the block, Not interested and sound buttons stayed off for a whole video when it started playing at the moment the feed loaded it. That no longer happens.
