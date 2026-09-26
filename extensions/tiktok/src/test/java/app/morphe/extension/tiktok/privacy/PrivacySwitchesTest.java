@@ -279,6 +279,27 @@ public class PrivacySwitchesTest {
         }
     }
 
+    /**
+     * A screen that draws under the status bar and reports no top inset still gets the mark below
+     * the bar, not on its icons: the S25's camera screen put it over the battery (2026-09-26).
+     */
+    @Test public void theMarkSitsBelowTheStatusBarWhenTheWindowReportsNoInset() {
+        try (var owner = Robolectric.buildActivity(Activity.class).setup().visible()) {
+            Activity activity = owner.get();
+            Utils.setActivity(activity);
+            Settings.CAMERA_MIC_INDICATOR.save(true);
+            CameraMicIndicator.onCameraStart();
+            Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+            CameraMicIndicator.DotView dot = CameraMicIndicator.shownDot();
+            assertNotNull(dot);
+            int id = activity.getResources().getIdentifier("status_bar_height", "dimen", "android");
+            int bar = activity.getResources().getDimensionPixelSize(id);
+            assertTrue("the status bar has a height to clear", bar > 0);
+            int top = ((android.widget.FrameLayout.LayoutParams) dot.getLayoutParams()).topMargin;
+            assertTrue("the mark starts below the status bar (" + top + " px, bar " + bar + " px)", top > bar);
+        }
+    }
+
     @Test public void thePrivacyPageCarriesTheSwitchesAndAppBehaviorNoLongerDoes() {
         SettingsStatus.contactListBlockerEnabled = true;
         SettingsStatus.installedAppsBlockerEnabled = true;

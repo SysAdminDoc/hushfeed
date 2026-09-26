@@ -10,6 +10,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.hardware.Camera;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
@@ -168,9 +169,22 @@ public final class CameraMicIndicator {
         dot = null;
     }
 
-    private static int statusBarHeight(View decor) {
+    /**
+     * Where the status bar ends. TikTok's camera screen draws under a status bar it still shows and
+     * reports no top inset, so the mark sat on the battery icon (the S25, 2026-09-26): the bar's
+     * own height is used whenever the window reports none.
+     */
+    static int statusBarHeight(View decor) {
         WindowInsets insets = decor.getRootWindowInsets();
-        return insets == null ? 0 : insets.getSystemWindowInsetTop();
+        int top = insets == null ? 0 : insets.getSystemWindowInsetTop();
+        if (insets != null && Build.VERSION.SDK_INT >= 30) {
+            top = Math.max(top, insets.getInsetsIgnoringVisibility(WindowInsets.Type.statusBars()).top);
+        }
+        if (top <= 0) {
+            int id = decor.getResources().getIdentifier("status_bar_height", "dimen", "android");
+            if (id != 0) top = decor.getResources().getDimensionPixelSize(id);
+        }
+        return top;
     }
 
     private static int dp(Context context, int value) {
