@@ -14,12 +14,23 @@ import java.util.zip.ZipOutputStream
  * attests to one file rather than to the source it came from. This pins the field to
  * SOURCE_DATE_EPOCH when the environment sets one, otherwise to the commit being built,
  * otherwise to zero. Anything read from the clock would put the difference straight back.
+ *
+ * A tree with uncommitted changes builds something no commit holds, so it takes zero rather
+ * than HEAD's time. With HEAD's time a bundle built dirty, its changes then stashed, carried
+ * the stamp of a commit it wasn't built from, and the release receipt's clean-tree and stamp
+ * checks both passed it.
  */
 val sourceDateEpoch: Long = run {
     providers.environmentVariable("SOURCE_DATE_EPOCH").orNull?.trim()?.toLongOrNull()?.let {
         return@run it
     }
     try {
+        val uncommitted = providers.exec {
+            commandLine("git", "status", "--porcelain")
+            workingDir = rootProject.projectDir
+            isIgnoreExitValue = true
+        }.standardOutput.asText.orNull
+        if (!uncommitted.isNullOrBlank()) return@run 0L
         providers.exec {
             commandLine("git", "log", "-1", "--format=%ct")
             workingDir = rootProject.projectDir

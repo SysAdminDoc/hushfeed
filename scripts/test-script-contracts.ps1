@@ -458,6 +458,12 @@ Assert-True (@($cliTail -split "`n").Count -eq 21) `
 Assert-True ((Get-CliOutputTail -Output @()) -eq '(the CLI printed nothing)') `
     'A silent CLI run left the failure message with nothing after the colon.'
 $receiptScript = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'build-release-receipt.ps1') -Raw
+Assert-True ($receiptScript -match 'bundleManifest\.timestamp -ne \$commitTimestamp \* 1000') `
+    'build-release-receipt.ps1 patches the fixtures before checking the bundle is stamped with its commit.'
+$bundleBuild = Get-Content -LiteralPath (Join-Path (Split-Path -Parent $PSScriptRoot) 'patches/build.gradle.kts') -Raw
+Assert-True ($bundleBuild -match '"git", "status", "--porcelain"' -and
+    $bundleBuild.IndexOf('"status", "--porcelain"') -lt $bundleBuild.IndexOf('"log", "-1", "--format=%ct"')) `
+    'The bundle takes HEAD''s time without asking whether the tree has uncommitted changes.'
 Assert-True ($receiptScript -notmatch 'DesktopJar @arguments 2>&1 \| Out-Null' -and
     $receiptScript -match 'Get-CliOutputTail') `
     'build-release-receipt.ps1 throws the desktop CLI output away again.'

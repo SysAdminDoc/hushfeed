@@ -89,6 +89,15 @@ $bundleManifest = Get-BundleManifestFacts -BundlePath $Bundle
 $bundleSize = (Get-Item -LiteralPath $Bundle).Length
 $bundleHash = Get-Sha256Hex -Path $Bundle
 
+# Refused before an hour of patching rather than by the validator afterwards. The build stamps
+# a bundle with its commit's time, and a tree with uncommitted changes with zero, so any other
+# stamp is a bundle this commit didn't build.
+if ([long]$bundleManifest.timestamp -ne $commitTimestamp * 1000) {
+    throw ("$Bundle is stamped $($bundleManifest.timestamp), not with this commit's time " +
+        "($($commitTimestamp * 1000)): it was built from another commit or from a tree with " +
+        "uncommitted changes. Build it again from a clean tree at $commit.")
+}
+
 # Refused here rather than reported, because a receipt that records the mismatch would be a
 # document saying its own subject cannot be rebuilt from the source it names.
 $dirty = @(& git -C $Root status --porcelain)
