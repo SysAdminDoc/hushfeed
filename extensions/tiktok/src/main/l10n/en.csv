@@ -79,7 +79,6 @@ source,target
 A Lab change is already running,A Lab change is already running
 A change that loosens the budget waits until the day starts over and one that tightens it applies at once. A higher budget or no budget loosens it. So do a shorter hold and more times to open the feed anyway. Moving the hour the day starts and turning this off wait too. A restored backup follows the same rule and Start today over is off while this is on.,A change that loosens the budget waits until the day starts over and one that tightens it applies at once. A higher budget or no budget loosens it. So do a shorter hold and more times to open the feed anyway. Moving the hour the day starts and turning this off wait too. A restored backup follows the same rule and Start today over is off while this is on.
 A comment poll shows how many picked each answer before you vote. Tapping an answer still votes.,A comment poll shows how many picked each answer before you vote. Tapping an answer still votes.
-A creator pattern is taking too long and was turned off: %1$s,A creator pattern is taking too long and was turned off: %1$s
 A diagnostic report is already being saved,A diagnostic report is already being saved
 A field value couldn't be read. Check the values and try again.,A field value couldn't be read. Check the values and try again.
 A file named hushfeed-safe-mode in TikTok's folder under Android/data paused Hushfeed. Your settings stay as they are.,A file named hushfeed-safe-mode in TikTok's folder under Android/data paused Hushfeed. Your settings stay as they are.
@@ -1033,6 +1032,8 @@ Technical details,Technical details
 "Technical details, %1$s","Technical details, %1$s"
 That backup was written by a newer Hushfeed than this one. Nothing was altered.,That backup was written by a newer Hushfeed than this one. Nothing was altered.
 That creator is already in the list,That creator is already in the list
+"That creator pattern could stall the feed, so it was skipped: %1$s","That creator pattern could stall the feed, so it was skipped: %1$s"
+"That creator pattern could stall the feed, so it wasn't added: %1$s","That creator pattern could stall the feed, so it wasn't added: %1$s"
 "That creator pattern is too long to use, so it was skipped: %1$s","That creator pattern is too long to use, so it was skipped: %1$s"
 "That creator pattern is too long, so it wasn't added: %1$s","That creator pattern is too long, so it wasn't added: %1$s"
 That file is too large to be a settings backup. Nothing was altered.,That file is too large to be a settings backup. Nothing was altered.

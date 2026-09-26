@@ -4,6 +4,7 @@ Every Hushfeed release, newest first.
 
 ## Unreleased
 
+* **TikTok:** A blocked-creator pattern that could stall the feed is refused when you type it and skipped, with one note, when it comes in with a backup or from an older list. That covers back-references, a repeat inside a repeated group, and patterns stacked with open-ended repeats. The time limit that was meant to catch these never actually ran on a phone.
 * **TikTok:** Rarely, the block, Not interested and sound buttons stayed off for a whole video when it started playing at the moment the feed loaded it. That no longer happens.
 * **TikTok:** A restored backup that had a number out of range, like an edge seek of 90 seconds where 60 is the most, is no longer undone at the next start as if the restore had been interrupted.
 * **TikTok:** A day locked by the daily budget stays locked when TikTok restarts after the phone's timezone moved forward. Before, swiping TikTok away after the change handed the rest of the day back.

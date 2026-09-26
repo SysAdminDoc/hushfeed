@@ -6,7 +6,6 @@
  */
 package app.morphe.extension.tiktok.feedfilter;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import app.morphe.extension.shared.Utils;
@@ -156,7 +155,7 @@ public final class AdvancedFeedRules {
     }
 
     private static boolean matchesPattern(Pattern pattern, String value) {
-        return value != null && matchesWithinBudget(pattern, value);
+        return value != null && pattern.matcher(value).find();
     }
 
     /** Filters posts whose known publication time is older than the user's age limit. */
@@ -198,88 +197,6 @@ public final class AdvancedFeedRules {
     }
 
     /**
-     * How many characters a single name may be read for, counting the re-reads backtracking
-     * costs. The two sides are far apart, so the number between them is not delicate:
-     * measured against a 66 character display name, {@code dropship} costs 61 reads,
-     * {@code ^The Very} costs 8, a six-way alternation costs 398, and every ordinary pattern
-     * tried stayed under 500. On the other side, {@code ^(a+)+\1$} against 25 characters
-     * costs 67 million reads and a quarter of a second, and four characters more never
-     * finishes at all.
-     *
-     * <p>Two hundred thousand leaves a pattern somebody would actually write four hundred
-     * times the room it needs, and cuts a runaway off in well under a millisecond. It also
-     * catches the merely expensive: {@code (.*)(.*)(.*)z} costs 2.7 million reads and 19 ms
-     * on that same name, which is not a hang but is still too much to spend per video.
-     */
-    private static final int MATCH_BUDGET = 200_000;
-
-    /** One entry that ran out of budget, so it is only complained about once. */
-    // Declared as the class rather than Map: the toast below depends on putIfAbsent returning
-    // null exactly once, and putIfAbsent on the Map interface is an API 24 default method that
-    // D8 cannot backport, so on Android 6 it would throw from inside the feed filter instead.
-    private static final ConcurrentHashMap<Pattern, Boolean> RUNAWAY = new ConcurrentHashMap<>();
-
-    /**
-     * Whether the pattern matches, giving up rather than hanging the thread it is on.
-     *
-     * <p>{@link Pattern} has no time limit of its own. The name is handed over through a
-     * wrapper that counts the reads and throws once it has had enough, which is the only
-     * place the regex engine can be interrupted from outside.
-     */
-    static boolean matchesWithinBudget(Pattern pattern, String value) {
-        if (Boolean.TRUE.equals(RUNAWAY.get(pattern))) return false;
-        try {
-            return pattern.matcher(new BudgetedText(value, MATCH_BUDGET)).find();
-        } catch (BudgetSpent spent) {
-            if (RUNAWAY.putIfAbsent(pattern, Boolean.TRUE) == null) {
-                Utils.showToastLong(L10n.f(
-                        "A creator pattern is taking too long and was turned off: %1$s",
-                        pattern.pattern()));
-            }
-            return false;
-        }
-    }
-
-    /** Thrown out of the regex engine once a single match has read enough characters. */
-    private static final class BudgetSpent extends RuntimeException {
-        // The four argument constructor that turns the stack trace off is API 24, and this is
-        // thrown out of the regex engine on the feed path. Overriding fillInStackTrace is the
-        // same saving and has been there since API 1.
-        @Override
-        public synchronized Throwable fillInStackTrace() {
-            return this;
-        }
-    }
-
-    /** A name the regex engine may only look at so many times. */
-    private static final class BudgetedText implements CharSequence {
-        private final CharSequence text;
-        private int left;
-
-        BudgetedText(CharSequence text, int budget) {
-            this.text = text;
-            this.left = budget;
-        }
-
-        @Override public int length() {
-            return text.length();
-        }
-
-        @Override public char charAt(int index) {
-            if (--left < 0) throw new BudgetSpent();
-            return text.charAt(index);
-        }
-
-        @Override public CharSequence subSequence(int start, int end) {
-            return new BudgetedText(text.subSequence(start, end), left);
-        }
-
-        @NonNull @Override public String toString() {
-            return text.toString();
-        }
-    }
-
-    /**
      * What is wrong with a blocked-creator list as typed, or null when nothing is. Named so
      * the reader can see which entry to fix, since the list is one long comma separated line
      * and a pattern that will not compile is otherwise only reported at the next feed page.
@@ -301,6 +218,10 @@ public final class AdvancedFeedRules {
                 Pattern.compile(source, Pattern.CASE_INSENSITIVE);
             } catch (PatternSyntaxException invalid) {
                 return L10n.f("Hushfeed can't read the creator pattern %1$s", L10n.isolate(entry));
+            }
+            if (couldStall(source)) {
+                return L10n.f("That creator pattern could stall the feed, so it wasn't added: %1$s",
+                        L10n.isolate(entry));
             }
         }
         return null;
@@ -383,9 +304,10 @@ public final class AdvancedFeedRules {
 
     /**
      * How long a creator pattern may be. It is user input and it runs against every name in
-     * every feed page, so a long one with nested quantifiers can take the feed thread with
-     * it. Anything a person types to match a handle fits well inside this, and the list rides
-     * along in a settings backup, which is the way somebody else's pattern could arrive.
+     * every feed page. Anything a person types to match a handle fits well inside this, and
+     * the list rides along in a settings backup, which is the way somebody else's pattern
+     * could arrive. The shape that makes a pattern slow is refused on its own, by
+     * {@link #couldStall}, since ten characters are enough for that.
      */
     private static final int MAX_PATTERN_LENGTH = 200;
 
@@ -414,8 +336,196 @@ public final class AdvancedFeedRules {
             Utils.showToastLong(L10n.f("Hushfeed can't read the creator pattern %1$s", L10n.isolate(entry)));
             return null;
         }
+        if (couldStall(source)) {
+            COMPILED.put(entry, INVALID);
+            Utils.showToastLong(L10n.f(
+                    "That creator pattern could stall the feed, so it was skipped: %1$s",
+                    L10n.isolate(entry)));
+            return null;
+        }
         COMPILED.put(entry, pattern);
         return pattern;
+    }
+
+    /** How much work a creator pattern may promise, counted in doublings: about a million steps. */
+    private static final int STALL_LIMIT_DOUBLINGS = 20;
+
+    /** One open-ended repeat over a name, taken as 32 characters long. */
+    private static final int DOUBLINGS_PER_REPEAT = 5;
+
+    /**
+     * Whether a creator pattern could keep the feed thread matching for seconds or longer.
+     *
+     * <p>The regex engine has no time limit and nothing can interrupt it. On a phone it copies
+     * the name to a String and matches natively in ICU, so the guard this replaced, a wrapper
+     * that counted the engine's reads, never saw a single read there: it only ever worked on
+     * the desktop JVM the tests run on. What can be bounded is the pattern's shape, before it
+     * runs. Refused are a back-reference; a repeated group holding a repeat or a choice, as in
+     * {@code (a+)+} or {@code (a|ab)*}, whose ways of splitting a name double with every
+     * character; comment mode, whose spaces and # comments this reading does not skip; and a
+     * pattern whose work adds up to more than {@link #STALL_LIMIT_DOUBLINGS} doublings. Each
+     * open-ended repeat multiplies the work by the name's length, and so does find() trying
+     * every start; an optional part doubles it, and a choice of k adds log2 k. That leaves
+     * three wildcards, or two beside a dozen alternatives, for anything written to match a
+     * handle. Only runs on a pattern that compiled, so the syntax is already known to be sound.
+     */
+    static boolean couldStall(String source) {
+        // Per group: [0] a repeat of varying count inside it, [1] its alternation bars, [2]
+        // either of those in a group nested inside it.
+        java.util.ArrayDeque<int[]> outer = new java.util.ArrayDeque<>();
+        int[] group = new int[3];
+        int[] closed = null;
+        // What a quantifier here would repeat: 0 nothing, 1 a single atom, 2 the group just closed.
+        int last = 0;
+        int repeats = 0;
+        int doublings = 0;
+        int length = source.length();
+        int index = 0;
+        while (index < length) {
+            char c = source.charAt(index);
+            if (c == '\\') {
+                if (index + 1 >= length) return true;
+                char escaped = source.charAt(index + 1);
+                if (escaped >= '1' && escaped <= '9') return true;
+                if (escaped == 'k' && index + 2 < length && source.charAt(index + 2) == '<') return true;
+                index = afterEscape(source, index);
+                last = 1;
+            } else if (c == '[') {
+                index = afterClass(source, index);
+                if (index < 0) return true;
+                last = 1;
+            } else if (c == '(') {
+                index++;
+                if (index < length && source.charAt(index) == '?') {
+                    index++;
+                    if (index + 1 < length && source.charAt(index) == '<'
+                            && source.charAt(index + 1) != '=' && source.charAt(index + 1) != '!') {
+                        int end = source.indexOf('>', index);
+                        index = end < 0 ? length : end + 1;
+                    } else {
+                        while (index < length && ":=!<>)".indexOf(source.charAt(index)) < 0) {
+                            if (source.charAt(index) == 'x') return true;
+                            index++;
+                        }
+                        if (index < length && source.charAt(index) == ')') {
+                            // Flags alone, as in (?i): nothing opened and nothing to repeat.
+                            index++;
+                            last = 0;
+                            continue;
+                        }
+                        if (index < length && source.charAt(index) == '<') index++;
+                        index++;
+                    }
+                }
+                outer.push(group);
+                group = new int[3];
+                last = 0;
+            } else if (c == ')') {
+                // A close with nothing open is the same disagreement as a group left open.
+                if (outer.isEmpty()) return true;
+                closed = group;
+                group = outer.pop();
+                doublings += choiceDoublings(closed[1]);
+                if (closed[0] != 0 || closed[1] != 0 || closed[2] != 0) group[2] = 1;
+                index++;
+                last = 2;
+            } else if (c == '|') {
+                group[1]++;
+                index++;
+                last = 0;
+            } else if (c == '*' || c == '+' || c == '?' || c == '{') {
+                int min;
+                int max; // -1 for no upper bound
+                if (c == '{') {
+                    int end = source.indexOf('}', index);
+                    if (end < 0) return true;
+                    String bounds = source.substring(index + 1, end);
+                    int comma = bounds.indexOf(',');
+                    try {
+                        min = Integer.parseInt((comma < 0 ? bounds : bounds.substring(0, comma)).trim());
+                        String upper = comma < 0 ? bounds : bounds.substring(comma + 1);
+                        max = upper.trim().isEmpty() ? -1 : Integer.parseInt(upper.trim());
+                    } catch (NumberFormatException unread) {
+                        return true;
+                    }
+                    index = end + 1;
+                } else {
+                    min = c == '+' ? 1 : 0;
+                    max = c == '?' ? 1 : -1;
+                    index++;
+                }
+                // Lazy and possessive forms promise no less work in the worst case.
+                if (index < length && (source.charAt(index) == '?' || source.charAt(index) == '+')) index++;
+                boolean repeated = max < 0 || max > 1;
+                if (last == 2 && repeated && closed != null
+                        && (closed[0] != 0 || closed[1] != 0 || closed[2] != 0)) {
+                    return true;
+                }
+                if (max < 0 || max != min) {
+                    group[0] = 1;
+                    if (max == 1) doublings++;
+                    else repeats++;
+                }
+                last = 0;
+            } else {
+                index++;
+                last = 1;
+            }
+        }
+        // A group left open means this reading and the engine's disagree, and the engine is the
+        // one that compiled it. Refused, rather than trusting a count that may have missed a part.
+        if (!outer.isEmpty()) return true;
+        doublings += choiceDoublings(group[1]);
+        return DOUBLINGS_PER_REPEAT * (repeats + 1) + doublings > STALL_LIMIT_DOUBLINGS;
+    }
+
+    /**
+     * Where the escape at {@code start} ends. Most are two characters; {@code \cX} is three, the
+     * braced forms run to their brace, and {@code \Q} quotes everything up to {@code \E}. Read
+     * the same inside a class as outside: a quoted or control bracket read as a real one moved
+     * the end of the class, and a repeat after it was taken for part of the class.
+     */
+    private static int afterEscape(String source, int start) {
+        int length = source.length();
+        if (start + 1 >= length) return length;
+        char escaped = source.charAt(start + 1);
+        if (escaped == 'Q') {
+            int end = source.indexOf("\\E", start + 2);
+            return end < 0 ? length : end + 2;
+        }
+        if (escaped == 'c') return Math.min(length, start + 3);
+        int index = start + 2;
+        if ((escaped == 'p' || escaped == 'P' || escaped == 'x' || escaped == 'N')
+                && index < length && source.charAt(index) == '{') {
+            int end = source.indexOf('}', index);
+            return end < 0 ? length : end + 1;
+        }
+        return index;
+    }
+
+    /** log2 of the ways through a group with this many bars, rounded up. */
+    private static int choiceDoublings(int bars) {
+        return bars <= 0 ? 0 : 32 - Integer.numberOfLeadingZeros(bars);
+    }
+
+    /**
+     * Where a character class that opens at {@code start} ends, nested classes included, or -1
+     * when it never closes here, which can only mean this reading has gone wrong.
+     */
+    private static int afterClass(String source, int start) {
+        int depth = 0;
+        int index = start;
+        while (index < source.length()) {
+            char c = source.charAt(index);
+            if (c == '\\') {
+                index = afterEscape(source, index);
+                continue;
+            }
+            index++;
+            if (c == '[') depth++;
+            else if (c == ']' && --depth == 0) return index;
+        }
+        return -1;
     }
 
     public static final class PromotionalMusicFilter implements IFilter {

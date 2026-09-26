@@ -53,7 +53,6 @@
 1 result so far	Şimdiye kadar 1 sonuç
 1 video left	1 video kaldı
 A Lab change is already running	Bir Lab değişikliği zaten sürüyor
-A creator pattern is taking too long and was turned off: %1$s	Bir içerik üreticisi kalıbı çok uzun sürdüğü için kapatıldı: %1$s
 A diagnostic report is already being saved	Bir tanılama raporu zaten kaydediliyor
 A field value couldn't be read. Check the values and try again.	Bir alan değeri okunamadı. Değerleri kontrol edip tekrar dene.
 A good place to stop, if you want one.	İstersen, durmak için iyi bir an.
@@ -76,6 +75,8 @@ Leave when TikTok says time is up	TikTok süre doldu deyince uygulamadan çık
 No app on this phone opens that file	Bu telefonda o dosyayı açan bir uygulama yok
 Open	Aç
 Restart TikTok to apply this	Bunu uygulamak için TikTok'u yeniden başlat
+That creator pattern could stall the feed, so it was skipped: %1$s	Bu içerik üreticisi kalıbı akışı kilitleyebileceği için atlandı: %1$s
+That creator pattern could stall the feed, so it wasn't added: %1$s	Bu içerik üreticisi kalıbı akışı kilitleyebileceği için eklenmedi: %1$s
 This key touches account safety. Forcing it can change login, region, payment or security checks.	Bu anahtar hesap güvenliğine dokunur. Zorlamak giriş, bölge, ödeme veya güvenlik denetimlerini değiştirebilir.
 Activity	Etkinlik
 Activity center (PIA)	Etkinlik merkezi (PIA)

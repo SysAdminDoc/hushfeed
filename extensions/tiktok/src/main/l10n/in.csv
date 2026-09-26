@@ -54,7 +54,6 @@ source,target
 1 result so far,1 hasil sejauh ini
 1 video left,Sisa 1 video
 A Lab change is already running,Perubahan Lab sedang berjalan
-A creator pattern is taking too long and was turned off: %1$s,"Ada pola kreator yang terlalu lama, jadi dimatikan: %1$s"
 A diagnostic report is already being saved,Laporan diagnostik sedang disimpan
 A field value couldn't be read. Check the values and try again.,Nilai kolom tidak dapat dibaca. Periksa nilainya lalu coba lagi.
 "A good place to stop, if you want one.","Tempat yang bagus untuk berhenti, kalau kamu mencarinya."
@@ -74,6 +73,8 @@ Couldn't undo that. Try again.,Tidak bisa dibatalkan. Coba lagi.
 Got it,Mengerti
 Later,Nanti
 Restart TikTok to apply this,Mulai ulang TikTok agar berlaku
+"That creator pattern could stall the feed, so it was skipped: %1$s","Pola kreator itu bisa membuat feed macet, jadi dilewati: %1$s"
+"That creator pattern could stall the feed, so it wasn't added: %1$s","Pola kreator itu bisa membuat feed macet, jadi tidak ditambahkan: %1$s"
 "This key touches account safety. Forcing it can change login, region, payment or security checks.","Kunci ini menyangkut keselamatan akun. Memaksanya bisa mengubah pemeriksaan login, wilayah, pembayaran, atau keamanan."
 Activity,Aktivitas
 Activity center (PIA),Pusat aktivitas (PIA)

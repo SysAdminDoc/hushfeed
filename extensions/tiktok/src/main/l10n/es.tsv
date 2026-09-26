@@ -53,7 +53,6 @@
 1 result so far	1 resultado hasta ahora
 1 video left	Queda 1 video
 A Lab change is already running	Ya se está ejecutando un cambio del Lab
-A creator pattern is taking too long and was turned off: %1$s	Un patrón de creador tarda demasiado y se ha desactivado: %1$s
 A diagnostic report is already being saved	Ya se está guardando un informe de diagnóstico
 A field value couldn't be read. Check the values and try again.	No se pudo leer el valor de un campo. Revisa los valores e inténtalo de nuevo.
 A good place to stop, if you want one.	Un buen momento para parar, si quieres uno.
@@ -76,6 +75,8 @@ Leave when TikTok says time is up	Salir cuando TikTok diga que se acabó el tiem
 No app on this phone opens that file	Ninguna app de este teléfono abre ese archivo
 Open	Abrir
 Restart TikTok to apply this	Reinicia TikTok para que se aplique
+That creator pattern could stall the feed, so it was skipped: %1$s	Ese patrón de creador podría trabar el feed, así que se omitió: %1$s
+That creator pattern could stall the feed, so it wasn't added: %1$s	Ese patrón de creador podría trabar el feed, así que no se añadió: %1$s
 This key touches account safety. Forcing it can change login, region, payment or security checks.	Esta clave afecta a la protección de la cuenta. Forzarla puede cambiar las comprobaciones de inicio de sesión, región, pagos o seguridad.
 Activity	Actividad
 Activity center (PIA)	Centro de actividad (PIA)
