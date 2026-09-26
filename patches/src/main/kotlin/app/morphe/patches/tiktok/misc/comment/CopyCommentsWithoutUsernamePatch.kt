@@ -51,14 +51,16 @@ private val clipboardTextHelperFingerprint = Fingerprint(
  * helper above any more, so on 47.0.3 that route only reached Favorites > Comments (issue #28).
  */
 private val commentClipDataBuilderFingerprint = Fingerprint(
-    accessFlags = listOf(AccessFlags.STATIC),
     returnType = CLIP_DATA_CLASS_DESCRIPTOR,
     parameters = listOf("Ljava/lang/String;", "Ljava/lang/String;", "Ljava/util/List;"),
     strings = listOf("copy_label"),
+    // Static is checked here rather than through accessFlags, which the patcher compares as one
+    // exact value: the builder is public static final on 47.0.3, and the rest may move.
     custom = { method, _ ->
-        method.implementation?.instructions?.any { instruction ->
-            instruction.getReference<MethodReference>()?.isClipDataNewPlainText() == true
-        } == true
+        AccessFlags.STATIC.isSet(method.accessFlags) &&
+            method.implementation?.instructions?.any { instruction ->
+                instruction.getReference<MethodReference>()?.isClipDataNewPlainText() == true
+            } == true
     },
 )
 
@@ -122,7 +124,8 @@ val copyCommentsWithoutUsernamePatch = bytecodePatch(
 
         // The prefix is the first parameter, blanked before the helper joins it to the text. A
         // range invoke, so the parameter register's number never has to fit a 4-bit operand.
-        val builders = commentClipDataBuilderFingerprint.matchAll()
+        // Absent on 46.2.3, whose menu still takes the helper route above (matchAll would throw).
+        val builders = commentClipDataBuilderFingerprint.matchAllOrNull().orEmpty()
         if (builders.size > 1) {
             throw PatchException(
                 "Copy comments without username: ${builders.size} comment ClipData builders: ${builders.map { it.originalClassDef.type }}",
