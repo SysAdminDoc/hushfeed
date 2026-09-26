@@ -163,9 +163,9 @@ internal fun MutableMethod.patchFollowCall(index: Int, beforeInstructions: Strin
  * Lines to add to one method and the index each goes in front of, every index read off the
  * method before anything was added to it.
  */
-private typealias Insertions = List<Pair<Int, String>>
+internal typealias Insertions = List<Pair<Int, String>>
 
-private fun MutableMethod.insertAll(insertions: Insertions) {
+internal fun MutableMethod.insertAll(insertions: Insertions) {
     // Highest index first. Every index was read from the untouched method, and inserting at a
     // lower one moves all of them; this held for the lancets only because the catch handler
     // happens to sit last on this build.
@@ -180,7 +180,7 @@ private fun MutableMethod.insertAll(insertions: Insertions) {
  * is read off the instruction it belongs to, so the layout of the surrounding method is free to
  * move; only the anchors themselves have to be there, and a missing one fails the build.
  */
-private fun planNetworkLancet(
+internal fun planNetworkLancet(
     method: Method,
     twinName: String,
     requestLogger: String?,
@@ -326,4 +326,3 @@ private fun jediFollowRequestInstructions(instruction: Instruction): String? {
 
     return null
 }
-
