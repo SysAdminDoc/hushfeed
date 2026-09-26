@@ -365,20 +365,19 @@ public final class AdvancedFeedRules {
      * character; comment mode, whose spaces and # comments this reading does not skip; and a
      * pattern whose work adds up to more than {@link #STALL_LIMIT_DOUBLINGS} doublings. Each
      * open-ended repeat multiplies the work by the name's length, and so does find() trying
-     * every start; an optional part doubles it, and a choice of k adds log2 k. That leaves
-     * three wildcards, or two beside a dozen alternatives, for anything written to match a
-     * handle. Only runs on a pattern that compiled, so the syntax is already known to be sound.
+     * every start unless the pattern is held to the start with ^; an optional part doubles it,
+     * and a choice of k adds log2 k to the costliest of its alternatives, which are counted
+     * apart since only one of them runs at a time. That leaves three wildcards, four words
+     * held to the start, or two wildcards beside a dozen alternatives, for anything written
+     * to match a handle. Only runs on a pattern that compiled, so the syntax is already known
+     * to be sound.
      */
     static boolean couldStall(String source) {
-        // Per group: [0] a repeat of varying count inside it, [1] its alternation bars, [2]
-        // either of those in a group nested inside it.
         java.util.ArrayDeque<int[]> outer = new java.util.ArrayDeque<>();
-        int[] group = new int[3];
+        int[] group = new int[FRAME];
         int[] closed = null;
         // What a quantifier here would repeat: 0 nothing, 1 a single atom, 2 the group just closed.
         int last = 0;
-        int repeats = 0;
-        int doublings = 0;
         int length = source.length();
         int index = 0;
         while (index < length) {
@@ -403,8 +402,12 @@ public final class AdvancedFeedRules {
                         int end = source.indexOf('>', index);
                         index = end < 0 ? length : end + 1;
                     } else {
+                        // Comment mode turned on, not off: (?-x) is the one that turns it off.
+                        boolean turningOff = false;
                         while (index < length && ":=!<>)".indexOf(source.charAt(index)) < 0) {
-                            if (source.charAt(index) == 'x') return true;
+                            char flag = source.charAt(index);
+                            if (flag == '-') turningOff = true;
+                            else if (flag == 'x' && !turningOff) return true;
                             index++;
                         }
                         if (index < length && source.charAt(index) == ')') {
@@ -418,19 +421,27 @@ public final class AdvancedFeedRules {
                     }
                 }
                 outer.push(group);
-                group = new int[3];
+                group = new int[FRAME];
                 last = 0;
             } else if (c == ')') {
                 // A close with nothing open is the same disagreement as a group left open.
                 if (outer.isEmpty()) return true;
                 closed = group;
                 group = outer.pop();
-                doublings += choiceDoublings(closed[1]);
-                if (closed[0] != 0 || closed[1] != 0 || closed[2] != 0) group[2] = 1;
+                // The group runs as one step of the alternative around it, and costs what its
+                // costliest alternative does plus the choice between them.
+                group[CUR_REPEATS] += Math.max(closed[MAX_REPEATS], closed[CUR_REPEATS]);
+                group[CUR_DOUBLINGS] += Math.max(closed[MAX_DOUBLINGS], closed[CUR_DOUBLINGS])
+                        + choiceDoublings(closed[BARS]);
+                if (closed[VARIES] != 0 || closed[BARS] != 0 || closed[NESTED] != 0) group[NESTED] = 1;
                 index++;
                 last = 2;
             } else if (c == '|') {
-                group[1]++;
+                group[BARS]++;
+                group[MAX_REPEATS] = Math.max(group[MAX_REPEATS], group[CUR_REPEATS]);
+                group[MAX_DOUBLINGS] = Math.max(group[MAX_DOUBLINGS], group[CUR_DOUBLINGS]);
+                group[CUR_REPEATS] = 0;
+                group[CUR_DOUBLINGS] = 0;
                 index++;
                 last = 0;
             } else if (c == '*' || c == '+' || c == '?' || c == '{') {
@@ -458,13 +469,13 @@ public final class AdvancedFeedRules {
                 if (index < length && (source.charAt(index) == '?' || source.charAt(index) == '+')) index++;
                 boolean repeated = max < 0 || max > 1;
                 if (last == 2 && repeated && closed != null
-                        && (closed[0] != 0 || closed[1] != 0 || closed[2] != 0)) {
+                        && (closed[VARIES] != 0 || closed[BARS] != 0 || closed[NESTED] != 0)) {
                     return true;
                 }
                 if (max < 0 || max != min) {
-                    group[0] = 1;
-                    if (max == 1) doublings++;
-                    else repeats++;
+                    group[VARIES] = 1;
+                    if (max == 1) group[CUR_DOUBLINGS]++;
+                    else group[CUR_REPEATS]++;
                 }
                 last = 0;
             } else {
@@ -475,8 +486,42 @@ public final class AdvancedFeedRules {
         // A group left open means this reading and the engine's disagree, and the engine is the
         // one that compiled it. Refused, rather than trusting a count that may have missed a part.
         if (!outer.isEmpty()) return true;
-        doublings += choiceDoublings(group[1]);
-        return DOUBLINGS_PER_REPEAT * (repeats + 1) + doublings > STALL_LIMIT_DOUBLINGS;
+        int repeats = Math.max(group[MAX_REPEATS], group[CUR_REPEATS]);
+        int doublings = Math.max(group[MAX_DOUBLINGS], group[CUR_DOUBLINGS]) + choiceDoublings(group[BARS]);
+        // find() tries every start of the name, which is one more factor of its length, unless
+        // the whole pattern is held to the start.
+        int starts = group[BARS] == 0 && anchoredAtStart(source) ? 0 : 1;
+        return DOUBLINGS_PER_REPEAT * (repeats + starts) + doublings > STALL_LIMIT_DOUBLINGS;
+    }
+
+    /** couldStall's per-group counts: what makes a repeat of the group dangerous, and its cost. */
+    private static final int VARIES = 0;
+    private static final int BARS = 1;
+    private static final int NESTED = 2;
+    private static final int CUR_REPEATS = 3;
+    private static final int MAX_REPEATS = 4;
+    private static final int CUR_DOUBLINGS = 5;
+    private static final int MAX_DOUBLINGS = 6;
+    private static final int FRAME = 7;
+
+    /**
+     * Whether a match can only begin at the start of the name: ^ or \A first, after any flags,
+     * and no multiline mode, where ^ also matches after every line break.
+     */
+    private static boolean anchoredAtStart(String source) {
+        int index = 0;
+        while (source.startsWith("(?", index)) {
+            int close = source.indexOf(')', index);
+            if (close < 0) return false;
+            String flags = source.substring(index + 2, close);
+            for (int at = 0; at < flags.length(); at++) {
+                char flag = flags.charAt(at);
+                if (flag == 'm') return false;
+                if (!Character.isLetter(flag) && flag != '-') return false;
+            }
+            index = close + 1;
+        }
+        return source.startsWith("^", index) || source.startsWith("\\A", index);
     }
 
     /**
@@ -522,8 +567,14 @@ public final class AdvancedFeedRules {
                 continue;
             }
             index++;
-            if (c == '[') depth++;
-            else if (c == ']' && --depth == 0) return index;
+            if (c == '[') {
+                depth++;
+                // A ] straight after the opening bracket, or after [^, is a literal member.
+                if (index < source.length() && source.charAt(index) == '^') index++;
+                if (index < source.length() && source.charAt(index) == ']') index++;
+            } else if (c == ']' && --depth == 0) {
+                return index;
+            }
         }
         return -1;
     }

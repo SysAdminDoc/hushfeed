@@ -132,6 +132,9 @@ public class CreatorPatternTest {
                 "([\\Q[\\E]a+)+",
                 "\\c[(a+)+\\c]",
                 "[\\x{5B}](a+)+",
+                // Held to the start, the fifth wildcard is still one too many, and multiline
+                // mode lets ^ match after every break, so it isn't held to the start at all.
+                "^.*.*.*.*.*z", "(?m)^\\w+ \\w+ \\w+ \\w+$",
         };
         for (String source : refused) {
             assertTrue("not refused: " + source, AdvancedFeedRules.couldStall(source));
@@ -142,6 +145,10 @@ public class CreatorPatternTest {
                 ".*(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve).*",
                 "(ab)+", "(a{3})+", "(?i)^crypto", "(?<name>shop)\\d+", "\\p{L}+shop",
                 "\\Q(a+)+\\E", "[(+*]+", "\\(a+\\)+", "[a-z&&[^aeiou]]+\\d?",
+                // Alternatives run one at a time, so their repeats don't add up; four words held
+                // to the start cost what three loose ones do; (?-x) turns comment mode off; and
+                // a ] straight after [ is a member of the class.
+                ".*shop.*|.*store.*", "^\\w+ \\w+ \\w+ \\w+$", "(?-x)shop", "[](]x", "[^]a]+",
         };
         for (String source : kept) {
             assertFalse("refused: " + source, AdvancedFeedRules.couldStall(source));
